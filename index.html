@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>책이지 — 부천시립도서관 AI 도서 안내 (시안)</title>
+<style>
+:root{
+  --brand:#0d6e5f; --brand-d:#0a5548; --brand-l:#e7f3f0;
+  --ink:#15191d; --ink2:#4d565e; --ink3:#8a939b;
+  --line:#e3e7ea; --bg:#f2f4f5; --card:#fff;
+  --ok:#0d7a3e; --ok-bg:#e6f5ec;
+  --busy:#b4571a; --busy-bg:#fdf0e6;
+  --none:#8a939b; --none-bg:#f1f3f4;
+  --demo:#b02a37;
+  --r:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Malgun Gothic','맑은 고딕',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  display:flex;justify-content:center;align-items:flex-start;
+  min-height:100vh;padding:0;
+}
+/* 데스크톱에서는 폰 프레임 */
+.phone{
+  width:100%;max-width:430px;background:var(--card);min-height:100vh;
+  position:relative;overflow:hidden;display:flex;flex-direction:column;
+}
+@media (min-width:600px){
+  body{padding:26px 12px;align-items:center}
+  .phone{
+    min-height:0;height:844px;border-radius:34px;
+    box-shadow:0 10px 44px rgba(0,0,0,.20);border:9px solid #1c1f22;
+  }
+}
+
+/* ── 헤더 ── */
+.top{
+  background:var(--brand);color:#fff;padding:16px 18px 15px;flex:none;position:relative;
+}
+.top .row{display:flex;align-items:center;gap:9px}
+.logo{
+  width:31px;height:31px;border-radius:9px;background:rgba(255,255,255,.19);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;
+}
+.top h1{margin:0;font-size:16.5px;font-weight:700;letter-spacing:-.4px}
+.top .sub{margin:1px 0 0;font-size:11.5px;opacity:.82}
+.demo-tag{
+  position:absolute;top:13px;right:15px;background:var(--demo);color:#fff;
+  font-size:9.5px;font-weight:700;letter-spacing:.09em;padding:3px 8px;border-radius:20px;
+}
+
+/* ── 본문 ── */
+.body{flex:1;overflow-y:auto;padding:20px 17px 30px}
+.screen{display:none}
+.screen.on{display:block;animation:fade .32s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
+/* ── 대기 ── */
+.hi{text-align:center;padding:14px 0 4px}
+.hi h2{font-size:21px;margin:0 0 7px;letter-spacing:-.6px;line-height:1.42}
+.hi p{font-size:13.5px;color:var(--ink2);margin:0}
+.micwrap{display:flex;justify-content:center;padding:30px 0 22px}
+.mic{
+  width:118px;height:118px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--brand);color:#fff;font-size:44px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 26px rgba(13,110,95,.34);transition:transform .16s;
+  position:relative;
+}
+.mic:active{transform:scale(.94)}
+.mic::after{
+  content:'';position:absolute;inset:-9px;border-radius:50%;
+  border:2px solid var(--brand);opacity:.28;animation:ping 2.3s ease-out infinite;
+}
+@keyframes ping{0%{transform:scale(1);opacity:.35}70%{transform:scale(1.22);opacity:0}100%{opacity:0}}
+.mic.live{background:#c0392b;box-shadow:0 8px 26px rgba(192,57,43,.4)}
+.mic.live::after{border-color:#c0392b;animation-duration:1s}
+
+.orsplit{display:flex;align-items:center;gap:10px;margin:6px 0 14px;color:var(--ink3);font-size:11.5px}
+.orsplit::before,.orsplit::after{content:'';flex:1;height:1px;background:var(--line)}
+
+.tin{display:flex;gap:7px}
+.tin input{
+  flex:1;border:1.6px solid var(--line);border-radius:11px;padding:12px 13px;
+  font-size:14.5px;font-family:inherit;outline:none;background:#fbfcfc;
+}
+.tin input:focus{border-color:var(--brand);background:#fff}
+.tin button{
+  border:none;background:var(--brand);color:#fff;border-radius:11px;
+  padding:0 17px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;
+}
+.chips{margin-top:17px}
+.chips .lbl{font-size:11.5px;color:var(--ink3);margin-bottom:8px}
+.chip{
+  display:block;width:100%;text-align:left;background:#fff;border:1.4px solid var(--line);
+  border-radius:11px;padding:11px 13px;font-size:13.5px;font-family:inherit;color:var(--ink);
+  margin-bottom:7px;cursor:pointer;line-height:1.5;
+}
+.chip:active{background:var(--brand-l);border-color:var(--brand)}
+.chip b{color:var(--brand);font-weight:700}
+.chip .m{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
+
+/* ── 듣는 중 ── */
+.listen{text-align:center;padding:56px 0 0}
+.wave{display:flex;justify-content:center;align-items:flex-end;gap:5px;height:62px;margin-bottom:26px}
+.wave i{width:6px;background:var(--brand);border-radius:3px;animation:bar .9s ease-in-out infinite}
+.wave i:nth-child(1){animation-delay:0s}.wave i:nth-child(2){animation-delay:.1s}
+.wave i:nth-child(3){animation-delay:.2s}.wave i:nth-child(4){animation-delay:.3s}
+.wave i:nth-child(5){animation-delay:.4s}.wave i:nth-child(6){animation-delay:.25s}
+.wave i:nth-child(7){animation-delay:.15s}
+@keyframes bar{0%,100%{height:11px;opacity:.45}50%{height:56px;opacity:1}}
+.listen h3{font-size:18.5px;margin:0 0 8px}
+.listen p{font-size:13.5px;color:var(--ink2);margin:0 0 28px}
+.stopbtn{
+  background:#fff;border:1.6px solid var(--line);border-radius:11px;
+  padding:11px 26px;font-size:14px;font-family:inherit;cursor:pointer;color:var(--ink2);
+}
+
+/* ── 처리 중 ── */
+.steps{padding:16px 0}
+.stp{display:flex;gap:12px;align-items:flex-start;padding:13px 0;opacity:.32;transition:opacity .3s}
+.stp.on{opacity:1}
+.stp .dot{
+  width:23px;height:23px;border-radius:50%;background:var(--line);flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:11.5px;color:#fff;margin-top:2px;
+}
+.stp.on .dot{background:var(--brand)}
+.stp.done .dot{background:var(--ok)}
+.stp .tx{flex:1}
+.stp .t{font-size:14px;font-weight:700;margin-bottom:2px}
+.stp .d{font-size:12.5px;color:var(--ink2);line-height:1.55}
+.heard{
+  background:#f7f8f9;border-radius:9px;padding:9px 11px;margin-top:7px;
+  font-size:13px;color:var(--ink2);border-left:3px solid var(--line);
+}
+.fixed{
+  background:var(--brand-l);border-radius:9px;padding:9px 11px;margin-top:7px;
+  font-size:13px;border-left:3px solid var(--brand);
+}
+.fixed b{color:var(--brand-d)}
+
+/* ── 결과 ── */
+.bookcard{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:15px;display:flex;gap:13px;margin-bottom:15px;
+}
+.cover{
+  width:60px;height:86px;border-radius:7px;flex:none;
+  background:linear-gradient(140deg,#1f7a6a,#0a5548);color:#fff;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:10.5px;padding:6px;line-height:1.35;font-weight:700;
+}
+.bookcard .meta{flex:1;min-width:0}
+.bookcard h3{margin:0 0 3px;font-size:16px;letter-spacing:-.3px;line-height:1.35}
+.bookcard .au{font-size:12.5px;color:var(--ink2);margin:0 0 6px}
+.bookcard .isbn{font-size:11px;color:var(--ink3);margin:0}
+
+.sumline{
+  background:var(--brand-l);border-radius:12px;padding:12px 14px;margin-bottom:15px;
+  font-size:14px;line-height:1.6;
+}
+.sumline b{color:var(--brand-d)}
+
+.sec-t{font-size:12.5px;font-weight:700;color:var(--ink3);letter-spacing:.05em;margin:19px 0 9px}
+
+.lib{
+  background:#fff;border:1px solid var(--line);border-radius:13px;
+  padding:12px 14px;margin-bottom:8px;
+}
+.lib.best{border:2px solid var(--brand);background:var(--brand-l)}
+.lib .r1{display:flex;align-items:center;gap:8px}
+.lib .nm{font-size:14.5px;font-weight:700;flex:1;letter-spacing:-.2px}
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;flex:none}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-busy{background:var(--busy-bg);color:var(--busy)}
+.b-none{background:var(--none-bg);color:var(--none)}
+.lib .r2{font-size:12px;color:var(--ink2);margin-top:5px;line-height:1.55}
+.lib .r2 code{
+  background:#f1f3f4;padding:1px 5px;border-radius:4px;font-size:11.5px;
+  font-family:'Consolas',monospace;
+}
+.pick{
+  display:inline-block;background:var(--brand);color:#fff;font-size:10.5px;font-weight:700;
+  padding:2px 8px;border-radius:20px;margin-bottom:6px;letter-spacing:.03em;
+}
+
+.cta{
+  width:100%;background:var(--brand);color:#fff;border:none;border-radius:13px;
+  padding:16px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;
+  margin-top:18px;box-shadow:0 4px 14px rgba(13,110,95,.28);
+}
+.cta:active{transform:scale(.985)}
+.cta.ghost{
+  background:#fff;color:var(--ink2);border:1.6px solid var(--line);
+  box-shadow:none;font-size:14.5px;padding:13px;margin-top:9px;font-weight:400;
+}
+.caution{
+  font-size:11.5px;color:var(--ink3);text-align:center;margin-top:11px;line-height:1.6;
+}
+
+/* ── 신청 확인 ── */
+.sheet{
+  position:absolute;inset:0;background:rgba(0,0,0,.45);
+  display:none;align-items:flex-end;z-index:20;
+}
+.sheet.on{display:flex;animation:fade .2s both}
+.sheet-in{
+  background:#fff;width:100%;border-radius:20px 20px 0 0;padding:22px 19px 26px;
+  animation:up .3s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.sheet h3{margin:0 0 5px;font-size:18px}
+.sheet .p{font-size:13.5px;color:var(--ink2);margin:0 0 15px}
+.kv{display:flex;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv:last-of-type{border-bottom:none}
+.kv .k{width:82px;color:var(--ink3);flex:none}
+.kv .v{flex:1;font-weight:700}
+
+/* ── 완료 ── */
+.done{text-align:center;padding:44px 0 0}
+.check{
+  width:78px;height:78px;border-radius:50%;background:var(--ok-bg);color:var(--ok);
+  display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 20px;
+  animation:pop .45s cubic-bezier(.2,1.4,.4,1) both;
+}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.done h2{font-size:21px;margin:0 0 9px}
+.done p{font-size:14px;color:var(--ink2);margin:0 0 22px;line-height:1.65}
+.recap{
+  background:#f7f8f9;border-radius:13px;padding:15px;text-align:left;margin-bottom:8px;
+}
+
+/* ── 푸터 ── */
+.foot{
+  flex:none;background:#fafbfb;border-top:1px solid var(--line);
+  padding:9px 16px;font-size:10.5px;color:var(--ink3);text-align:center;line-height:1.55;
+}
+.err{
+  background:#fdf0e6;border:1px solid #f0cba6;border-radius:12px;padding:13px 14px;
+  font-size:12.5px;color:#7d420f;margin-bottom:15px;line-height:1.72;display:none;
+}
+.err.on{display:block}
+.err b{color:#5f3208}
+.err.info{background:#eef4fb;border-color:#c2d6ee;color:#2a4f78}
+.err.info b{color:#173a5e}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="top">
+    <span class="demo-tag">시안</span>
+    <div class="row">
+      <div class="logo">📚</div>
+      <div>
+        <h1>책이지</h1>
+        <p class="sub">부천시립도서관 · 말로 찾는 도서 안내</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="body" id="body">
+
+    <!-- 대기 -->
+    <div class="screen on" id="s-idle">
+      <div class="err" id="micerr"></div>
+      <div class="hi">
+        <h2>찾으시는 책,<br>말씀만 하세요</h2>
+        <p>제목이 정확하지 않아도 괜찮습니다</p>
+      </div>
+      <div class="micwrap">
+        <button class="mic" id="micbtn" aria-label="음성으로 검색">🎙️</button>
+      </div>
+      <div class="orsplit">또는 직접 입력</div>
+      <div class="tin">
+        <input id="tinput" placeholder="예: 한강 채식주의자" autocomplete="off">
+        <button id="tgo">검색</button>
+      </div>
+      <div class="chips">
+        <div class="lbl">눌러서 바로 보기 (시연용 예시)</div>
+        <button class="chip" data-case="0">
+          “<b>한강 채식주의자</b> 빌리고 싶어요”
+          <span class="m">여러 분관 소장 · 대출 가능한 곳 있음</span>
+        </button>
+        <button class="chip" data-case="1">
+          “<b>총 균 쇠</b> 그거 있나요”
+          <span class="m">음성이 잘못 들려도 AI가 알아듣는 경우</span>
+        </button>
+        <button class="chip" data-case="2">
+          “<b>지구 끝의 온실</b> 찾아주세요”
+          <span class="m">관내에 없을 때 — 대안 안내</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 듣는 중 -->
+    <div class="screen" id="s-listen">
+      <div class="listen">
+        <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <h3>듣고 있어요</h3>
+        <p>편하게 말씀하세요</p>
+        <button class="stopbtn" id="stopbtn">그만하기</button>
+      </div>
+    </div>
+
+    <!-- 처리 중 -->
+    <div class="screen" id="s-work">
+      <div class="steps">
+        <div class="stp" id="w1">
+          <div class="dot">1</div>
+          <div class="tx">
+            <div class="t">말씀 옮겨 적기</div>
+            <div class="d">음성을 글자로 바꿉니다</div>
+            <div class="heard" id="heard"></div>
+          </div>
+        </div>
+        <div class="stp" id="w2">
+          <div class="dot">2</div>
+          <div class="tx">
+            <div class="t">AI가 무슨 책인지 파악</div>
+            <div class="d" id="w2d">불완전한 말도 해석합니다</div>
+            <div class="fixed" id="fixed"></div>
+          </div>
+        </div>
+        <div class="stp" id="w3">
+          <div class="dot">3</div>
+          <div class="tx">
+            <div class="t">부천 16개 분관 한 번에 조회</div>
+            <div class="d" id="w3d">소장 여부와 대출 상태를 확인합니다</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div class="screen" id="s-result"></div>
+
+    <!-- 완료 -->
+    <div class="screen" id="s-done">
+      <div class="done">
+        <div class="check">✓</div>
+        <h2>신청이 접수됐습니다</h2>
+        <p id="donetx"></p>
+        <div class="recap" id="recap"></div>
+        <button class="cta ghost" onclick="reset()">처음으로</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    화면 시안 · 표시된 소장·대출 정보는 예시 데이터입니다<br>
+    2026. 8. 부천시립도서관
+  </div>
+
+  <!-- 신청 확인 -->
+  <div class="sheet" id="sheet">
+    <div class="sheet-in">
+      <h3>상호대차를 신청할까요?</h3>
+      <p class="p">아래 내용으로 접수됩니다</p>
+      <div id="sheetkv"></div>
+      <button class="cta" id="confirm">네, 신청합니다</button>
+      <button class="cta ghost" onclick="closeSheet()">취소</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ────────────────────────────────────────────────
+   예시 데이터 — 인증키 발급 후 실제 API 응답으로 교체
+   ──────────────────────────────────────────────── */
+const 분관 = ["심곡도서관","원미도서관","북부도서관","꿈빛도서관","책마루도서관",
+  "한울빛도서관","꿈여울도서관","상동도서관","송내도서관","도당도서관","오정도서관",
+  "동화도서관","역곡도서관","별빛마루도서관","수주도서관","역곡밝은도서관"];
+
+const CASES = [
+  {
+    heard:"한강 채식 주위자 빌리고 싶어요",
+    fix:"‘채식 주위자’ → <b>채식주의자</b> 로 이해했습니다",
+    book:{t:"채식주의자", a:"한강 지음", p:"창비", y:"2007", isbn:"9788936434120"},
+    call:"813.7-한16ㅊ",
+    libs:[
+      {n:"한울빛도서관", s:"ok", loc:"2층 문학코너", note:"복본 2권 중 1권 대출 가능"},
+      {n:"별빛마루도서관", s:"ok", loc:"3층 종합자료실", note:""},
+      {n:"상동도서관", s:"busy", loc:"", note:"자주 가시는 도서관 · 반납 예정 8. 19."},
+      {n:"원미도서관", s:"busy", loc:"", note:"반납 예정 8. 21."},
+      {n:"책마루도서관", s:"busy", loc:"", note:"예약 2명 대기"},
+      {n:"그 밖 11개 분관", s:"none", loc:"", note:"미소장"}
+    ]
+  },
+  {
+    heard:"총균 쇠 그거 있나요",
+    fix:"‘총균 쇠’ → <b>총, 균, 쇠</b> (재레드 다이아몬드) 로 이해했습니다",
+    book:{t:"총, 균, 쇠", a:"재레드 다이아몬드 지음", p:"문학사상", y:"2023", isbn:"9788970127248"},
+    call:"909-다69ㅊ",
+    libs:[
+      {n:"원미도서관", s:"ok", loc:"2층 인문사회실", note:"개정증보판"},
+      {n:"송내도서관", s:"ok", loc:"1층 일반자료실", note:""},
+      {n:"별빛마루도서관", s:"ok", loc:"3층", note:""},
+      {n:"상동도서관", s:"busy", loc:"", note:"반납 예정 8. 18."},
+      {n:"그 밖 12개 분관", s:"none", loc:"", note:"미소장"}
+    ]
+  },
+  {
+    heard:"지구 끝에 온실 찾아주세요",
+    fix:"‘지구 끝에 온실’ → <b>지구 끝의 온실</b> 로 이해했습니다",
+    book:{t:"지구 끝의 온실", a:"김초엽 지음", p:"자이언트북스", y:"2021", isbn:"9791165341909"},
+    call:"813.7-김814ㅈ",
+    libs:[{n:"부천 16개 분관 전체", s:"none", loc:"", note:"소장 자료 없음"}],
+    empty:true
+  }
+];
+
+let cur = 0, rec = null;
+const $ = id => document.getElementById(id);
+const show = id => {
+  document.querySelectorAll('.screen').forEach(e => e.classList.remove('on'));
+  $(id).classList.add('on');
+  $('body').scrollTop = 0;
+};
+
+/* ── 음성 인식 가능 여부 진단 ── */
+function diagnose(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const ua = navigator.userAgent;
+  const inFrame = (() => { try { return window.self !== window.top; } catch(e){ return true; } })();
+  const proto = location.protocol;
+  // file:// 도 브라우저가 보안 컨텍스트로 인정하므로 프로토콜이 아니라 isSecureContext 로 판단
+  const secure = (typeof isSecureContext !== 'undefined')
+                 ? isSecureContext
+                 : (proto === 'https:' || location.hostname === 'localhost');
+  const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const iOSNotSafari = iOS && /CriOS|FxiOS|EdgiOS|NAVER|KAKAO|whale/i.test(ua);
+  const inApp = /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line/i.test(ua);
+
+  if(inFrame) return {
+    ok:false, t:"미리보기 화면 안에서는 마이크가 막혀 있습니다",
+    d:"이 파일을 <b>내려받아서</b> 휴대폰 브라우저로 직접 열어 주세요.<br>미리보기 창(작은 화면) 안에서는 브라우저가 마이크를 차단합니다."
+  };
+  if(inApp) return {
+    ok:false, t:"카카오톡·네이버 등 앱 내부 브라우저입니다",
+    d:"오른쪽 아래 <b>⋯ 메뉴 → 다른 브라우저로 열기</b>를 눌러 크롬이나 사파리에서 열어 주세요."
+  };
+  if(iOSNotSafari) return {
+    ok:false, t:"아이폰에서는 사파리로 열어야 합니다",
+    d:"아이폰의 크롬·웨일 등은 음성 인식을 지원하지 않습니다. <b>사파리</b>로 열어 주세요."
+  };
+  if(!SR) return {
+    ok:false, t:"이 브라우저는 음성 인식을 지원하지 않습니다",
+    d:"안드로이드는 <b>크롬</b>, 아이폰은 <b>사파리</b>에서 열어 주세요."
+  };
+  if(!secure) return {
+    ok:false, t:"보안 연결(https)이 아닙니다",
+    d:"음성 인식은 <b>https 주소</b>에서만 동작합니다. 인터넷 주소로 올린 뒤 접속해 주세요.<br>(아래 예시 버튼은 지금도 됩니다)"
+  };
+  // file:// 은 보안 컨텍스트로 인정되어 PC에서는 대개 동작하나, 휴대폰에서는 막히는 경우가 있다
+  if(proto === 'file:') return {
+    ok:true, info:true, t:"파일을 직접 연 상태입니다",
+    d:"PC 크롬에서는 대체로 동작합니다. <b>마이크 허용 팝업이 뜨면 ‘허용’</b>을 눌러 주세요.<br>" +
+      "휴대폰에서 막히면 인터넷 주소(https)로 올려야 합니다."
+  };
+  return {ok:true};
+}
+
+function showDiag(silent){
+  const r = diagnose();
+  const box = $('micerr');
+  box.classList.remove('info');
+  if(r.ok && !r.info){ box.classList.remove('on'); return true; }
+  if(r.info && silent){ box.classList.remove('on'); return true; }  // 버튼 누를 땐 안내문 숨김
+  box.innerHTML = `<b>🎙️ ${r.t}</b><br>${r.d}`;
+  box.classList.add('on');
+  if(r.info) box.classList.add('info');
+  return !!r.ok;
+}
+
+/* ── 음성 인식 (브라우저 기본 기능) ── */
+function startVoice(){
+  if(!showDiag(true)) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  rec = new SR();
+  rec.lang = 'ko-KR'; rec.interimResults = false; rec.maxAlternatives = 1;
+  rec.onstart = () => { $('micbtn').classList.add('live'); show('s-listen'); };
+  rec.onresult = e => run(e.results[0][0].transcript, true);
+  rec.onerror = e => {
+    $('micbtn').classList.remove('live'); show('s-idle');
+    $('micerr').innerHTML = (e.error === 'not-allowed' || e.error === 'service-not-allowed')
+      ? "마이크 사용이 차단되어 있습니다. 브라우저 주소창의 자물쇠 → 마이크 <b>허용</b> 후 다시 시도해 주세요.<br>아래 예시 버튼으로도 동작을 보실 수 있습니다."
+      : "음성을 인식하지 못했습니다. 다시 시도하시거나 아래 예시 버튼을 눌러 보세요.";
+    $('micerr').classList.add('on');
+  };
+  rec.onend = () => $('micbtn').classList.remove('live');
+  try{ rec.start(); }catch(err){}
+}
+
+/* ── 처리 흐름 ── */
+function run(text, live){
+  // 실제 음성이면 키워드로 예시 매칭
+  if(live){
+    const t = text.replace(/\s/g,'');
+    cur = t.includes('채식') ? 0 : (t.includes('총') || t.includes('균') || t.includes('쇠')) ? 1
+        : (t.includes('온실') || t.includes('지구끝')) ? 2 : 0;
+  }
+  const c = CASES[cur];
+  const heard = live ? text : c.heard;
+
+  show('s-work');
+  ['w1','w2','w3'].forEach(i => $(i).className = 'stp');
+  $('heard').textContent = ''; $('fixed').innerHTML = '';
+
+  setTimeout(()=>{ $('w1').className='stp on';
+                   $('heard').textContent = '“' + heard + '”'; }, 250);
+  setTimeout(()=>{ $('w1').className='stp done'; $('w2').className='stp on';
+                   $('fixed').innerHTML = c.fix; }, 1250);
+  setTimeout(()=>{ $('w2').className='stp done'; $('w3').className='stp on'; }, 2350);
+  setTimeout(()=>{ $('w3').className='stp done'; result(); }, 3450);
+}
+
+function result(){
+  const c = CASES[cur];
+  const best = c.libs.find(l => l.s === 'ok');
+  const okN = c.libs.filter(l => l.s === 'ok').length;
+  const busyN = c.libs.filter(l => l.s === 'busy').length;
+
+  let h = `
+    <div class="bookcard">
+      <div class="cover">${c.book.t}</div>
+      <div class="meta">
+        <h3>${c.book.t}</h3>
+        <p class="au">${c.book.a} · ${c.book.p} (${c.book.y})</p>
+        <p class="isbn">ISBN ${c.book.isbn}</p>
+      </div>
+    </div>`;
+
+  if(c.empty){
+    h += `<div class="sumline">부천 관내 <b>16개 분관 모두 소장하지 않은</b> 자료입니다.<br>
+          아래 방법으로 이용하실 수 있습니다.</div>
+      <div class="sec-t">이용 방법</div>
+      <div class="lib"><div class="r1"><div class="nm">책이음 상호대차</div>
+        <span class="badge b-ok">신청 가능</span></div>
+        <div class="r2">전국 참여 도서관에서 빌려 부천으로 받습니다</div></div>
+      <div class="lib"><div class="r1"><div class="nm">희망도서 신청</div>
+        <span class="badge b-ok">신청 가능</span></div>
+        <div class="r2">도서관이 구입해 우선 대출해 드립니다</div></div>
+      <button class="cta" id="apply">책이음으로 신청하기</button>
+      <button class="cta ghost" onclick="reset()">다시 검색</button>
+      <p class="caution">예시 화면입니다. 실제 신청은 이루어지지 않습니다.</p>`;
+  } else {
+    const home = c.libs.find(l => l.n === '상동도서관');
+    const homeTx = !home ? `자주 가시는 <b>상동도서관에는 없지만</b>, `
+                 : home.s === 'busy' ? `자주 가시는 <b>상동도서관은 대출 중</b>이지만, `
+                 : '';
+    h += `<div class="sumline">
+        ${homeTx}<b>${okN}개 분관</b>에서 지금 빌리실 수 있어요.
+        ${busyN ? `대출 중인 곳은 ${busyN}곳입니다.` : ''}
+      </div>
+      <div class="sec-t">추천</div>
+      <div class="lib best">
+        <span class="pick">가장 빠름</span>
+        <div class="r1"><div class="nm">${best.n}</div>
+          <span class="badge b-ok">대출 가능</span></div>
+        <div class="r2">청구기호 <code>${c.call}</code>${best.loc ? ' · ' + best.loc : ''}
+          ${best.note ? '<br>' + best.note : ''}</div>
+      </div>
+      <div class="sec-t">분관별 현황</div>`;
+    c.libs.forEach((l,i) => {
+      if(i === 0 && l === best) return;
+      const b = l.s==='ok' ? '<span class="badge b-ok">대출 가능</span>'
+             : l.s==='busy' ? '<span class="badge b-busy">대출 중</span>'
+             : '<span class="badge b-none">미소장</span>';
+      const d = l.s==='ok' ? `청구기호 <code>${c.call}</code>${l.loc?' · '+l.loc:''}`
+             : (l.note || '');
+      h += `<div class="lib"><div class="r1"><div class="nm">${l.n}</div>${b}</div>
+            ${d ? `<div class="r2">${d}</div>` : ''}</div>`;
+    });
+    h += `<button class="cta" id="apply">${best.n}에서 상호대차 신청</button>
+      <button class="cta ghost" onclick="reset()">다시 검색</button>
+      <p class="caution">예시 화면입니다. 실제 신청은 이루어지지 않습니다.</p>`;
+  }
+
+  $('s-result').innerHTML = h;
+  show('s-result');
+  $('apply').onclick = openSheet;
+}
+
+function openSheet(){
+  const c = CASES[cur];
+  const best = c.libs.find(l => l.s === 'ok');
+  $('sheetkv').innerHTML = `
+    <div class="kv"><div class="k">도서</div><div class="v">${c.book.t}</div></div>
+    <div class="kv"><div class="k">${c.empty?'경로':'대출 도서관'}</div>
+      <div class="v">${c.empty ? '책이음 (전국 상호대차)' : best.n}</div></div>
+    <div class="kv"><div class="k">수령 도서관</div><div class="v">상동도서관</div></div>
+    <div class="kv"><div class="k">신청자</div><div class="v">홍○○ (회원번호 ****1234)</div></div>`;
+  $('sheet').classList.add('on');
+}
+function closeSheet(){ $('sheet').classList.remove('on'); }
+
+$('confirm').onclick = () => {
+  closeSheet();
+  const c = CASES[cur];
+  const best = c.libs.find(l => l.s === 'ok');
+  $('donetx').innerHTML = c.empty
+    ? '책이음으로 신청되었습니다.<br>도착하면 문자로 알려드립니다.'
+    : `<b>${best.n}</b>의 자료를 <b>상동도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`;
+  $('recap').innerHTML = `
+    <div class="kv"><div class="k">도서</div><div class="v">${c.book.t}</div></div>
+    <div class="kv"><div class="k">수령 도서관</div><div class="v">상동도서관</div></div>
+    <div class="kv"><div class="k">예상 도착</div><div class="v">2~3일 이내</div></div>
+    <div class="kv"><div class="k">접수번호</div><div class="v">ILL-2026-0816-0037</div></div>`;
+  show('s-done');
+};
+
+function reset(){
+  $('micerr').classList.remove('on');
+  $('tinput').value = '';
+  show('s-idle');
+}
+
+/* ── 이벤트 ── */
+$('micbtn').onclick = startVoice;
+showDiag();   // 화면을 열자마자 미리 점검해서 알려준다
+$('stopbtn').onclick = () => { if(rec) rec.stop(); show('s-idle'); };
+document.querySelectorAll('.chip').forEach(b => {
+  b.onclick = () => { cur = +b.dataset.case; run(null, false); };
+});
+$('tgo').onclick = () => {
+  const v = $('tinput').value.trim();
+  if(v) run(v, true);
+};
+$('tinput').addEventListener('keydown', e => { if(e.key === 'Enter') $('tgo').click(); });
+</script>
+</body>
+</html>

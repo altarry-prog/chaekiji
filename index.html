@@ -143,6 +143,31 @@ body{
 }
 .fixed b{color:var(--brand-d)}
 
+.scanrow{
+  display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;
+  padding:8px 10px;border-radius:8px;background:#f7f8f9;opacity:0;
+  animation:slidein .35s ease forwards;
+}
+@keyframes slidein{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.scanrow .sn{flex:1;font-weight:700;color:var(--ink)}
+.scanrow .sr{color:var(--ink3);font-size:11.8px}
+.scanrow.hit{background:var(--ok-bg)}
+.scanrow.hit .sr{color:var(--ok);font-weight:700}
+.scanrow.miss{opacity:.62}
+.tierbar{
+  display:flex;align-items:center;gap:9px;background:#fff;border:1.6px solid var(--line);
+  border-radius:12px;padding:11px 13px;margin-bottom:13px;
+}
+.tierbar .tb{
+  font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;flex:none;
+}
+.tb.ok{background:var(--ok-bg);color:var(--ok)}
+.tb.mid{background:#e9f0fd;color:#1f5fbf}
+.tb.far{background:#fdf0e6;color:var(--busy)}
+.tierbar .ti{flex:1;min-width:0}
+.tierbar .tn{font-size:13.5px;font-weight:700;letter-spacing:-.2px}
+.tierbar .td{font-size:11.5px;color:var(--ink2);margin-top:1px}
+.tierbar .tc{font-size:11px;color:var(--ink3);flex:none;text-align:right;line-height:1.4}
 /* ── 결과 ── */
 .bookcard{
   background:var(--card);border:1px solid var(--line);border-radius:var(--r);
@@ -247,6 +272,26 @@ body{
 .err b{color:#5f3208}
 .err.info{background:#eef4fb;border-color:#c2d6ee;color:#2a4f78}
 .err.info b{color:#173a5e}
+
+/* ── 데이터 출처 표시 ── */
+.srcbar{
+  border-radius:11px;padding:10px 12px;margin-bottom:13px;
+  font-size:11.8px;line-height:1.6;
+}
+.srcbar b{font-weight:700}
+.srcbar .s2{color:inherit;opacity:.78;font-size:11.2px}
+.srcbar.real{background:var(--ok-bg);color:#0b5c30;border:1px solid #bfe3cd}
+.srcbar.demo{background:#f4f5f6;color:var(--ink2);border:1px solid var(--line)}
+.sumline .s2{font-size:12.5px;color:var(--ink2)}
+.mytag{
+  display:inline-block;background:var(--brand-l);color:var(--brand-d);
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;
+  vertical-align:middle;
+}
+.chip .lv{
+  display:inline-block;background:var(--ok-bg);color:var(--ok);font-style:normal;
+  font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:5px;
+}
 </style>
 </head>
 <body>
@@ -277,23 +322,30 @@ body{
       </div>
       <div class="orsplit">또는 직접 입력</div>
       <div class="tin">
-        <input id="tinput" placeholder="예: 한강 채식주의자" autocomplete="off">
+        <input id="tinput" placeholder="예: 나미야 잡화점" autocomplete="off">
         <button id="tgo">검색</button>
       </div>
       <div class="chips">
-        <div class="lbl">눌러서 바로 보기 (시연용 예시)</div>
+        <div class="lbl">눌러서 바로 보기</div>
         <button class="chip" data-case="0">
-          “<b>한강 채식주의자</b> 빌리고 싶어요”
-          <span class="m">여러 분관 소장 · 대출 가능한 곳 있음</span>
+          “<b>나미야 잡화점의 기적</b> 빌리고 싶어요”
+          <span class="m">1단계 — 상동은 대출 중 → 관내 8개 분관에서 발견<em class="lv">실데이터</em></span>
         </button>
-        <button class="chip" data-case="1">
+        <button class="chip" data-case="4">
           “<b>총 균 쇠</b> 그거 있나요”
-          <span class="m">음성이 잘못 들려도 AI가 알아듣는 경우</span>
+          <span class="m">2단계 — 관내 대출 중 → 경기·인천까지 확장</span>
+        </button>
+        <button class="chip" data-case="5">
+          “<b>지구 끝의 온실</b> 찾아주세요”
+          <span class="m">3단계 — 전국 참여 도서관까지 확장</span>
         </button>
         <button class="chip" data-case="2">
-          “<b>지구 끝의 온실</b> 찾아주세요”
-          <span class="m">관내에 없을 때 — 대안 안내</span>
+          “<b>한강 소년이 온다</b> 찾아주세요”
+          <span class="m">상동에 있음 → 상호대차를 권하지 않음<em class="lv">실데이터</em></span>
         </button>
+        <div class="lbl" style="margin-top:9px">
+          ‘불편한 편의점’, ‘설민석 한국사 대모험’도 실데이터로 검색됩니다
+        </div>
       </div>
     </div>
 
@@ -329,8 +381,9 @@ body{
         <div class="stp" id="w3">
           <div class="dot">3</div>
           <div class="tx">
-            <div class="t">부천 16개 분관 한 번에 조회</div>
-            <div class="d" id="w3d">소장 여부와 대출 상태를 확인합니다</div>
+            <div class="t">범위를 넓혀가며 찾기</div>
+            <div class="d">가까운 곳부터 차례로 확인합니다</div>
+            <div id="scan"></div>
           </div>
         </div>
       </div>
@@ -353,8 +406,9 @@ body{
   </div>
 
   <div class="foot">
-    화면 시안 · 표시된 소장·대출 정보는 예시 데이터입니다<br>
-    2026. 8. 부천시립도서관
+    관내 → 인근 → 전국 3단계 탐색 · <b>도서관코드 표만 교체하면 타 지자체 그대로 적용</b><br>
+    소장·대출 정보 출처 : 도서관 정보나루 Open API (2026. 8. 18. 조회, 전일 기준)<br>
+    2026. 8. 부천시립도서관 · 화면 시안
   </div>
 
   <!-- 신청 확인 -->
@@ -371,50 +425,118 @@ body{
 </div>
 
 <script>
-/* ────────────────────────────────────────────────
-   예시 데이터 — 인증키 발급 후 실제 API 응답으로 교체
-   ──────────────────────────────────────────────── */
-const 분관 = ["심곡도서관","원미도서관","북부도서관","꿈빛도서관","책마루도서관",
-  "한울빛도서관","꿈여울도서관","상동도서관","송내도서관","도당도서관","오정도서관",
-  "동화도서관","역곡도서관","별빛마루도서관","수주도서관","역곡밝은도서관"];
+/* ══════════════════════════════════════════════════════════════
+   데이터 구간
+   · CASES[0]~[3] : 도서관 정보나루 Open API 실측값 (2026. 8. 18. 조회)
+                    bookExist — 16개 분관 × 4종 = 64건
+   · CASES[4],[5] : 관외 확장(2·3단계) 예시 — 실데이터 수집 예정
+   ══════════════════════════════════════════════════════════════ */
+const 기준일 = "2026. 8. 18.";
+const 내관   = "상동";
+
+/* 부천시립도서관 16곳 — 정보나루 도서관코드
+   ※ 타 지자체 적용 시 이 표만 교체하면 그대로 동작 (표준모델 핵심) */
+const LIB = {
+  "꿈빛":"141065",
+  "꿈여울":"141248",
+  "도당":"141583",
+  "동화":"141315",
+  "별빛마루":"141652",
+  "북부":"141056",
+  "상동":"141321",
+  "송내":"141559",
+  "수주":"141651",
+  "심곡":"141043",
+  "역곡":"141603",
+  "역곡밝은":"141660",
+  "오정":"141584",
+  "원미":"141535",
+  "책마루":"141115",
+  "한울빛":"141151"
+};
 
 const CASES = [
-  {
-    heard:"한강 채식 주위자 빌리고 싶어요",
-    fix:"‘채식 주위자’ → <b>채식주의자</b> 로 이해했습니다",
-    book:{t:"채식주의자", a:"한강 지음", p:"창비", y:"2007", isbn:"9788936434120"},
-    call:"813.7-한16ㅊ",
-    libs:[
-      {n:"한울빛도서관", s:"ok", loc:"2층 문학코너", note:"복본 2권 중 1권 대출 가능"},
-      {n:"별빛마루도서관", s:"ok", loc:"3층 종합자료실", note:""},
-      {n:"상동도서관", s:"busy", loc:"", note:"자주 가시는 도서관 · 반납 예정 8. 19."},
-      {n:"원미도서관", s:"busy", loc:"", note:"반납 예정 8. 21."},
-      {n:"책마루도서관", s:"busy", loc:"", note:"예약 2명 대기"},
-      {n:"그 밖 11개 분관", s:"none", loc:"", note:"미소장"}
-    ]
-  },
-  {
-    heard:"총균 쇠 그거 있나요",
-    fix:"‘총균 쇠’ → <b>총, 균, 쇠</b> (재레드 다이아몬드) 로 이해했습니다",
+  { real:true, tier:1, key:["나미야", "잡화점", "기적"],
+    heard:"나미야 잡화점의 기적 빌리고 싶어요",
+    fix:"‘나미야 잡화점’ → <b>나미야 잡화점의 기적</b> 으로 이해했습니다",
+    book:{t:"나미야 잡화점의 기적", a:"히가시노 게이고 지음", p:"현대문학", y:"2012", isbn:"9788972756194"},
+    bx:{"꿈빛": "ok", "꿈여울": "ok", "도당": "ok", "동화": "none", "별빛마루": "busy", "북부": "busy", "상동": "busy", "송내": "ok", "수주": "busy", "심곡": "ok", "역곡": "busy", "역곡밝은": "none", "오정": "ok", "원미": "ok", "책마루": "none", "한울빛": "ok"} },
+  { real:true, tier:1, key:["불편한", "편의점"],
+    heard:"불편한 편의점 있나요",
+    fix:"‘불편한 편의점’ → <b>불편한 편의점</b> (김호연) 으로 이해했습니다",
+    book:{t:"불편한 편의점", a:"김호연 지음", p:"나무옆의자", y:"2021", isbn:"9791161571188"},
+    bx:{"꿈빛": "ok", "꿈여울": "busy", "도당": "ok", "동화": "ok", "별빛마루": "ok", "북부": "busy", "상동": "busy", "송내": "ok", "수주": "ok", "심곡": "ok", "역곡": "none", "역곡밝은": "none", "오정": "none", "원미": "none", "책마루": "none", "한울빛": "none"} },
+  { real:true, tier:1, key:["소년이", "소년", "온다"],
+    heard:"한강 소년이 온다 찾아주세요",
+    fix:"‘한강 소년이 온다’ → <b>소년이 온다</b> 로 이해했습니다",
+    book:{t:"소년이 온다", a:"한강 지음", p:"창비", y:"2014", isbn:"9788936434120"},
+    bx:{"꿈빛": "ok", "꿈여울": "ok", "도당": "ok", "동화": "busy", "별빛마루": "busy", "북부": "busy", "상동": "ok", "송내": "ok", "수주": "ok", "심곡": "ok", "역곡": "busy", "역곡밝은": "busy", "오정": "ok", "원미": "ok", "책마루": "ok", "한울빛": "ok"} },
+  { real:true, tier:1, key:["설민석", "한국사", "대모험"],
+    heard:"설민석 한국사 대모험 있어요",
+    fix:"‘설민석 한국사’ → <b>설민석의 한국사 대모험</b> 으로 이해했습니다",
+    book:{t:"설민석의 한국사 대모험", a:"설민석 글", p:"아이휴먼", y:"", isbn:"9791195794799"},
+    bx:{"꿈빛": "ok", "꿈여울": "ok", "도당": "ok", "동화": "busy", "별빛마루": "busy", "북부": "ok", "상동": "ok", "송내": "busy", "수주": "none", "심곡": "busy", "역곡": "none", "역곡밝은": "none", "오정": "ok", "원미": "ok", "책마루": "ok", "한울빛": "ok"} },
+  { real:false, tier:2, key:["총","균","쇠","총균쇠"],
+    heard:"총 균 쇠 그거 있나요",
+    fix:"‘총 균 쇠’ → <b>총, 균, 쇠</b> (재레드 다이아몬드) 로 이해했습니다",
     book:{t:"총, 균, 쇠", a:"재레드 다이아몬드 지음", p:"문학사상", y:"2023", isbn:"9788970127248"},
-    call:"909-다69ㅊ",
+    scan:[
+      {n:"부천 관내 16개 분관", r:"소장 3곳 · 전부 대출 중", ok:false},
+      {n:"경기·인천 인접 지역", r:"3곳에서 발견", ok:true}
+    ], okN:3,
     libs:[
-      {n:"원미도서관", s:"ok", loc:"2층 인문사회실", note:"개정증보판"},
-      {n:"송내도서관", s:"ok", loc:"1층 일반자료실", note:""},
-      {n:"별빛마루도서관", s:"ok", loc:"3층", note:""},
-      {n:"상동도서관", s:"busy", loc:"", note:"반납 예정 8. 18."},
-      {n:"그 밖 12개 분관", s:"none", loc:"", note:"미소장"}
-    ]
-  },
-  {
+      {n:"인천 부평도서관", s:"ok", loc:"인천 부평구 · 3.2km", note:"책이음 신청 가능"},
+      {n:"광명시립하안도서관", s:"ok", loc:"경기 광명 · 5.8km", note:""},
+      {n:"김포시립도서관", s:"ok", loc:"경기 김포 · 12km", note:""},
+      {n:"부천 상동·원미·송내", s:"busy", loc:"", note:"관내 3곳 소장, 전부 대출 중"}
+    ] },
+  { real:false, tier:3, key:["온실","지구끝","지구","끝의"],
     heard:"지구 끝에 온실 찾아주세요",
     fix:"‘지구 끝에 온실’ → <b>지구 끝의 온실</b> 로 이해했습니다",
     book:{t:"지구 끝의 온실", a:"김초엽 지음", p:"자이언트북스", y:"2021", isbn:"9791165341909"},
-    call:"813.7-김814ㅈ",
-    libs:[{n:"부천 16개 분관 전체", s:"none", loc:"", note:"소장 자료 없음"}],
-    empty:true
-  }
+    scan:[
+      {n:"부천 관내 16개 분관", r:"소장 없음", ok:false},
+      {n:"경기·인천 인접 지역", r:"소장 없음", ok:false},
+      {n:"전국 참여 도서관", r:"6곳에서 발견", ok:true}
+    ], okN:6,
+    libs:[
+      {n:"국립세종도서관", s:"ok", loc:"세종특별자치시", note:"책바다 신청 가능"},
+      {n:"부산광역시립시민도서관", s:"ok", loc:"부산 부산진구", note:""},
+      {n:"대구광역시립중앙도서관", s:"ok", loc:"대구 중구", note:""},
+      {n:"그 밖 3곳", s:"ok", loc:"전국", note:""}
+    ] }
 ];
+
+const TIER = {
+  0:{name:"관내 보유", desc:"상동도서관에 지금 있음",
+     btn:"상동도서관에 보관 요청", cost:"즉시 · 당일", color:"ok"},
+  1:{name:"관내 상호대차", desc:"부천시립도서관 분관 간 이동",
+     btn:"상호대차 신청", cost:"무료 · 2~3일", color:"ok"},
+  2:{name:"책이음", desc:"전국 참여 도서관 상호대차",
+     btn:"책이음으로 신청", cost:"무료 · 3~5일", color:"mid"},
+  3:{name:"책바다", desc:"국가 상호대차 서비스",
+     btn:"책바다로 신청", cost:"실비 부담 · 5~7일", color:"far"}
+};
+
+/* 실데이터 케이스 → 화면용 구조로 변환 */
+function view(c){
+  if(c._v) return c._v;                       // 같은 객체를 돌려줘야 추천/목록 중복 제거가 동작
+  if(!c.real) return (c._v = {scan:c.scan, libs:c.libs});
+  const ok=[], busy=[], none=[];
+  Object.keys(LIB).forEach(n=>{
+    const s = c.bx[n] || 'none';
+    (s==='ok'?ok:s==='busy'?busy:none).push(n);
+  });
+  const libs = ok.concat(busy).map(n=>({n:n+'도서관', s:c.bx[n], code:LIB[n], loc:'', note:''}));
+  if(none.length) libs.push({n:'그 밖 '+none.length+'개 분관', s:'none', code:'',
+      loc:'', note:none.map(x=>x+'도서관').join(' · ')});
+  return (c._v = {
+    scan:[{n:'부천 관내 16개 분관',
+           r: ok.length ? ok.length+'곳 대출 가능' : '전부 대출 중',
+           ok: ok.length>0}],
+    libs, ok, busy, none
+  });
+}
 
 let cur = 0, rec = null;
 const $ = id => document.getElementById(id);
@@ -502,9 +624,13 @@ function startVoice(){
 function run(text, live){
   // 실제 음성이면 키워드로 예시 매칭
   if(live){
-    const t = text.replace(/\s/g,'');
-    cur = t.includes('채식') ? 0 : (t.includes('총') || t.includes('균') || t.includes('쇠')) ? 1
-        : (t.includes('온실') || t.includes('지구끝')) ? 2 : 0;
+    const t = text.replace(/[\s,.·]/g,'');
+    let hit = 0, score = 0;
+    CASES.forEach((c,i)=>{
+      const n = c.key.filter(k => t.indexOf(k) >= 0).length;
+      if(n > score){ score = n; hit = i; }
+    });
+    cur = hit;
   }
   const c = CASES[cur];
   const heard = live ? text : c.heard;
@@ -517,71 +643,105 @@ function run(text, live){
                    $('heard').textContent = '“' + heard + '”'; }, 250);
   setTimeout(()=>{ $('w1').className='stp done'; $('w2').className='stp on';
                    $('fixed').innerHTML = c.fix; }, 1250);
-  setTimeout(()=>{ $('w2').className='stp done'; $('w3').className='stp on'; }, 2350);
-  setTimeout(()=>{ $('w3').className='stp done'; result(); }, 3450);
+  setTimeout(()=>{ $('w2').className='stp done'; $('w3').className='stp on';
+                   $('scan').innerHTML=''; }, 2350);
+  const SCAN = view(c).scan;
+  SCAN.forEach((s,i)=>{
+    setTimeout(()=>{
+      const d=document.createElement('div');
+      d.className='scanrow '+(s.ok?'hit':'miss');
+      d.innerHTML=`<span class="sn">${s.n}</span><span class="sr">${s.ok?'✓ ':''}${s.r}</span>`;
+      $('scan').appendChild(d);
+    }, 2600 + i*750);
+  });
+  const 끝 = 2600 + SCAN.length*750 + 500;
+  setTimeout(()=>{ $('w3').className='stp done'; result(); }, 끝);
+}
+
+function eff(c){ return (c.real && c.bx[내관] === 'ok') ? 0 : c.tier; }
+
+function best(c){
+  const V = view(c);
+  const okL = V.libs.filter(l => l.s === 'ok');
+  if(eff(c) === 0) return okL.find(l => l.n === 내관 + '도서관') || okL[0];
+  return okL.find(l => l.n !== 내관 + '도서관') || okL[0];
 }
 
 function result(){
-  const c = CASES[cur];
-  const best = c.libs.find(l => l.s === 'ok');
-  const okN = c.libs.filter(l => l.s === 'ok').length;
-  const busyN = c.libs.filter(l => l.s === 'busy').length;
+  const c = CASES[cur], V = view(c), t = eff(c), T = TIER[t];
+  const bt = best(c);
+  const okN = c.okN || V.libs.filter(l => l.s === 'ok').length;
 
   let h = `
     <div class="bookcard">
       <div class="cover">${c.book.t}</div>
       <div class="meta">
         <h3>${c.book.t}</h3>
-        <p class="au">${c.book.a} · ${c.book.p} (${c.book.y})</p>
+        <p class="au">${c.book.a}${c.book.p ? ' · ' + c.book.p : ''}${c.book.y ? ' (' + c.book.y + ')' : ''}</p>
         <p class="isbn">ISBN ${c.book.isbn}</p>
       </div>
+    </div>
+
+    <div class="srcbar ${c.real ? 'real' : 'demo'}">
+      ${c.real
+        ? `<b>정보나루 실데이터</b> · ${기준일} 조회 · 16개 분관 전수 확인<br>
+           <span class="s2">대출 상태는 조회일 <b>전일</b> 기준입니다 (Open API 사양)</span>`
+        : `<b>예시 데이터</b> · 관외 확장(2·3단계) 구간<br>
+           <span class="s2">관내 16개 분관은 실데이터로 동작합니다</span>`}
+    </div>
+
+    <div class="tierbar">
+      <span class="tb ${T.color}">${t === 0 ? '관내 보유' : t + '단계'}</span>
+      <div class="ti">
+        <div class="tn">${T.name}</div>
+        <div class="td">${T.desc}</div>
+      </div>
+      <div class="tc">${T.cost.split(' · ')[0]}<br>${T.cost.split(' · ')[1]}</div>
     </div>`;
 
-  if(c.empty){
-    h += `<div class="sumline">부천 관내 <b>16개 분관 모두 소장하지 않은</b> 자료입니다.<br>
-          아래 방법으로 이용하실 수 있습니다.</div>
-      <div class="sec-t">이용 방법</div>
-      <div class="lib"><div class="r1"><div class="nm">책이음 상호대차</div>
-        <span class="badge b-ok">신청 가능</span></div>
-        <div class="r2">전국 참여 도서관에서 빌려 부천으로 받습니다</div></div>
-      <div class="lib"><div class="r1"><div class="nm">희망도서 신청</div>
-        <span class="badge b-ok">신청 가능</span></div>
-        <div class="r2">도서관이 구입해 우선 대출해 드립니다</div></div>
-      <button class="cta" id="apply">책이음으로 신청하기</button>
-      <button class="cta ghost" onclick="reset()">다시 검색</button>
-      <p class="caution">예시 화면입니다. 실제 신청은 이루어지지 않습니다.</p>`;
+  if(t === 0){
+    h += `<div class="sumline">자주 가시는 <b>${내관}도서관에 지금 있습니다.</b>
+      상호대차 없이 바로 빌리실 수 있어요. <br><span class="s2">관내 ${okN}곳에서 대출 가능합니다.</span></div>`;
+  } else if(t === 1){
+    const mine = c.real ? (c.bx[내관] || 'none') : 'busy';
+    h += `<div class="sumline">자주 가시는 <b>${내관}도서관은 ${mine === 'busy' ? '대출 중' : '소장하지 않아'}</b>${mine === 'busy' ? '이지만' : '서'},
+      <b>${okN}개 분관</b>에서 지금 빌리실 수 있어요.</div>`;
+  } else if(t === 2){
+    h += `<div class="sumline"><b>부천 관내는 전부 대출 중</b>이라,
+      가까운 <b>경기·인천 ${okN}곳</b>을 찾았어요.</div>`;
   } else {
-    const home = c.libs.find(l => l.n === '상동도서관');
-    const homeTx = !home ? `자주 가시는 <b>상동도서관에는 없지만</b>, `
-                 : home.s === 'busy' ? `자주 가시는 <b>상동도서관은 대출 중</b>이지만, `
-                 : '';
-    h += `<div class="sumline">
-        ${homeTx}<b>${okN}개 분관</b>에서 지금 빌리실 수 있어요.
-        ${busyN ? `대출 중인 곳은 ${busyN}곳입니다.` : ''}
-      </div>
-      <div class="sec-t">추천</div>
-      <div class="lib best">
-        <span class="pick">가장 빠름</span>
-        <div class="r1"><div class="nm">${best.n}</div>
-          <span class="badge b-ok">대출 가능</span></div>
-        <div class="r2">청구기호 <code>${c.call}</code>${best.loc ? ' · ' + best.loc : ''}
-          ${best.note ? '<br>' + best.note : ''}</div>
-      </div>
-      <div class="sec-t">분관별 현황</div>`;
-    c.libs.forEach((l,i) => {
-      if(i === 0 && l === best) return;
-      const b = l.s==='ok' ? '<span class="badge b-ok">대출 가능</span>'
-             : l.s==='busy' ? '<span class="badge b-busy">대출 중</span>'
-             : '<span class="badge b-none">미소장</span>';
-      const d = l.s==='ok' ? `청구기호 <code>${c.call}</code>${l.loc?' · '+l.loc:''}`
-             : (l.note || '');
-      h += `<div class="lib"><div class="r1"><div class="nm">${l.n}</div>${b}</div>
-            ${d ? `<div class="r2">${d}</div>` : ''}</div>`;
-    });
-    h += `<button class="cta" id="apply">${best.n}에서 상호대차 신청</button>
-      <button class="cta ghost" onclick="reset()">다시 검색</button>
-      <p class="caution">예시 화면입니다. 실제 신청은 이루어지지 않습니다.</p>`;
+    h += `<div class="sumline">부천과 인근에는 없어서
+      <b>전국에서 ${okN}곳</b>을 찾았어요.</div>`;
   }
+
+  const tag = t === 0 ? '바로 이용' : (t === 1 ? '가장 빠름' : '가장 가까움');
+  h += `<div class="sec-t">추천</div>
+    <div class="lib best">
+      <span class="pick">${tag}</span>
+      <div class="r1"><div class="nm">${bt.n}</div>
+        <span class="badge b-ok">대출 가능</span></div>
+      <div class="r2">${bt.code ? `도서관코드 <code>${bt.code}</code>` : ''}${bt.loc ? (bt.code ? ' · ' : '') + bt.loc : ''}
+        ${bt.note ? '<br>' + bt.note : ''}</div>
+    </div>
+    <div class="sec-t">${c.real ? '분관별 현황 (16곳 전수)' : '그 밖에 찾은 곳'}</div>`;
+
+  V.libs.forEach(l => {
+    if(l === bt) return;
+    const bd = l.s === 'ok' ? '<span class="badge b-ok">대출 가능</span>'
+             : l.s === 'busy' ? '<span class="badge b-busy">대출 중</span>'
+             : '<span class="badge b-none">미소장</span>';
+    const me = (l.n === 내관 + '도서관') ? '<span class="mytag">자주 가는 곳</span>' : '';
+    let d = '';
+    if(l.code) d = `도서관코드 <code>${l.code}</code>`;
+    if(l.loc)  d += (d ? ' · ' : '') + l.loc;
+    if(l.note) d += (d ? '<br>' : '') + l.note;
+    h += `<div class="lib"><div class="r1"><div class="nm">${l.n}${me}</div>${bd}</div>
+          ${d ? `<div class="r2">${d}</div>` : ''}</div>`;
+  });
+
+  h += `<button class="cta" id="apply">${T.btn}</button>
+    <button class="cta ghost" onclick="reset()">다시 검색</button>
+    <p class="caution">시연 화면입니다. 실제 신청은 이루어지지 않습니다.</p>`;
 
   $('s-result').innerHTML = h;
   show('s-result');
@@ -589,13 +749,13 @@ function result(){
 }
 
 function openSheet(){
-  const c = CASES[cur];
-  const best = c.libs.find(l => l.s === 'ok');
+  const c = CASES[cur], t = eff(c), T = TIER[t], bt = best(c);
   $('sheetkv').innerHTML = `
     <div class="kv"><div class="k">도서</div><div class="v">${c.book.t}</div></div>
-    <div class="kv"><div class="k">${c.empty?'경로':'대출 도서관'}</div>
-      <div class="v">${c.empty ? '책이음 (전국 상호대차)' : best.n}</div></div>
-    <div class="kv"><div class="k">수령 도서관</div><div class="v">상동도서관</div></div>
+    <div class="kv"><div class="k">신청 방식</div><div class="v">${T.name}</div></div>
+    <div class="kv"><div class="k">${t === 0 ? '보관 도서관' : '대출 도서관'}</div><div class="v">${bt.n}</div></div>
+    <div class="kv"><div class="k">수령 도서관</div><div class="v">${내관}도서관</div></div>
+    <div class="kv"><div class="k">예상 소요</div><div class="v">${T.cost}</div></div>
     <div class="kv"><div class="k">신청자</div><div class="v">홍○○ (회원번호 ****1234)</div></div>`;
   $('sheet').classList.add('on');
 }
@@ -603,16 +763,17 @@ function closeSheet(){ $('sheet').classList.remove('on'); }
 
 $('confirm').onclick = () => {
   closeSheet();
-  const c = CASES[cur];
-  const best = c.libs.find(l => l.s === 'ok');
-  $('donetx').innerHTML = c.empty
-    ? '책이음으로 신청되었습니다.<br>도착하면 문자로 알려드립니다.'
-    : `<b>${best.n}</b>의 자료를 <b>상동도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`;
+  const c = CASES[cur], t = eff(c), T = TIER[t], bt = best(c);
+  $('donetx').innerHTML = (t === 0)
+    ? `<b>${내관}도서관</b> 대출대에 보관 요청했습니다.<br>오늘 중 방문하시면 바로 받으실 수 있습니다.`
+    : `<b>${T.name}</b>으로 신청되었습니다.<br>` +
+      `<b>${bt.n}</b>의 자료를 <b>${내관}도서관</b>으로 옮기는 중입니다.<br>` +
+      `도착하면 문자로 알려드립니다.`;
   $('recap').innerHTML = `
     <div class="kv"><div class="k">도서</div><div class="v">${c.book.t}</div></div>
-    <div class="kv"><div class="k">수령 도서관</div><div class="v">상동도서관</div></div>
-    <div class="kv"><div class="k">예상 도착</div><div class="v">2~3일 이내</div></div>
-    <div class="kv"><div class="k">접수번호</div><div class="v">ILL-2026-0816-0037</div></div>`;
+    <div class="kv"><div class="k">수령 도서관</div><div class="v">${내관}도서관</div></div>
+    <div class="kv"><div class="k">예상 도착</div><div class="v">${T.cost.split(' · ')[1]}</div></div>
+    <div class="kv"><div class="k">접수번호</div><div class="v">ILL-2026-0818-0037</div></div>`;
   show('s-done');
 };
 

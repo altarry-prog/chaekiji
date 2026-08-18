@@ -43,9 +43,11 @@ body{
 }
 .top .row{display:flex;align-items:center;gap:9px}
 .logo{
-  width:31px;height:31px;border-radius:9px;background:rgba(255,255,255,.19);
-  display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;
+  width:34px;height:34px;border-radius:10px;background:#fff;
+  display:flex;align-items:center;justify-content:center;flex:none;
+  box-shadow:0 1px 3px rgba(0,0,0,.14);
 }
+.logo svg{width:25px;height:auto;display:block}
 .top h1{margin:0;font-size:16.5px;font-weight:700;letter-spacing:-.4px}
 .top .sub{margin:1px 0 0;font-size:11.5px;opacity:.82}
 .demo-tag{
@@ -300,7 +302,16 @@ body{
   <div class="top">
     <span class="demo-tag">시안</span>
     <div class="row">
-      <div class="logo">📚</div>
+      <div class="logo">
+          <!-- 부천시립도서관 공식 심벌 (CI 원본에서 좌표 실측) -->
+          <svg viewBox="316 67 237 159" xmlns="http://www.w3.org/2000/svg" role="img"
+               aria-label="부천시립도서관">
+            <path fill="#3F3E39" fill-rule="evenodd"
+                  d="M406 67h147v159H406V67Zm46 0h55v45h-55V67Zm0 85h55v34h-55v-34Z"/>
+            <circle cx="376.5" cy="150.5" r="60.5" fill="#F3C836"/>
+            <path fill="#fff" d="M354 112h27v50h25v24h-52z"/>
+          </svg>
+        </div>
       <div>
         <h1>책이지</h1>
         <p class="sub">부천시립도서관 · 말로 찾는 도서 안내</p>

@@ -39,7 +39,7 @@ body{
 
 /* ── 헤더 ── */
 .top{
-  background:var(--brand);color:#fff;padding:16px 18px 15px;flex:none;position:relative;
+  background:var(--brand);color:#fff;padding:14px 18px 46px;flex:none;position:relative;
 }
 .top .row{display:flex;align-items:center;gap:9px}
 .logo{
@@ -329,6 +329,32 @@ body{
 }
 .restrow:last-child{border-bottom:none}
 .restrow .rn{font-weight:700;letter-spacing:-.2px}
+
+/* ── 접근 기능 ── */
+.atools{position:absolute;left:18px;right:13px;bottom:9px;display:flex;gap:6px;justify-content:flex-end}
+.atools button{
+  border:1.4px solid rgba(255,255,255,.45);background:rgba(255,255,255,.13);color:#fff;
+  border-radius:9px;padding:3px 9px;font-size:12px;font-weight:700;font-family:inherit;
+  cursor:pointer;line-height:1.5;
+}
+.atools button.on{background:#fff;color:var(--brand-d);border-color:#fff}
+body.bigmode .body{zoom:1.18}
+body.bigmode .foot{font-size:12px}
+.axcard{
+  background:#fff;border:1.4px dashed #b9c6c2;border-radius:12px;
+  padding:11px 13px;margin-top:12px;
+}
+.axcard .axt{font-size:11px;font-weight:800;color:var(--brand-d);letter-spacing:.04em;margin-bottom:7px}
+.axcard .axrow{font-size:12px;color:var(--ink2);line-height:1.6;padding:2px 0}
+.kv .v .vs{display:block;font-size:11px;color:var(--ink3);font-weight:400;margin-top:1px}
+
+.langgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:6px 0 4px}
+.langgrid button{
+  border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px 8px;
+  font-size:13.5px;font-family:inherit;cursor:pointer;font-weight:700;color:var(--ink);
+}
+.langgrid button.on{border-color:var(--brand);background:var(--brand-l);color:var(--brand-d)}
+.langgrid button small{display:block;font-weight:400;font-size:10.5px;color:var(--ink3);margin-top:1px}
 </style>
 </head>
 <body>
@@ -336,6 +362,11 @@ body{
 
   <div class="top">
     <span class="demo-tag">시안</span>
+    <div class="atools">
+      <button id="bigbtn" aria-label="큰글자 모드">가＋</button>
+      <button id="ttsbtn" aria-label="음성 안내">🔊 음성안내</button>
+      <button id="langbtn" aria-label="언어 선택">🌏 한국어</button>
+    </div>
     <div class="row">
       <div class="logo">
           <!-- 부천시립도서관 공식 심벌 (CI 원본에서 좌표 실측) -->
@@ -360,19 +391,19 @@ body{
     <div class="screen on" id="s-idle">
       <div class="err" id="micerr"></div>
       <div class="hi">
-        <h2>찾으시는 책,<br>말씀만 하세요</h2>
-        <p>제목이 정확하지 않아도 괜찮습니다</p>
+        <h2 id="hero1">찾으시는 책,<br>말씀만 하세요</h2>
+        <p id="hero2">제목이 정확하지 않아도 괜찮습니다</p>
       </div>
       <div class="micwrap">
         <button class="mic" id="micbtn" aria-label="음성으로 검색">🎙️</button>
       </div>
-      <div class="orsplit">또는 직접 입력</div>
+      <div class="orsplit" id="orsp">또는 직접 입력</div>
       <div class="tin">
         <input id="tinput" placeholder="예: 나미야 잡화점" autocomplete="off">
         <button id="tgo">검색</button>
       </div>
       <div class="chips">
-        <div class="lbl">눌러서 바로 보기</div>
+        <div class="lbl" id="chiplbl">눌러서 바로 보기</div>
         <button class="chip" data-case="0">
           “<b>한강 소년이 온다</b> 찾아주세요”
           <span class="m">① 상동도서관에 있음 → 바로 이용<em class="lv">실데이터</em></span>
@@ -395,8 +426,8 @@ body{
     <div class="screen" id="s-listen">
       <div class="listen">
         <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        <h3>듣고 있어요</h3>
-        <p>편하게 말씀하세요</p>
+        <h3 id="lst1">듣고 있어요</h3>
+        <p id="lst2">편하게 말씀하세요</p>
         <button class="stopbtn" id="stopbtn">그만하기</button>
       </div>
     </div>
@@ -448,9 +479,20 @@ body{
   </div>
 
   <div class="foot">
-    자주 가는 곳 → 관내 → 전국 3단계 판단 · <b>도서관코드 표만 교체하면 타 지자체 적용</b><br>
+    3단계 판단 · 조회: 정보나루 전국 규격 / <b>실행: MCP 커넥터 — 시스템(알파스 등) 단위 확산</b><br>
+    큰글자·음성안내·<b>10개 언어</b> 단추 제공 · 대체자료 매칭·책나래·전화 모드는 확장 설계<br>
     소장·대출 정보 출처 : 도서관 정보나루 Open API (2026. 8. 18. 조회, 전일 기준)<br>
     2026. 8. 부천시립도서관 · 화면 시안
+  </div>
+
+  <!-- 언어 선택 -->
+  <div class="sheet" id="lsheet">
+    <div class="sheet-in">
+      <h3>언어 선택 · Language</h3>
+      <p class="p">음성 인식과 음성 안내 언어가 바뀝니다 · 화면 정보는 한국어로 표시됩니다(시안)</p>
+      <div class="langgrid" id="langgrid"></div>
+      <button class="cta ghost" onclick="document.getElementById('lsheet').classList.remove('on')">닫기</button>
+    </div>
   </div>
 
   <!-- 신청 확인 -->
@@ -486,7 +528,7 @@ const LIB = {
 };
 
 const CASES = [
-  { real:true, key:["소년이","소년","온다"],
+  { real:true, key:["소년이","소년","온다","humanacts","少年"],
     heard:"한강 소년이 온다 찾아주세요",
     fix:"‘한강 소년이 온다’ → <b>소년이 온다</b> 로 이해했습니다",
     book:{t:"소년이 온다", a:"한강 지음", p:"창비", y:"2014", isbn:"9788936434120"},
@@ -494,7 +536,7 @@ const CASES = [
         "상동":"ok","송내":"ok","수주":"ok","심곡":"ok","역곡":"busy","역곡밝은":"busy",
         "오정":"ok","원미":"ok","책마루":"ok","한울빛":"ok"} },
 
-  { real:true, key:["나미야","잡화점","기적"],
+  { real:true, key:["나미야","잡화점","기적","namiya","ナミヤ","雑貨店","解忧杂货店","纳米亚","namiya","tạphóa","นามิยะ","намия","miracle"],
     heard:"나미야 잡화점의 기적 빌리고 싶어요",
     fix:"‘나미야 잡화점’ → <b>나미야 잡화점의 기적</b> 으로 이해했습니다",
     book:{t:"나미야 잡화점의 기적", a:"히가시노 게이고 지음 · 양윤옥 옮김", p:"현대문학", y:"2012", isbn:"9788972756194"},
@@ -502,7 +544,7 @@ const CASES = [
         "상동":"busy","송내":"ok","수주":"busy","심곡":"ok","역곡":"busy","역곡밝은":"none",
         "오정":"ok","원미":"ok","책마루":"none","한울빛":"ok"} },
 
-  { real:false, tier:2, key:["온실","지구끝","지구","끝의"],
+  { real:false, tier:2, key:["온실","지구끝","지구","끝의","greenhouse","温室"],
     heard:"지구 끝에 온실 찾아주세요",
     fix:"‘지구 끝에 온실’ → <b>지구 끝의 온실</b> 로 이해했습니다",
     book:{t:"지구 끝의 온실", a:"김초엽 지음", p:"자이언트북스", y:"2021", isbn:"9791191824001"},
@@ -519,7 +561,7 @@ const CASES = [
       {n:"그 밖 3곳", s:"ok", loc:"전국", note:"대구·광주·대전"}
     ] },
 
-  { real:true, key:["불편한","편의점"],
+  { real:true, key:["불편한","편의점","convenience","便利店","コンビニ"],
     heard:"불편한 편의점 있나요",
     fix:"‘불편한 편의점’ → <b>불편한 편의점</b> (김호연) 으로 이해했습니다",
     book:{t:"불편한 편의점", a:"김호연 지음", p:"나무옆의자", y:"2021", isbn:"9791161571188"},
@@ -585,7 +627,80 @@ function view(c){
   return (c._v = {tier, scan, libs, okN: ok.length + (mine==='ok'?1:0)});
 }
 
-let cur = 0, rec = null;
+const LANGS = {
+  ko:{n:'한국어',   rec:'ko-KR', tts:'ko-KR'},
+  en:{n:'English',  rec:'en-US', tts:'en-US',
+      s:{h1:"Just say the book<br>you're looking for", h2:"The title doesn't have to be exact",
+         or:'or type it', ph:'e.g., Namiya General Store', go:'Search', lbl:'Tap to try examples',
+         l1:'Listening…', l2:'Speak naturally', st:'Stop'},
+      m:{res:(t,l)=>`Search result: ${t}. Recommended library: ${l}. Tap the green button to request an interlibrary loan.`,
+         sh:(t,l)=>`Please confirm. Book ${t}, from ${l}. Tap Yes to submit.`, dn:()=>`Your request has been submitted.`}},
+  zh:{n:'中文',     rec:'zh-CN', tts:'zh-CN',
+      s:{h1:'想找的书，<br>说出来就行', h2:'书名不必完全准确', or:'或直接输入', ph:'例：解忧杂货店',
+         go:'搜索', lbl:'点击查看示例', l1:'正在听…', l2:'请自然地说', st:'停止'},
+      m:{res:(t,l)=>`搜索结果：${t}。推荐图书馆：${l}。点击绿色按钮申请馆际互借。`,
+         sh:(t,l)=>`请确认申请内容。图书 ${t}，从 ${l} 借出。`, dn:()=>`申请已受理。`}},
+  ja:{n:'日本語',   rec:'ja-JP', tts:'ja-JP',
+      s:{h1:'探している本を<br>話すだけ', h2:'正確なタイトルでなくても大丈夫', or:'または入力', ph:'例：ナミヤ雑貨店',
+         go:'検索', lbl:'例を見る', l1:'聞いています…', l2:'自然に話してください', st:'停止'},
+      m:{res:(t,l)=>`検索結果：${t}。おすすめの図書館：${l}。緑のボタンで相互貸借を申請できます。`,
+         sh:(t,l)=>`申請内容をご確認ください。${t}、${l}から取り寄せます。`, dn:()=>`申請を受け付けました。`}},
+  vi:{n:'Tiếng Việt', rec:'vi-VN', tts:'vi-VN',
+      s:{h1:'Chỉ cần nói tên sách<br>bạn muốn tìm', h2:'Không cần nói chính xác tên sách', or:'hoặc nhập',
+         ph:'VD: Tiệm tạp hóa Namiya', go:'Tìm', lbl:'Chạm để xem ví dụ', l1:'Đang nghe…', l2:'Hãy nói tự nhiên', st:'Dừng'},
+      m:{res:(t,l)=>`Kết quả: ${t}. Thư viện đề xuất: ${l}. Nhấn nút xanh để đăng ký mượn liên thư viện.`,
+         sh:(t,l)=>`Vui lòng xác nhận. Sách ${t}, từ ${l}.`, dn:()=>`Đã tiếp nhận yêu cầu.`}},
+  th:{n:'ไทย',      rec:'th-TH', tts:'th-TH',
+      s:{h1:'อยากได้เล่มไหน<br>พูดได้เลย', h2:'ชื่อหนังสือไม่ต้องเป๊ะก็ได้', or:'หรือพิมพ์', ph:'เช่น ร้านนามิยะ',
+         go:'ค้นหา', lbl:'แตะเพื่อดูตัวอย่าง', l1:'กำลังฟัง…', l2:'พูดได้ตามสบาย', st:'หยุด'},
+      m:{res:(t,l)=>`ผลการค้นหา: ${t} ห้องสมุดแนะนำ: ${l} กดปุ่มสีเขียวเพื่อยืมระหว่างห้องสมุด`,
+         sh:(t,l)=>`โปรดยืนยัน: ${t} จาก ${l}`, dn:()=>`รับคำขอแล้ว`}},
+  ru:{n:'Русский',  rec:'ru-RU', tts:'ru-RU',
+      s:{h1:'Просто скажите,<br>какую книгу ищете', h2:'Название может быть неточным', or:'или введите',
+         ph:'Напр.: лавка Намия', go:'Поиск', lbl:'Примеры', l1:'Слушаю…', l2:'Говорите свободно', st:'Стоп'},
+      m:{res:(t,l)=>`Результат: ${t}. Рекомендуемая библиотека: ${l}. Нажмите зелёную кнопку для заказа.`,
+         sh:(t,l)=>`Подтвердите: ${t}, из ${l}.`, dn:()=>`Заявка принята.`}},
+  mn:{n:'Монгол',   rec:'mn-MN', tts:'mn-MN',
+      s:{h1:'Хайж буй номоо<br>хэлэхэд л хангалттай', h2:'Нэр нь яг таг байх шаардлагагүй', or:'эсвэл бичнэ үү',
+         ph:'Ж: Намия дэлгүүр', go:'Хайх', lbl:'Жишээ үзэх', l1:'Сонсож байна…', l2:'Чөлөөтэй ярина уу', st:'Зогсоох'},
+      m:{res:(t,l)=>`Хайлтын үр дүн: ${t}. Санал болгох номын сан: ${l}. Ногоон товчийг дарна уу.`,
+         sh:(t,l)=>`Баталгаажуулна уу: ${t}, ${l}-аас.`, dn:()=>`Хүсэлт хүлээн авлаа.`}},
+  uz:{n:"O'zbekcha", rec:'uz-UZ', tts:'uz-UZ',
+      s:{h1:"Qidirayotgan kitobingizni<br>ayting, bo'ldi", h2:"Nomi aniq bo'lishi shart emas", or:'yoki yozing',
+         ph:"Masalan: Namiya do'koni", go:'Qidirish', lbl:'Namunalar', l1:'Eshityapman…', l2:'Bemalol gapiring', st:"To'xtatish"},
+      m:{res:(t,l)=>`Natija: ${t}. Tavsiya etilgan kutubxona: ${l}. Yashil tugmani bosing.`,
+         sh:(t,l)=>`Tasdiqlang: ${t}, ${l}dan.`, dn:()=>`So'rov qabul qilindi.`}},
+  id:{n:'Bahasa Indonesia', rec:'id-ID', tts:'id-ID',
+      s:{h1:'Sebutkan saja buku<br>yang Anda cari', h2:'Judul tidak harus persis', or:'atau ketik',
+         ph:'cth: Toko Kelontong Namiya', go:'Cari', lbl:'Ketuk untuk contoh', l1:'Mendengarkan…', l2:'Bicara saja dengan santai', st:'Berhenti'},
+      m:{res:(t,l)=>`Hasil: ${t}. Perpustakaan yang disarankan: ${l}. Tekan tombol hijau untuk meminjam.`,
+         sh:(t,l)=>`Mohon konfirmasi: ${t}, dari ${l}.`, dn:()=>`Permintaan diterima.`}},
+};
+let L = LANGS.ko;
+const KO_S = {h1:'찾으시는 책,<br>말씀만 하세요', h2:'제목이 정확하지 않아도 괜찮습니다', or:'또는 직접 입력',
+  ph:'예: 나미야 잡화점', go:'검색', lbl:'눌러서 바로 보기', l1:'듣고 있어요', l2:'편하게 말씀하세요', st:'그만하기'};
+function applyLang(code){
+  L = LANGS[code] || LANGS.ko;
+  const s = L.s || KO_S;
+  $('hero1').innerHTML = s.h1; $('hero2').textContent = s.h2;
+  $('orsp').textContent = s.or; $('tinput').placeholder = s.ph;
+  $('tgo').textContent = s.go; $('chiplbl').textContent = s.lbl;
+  $('lst1').textContent = s.l1; $('lst2').textContent = s.l2;
+  $('stopbtn').textContent = s.st;
+  $('langbtn').textContent = '🌏 ' + L.n;
+  document.querySelectorAll('#langgrid button').forEach(b =>
+    b.classList.toggle('on', b.dataset.lang === code));
+}
+let cur = 0, rec = null, TTS_ON = false;
+function say(t){
+  if(!TTS_ON || !window.speechSynthesis) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = L.tts; u.rate = 0.95;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
 const $ = id => document.getElementById(id);
 const show = id => {
   document.querySelectorAll('.screen').forEach(e => e.classList.remove('on'));
@@ -635,7 +750,7 @@ function startVoice(){
   if(!showDiag(true)) return;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   rec = new SR();
-  rec.lang = 'ko-KR'; rec.interimResults = false; rec.maxAlternatives = 1;
+  rec.lang = L.rec; rec.interimResults = false; rec.maxAlternatives = 1;
   rec.onstart = () => { $('micbtn').classList.add('live'); show('s-listen'); };
   rec.onresult = e => run(e.results[0][0].transcript, true);
   rec.onerror = e => {
@@ -652,10 +767,10 @@ function startVoice(){
 /* ── 처리 흐름 ── */
 function run(text, live){
   if(live){
-    const t = text.replace(/[\s,.·]/g,'');
+    const t = text.replace(/[\s,.·'’-]/g,'').toLowerCase();
     let hit = 0, score = 0;
     CASES.forEach((c,i)=>{
-      const n = c.key.filter(k => t.indexOf(k) >= 0).length;
+      const n = c.key.filter(k => t.indexOf(k.toLowerCase()) >= 0).length;
       if(n > score){ score = n; hit = i; }
     });
     cur = hit;
@@ -668,7 +783,8 @@ function run(text, live){
 
   setTimeout(()=>{ $('w1').className='stp on'; $('heard').textContent = '“'+heard+'”'; }, 250);
   setTimeout(()=>{ $('w1').className='stp done'; $('w2').className='stp on';
-                   $('fixed').innerHTML = c.fix; }, 1250);
+                   $('fixed').innerHTML = c.fix;
+                   if(!L.m) say(`${c.book.t}로 이해했습니다. 가까운 곳부터 확인하고 있습니다.`); }, 1250);
   setTimeout(()=>{ $('w2').className='stp done'; $('w3').className='stp on';
                    $('scan').innerHTML=''; }, 2350);
 
@@ -764,12 +880,32 @@ function result(){
     h += `</div>`;
   }
 
-  h += `<button class="cta ghost" onclick="reset()">다시 검색</button>
+  h += `<div class="axcard">
+      <div class="axt">이용자 조건에 따른 입구 · 확장 설계</div>
+      <div class="axrow">🎧 대체자료 함께 찾기 — 오디오북·점자·큰활자 (국가서지 대체자료목록 연계)</div>
+      <div class="axrow">🚚 책나래 우편 수령 — 거동불편·장애 이용자는 자택 배송으로 분기</div>
+      <div class="axrow">📞 전화 한 통 모드 — 대표번호로 같은 상담·신청 (화면 불필요)</div>
+      <div class="axrow">🌏 다국어 음성 — 10개 언어 인식·안내 <b>(동작 — 헤더 🌏 단추)</b></div>
+    </div>
+    <button class="cta ghost" onclick="reset()">다시 검색</button>
     <p class="caution">시연 화면입니다. 실제 신청은 이루어지지 않습니다.</p>`;
 
   $('s-result').innerHTML = h;
   show('s-result');
   $('apply').onclick = openSheet;
+  {
+    const plain = document.createElement('div'); plain.innerHTML = h;
+    const sum = plain.querySelector('.sumline');
+    const sumTx = sum ? sum.textContent.replace(/\s+/g,' ').trim() : '';
+    if(L.m){ say(L.m.res(c.book.t, bt.n)); }
+    else {
+      let guide;
+      if(V.tier === 0)      guide = `추천 도서관은 ${bt.n}입니다. 방문하시면 바로 빌리실 수 있습니다.`;
+      else if(V.tier === 1) guide = `추천 도서관은 ${bt.n}입니다. 신청하시려면 화면 가운데의 상호대차 신청 단추를 눌러 주세요.`;
+      else                  guide = `책바다로 신청하시려면 화면 가운데의 신청 단추를 눌러 주세요.`;
+      say(`검색 결과입니다. ${c.book.t}, ${c.book.a}. ${sumTx} ${guide} 다시 검색하시려면 아래쪽 다시 검색 단추를 누르시면 됩니다.`);
+    }
+  }
   if($('foldbtn')) $('foldbtn').onclick = function(){
     const r = $('rest'), on = r.classList.toggle('on');
     this.innerHTML = on ? '접기 －' : `그 외 ${rest.length}곳 현황 보기 ＋`;
@@ -786,8 +922,14 @@ function openSheet(){
     <div class="kv"><div class="k">${V.tier === 0 ? '보관 도서관' : '대출 도서관'}</div><div class="v">${bt.n}</div></div>
     <div class="kv"><div class="k">수령 도서관</div><div class="v">${NM(내관)}</div></div>
     <div class="kv"><div class="k">예상 소요</div><div class="v">${T.c1} · ${T.c2}</div></div>
+    <div class="kv"><div class="k">수령 방법</div><div class="v">${NM(내관)} 방문
+      <span class="vs">거동불편·장애 이용자는 책나래 우편 수령 선택 (확장 설계)</span></div></div>
+    <div class="kv"><div class="k">처리 경로</div><div class="v">도서관리시스템 커넥터(MCP)
+      <span class="vs">동일 시스템(알파스 등) 사용 도서관은 커넥터 재사용</span></div></div>
     <div class="kv"><div class="k">신청자</div><div class="v">홍○○ (회원번호 ****1234)</div></div>`;
   $('sheet').classList.add('on');
+  if(L.m) say(L.m.sh(c.book.t, bt.n));
+  else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, ${V.tier === 0 ? '보관' : '대출'} 도서관 ${bt.n}, 수령 도서관 ${NM(내관)}, 예상 소요 ${T.c2}. 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`);
 }
 function closeSheet(){ $('sheet').classList.remove('on'); }
 
@@ -804,14 +946,40 @@ $('confirm').onclick = () => {
     <div class="kv"><div class="k">예상 도착</div><div class="v">${T.c2}</div></div>
     <div class="kv"><div class="k">접수번호</div><div class="v">ILL-2026-0819-0037</div></div>`;
   show('s-done');
+  if(L.m) say(L.m.dn());
+  else say(V.tier === 0 ? `${bt.n} 대출대에 보관 요청했습니다.` :
+      `${T.name}으로 신청되었습니다. 도착하면 문자로 알려드립니다.`);
 };
 
 function reset(){
+  if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){}
   $('micerr').classList.remove('on');
   $('tinput').value = '';
   show('s-idle');
 }
 
+{
+  const g = $('langgrid');
+  Object.keys(LANGS).forEach(code => {
+    const b = document.createElement('button');
+    b.dataset.lang = code;
+    b.innerHTML = LANGS[code].n + (code==='ko' ? '<small>기본</small>' : `<small>${LANGS[code].rec}</small>`);
+    if(code==='ko') b.classList.add('on');
+    b.onclick = () => { applyLang(code); $('lsheet').classList.remove('on'); };
+    g.appendChild(b);
+  });
+}
+$('langbtn').onclick = () => $('lsheet').classList.add('on');
+$('bigbtn').onclick = function(){
+  document.body.classList.toggle('bigmode');
+  this.classList.toggle('on');
+};
+$('ttsbtn').onclick = function(){
+  TTS_ON = !TTS_ON;
+  this.classList.toggle('on', TTS_ON);
+  if(TTS_ON) say('음성 안내를 켰습니다. 검색 결과를 읽어 드립니다.');
+  else if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){}
+};
 $('micbtn').onclick = startVoice;
 showDiag();
 $('stopbtn').onclick = () => { if(rec) rec.stop(); show('s-idle'); };

@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>책이지 — 부천시립도서관 AI 도서 안내 (시안)</title>
 <style>
 :root{
@@ -363,7 +363,7 @@ body.bigmode .foot{font-size:12px}
   <div class="top">
     <span class="demo-tag">시안</span>
     <div class="atools">
-      <button id="bigbtn" aria-label="큰글자 모드">가＋</button>
+      <button id="bigbtn" aria-label="큰글자 모드">큰글자</button>
       <button id="ttsbtn" aria-label="음성 안내">🔊 음성안내</button>
       <button id="langbtn" aria-label="언어 선택">🌏 한국어</button>
     </div>
@@ -416,7 +416,7 @@ body.bigmode .foot{font-size:12px}
           “<b>지구 끝의 온실</b> 찾아주세요”
           <span class="m">③ 관내에 없음 → 책바다(전국)</span>
         </button>
-        <div class="lbl" style="margin-top:9px">
+        <div class="lbl" style="margin-top:9px" id="chipnote">
           ‘불편한 편의점’, ‘설민석 한국사 대모험’도 실데이터로 검색됩니다
         </div>
       </div>
@@ -633,48 +633,109 @@ const LANGS = {
       s:{h1:"Just say the book<br>you're looking for", h2:"The title doesn't have to be exact",
          or:'or type it', ph:'e.g., Namiya General Store', go:'Search', lbl:'Tap to try examples',
          l1:'Listening…', l2:'Speak naturally', st:'Stop'},
-      m:{res:(t,l)=>`Search result: ${t}. Recommended library: ${l}. Tap the green button to request an interlibrary loan.`,
+      m:{on:()=>`Voice guidance is on. I will read the results aloud.`, sw:()=>`Language switched to English.`, mid:(t)=>`I understood ${t}. Checking nearby libraries.`,
+         res:(t,l)=>`Search result: ${t}. Recommended library: ${l}. Tap the green button to request an interlibrary loan.`,
          sh:(t,l)=>`Please confirm. Book ${t}, from ${l}. Tap Yes to submit.`, dn:()=>`Your request has been submitted.`}},
   zh:{n:'中文',     rec:'zh-CN', tts:'zh-CN',
       s:{h1:'想找的书，<br>说出来就行', h2:'书名不必完全准确', or:'或直接输入', ph:'例：解忧杂货店',
          go:'搜索', lbl:'点击查看示例', l1:'正在听…', l2:'请自然地说', st:'停止'},
-      m:{res:(t,l)=>`搜索结果：${t}。推荐图书馆：${l}。点击绿色按钮申请馆际互借。`,
+      m:{on:()=>`语音引导已开启，我会为您朗读结果。`, sw:()=>`已切换为中文。`, mid:(t)=>`已识别为《${t}》，正在查询附近的图书馆。`,
+         res:(t,l)=>`搜索结果：${t}。推荐图书馆：${l}。点击绿色按钮申请馆际互借。`,
          sh:(t,l)=>`请确认申请内容。图书 ${t}，从 ${l} 借出。`, dn:()=>`申请已受理。`}},
   ja:{n:'日本語',   rec:'ja-JP', tts:'ja-JP',
       s:{h1:'探している本を<br>話すだけ', h2:'正確なタイトルでなくても大丈夫', or:'または入力', ph:'例：ナミヤ雑貨店',
          go:'検索', lbl:'例を見る', l1:'聞いています…', l2:'自然に話してください', st:'停止'},
-      m:{res:(t,l)=>`検索結果：${t}。おすすめの図書館：${l}。緑のボタンで相互貸借を申請できます。`,
+      m:{on:()=>`音声ガイドをオンにしました。結果を読み上げます。`, sw:()=>`日本語に切り替えました。`, mid:(t)=>`「${t}」ですね。近くの図書館を確認しています。`,
+         res:(t,l)=>`検索結果：${t}。おすすめの図書館：${l}。緑のボタンで相互貸借を申請できます。`,
          sh:(t,l)=>`申請内容をご確認ください。${t}、${l}から取り寄せます。`, dn:()=>`申請を受け付けました。`}},
   vi:{n:'Tiếng Việt', rec:'vi-VN', tts:'vi-VN',
       s:{h1:'Chỉ cần nói tên sách<br>bạn muốn tìm', h2:'Không cần nói chính xác tên sách', or:'hoặc nhập',
          ph:'VD: Tiệm tạp hóa Namiya', go:'Tìm', lbl:'Chạm để xem ví dụ', l1:'Đang nghe…', l2:'Hãy nói tự nhiên', st:'Dừng'},
-      m:{res:(t,l)=>`Kết quả: ${t}. Thư viện đề xuất: ${l}. Nhấn nút xanh để đăng ký mượn liên thư viện.`,
+      m:{on:()=>`Đã bật hướng dẫn bằng giọng nói. Tôi sẽ đọc kết quả cho bạn.`, sw:()=>`Đã chuyển sang tiếng Việt.`, mid:(t)=>`Tôi hiểu là ${t}. Đang kiểm tra các thư viện gần bạn.`,
+         res:(t,l)=>`Kết quả: ${t}. Thư viện đề xuất: ${l}. Nhấn nút xanh để đăng ký mượn liên thư viện.`,
          sh:(t,l)=>`Vui lòng xác nhận. Sách ${t}, từ ${l}.`, dn:()=>`Đã tiếp nhận yêu cầu.`}},
   th:{n:'ไทย',      rec:'th-TH', tts:'th-TH',
       s:{h1:'อยากได้เล่มไหน<br>พูดได้เลย', h2:'ชื่อหนังสือไม่ต้องเป๊ะก็ได้', or:'หรือพิมพ์', ph:'เช่น ร้านนามิยะ',
          go:'ค้นหา', lbl:'แตะเพื่อดูตัวอย่าง', l1:'กำลังฟัง…', l2:'พูดได้ตามสบาย', st:'หยุด'},
-      m:{res:(t,l)=>`ผลการค้นหา: ${t} ห้องสมุดแนะนำ: ${l} กดปุ่มสีเขียวเพื่อยืมระหว่างห้องสมุด`,
+      m:{on:()=>`เปิดเสียงแนะนำแล้ว ฉันจะอ่านผลลัพธ์ให้ฟัง`, sw:()=>`เปลี่ยนเป็นภาษาไทยแล้ว`, mid:(t)=>`เข้าใจว่า ${t} กำลังตรวจสอบห้องสมุดใกล้เคียง`,
+         res:(t,l)=>`ผลการค้นหา: ${t} ห้องสมุดแนะนำ: ${l} กดปุ่มสีเขียวเพื่อยืมระหว่างห้องสมุด`,
          sh:(t,l)=>`โปรดยืนยัน: ${t} จาก ${l}`, dn:()=>`รับคำขอแล้ว`}},
   ru:{n:'Русский',  rec:'ru-RU', tts:'ru-RU',
       s:{h1:'Просто скажите,<br>какую книгу ищете', h2:'Название может быть неточным', or:'или введите',
          ph:'Напр.: лавка Намия', go:'Поиск', lbl:'Примеры', l1:'Слушаю…', l2:'Говорите свободно', st:'Стоп'},
-      m:{res:(t,l)=>`Результат: ${t}. Рекомендуемая библиотека: ${l}. Нажмите зелёную кнопку для заказа.`,
+      m:{on:()=>`Голосовые подсказки включены. Я озвучу результаты.`, sw:()=>`Язык переключён на русский.`, mid:(t)=>`Понял: ${t}. Проверяю ближайшие библиотеки.`,
+         res:(t,l)=>`Результат: ${t}. Рекомендуемая библиотека: ${l}. Нажмите зелёную кнопку для заказа.`,
          sh:(t,l)=>`Подтвердите: ${t}, из ${l}.`, dn:()=>`Заявка принята.`}},
   mn:{n:'Монгол',   rec:'mn-MN', tts:'mn-MN',
       s:{h1:'Хайж буй номоо<br>хэлэхэд л хангалттай', h2:'Нэр нь яг таг байх шаардлагагүй', or:'эсвэл бичнэ үү',
          ph:'Ж: Намия дэлгүүр', go:'Хайх', lbl:'Жишээ үзэх', l1:'Сонсож байна…', l2:'Чөлөөтэй ярина уу', st:'Зогсоох'},
-      m:{res:(t,l)=>`Хайлтын үр дүн: ${t}. Санал болгох номын сан: ${l}. Ногоон товчийг дарна уу.`,
+      m:{on:()=>`Дуут заавар асаалаа. Үр дүнг уншиж өгнө.`, sw:()=>`Монгол хэл рүү шилжлээ.`, mid:(t)=>`${t} гэж ойлголоо. Ойролцоох номын сангуудыг шалгаж байна.`,
+         res:(t,l)=>`Хайлтын үр дүн: ${t}. Санал болгох номын сан: ${l}. Ногоон товчийг дарна уу.`,
          sh:(t,l)=>`Баталгаажуулна уу: ${t}, ${l}-аас.`, dn:()=>`Хүсэлт хүлээн авлаа.`}},
   uz:{n:"O'zbekcha", rec:'uz-UZ', tts:'uz-UZ',
       s:{h1:"Qidirayotgan kitobingizni<br>ayting, bo'ldi", h2:"Nomi aniq bo'lishi shart emas", or:'yoki yozing',
          ph:"Masalan: Namiya do'koni", go:'Qidirish', lbl:'Namunalar', l1:'Eshityapman…', l2:'Bemalol gapiring', st:"To'xtatish"},
-      m:{res:(t,l)=>`Natija: ${t}. Tavsiya etilgan kutubxona: ${l}. Yashil tugmani bosing.`,
+      m:{on:()=>`Ovozli yo'riqnoma yoqildi. Natijalarni o'qib beraman.`, sw:()=>`O'zbek tiliga o'tildi.`, mid:(t)=>`${t} deb tushundim. Yaqin kutubxonalarni tekshiryapman.`,
+         res:(t,l)=>`Natija: ${t}. Tavsiya etilgan kutubxona: ${l}. Yashil tugmani bosing.`,
          sh:(t,l)=>`Tasdiqlang: ${t}, ${l}dan.`, dn:()=>`So'rov qabul qilindi.`}},
   id:{n:'Bahasa Indonesia', rec:'id-ID', tts:'id-ID',
       s:{h1:'Sebutkan saja buku<br>yang Anda cari', h2:'Judul tidak harus persis', or:'atau ketik',
          ph:'cth: Toko Kelontong Namiya', go:'Cari', lbl:'Ketuk untuk contoh', l1:'Mendengarkan…', l2:'Bicara saja dengan santai', st:'Berhenti'},
-      m:{res:(t,l)=>`Hasil: ${t}. Perpustakaan yang disarankan: ${l}. Tekan tombol hijau untuk meminjam.`,
+      m:{on:()=>`Panduan suara aktif. Saya akan membacakan hasilnya.`, sw:()=>`Bahasa diganti ke Bahasa Indonesia.`, mid:(t)=>`Saya mengerti ${t}. Memeriksa perpustakaan terdekat.`,
+         res:(t,l)=>`Hasil: ${t}. Perpustakaan yang disarankan: ${l}. Tekan tombol hijau untuk meminjam.`,
          sh:(t,l)=>`Mohon konfirmasi: ${t}, dari ${l}.`, dn:()=>`Permintaan diterima.`}},
+};
+const CHIPS_L = {
+  ko:{c:[
+    ['“<b>한강 소년이 온다</b> 찾아주세요”','① 상동도서관에 있음 → 바로 이용','실데이터'],
+    ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','② 상동은 대출 중 → 관내 상호대차','실데이터'],
+    ['“<b>지구 끝의 온실</b> 찾아주세요”','③ 관내에 없음 → 책바다(전국)',null]],
+    note:'‘불편한 편의점’, ‘설민석 한국사 대모험’도 실데이터로 검색됩니다'},
+  en:{c:[
+    ['“Find <b>Human Acts</b> by Han Kang”','① At Sangdong Library → use right away','real data'],
+    ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','② Checked out at Sangdong → loan within Bucheon','real data'],
+    ['“Find <b>The Greenhouse at the End of the Earth</b>”','③ Not in Bucheon → nationwide (Chaekbada)',null]],
+    note:'Other titles also work with real data'},
+  zh:{c:[
+    ['“帮我找韩江的<b>《少年来了》</b>”','① 上洞图书馆有藏 → 直接借阅','实测数据'],
+    ['“我想借<b>《解忧杂货店》</b>”','② 上洞馆已借出 → 市内馆际互借','实测数据'],
+    ['“帮我找<b>《地球尽头的温室》</b>”','③ 富川市内没有 → 全国服务',null]],
+    note:'其他图书也支持实测数据检索'},
+  ja:{c:[
+    ['「ハン・ガンの<b>『少年が来る』</b>を探して」','① 上洞図書館に所蔵 → すぐ利用','実データ'],
+    ['「<b>『ナミヤ雑貨店の奇蹟』</b>を借りたい」','② 上洞館は貸出中 → 市内の相互貸借','実データ'],
+    ['「<b>『地球の果ての温室』</b>を探して」','③ 富川市内に無し → 全国サービス',null]],
+    note:'ほかの本も実データで検索できます'},
+  vi:{c:[
+    ['“Tìm giúp tôi <b>소년이 온다</b> của Han Kang”','① Có tại TV Sangdong → dùng ngay','dữ liệu thực'],
+    ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','② Sangdong đã cho mượn → mượn trong Bucheon','dữ liệu thực'],
+    ['“Tìm giúp tôi <b>지구 끝의 온실</b>”','③ Không có ở Bucheon → toàn quốc',null]],
+    note:'Các sách khác cũng tìm được bằng dữ liệu thực'},
+  th:{c:[
+    ['“ช่วยหา <b>소년이 온다</b> ของฮันคัง”','① มีที่ห้องสมุดซังดง → ใช้ได้เลย','ข้อมูลจริง'],
+    ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','② ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน','ข้อมูลจริง'],
+    ['“ช่วยหา <b>지구 끝의 온실</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null]],
+    note:'เล่มอื่น ๆ ก็ค้นหาด้วยข้อมูลจริงได้'},
+  ru:{c:[
+    ['«Найди <b>Human Acts</b> Хан Ган»','① Есть в библиотеке Сандон → сразу читать','реальные данные'],
+    ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','② В Сандоне выдана → обмен внутри Пучхона','реальные данные'],
+    ['«Найди <b>지구 끝의 온실</b>»','③ Нет в Пучхоне → по всей стране',null]],
+    note:'Другие книги тоже ищутся по реальным данным'},
+  mn:{c:[
+    ['“Хан Ганы <b>소년이 온다</b>-г олж өгөөч”','① Сандон номын санд байгаа → шууд ашиглах','бодит өгөгдөл'],
+    ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','② Сандонд зээлэгдсэн → Бүчон доторх солилцоо','бодит өгөгдөл'],
+    ['“<b>지구 끝의 온실</b>-г олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null]],
+    note:'Бусад номыг ч бодит өгөгдлөөр хайж болно'},
+  uz:{c:[
+    ['“Han Kangning <b>소년이 온다</b> kitobini toping”','① Sangdon kutubxonasida bor → darhol foydalaning','haqiqiy ma\'lumot'],
+    ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','② Sangdonda band → Bucheon ichida almashish','haqiqiy ma\'lumot'],
+    ['“<b>지구 끝의 온실</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null]],
+    note:'Boshqa kitoblar ham haqiqiy ma\'lumot bilan topiladi'},
+  id:{c:[
+    ['“Carikan <b>Human Acts</b> karya Han Kang”','① Ada di Perpustakaan Sangdong → langsung pakai','data nyata'],
+    ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','② Dipinjam di Sangdong → pinjam antar-cabang Bucheon','data nyata'],
+    ['“Carikan <b>지구 끝의 온실</b>”','③ Tidak ada di Bucheon → seluruh negeri',null]],
+    note:'Buku lain juga bisa dicari dengan data nyata'},
 };
 let L = LANGS.ko;
 const KO_S = {h1:'찾으시는 책,<br>말씀만 하세요', h2:'제목이 정확하지 않아도 괜찮습니다', or:'또는 직접 입력',
@@ -688,8 +749,15 @@ function applyLang(code){
   $('lst1').textContent = s.l1; $('lst2').textContent = s.l2;
   $('stopbtn').textContent = s.st;
   $('langbtn').textContent = '🌏 ' + L.n;
+  const CL = CHIPS_L[code] || CHIPS_L.ko;
+  document.querySelectorAll('.chip').forEach((b, i) => {
+    const [q, m, lv] = CL.c[i] || CL.c[0];
+    b.innerHTML = q + `<span class="m">${m}${lv ? `<em class="lv">${lv}</em>` : ''}</span>`;
+  });
+  $('chipnote').textContent = CL.note;
   document.querySelectorAll('#langgrid button').forEach(b =>
     b.classList.toggle('on', b.dataset.lang === code));
+  if(TTS_ON) say(L.m ? L.m.sw() : '한국어로 바뀌었습니다.');
 }
 let cur = 0, rec = null, TTS_ON = false;
 function say(t){
@@ -784,7 +852,7 @@ function run(text, live){
   setTimeout(()=>{ $('w1').className='stp on'; $('heard').textContent = '“'+heard+'”'; }, 250);
   setTimeout(()=>{ $('w1').className='stp done'; $('w2').className='stp on';
                    $('fixed').innerHTML = c.fix;
-                   if(!L.m) say(`${c.book.t}로 이해했습니다. 가까운 곳부터 확인하고 있습니다.`); }, 1250);
+                   say(L.m ? L.m.mid(c.book.t) : `${c.book.t}로 이해했습니다. 가까운 곳부터 확인하고 있습니다.`); }, 1250);
   setTimeout(()=>{ $('w2').className='stp done'; $('w3').className='stp on';
                    $('scan').innerHTML=''; }, 2350);
 
@@ -977,7 +1045,7 @@ $('bigbtn').onclick = function(){
 $('ttsbtn').onclick = function(){
   TTS_ON = !TTS_ON;
   this.classList.toggle('on', TTS_ON);
-  if(TTS_ON) say('음성 안내를 켰습니다. 검색 결과를 읽어 드립니다.');
+  if(TTS_ON) say(L.m ? L.m.on() : '음성 안내를 켰습니다. 검색 결과를 읽어 드립니다.');
   else if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){}
 };
 $('micbtn').onclick = startVoice;

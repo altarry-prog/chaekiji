@@ -438,15 +438,15 @@ body.bigmode .foot{font-size:12px}
         <div class="stp" id="w1">
           <div class="dot">1</div>
           <div class="tx">
-            <div class="t">말씀 옮겨 적기</div>
-            <div class="d">음성을 글자로 바꿉니다</div>
+            <div class="t" id="st1t">말씀 옮겨 적기</div>
+            <div class="d" id="st1d">음성을 글자로 바꿉니다</div>
             <div class="heard" id="heard"></div>
           </div>
         </div>
         <div class="stp" id="w2">
           <div class="dot">2</div>
           <div class="tx">
-            <div class="t">AI가 무슨 책인지 파악</div>
+            <div class="t" id="st2t">AI가 무슨 책인지 파악</div>
             <div class="d" id="w2d">불완전한 말도 해석합니다</div>
             <div class="fixed" id="fixed"></div>
           </div>
@@ -454,8 +454,8 @@ body.bigmode .foot{font-size:12px}
         <div class="stp" id="w3">
           <div class="dot">3</div>
           <div class="tx">
-            <div class="t">범위를 넓혀가며 찾기</div>
-            <div class="d">가까운 곳부터 차례로 확인합니다</div>
+            <div class="t" id="st3t">범위를 넓혀가며 찾기</div>
+            <div class="d" id="st3d">가까운 곳부터 차례로 확인합니다</div>
             <div id="scan"></div>
           </div>
         </div>
@@ -469,10 +469,10 @@ body.bigmode .foot{font-size:12px}
     <div class="screen" id="s-done">
       <div class="done">
         <div class="check">✓</div>
-        <h2>신청이 접수됐습니다</h2>
+        <h2 id="doneT">신청이 접수됐습니다</h2>
         <p id="donetx"></p>
         <div class="recap" id="recap"></div>
-        <button class="cta ghost" onclick="reset()">처음으로</button>
+        <button class="cta ghost" onclick="reset()" id="homeBtn">처음으로</button>
       </div>
     </div>
 
@@ -489,7 +489,7 @@ body.bigmode .foot{font-size:12px}
   <div class="sheet" id="lsheet">
     <div class="sheet-in">
       <h3>언어 선택 · Language</h3>
-      <p class="p">음성 인식과 음성 안내 언어가 바뀝니다 · 화면 정보는 한국어로 표시됩니다(시안)</p>
+      <p class="p">음성 인식·안내와 화면 문구가 모두 바뀝니다 · 도서명·도서관명은 원어로 표시됩니다</p>
       <div class="langgrid" id="langgrid"></div>
       <button class="cta ghost" onclick="document.getElementById('lsheet').classList.remove('on')">닫기</button>
     </div>
@@ -499,10 +499,10 @@ body.bigmode .foot{font-size:12px}
   <div class="sheet" id="sheet">
     <div class="sheet-in">
       <h3 id="sheet-t">상호대차를 신청할까요?</h3>
-      <p class="p">아래 내용으로 접수됩니다</p>
+      <p class="p" id="sheetP">아래 내용으로 접수됩니다</p>
       <div id="sheetkv"></div>
       <button class="cta" id="confirm">네, 신청합니다</button>
-      <button class="cta ghost" onclick="closeSheet()">취소</button>
+      <button class="cta ghost" onclick="closeSheet()" id="cancelBtn">취소</button>
     </div>
   </div>
 
@@ -548,11 +548,7 @@ const CASES = [
     heard:"지구 끝에 온실 찾아주세요",
     fix:"‘지구 끝에 온실’ → <b>지구 끝의 온실</b> 로 이해했습니다",
     book:{t:"지구 끝의 온실", a:"김초엽 지음", p:"자이언트북스", y:"2021", isbn:"9791191824001"},
-    scan:[
-      {n:"상동도서관 (자주 가는 곳)", r:"미소장", ok:false},
-      {n:"부천 관내 16개 분관", r:"소장한 곳 없음", ok:false},
-      {n:"전국 참여 도서관", r:"6곳에서 발견", ok:true}
-    ],
+    scanK:[["mineNone"],["innerNoneAll"],["nationFound",6]],
     okN:6,
     libs:[
       {n:"인천 부평도서관", s:"ok", loc:"인천 부평구", note:"책바다 참여관 · 우편 수령"},
@@ -591,40 +587,34 @@ const TIER = {
 const NM = n => n + "도서관";
 
 function view(c){
-  if(c._v) return c._v;
-  if(!c.real) return (c._v = {tier:c.tier, scan:c.scan, libs:c.libs, okN:c.okN});
-
-  const mine = c.bx[내관] || 'none';
+  const mine = c.real ? (c.bx[내관] || 'none') : 'none';
+  if(!c.real){
+    // 예시 케이스: 구조화된 scanK 사용
+    return {tier:c.tier, scanK:c.scanK, libs:c.libs, okN:c.okN, mine, agg:null};
+  }
   const ok=[], busy=[], none=[];
   Object.keys(LIB).forEach(n=>{
     if(n === 내관) return;
     const s = c.bx[n] || 'none';
     (s==='ok' ? ok : s==='busy' ? busy : none).push(n);
   });
-
-  let tier, scan, order;
+  let tier, scanK, order;
   if(mine === 'ok'){
     tier = 0;
-    scan = [{n:NM(내관)+" (자주 가는 곳)", r:"소장 · 대출 가능", ok:true}];
-    order = [내관].concat(ok, busy, none);
+    scanK = [["mineHave"]];
+    order = [내관].concat(ok, busy);
   } else if(ok.length){
     tier = 1;
-    scan = [
-      {n:NM(내관)+" (자주 가는 곳)", r: mine==='busy' ? "소장 · 대출 중" : "미소장", ok:false},
-      {n:"관내 다른 15개 분관", r: ok.length + "곳 대출 가능", ok:true}
-    ];
-    order = ok.concat([내관], busy, none);
+    scanK = [[mine==='busy'?"mineBusy":"mineNone"], ["innerOk", ok.length]];
+    order = ok.concat([내관], busy);
   } else {
     tier = 2;
-    scan = [
-      {n:NM(내관)+" (자주 가는 곳)", r: mine==='busy' ? "대출 중" : "미소장", ok:false},
-      {n:"부천 관내 16개 분관", r:"대출 가능한 곳 없음", ok:false},
-      {n:"전국 참여 도서관", r:"검색 중", ok:true}
-    ];
-    order = [내관].concat(busy, none);
+    scanK = [[mine==='busy'?"mineBusy":"mineNone"], ["innerNone"], ["nationSearch"]];
+    order = [내관].concat(busy);
   }
-  const libs = order.map(n=>({n:NM(n), s:c.bx[n]||'none', code:LIB[n], loc:"", note:""}));
-  return (c._v = {tier, scan, libs, okN: ok.length + (mine==='ok'?1:0)});
+  const libs = order.map(n=>({raw:n, s:c.bx[n]||'none', code:LIB[n], loc:"", note:""}));
+  const agg = none.length ? {n:none.length, names:none} : null;
+  return {tier, scanK, libs, okN: ok.length + (mine==='ok'?1:0), mine, agg};
 }
 
 const LANGS = {
@@ -737,6 +727,312 @@ const CHIPS_L = {
     ['“Carikan <b>지구 끝의 온실</b>”','③ Tidak ada di Bucheon → seluruh negeri',null]],
     note:'Buku lain juga bisa dicari dengan data nyata'},
 };
+
+/* 전 화면 언어팩 — 도서명·도서관명은 원어 유지 */
+const UI = {
+ko:{ NM:n=>n+'도서관',
+ st1:'말씀 옮겨 적기',st1d:'음성을 글자로 바꿉니다',st2:'AI가 무슨 책인지 파악',st2d:'불완전한 말도 해석합니다',
+ st3:'범위를 넓혀가며 찾기',st3d:'가까운 곳부터 차례로 확인합니다',
+ fix:t=>`<b>${t}</b> 로 이해했습니다`,
+ usual:n=>`${n}도서관 (자주 가는 곳)`,mineHave:'소장 · 대출 가능',mineBusy:'소장 · 대출 중',mineNone:'미소장',
+ inner:'관내 다른 15개 분관',inner16:'부천 관내 16개 분관',innerOk:k=>`${k}곳 대출 가능`,
+ innerNone:'대출 가능한 곳 없음',innerNoneAll:'소장한 곳 없음',nation:'전국 참여 도서관',nationFound:k=>`${k}곳에서 발견`,
+ tier:{0:['관내 보유','바로 이용','상동도서관에 지금 있습니다','자료 위치 안내받기','무료','오늘 바로'],
+       1:['2단계','관내 상호대차','부천시립도서관 16개관 간 이동','상호대차 신청','무료','2~3일'],
+       2:['3단계','책바다','전국 상호대차 · 1인 3권','책바다로 신청','전국','5~7일']},
+ sum0:(m,k)=>`자주 가시는 <b>${m}도서관에 지금 있습니다.</b> 상호대차 없이 바로 빌리실 수 있어요. <span class="s2">관내에서는 ${k}곳이 대출 가능합니다.</span>`,
+ sum1:(m,k)=>`<b>${m}도서관은 지금 어렵지만</b>, 가까운 <b>${k}개 분관</b>에서 빌려서 ${m}도서관으로 보내드릴 수 있어요.`,
+ sum2:k=>`부천 관내에는 없어서 <b>전국에서 ${k}곳</b>을 찾았어요. 책바다로 신청하면 됩니다.`,
+ rec:'추천',tag0:'바로 이용',tag1:'가장 빠름',tag2:'가장 가까움',also:'여기도 가능합니다',
+ fold:n=>`그 외 ${n}곳 현황 보기 ＋`,foldC:'접기 －',bOk:'대출 가능',bBusy:'대출 중',bNone:'미소장',
+ my:'자주 가는 곳',code:'도서관코드',others:n=>`그 밖 ${n}개 분관`,again:'다시 검색',
+ caution:'시연 화면입니다. 실제 신청은 이루어지지 않습니다.',
+ srcR:d=>`정보나루 실데이터 · ${d} 조회 · 16개 분관 전수 확인<br><span class="s2">대출 상태는 조회일 <b>전일</b> 기준입니다 (Open API 사양)</span>`,
+ srcD:'관외 구간은 예시 데이터 · 관내 16개 분관은 실데이터로 동작',
+ rule:m=>`규정상 <b>${m}도서관에 자료가 있으면 상호대차 신청이 되지 않습니다.</b> 불필요한 신청을 만들지 않도록 미리 걸러냈습니다.`,
+ ax:['이용자 조건에 따른 입구 · 확장 설계','🎧 대체자료 함께 찾기 — 오디오북·점자·큰활자 (국가서지 대체자료목록 연계)','🚚 책나래 우편 수령 — 거동불편·장애 이용자는 자택 배송으로 분기','📞 전화 한 통 모드 — 대표번호로 같은 상담·신청 (화면 불필요)','🌏 다국어 음성 — 10개 언어 인식·안내 <b>(동작 — 헤더 🌏 단추)</b>'],
+ shT:'상호대차를 신청할까요?',shT0:'자료를 찾아드릴까요?',shP:'아래 내용으로 접수됩니다',
+ kBook:'도서',kMode:'방식',kFrom:'대출 도서관',kKeep:'보관 도서관',kTo:'수령 도서관',kTime:'예상 소요',
+ kRecv:'수령 방법',recvV:m=>`${m}도서관 방문`,recvS:'거동불편·장애 이용자는 책나래 우편 수령 선택 (확장 설계)',
+ kPath:'처리 경로',pathV:'도서관리시스템 커넥터(MCP)',pathS:'동일 시스템(알파스 등) 사용 도서관은 커넥터 재사용',
+ kUser:'신청자',user:'홍○○ (회원번호 ****1234)',yes:'네, 신청합니다',no:'취소',
+ dT:'신청이 접수됐습니다',
+ d0:l=>`<b>${l}</b> 대출대에 보관 요청했습니다.<br>오늘 중 방문하시면 바로 받으실 수 있습니다.`,
+ d1:(md,l,m)=>`<b>${md}</b>으로 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
+ kArr:'예상 도착',kNum:'접수번호',home:'처음으로' },
+en:{ NM:n=>`${n} Library`,
+ st1:'Transcribing your words',st1d:'Turning speech into text',st2:'AI identifies the book',st2d:'Even imperfect phrases work',
+ st3:'Searching, nearest first',st3d:'Checking libraries step by step',
+ fix:t=>`Understood as <b>${t}</b>`,
+ usual:n=>`${n} Library (your usual)`,mineHave:'On shelf · available',mineBusy:'Held · checked out',mineNone:'Not held',
+ inner:'15 other Bucheon branches',inner16:'All 16 Bucheon branches',innerOk:k=>`${k} available`,
+ innerNone:'None available',innerNoneAll:'Not held anywhere',nation:'Libraries nationwide',nationFound:k=>`found at ${k}`,
+ tier:{0:['On site','Use right away','Available at your library now','Get shelf directions','Free','Today'],
+       1:['Step 2','Bucheon interlibrary loan','Between 16 Bucheon branches','Request interlibrary loan','Free','2–3 days'],
+       2:['Step 3','Chaekbada (national)','Nationwide loan · 3 books per person','Request via Chaekbada','Nationwide','5–7 days']},
+ sum0:(m,k)=>`<b>It's at ${m} Library right now.</b> No loan needed — just walk in. <span class="s2">${k} branches have it available.</span>`,
+ sum1:(m,k)=>`<b>${m} Library can't lend it now</b>, but <b>${k} branches</b> can — we'll bring it to ${m} for you.`,
+ sum2:k=>`Not in Bucheon, but <b>found at ${k} libraries nationwide</b>. You can request it via Chaekbada.`,
+ rec:'Recommended',tag0:'Use now',tag1:'Fastest',tag2:'Nearest',also:'Also available here',
+ fold:n=>`See ${n} more branches ＋`,foldC:'Close －',bOk:'Available',bBusy:'Checked out',bNone:'Not held',
+ my:'your usual',code:'Library code',others:n=>`${n} other branches`,again:'Search again',
+ caution:'Demo screen. No real request is made.',
+ srcR:d=>`Real data from Data4Library · queried ${d} · all 16 branches<br><span class="s2">Availability is as of the <b>previous day</b> (API spec)</span>`,
+ srcD:'Out-of-city section uses sample data · 16 Bucheon branches run on real data',
+ rule:m=>`By policy, <b>interlibrary loan cannot be requested when ${m} Library holds the item.</b> We filtered that out for you.`,
+ ax:['Doors that fit each user · extended design','🎧 Alternative formats — audiobook·braille·large print (national bibliography)','🚚 Chaeknarae home delivery — for users with mobility limits','📞 Phone-call mode — same service by voice call, no screen','🌏 Multilingual voice — 10 languages <b>(working — 🌏 button)</b>'],
+ shT:'Request this interlibrary loan?',shT0:'Shall we guide you to it?',shP:'It will be submitted as below',
+ kBook:'Book',kMode:'Method',kFrom:'Lending library',kKeep:'Holding library',kTo:'Pickup library',kTime:'Estimated time',
+ kRecv:'Pickup',recvV:m=>`Visit ${m} Library`,recvS:'Chaeknarae mail delivery available for users with disabilities (extended)',
+ kPath:'Processing path',pathV:'Library-system connector (MCP)',pathS:'Reusable by any library on the same system',
+ kUser:'Applicant',user:'Hong ○○ (member ****1234)',yes:'Yes, request it',no:'Cancel',
+ dT:'Request submitted',
+ d0:l=>`We asked <b>${l}</b> to hold it at the desk.<br>Visit today and pick it up.`,
+ d1:(md,l,m)=>`Requested via <b>${md}</b>.<br>The item is moving from <b>${l}</b> to <b>${m} Library</b>.<br>We'll text you when it arrives.`,
+ kArr:'Expected arrival',kNum:'Reference no.',home:'Start over' },
+zh:{ NM:n=>`${n}图书馆`,
+ st1:'转写您的话',st1d:'把语音变成文字',st2:'AI 识别图书',st2d:'说得不准也能理解',
+ st3:'由近及远查找',st3d:'从最近的图书馆开始确认',
+ fix:t=>`已识别为 <b>${t}</b>`,
+ usual:n=>`${n}图书馆（常去）`,mineHave:'在馆 · 可借',mineBusy:'在馆 · 已借出',mineNone:'无馆藏',
+ inner:'富川其他15个分馆',inner16:'富川市内16个分馆',innerOk:k=>`${k}馆可借`,
+ innerNone:'均不可借',innerNoneAll:'均无馆藏',nation:'全国参与图书馆',nationFound:k=>`${k}馆有藏`,
+ tier:{0:['在馆','立即使用','您常去的图书馆现有此书','获取书架位置','免费','今天'],
+       1:['第2步','市内馆际互借','富川16个分馆之间调拨','申请馆际互借','免费','2~3天'],
+       2:['第3步','Chaekbada(全国)','全国互借 · 每人3册','通过全国服务申请','全国','5~7天']},
+ sum0:(m,k)=>`<b>${m}图书馆现在就有这本书。</b>无需互借，直接去借即可。<span class="s2">市内共有${k}馆可借。</span>`,
+ sum1:(m,k)=>`<b>${m}图书馆暂时借不到</b>，但<b>${k}个分馆</b>可借出并送到${m}图书馆。`,
+ sum2:k=>`富川市内没有，但<b>全国${k}个图书馆</b>有藏，可通过全国互借申请。`,
+ rec:'推荐',tag0:'立即使用',tag1:'最快',tag2:'最近',also:'这些馆也可以',
+ fold:n=>`查看其余${n}馆 ＋`,foldC:'收起 －',bOk:'可借',bBusy:'已借出',bNone:'无馆藏',
+ my:'常去',code:'图书馆代码',others:n=>`其余${n}个分馆`,again:'重新搜索',
+ caution:'演示页面，不会产生真实申请。',
+ srcR:d=>`Data4Library 实测数据 · ${d} 查询 · 16个分馆全部确认<br><span class="s2">借阅状态为查询日<b>前一天</b>的数据（API规范）</span>`,
+ srcD:'市外部分为示例数据 · 市内16个分馆为实测数据',
+ rule:m=>`按规定，<b>${m}图书馆有馆藏时不能申请馆际互借。</b>系统已提前为您过滤。`,
+ ax:['按用户条件提供的入口 · 扩展设计','🎧 替代资料查找 — 有声书·盲文·大字本','🚚 Chaeknarae 邮寄到家 — 行动不便·残障用户','📞 电话模式 — 打电话即可办理，无需屏幕','🌏 多语言语音 — 10种语言 <b>(已实现)</b>'],
+ shT:'要申请馆际互借吗？',shT0:'为您指引这本书？',shP:'将按以下内容受理',
+ kBook:'图书',kMode:'方式',kFrom:'出借馆',kKeep:'馆藏馆',kTo:'取书馆',kTime:'预计时间',
+ kRecv:'取书方式',recvV:m=>`到${m}图书馆自取`,recvS:'残障用户可选择邮寄到家（扩展设计）',
+ kPath:'处理路径',pathV:'图书馆系统连接器(MCP)',pathS:'同系统图书馆可复用连接器',
+ kUser:'申请人',user:'洪○○（会员 ****1234）',yes:'是，申请',no:'取消',
+ dT:'申请已受理',
+ d0:l=>`已请<b>${l}</b>在借书台为您保留。<br>今天到馆即可取书。`,
+ d1:(md,l,m)=>`已通过<b>${md}</b>申请。<br>图书正从<b>${l}</b>调往<b>${m}图书馆</b>。<br>到馆后将短信通知您。`,
+ kArr:'预计到达',kNum:'受理编号',home:'返回首页' },
+ja:{ NM:n=>`${n}図書館`,
+ st1:'発話の書き起こし',st1d:'音声を文字にします',st2:'AIが本を特定',st2d:'あいまいな言い方でも大丈夫',
+ st3:'近い順に検索',st3d:'近くの図書館から順に確認します',
+ fix:t=>`<b>${t}</b> と理解しました`,
+ usual:n=>`${n}図書館（いつもの）`,mineHave:'所蔵 · 貸出可',mineBusy:'所蔵 · 貸出中',mineNone:'所蔵なし',
+ inner:'富川の他15分館',inner16:'富川市内16分館',innerOk:k=>`${k}館で貸出可`,
+ innerNone:'貸出可能館なし',innerNoneAll:'所蔵館なし',nation:'全国の参加図書館',nationFound:k=>`${k}館で発見`,
+ tier:{0:['所蔵中','すぐ利用','いつもの図書館にあります','書架の場所を案内','無料','本日'],
+       1:['第2段階','市内相互貸借','富川16館の間で取り寄せ','相互貸借を申請','無料','2~3日'],
+       2:['第3段階','チェクバダ(全国)','全国相互貸借 · 1人3冊','全国サービスで申請','全国','5~7日']},
+ sum0:(m,k)=>`<b>${m}図書館に今あります。</b>取り寄せ不要、そのまま借りられます。<span class="s2">市内では${k}館で貸出可能です。</span>`,
+ sum1:(m,k)=>`<b>${m}図書館では今借りられませんが</b>、<b>${k}分館</b>から取り寄せて${m}図書館へお届けできます。`,
+ sum2:k=>`富川市内にはありませんが、<b>全国${k}館</b>で見つかりました。チェクバダで申請できます。`,
+ rec:'おすすめ',tag0:'すぐ利用',tag1:'最速',tag2:'最寄り',also:'こちらでも可能',
+ fold:n=>`他${n}館を見る ＋`,foldC:'閉じる －',bOk:'貸出可',bBusy:'貸出中',bNone:'所蔵なし',
+ my:'いつもの',code:'図書館コード',others:n=>`その他${n}分館`,again:'再検索',
+ caution:'デモ画面です。実際の申請は行われません。',
+ srcR:d=>`情報ナル実データ · ${d} 照会 · 16分館すべて確認<br><span class="s2">貸出状態は照会日の<b>前日</b>基準です（API仕様）</span>`,
+ srcD:'市外区間はサンプル · 市内16分館は実データで動作',
+ rule:m=>`規定により、<b>${m}図書館に資料がある場合は相互貸借を申請できません。</b>不要な申請を事前に除外しました。`,
+ ax:['利用者に合わせた入口 · 拡張設計','🎧 代替資料も検索 — オーディオブック·点字·大活字','🚚 チェクナレ郵送 — 来館が難しい方へ自宅配送','📞 電話モード — 電話一本で同じ手続き','🌏 多言語音声 — 10言語 <b>(実装済み)</b>'],
+ shT:'相互貸借を申請しますか？',shT0:'資料の場所をご案内しますか？',shP:'以下の内容で受け付けます',
+ kBook:'図書',kMode:'方式',kFrom:'貸出館',kKeep:'所蔵館',kTo:'受取館',kTime:'所要時間',
+ kRecv:'受け取り',recvV:m=>`${m}図書館で受け取り`,recvS:'障がいのある方はチェクナレ郵送を選択可（拡張設計）',
+ kPath:'処理経路',pathV:'図書館システムコネクタ(MCP)',pathS:'同一システムの図書館はコネクタを再利用',
+ kUser:'申請者',user:'洪○○（会員 ****1234）',yes:'はい、申請します',no:'キャンセル',
+ dT:'申請を受け付けました',
+ d0:l=>`<b>${l}</b>の貸出カウンターに取り置きを依頼しました。<br>本日ご来館いただければ受け取れます。`,
+ d1:(md,l,m)=>`<b>${md}</b>で申請しました。<br>資料は<b>${l}</b>から<b>${m}図書館</b>へ移動中です。<br>到着したらメッセージでお知らせします。`,
+ kArr:'到着予定',kNum:'受付番号',home:'最初に戻る' },
+vi:{ NM:n=>`Thư viện ${n}`,
+ st1:'Ghi lại lời bạn nói',st1d:'Chuyển giọng nói thành chữ',st2:'AI nhận diện cuốn sách',st2d:'Nói không chính xác cũng được',
+ st3:'Tìm từ gần đến xa',st3d:'Kiểm tra lần lượt từ thư viện gần nhất',
+ fix:t=>`Đã hiểu là <b>${t}</b>`,
+ usual:n=>`Thư viện ${n} (quen thuộc)`,mineHave:'Có sách · mượn được',mineBusy:'Có sách · đang cho mượn',mineNone:'Không có',
+ inner:'15 chi nhánh khác ở Bucheon',inner16:'Cả 16 chi nhánh Bucheon',innerOk:k=>`${k} nơi mượn được`,
+ innerNone:'Không nơi nào mượn được',innerNoneAll:'Không nơi nào có',nation:'Thư viện toàn quốc',nationFound:k=>`tìm thấy ở ${k} nơi`,
+ tier:{0:['Có sẵn','Dùng ngay','Thư viện quen thuộc đang có sách','Chỉ vị trí kệ sách','Miễn phí','Hôm nay'],
+       1:['Bước 2','Mượn liên thư viện Bucheon','Giữa 16 chi nhánh Bucheon','Đăng ký mượn liên thư viện','Miễn phí','2–3 ngày'],
+       2:['Bước 3','Chaekbada (toàn quốc)','Mượn toàn quốc · 3 cuốn/người','Đăng ký qua Chaekbada','Toàn quốc','5–7 ngày']},
+ sum0:(m,k)=>`<b>Thư viện ${m} đang có sách.</b> Không cần mượn liên thư viện — đến lấy ngay. <span class="s2">${k} chi nhánh đang có thể cho mượn.</span>`,
+ sum1:(m,k)=>`<b>Thư viện ${m} hiện không mượn được</b>, nhưng <b>${k} chi nhánh</b> có thể cho mượn và chuyển về ${m} cho bạn.`,
+ sum2:k=>`Bucheon không có, nhưng <b>tìm thấy ở ${k} thư viện toàn quốc</b>. Có thể đăng ký qua Chaekbada.`,
+ rec:'Đề xuất',tag0:'Dùng ngay',tag1:'Nhanh nhất',tag2:'Gần nhất',also:'Những nơi này cũng được',
+ fold:n=>`Xem thêm ${n} chi nhánh ＋`,foldC:'Thu gọn －',bOk:'Mượn được',bBusy:'Đang cho mượn',bNone:'Không có',
+ my:'quen thuộc',code:'Mã thư viện',others:n=>`${n} chi nhánh khác`,again:'Tìm lại',
+ caution:'Màn hình demo. Không có yêu cầu thật nào được gửi.',
+ srcR:d=>`Dữ liệu thực Data4Library · tra cứu ${d} · đủ 16 chi nhánh<br><span class="s2">Tình trạng mượn tính đến <b>ngày hôm trước</b> (theo API)</span>`,
+ srcD:'Phần ngoài thành phố là dữ liệu mẫu · 16 chi nhánh Bucheon chạy dữ liệu thực',
+ rule:m=>`Theo quy định, <b>không thể đăng ký khi Thư viện ${m} đang có sách.</b> Hệ thống đã lọc giúp bạn.`,
+ ax:['Cửa vào phù hợp từng người · thiết kế mở rộng','🎧 Tìm cả bản thay thế — sách nói·chữ nổi·chữ to','🚚 Giao tận nhà Chaeknarae — cho người khó di chuyển','📞 Chế độ gọi điện — làm mọi thứ qua một cuộc gọi','🌏 Giọng nói đa ngôn ngữ — 10 thứ tiếng <b>(đang hoạt động)</b>'],
+ shT:'Đăng ký mượn liên thư viện?',shT0:'Chỉ đường đến cuốn sách?',shP:'Sẽ được tiếp nhận như dưới đây',
+ kBook:'Sách',kMode:'Hình thức',kFrom:'Thư viện cho mượn',kKeep:'Thư viện giữ sách',kTo:'Nơi nhận',kTime:'Thời gian dự kiến',
+ kRecv:'Cách nhận',recvV:m=>`Đến Thư viện ${m}`,recvS:'Người khuyết tật có thể chọn giao tận nhà (mở rộng)',
+ kPath:'Đường xử lý',pathV:'Bộ kết nối hệ thống thư viện (MCP)',pathS:'Thư viện cùng hệ thống dùng lại được',
+ kUser:'Người đăng ký',user:'Hong ○○ (hội viên ****1234)',yes:'Có, đăng ký',no:'Hủy',
+ dT:'Đã tiếp nhận yêu cầu',
+ d0:l=>`Đã nhờ <b>${l}</b> giữ sách tại quầy.<br>Đến trong hôm nay là nhận được.`,
+ d1:(md,l,m)=>`Đã đăng ký qua <b>${md}</b>.<br>Sách đang được chuyển từ <b>${l}</b> đến <b>Thư viện ${m}</b>.<br>Khi đến nơi sẽ nhắn tin cho bạn.`,
+ kArr:'Dự kiến đến',kNum:'Số tiếp nhận',home:'Về đầu' },
+th:{ NM:n=>`ห้องสมุด${n}`,
+ st1:'ถอดคำพูดของคุณ',st1d:'เปลี่ยนเสียงเป็นข้อความ',st2:'AI ระบุหนังสือ',st2d:'พูดไม่ตรงเป๊ะก็เข้าใจ',
+ st3:'ค้นหาจากใกล้ไปไกล',st3d:'ตรวจสอบทีละแห่งจากที่ใกล้ที่สุด',
+ fix:t=>`เข้าใจว่า <b>${t}</b>`,
+ usual:n=>`ห้องสมุด${n} (ประจำ)`,mineHave:'มีเล่ม · ยืมได้',mineBusy:'มีเล่ม · ถูกยืมอยู่',mineNone:'ไม่มี',
+ inner:'อีก 15 สาขาในบูชอน',inner16:'ครบ 16 สาขาบูชอน',innerOk:k=>`ยืมได้ ${k} แห่ง`,
+ innerNone:'ไม่มีที่ยืมได้',innerNoneAll:'ไม่มีที่ใดมี',nation:'ห้องสมุดทั่วประเทศ',nationFound:k=>`พบ ${k} แห่ง`,
+ tier:{0:['มีเล่มอยู่','ใช้ได้เลย','ห้องสมุดประจำของคุณมีเล่มนี้','ขอตำแหน่งชั้นหนังสือ','ฟรี','วันนี้'],
+       1:['ขั้นที่ 2','ยืมข้ามสาขาบูชอน','ระหว่าง 16 สาขาในบูชอน','ขอยืมข้ามสาขา','ฟรี','2–3 วัน'],
+       2:['ขั้นที่ 3','แชกบาดา (ทั่วประเทศ)','ยืมทั่วประเทศ · คนละ 3 เล่ม','ขอผ่านแชกบาดา','ทั่วประเทศ','5–7 วัน']},
+ sum0:(m,k)=>`<b>ห้องสมุด${m}มีเล่มนี้อยู่ตอนนี้</b> ไม่ต้องยืมข้ามสาขา ไปรับได้เลย <span class="s2">ในเมืองยืมได้ ${k} แห่ง</span>`,
+ sum1:(m,k)=>`<b>ห้องสมุด${m}ยืมไม่ได้ตอนนี้</b> แต่<b> ${k} สาขา</b>ให้ยืมได้ และจะส่งมาที่${m}ให้คุณ`,
+ sum2:k=>`ในบูชอนไม่มี แต่<b>พบที่ ${k} ห้องสมุดทั่วประเทศ</b> ขอผ่านแชกบาดาได้`,
+ rec:'แนะนำ',tag0:'ใช้ได้เลย',tag1:'เร็วที่สุด',tag2:'ใกล้ที่สุด',also:'ที่นี่ก็ได้เช่นกัน',
+ fold:n=>`ดูอีก ${n} สาขา ＋`,foldC:'ย่อ －',bOk:'ยืมได้',bBusy:'ถูกยืมอยู่',bNone:'ไม่มี',
+ my:'ประจำ',code:'รหัสห้องสมุด',others:n=>`อีก ${n} สาขา`,again:'ค้นหาใหม่',
+ caution:'หน้าจอสาธิต ไม่มีการส่งคำขอจริง',
+ srcR:d=>`ข้อมูลจริง Data4Library · สืบค้น ${d} · ครบ 16 สาขา<br><span class="s2">สถานะการยืมเป็นของ<b>วันก่อนหน้า</b> (ตามสเปค API)</span>`,
+ srcD:'ส่วนนอกเมืองเป็นข้อมูลตัวอย่าง · 16 สาขาบูชอนใช้ข้อมูลจริง',
+ rule:m=>`ตามระเบียบ <b>ขอยืมข้ามสาขาไม่ได้เมื่อห้องสมุด${m}มีเล่มอยู่</b> ระบบกรองให้แล้ว`,
+ ax:['ทางเข้าที่เหมาะกับแต่ละคน · ส่วนขยาย','🎧 ค้นสื่อทางเลือก — หนังสือเสียง·อักษรเบรลล์·ตัวใหญ่','🚚 ส่งถึงบ้าน Chaeknarae — สำหรับผู้เดินทางลำบาก','📞 โหมดโทรศัพท์ — จัดการได้ด้วยสายเดียว','🌏 เสียงหลายภาษา — 10 ภาษา <b>(ใช้งานได้)</b>'],
+ shT:'ยืนยันการขอยืมข้ามสาขา?',shT0:'ให้พาไปที่เล่มนี้ไหม?',shP:'จะรับเรื่องตามนี้',
+ kBook:'หนังสือ',kMode:'วิธี',kFrom:'ห้องสมุดผู้ให้ยืม',kKeep:'ห้องสมุดที่มีเล่ม',kTo:'จุดรับ',kTime:'เวลาโดยประมาณ',
+ kRecv:'วิธีรับ',recvV:m=>`ไปรับที่ห้องสมุด${m}`,recvS:'ผู้พิการเลือกส่งถึงบ้านได้ (ส่วนขยาย)',
+ kPath:'เส้นทางประมวลผล',pathV:'ตัวเชื่อมระบบห้องสมุด (MCP)',pathS:'ห้องสมุดระบบเดียวกันใช้ซ้ำได้',
+ kUser:'ผู้ขอ',user:'ฮง ○○ (สมาชิก ****1234)',yes:'ใช่ ขอยืม',no:'ยกเลิก',
+ dT:'รับคำขอแล้ว',
+ d0:l=>`ขอให้<b>${l}</b>เก็บเล่มไว้ที่เคาน์เตอร์แล้ว<br>ไปรับได้ภายในวันนี้`,
+ d1:(md,l,m)=>`ขอผ่าน<b>${md}</b>แล้ว<br>หนังสือกำลังย้ายจาก<b>${l}</b>ไปยัง<b>ห้องสมุด${m}</b><br>ถึงแล้วจะส่งข้อความแจ้ง`,
+ kArr:'คาดว่าถึง',kNum:'เลขที่รับเรื่อง',home:'กลับหน้าแรก' },
+ru:{ NM:n=>`Библиотека ${n}`,
+ st1:'Записываю вашу речь',st1d:'Превращаю голос в текст',st2:'ИИ определяет книгу',st2d:'Неточная фраза тоже подойдёт',
+ st3:'Поиск от ближнего к дальнему',st3d:'Проверяю библиотеки по очереди',
+ fix:t=>`Понял как <b>${t}</b>`,
+ usual:n=>`Библиотека ${n} (ваша обычная)`,mineHave:'В фонде · доступна',mineBusy:'В фонде · выдана',mineNone:'Нет в фонде',
+ inner:'15 других филиалов Пучхона',inner16:'Все 16 филиалов Пучхона',innerOk:k=>`доступна в ${k}`,
+ innerNone:'Нигде не доступна',innerNoneAll:'Нигде нет в фонде',nation:'Библиотеки по всей стране',nationFound:k=>`найдена в ${k}`,
+ tier:{0:['На месте','Взять сразу','Есть в вашей библиотеке','Показать, где стоит','Бесплатно','Сегодня'],
+       1:['Шаг 2','Обмен внутри Пучхона','Между 16 филиалами','Заказать обмен','Бесплатно','2–3 дня'],
+       2:['Шаг 3','Чекпада (по стране)','По всей стране · 3 книги','Заказать через Чекпада','По стране','5–7 дней']},
+ sum0:(m,k)=>`<b>Книга сейчас в библиотеке ${m}.</b> Обмен не нужен — просто приходите. <span class="s2">Доступна в ${k} филиалах.</span>`,
+ sum1:(m,k)=>`<b>В библиотеке ${m} сейчас нельзя взять</b>, но <b>${k} филиалов</b> могут выдать — доставим в ${m}.`,
+ sum2:k=>`В Пучхоне нет, но <b>найдена в ${k} библиотеках страны</b>. Можно заказать через Чекпада.`,
+ rec:'Рекомендуем',tag0:'Взять сразу',tag1:'Быстрее всего',tag2:'Ближе всего',also:'Также доступна здесь',
+ fold:n=>`Ещё ${n} филиалов ＋`,foldC:'Свернуть －',bOk:'Доступна',bBusy:'Выдана',bNone:'Нет',
+ my:'обычная',code:'Код библиотеки',others:n=>`ещё ${n} филиалов`,again:'Искать снова',
+ caution:'Демо-экран. Реальный заказ не отправляется.',
+ srcR:d=>`Реальные данные Data4Library · запрос ${d} · все 16 филиалов<br><span class="s2">Статус выдачи — на <b>предыдущий день</b> (по API)</span>`,
+ srcD:'Загородная часть — образец · 16 филиалов Пучхона на реальных данных',
+ rule:m=>`По правилам <b>заказ невозможен, если книга есть в библиотеке ${m}.</b> Мы отфильтровали это заранее.`,
+ ax:['Вход, подходящий каждому · расширение','🎧 Альтернативные форматы — аудио·Брайль·крупный шрифт','🚚 Доставка на дом Chaeknarae — для маломобильных','📞 Режим звонка — всё по одному звонку','🌏 Голос на 10 языках <b>(работает)</b>'],
+ shT:'Оформить заказ?',shT0:'Показать, где книга?',shP:'Будет принято в следующем виде',
+ kBook:'Книга',kMode:'Способ',kFrom:'Выдающая библиотека',kKeep:'Библиотека с книгой',kTo:'Пункт получения',kTime:'Срок',
+ kRecv:'Получение',recvV:m=>`Визит в библиотеку ${m}`,recvS:'Для людей с инвалидностью — доставка почтой (расширение)',
+ kPath:'Маршрут обработки',pathV:'Коннектор библиотечной системы (MCP)',pathS:'Повторно используется библиотеками той же системы',
+ kUser:'Заявитель',user:'Хон ○○ (член ****1234)',yes:'Да, заказать',no:'Отмена',
+ dT:'Заявка принята',
+ d0:l=>`Попросили <b>${l}</b> отложить книгу на стойке.<br>Заходите сегодня и забирайте.`,
+ d1:(md,l,m)=>`Оформлено через <b>${md}</b>.<br>Книга едет из <b>${l}</b> в <b>библиотеку ${m}</b>.<br>Пришлём сообщение о прибытии.`,
+ kArr:'Ожидаемое прибытие',kNum:'Номер заявки',home:'В начало' },
+mn:{ NM:n=>`${n} номын сан`,
+ st1:'Таны яриаг буулгаж байна',st1d:'Дуу хоолойг текст болгоно',st2:'AI номыг таньж байна',st2d:'Бүрэн бус хэллэг ч ойлгоно',
+ st3:'Ойроос хол руу хайх',st3d:'Ойрын номын сангаас эхлэн шалгана',
+ fix:t=>`<b>${t}</b> гэж ойлголоо`,
+ usual:n=>`${n} номын сан (байнгын)`,mineHave:'Байгаа · зээлэх боломжтой',mineBusy:'Байгаа · зээлэгдсэн',mineNone:'Байхгүй',
+ inner:'Бүчоны бусад 15 салбар',inner16:'Бүчоны бүх 16 салбар',innerOk:k=>`${k} газар боломжтой`,
+ innerNone:'Боломжтой газар алга',innerNoneAll:'Хаана ч байхгүй',nation:'Улс даяарх номын сангууд',nationFound:k=>`${k} газраас олдлоо`,
+ tier:{0:['Байгаа','Шууд ашиглах','Таны номын санд одоо байна','Тавиурын байрлал заах','Үнэгүй','Өнөөдөр'],
+       1:['2-р алхам','Бүчон доторх солилцоо','16 салбарын хооронд','Солилцоо хүсэх','Үнэгүй','2–3 хоног'],
+       2:['3-р алхам','Чекпада (улс даяар)','Улс даяар · хүн бүр 3 ном','Чекпадагаар хүсэх','Улс даяар','5–7 хоног']},
+ sum0:(m,k)=>`<b>${m} номын санд одоо байна.</b> Солилцоо хэрэггүй — очоод аваарай. <span class="s2">${k} салбарт боломжтой.</span>`,
+ sum1:(m,k)=>`<b>${m} номын сангаас одоо авах боломжгүй</b> ч <b>${k} салбараас</b> зээлж ${m} руу хүргэж өгнө.`,
+ sum2:k=>`Бүчонд байхгүй ч <b>улс даяар ${k} газраас</b> олдлоо. Чекпадагаар хүсч болно.`,
+ rec:'Санал болгож буй',tag0:'Шууд',tag1:'Хамгийн хурдан',tag2:'Хамгийн ойр',also:'Эндээс ч болно',
+ fold:n=>`Өөр ${n} салбар үзэх ＋`,foldC:'Хаах －',bOk:'Боломжтой',bBusy:'Зээлэгдсэн',bNone:'Байхгүй',
+ my:'байнгын',code:'Номын сангийн код',others:n=>`бусад ${n} салбар`,again:'Дахин хайх',
+ caution:'Жишээ дэлгэц. Бодит хүсэлт илгээгдэхгүй.',
+ srcR:d=>`Data4Library бодит өгөгдөл · ${d} шалгасан · 16 салбар бүрэн<br><span class="s2">Зээлийн байдал <b>өмнөх өдрийн</b> мэдээлэл (API)</span>`,
+ srcD:'Хотоос гадуурх хэсэг жишээ · Бүчоны 16 салбар бодит өгөгдөлтэй',
+ rule:m=>`Журмаар <b>${m} номын санд ном байгаа үед солилцоо хүсэх боломжгүй.</b> Урьдчилан шүүлээ.`,
+ ax:['Хүн бүрд тохирсон хаалга · өргөтгөл','🎧 Орлуулах хувилбар — аудио·брайл·том үсэг','🚚 Гэрт хүргэх Chaeknarae — хөдөлгөөн хязгаарлагдмал хүмүүст','📞 Утасны горим — нэг дуудлагаар бүгд','🌏 10 хэлний дуу хоолой <b>(ажиллаж байна)</b>'],
+ shT:'Солилцоо хүсэх үү?',shT0:'Номын байрлал заах уу?',shP:'Дараах байдлаар хүлээн авна',
+ kBook:'Ном',kMode:'Хэлбэр',kFrom:'Зээлдүүлэгч сан',kKeep:'Хадгалагч сан',kTo:'Хүлээн авах газар',kTime:'Хугацаа',
+ kRecv:'Хүлээн авах',recvV:m=>`${m} номын санд очих`,recvS:'Хөгжлийн бэрхшээлтэй бол гэрт хүргүүлж болно (өргөтгөл)',
+ kPath:'Боловсруулах зам',pathV:'Номын сангийн системийн холбогч (MCP)',pathS:'Ижил системтэй сангууд дахин ашиглана',
+ kUser:'Хүсэлт гаргагч',user:'Хон ○○ (гишүүн ****1234)',yes:'Тийм, хүсье',no:'Цуцлах',
+ dT:'Хүсэлт хүлээн авлаа',
+ d0:l=>`<b>${l}</b>-д лангуун дээр хадгалахыг хүслээ.<br>Өнөөдөр очвол авна.`,
+ d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээлээ.<br>Ном <b>${l}</b>-аас <b>${m} номын сан</b> руу явж байна.<br>Ирэхэд мессеж илгээнэ.`,
+ kArr:'Ирэх хугацаа',kNum:'Бүртгэлийн дугаар',home:'Эхлэл рүү' },
+uz:{ NM:n=>`${n} kutubxonasi`,
+ st1:"So'zingizni yozib olyapman",st1d:"Ovozni matnga aylantiraman",st2:'AI kitobni aniqlaydi',st2d:"Noaniq aytsangiz ham tushunadi",
+ st3:'Yaqin joydan boshlab qidirish',st3d:'Kutubxonalarni birma-bir tekshiradi',
+ fix:t=>`<b>${t}</b> deb tushundim`,
+ usual:n=>`${n} kutubxonasi (doimiy)`,mineHave:'Bor · olsa bo\'ladi',mineBusy:'Bor · berilgan',mineNone:"Yo'q",
+ inner:"Bucheonning boshqa 15 filiali",inner16:'Bucheonning barcha 16 filiali',innerOk:k=>`${k} joyda mavjud`,
+ innerNone:'Hech qayerda mavjud emas',innerNoneAll:"Hech qayerda yo'q",nation:'Butun mamlakat kutubxonalari',nationFound:k=>`${k} joyda topildi`,
+ tier:{0:['Joyida','Darhol olish','Doimiy kutubxonangizda bor','Javon joyini ko\'rsatish','Bepul','Bugun'],
+       1:['2-qadam','Bucheon ichida almashish','16 filial orasida','Almashishga buyurtma','Bepul','2–3 kun'],
+       2:['3-qadam','Chaekbada (mamlakat)','Butun mamlakat · 3 kitob','Chaekbada orqali','Mamlakat','5–7 kun']},
+ sum0:(m,k)=>`<b>${m} kutubxonasida hozir bor.</b> Almashish shart emas — borib oling. <span class="s2">${k} filialda mavjud.</span>`,
+ sum1:(m,k)=>`<b>${m} kutubxonasida hozir bo'lmaydi</b>, lekin <b>${k} filial</b> berib, ${m}ga yetkazamiz.`,
+ sum2:k=>`Bucheonda yo'q, lekin <b>mamlakat bo'ylab ${k} kutubxonada</b> topildi. Chaekbada orqali so'rash mumkin.`,
+ rec:'Tavsiya',tag0:'Darhol',tag1:'Eng tez',tag2:'Eng yaqin',also:'Bu yerlarda ham bor',
+ fold:n=>`Yana ${n} filialni ko'rish ＋`,foldC:'Yopish －',bOk:'Mavjud',bBusy:'Berilgan',bNone:"Yo'q",
+ my:'doimiy',code:'Kutubxona kodi',others:n=>`yana ${n} filial`,again:'Qayta qidirish',
+ caution:"Namoyish ekrani. Haqiqiy so'rov yuborilmaydi.",
+ srcR:d=>`Data4Library haqiqiy ma'lumot · ${d} so'ralgan · 16 filial to'liq<br><span class="s2">Holat <b>oldingi kun</b> bo'yicha (API)</span>`,
+ srcD:"Shahar tashqarisi namuna · Bucheonning 16 filiali haqiqiy ma'lumotda",
+ rule:m=>`Qoidaga ko'ra <b>${m} kutubxonasida kitob bo'lsa, almashish so'rab bo'lmaydi.</b> Oldindan filtrladik.`,
+ ax:["Har kimga mos eshik · kengaytma","🎧 Muqobil formatlar — audio·brayl·yirik shrift","🚚 Chaeknarae uyga yetkazish — harakati cheklanganlarga","📞 Telefon rejimi — bitta qo'ng'iroq bilan","🌏 10 tilda ovoz <b>(ishlaydi)</b>"],
+ shT:"Almashishga buyurtma berilsinmi?",shT0:"Kitob joyini ko'rsataymi?",shP:'Quyidagicha qabul qilinadi',
+ kBook:'Kitob',kMode:'Usul',kFrom:'Beruvchi kutubxona',kKeep:'Saqlovchi kutubxona',kTo:'Olish joyi',kTime:'Taxminiy vaqt',
+ kRecv:'Olish usuli',recvV:m=>`${m} kutubxonasiga borish`,recvS:"Nogironligi borlar uyga yetkazishni tanlashi mumkin (kengaytma)",
+ kPath:'Ishlov yo\'li',pathV:'Kutubxona tizimi ulagichi (MCP)',pathS:'Bir xil tizimdagi kutubxonalar qayta ishlatadi',
+ kUser:'Ariza beruvchi',user:'Hong ○○ (a\'zo ****1234)',yes:'Ha, buyurtma',no:'Bekor',
+ dT:"So'rov qabul qilindi",
+ d0:l=>`<b>${l}</b>dan peshtaxtada saqlashni so'radik.<br>Bugun borib oling.`,
+ d1:(md,l,m)=>`<b>${md}</b> orqali buyurtma berildi.<br>Kitob <b>${l}</b>dan <b>${m} kutubxonasi</b>ga ketmoqda.<br>Yetib kelganda xabar yuboramiz.`,
+ kArr:'Yetib kelishi',kNum:'Qabul raqami',home:'Boshiga' },
+id:{ NM:n=>`Perpustakaan ${n}`,
+ st1:'Mencatat ucapan Anda',st1d:'Mengubah suara jadi teks',st2:'AI mengenali bukunya',st2d:'Ucapan kurang tepat pun dipahami',
+ st3:'Mencari dari yang terdekat',st3d:'Memeriksa perpustakaan satu per satu',
+ fix:t=>`Dipahami sebagai <b>${t}</b>`,
+ usual:n=>`Perpustakaan ${n} (langganan)`,mineHave:'Ada · bisa dipinjam',mineBusy:'Ada · sedang dipinjam',mineNone:'Tidak ada',
+ inner:'15 cabang Bucheon lainnya',inner16:'Semua 16 cabang Bucheon',innerOk:k=>`${k} tempat tersedia`,
+ innerNone:'Tidak ada yang tersedia',innerNoneAll:'Tidak dimiliki di mana pun',nation:'Perpustakaan se-nasional',nationFound:k=>`ditemukan di ${k}`,
+ tier:{0:['Tersedia','Pakai sekarang','Ada di perpustakaan langganan Anda','Tunjukkan lokasi rak','Gratis','Hari ini'],
+       1:['Langkah 2','Pinjam antar-cabang Bucheon','Antara 16 cabang Bucheon','Ajukan pinjam antar-cabang','Gratis','2–3 hari'],
+       2:['Langkah 3','Chaekbada (nasional)','Se-nasional · 3 buku/orang','Ajukan via Chaekbada','Nasional','5–7 hari']},
+ sum0:(m,k)=>`<b>Ada di Perpustakaan ${m} sekarang.</b> Tak perlu antar-cabang — langsung datang saja. <span class="s2">${k} cabang menyediakannya.</span>`,
+ sum1:(m,k)=>`<b>Perpustakaan ${m} sedang tidak bisa</b>, tapi <b>${k} cabang</b> bisa meminjamkan dan mengirimkannya ke ${m}.`,
+ sum2:k=>`Tidak ada di Bucheon, tapi <b>ditemukan di ${k} perpustakaan nasional</b>. Bisa diajukan via Chaekbada.`,
+ rec:'Rekomendasi',tag0:'Pakai sekarang',tag1:'Tercepat',tag2:'Terdekat',also:'Di sini juga bisa',
+ fold:n=>`Lihat ${n} cabang lain ＋`,foldC:'Tutup －',bOk:'Tersedia',bBusy:'Dipinjam',bNone:'Tidak ada',
+ my:'langganan',code:'Kode perpustakaan',others:n=>`${n} cabang lain`,again:'Cari lagi',
+ caution:'Layar demo. Tidak ada permintaan sungguhan.',
+ srcR:d=>`Data nyata Data4Library · ditanya ${d} · lengkap 16 cabang<br><span class="s2">Status pinjam per <b>hari sebelumnya</b> (spek API)</span>`,
+ srcD:'Bagian luar kota memakai data contoh · 16 cabang Bucheon data nyata',
+ rule:m=>`Sesuai aturan, <b>tidak bisa mengajukan bila Perpustakaan ${m} memiliki bukunya.</b> Sudah kami saring.`,
+ ax:['Pintu sesuai kondisi pengguna · rancangan lanjutan','🎧 Format alternatif — buku audio·braille·huruf besar','🚚 Antar ke rumah Chaeknarae — bagi yang sulit bepergian','📞 Mode telepon — semua lewat satu panggilan','🌏 Suara 10 bahasa <b>(berfungsi)</b>'],
+ shT:'Ajukan pinjam antar-cabang?',shT0:'Tunjukkan lokasi bukunya?',shP:'Akan diterima sebagai berikut',
+ kBook:'Buku',kMode:'Metode',kFrom:'Perpustakaan peminjam',kKeep:'Perpustakaan pemilik',kTo:'Tempat ambil',kTime:'Perkiraan waktu',
+ kRecv:'Cara ambil',recvV:m=>`Datang ke Perpustakaan ${m}`,recvS:'Difabel dapat memilih antar ke rumah (lanjutan)',
+ kPath:'Jalur pemrosesan',pathV:'Konektor sistem perpustakaan (MCP)',pathS:'Dapat dipakai ulang perpustakaan bersistem sama',
+ kUser:'Pemohon',user:'Hong ○○ (anggota ****1234)',yes:'Ya, ajukan',no:'Batal',
+ dT:'Permintaan diterima',
+ d0:l=>`Kami minta <b>${l}</b> menyimpannya di meja layanan.<br>Datang hari ini untuk mengambilnya.`,
+ d1:(md,l,m)=>`Diajukan via <b>${md}</b>.<br>Buku sedang dipindah dari <b>${l}</b> ke <b>Perpustakaan ${m}</b>.<br>Kami SMS saat tiba.`,
+ kArr:'Perkiraan tiba',kNum:'No. penerimaan',home:'Kembali ke awal' },
+};
+function U(){ return UI[ (L===LANGS.ko) ? 'ko' : Object.keys(LANGS).find(k=>LANGS[k]===L) ] || UI.ko; }
+
 let L = LANGS.ko;
 const KO_S = {h1:'찾으시는 책,<br>말씀만 하세요', h2:'제목이 정확하지 않아도 괜찮습니다', or:'또는 직접 입력',
   ph:'예: 나미야 잡화점', go:'검색', lbl:'눌러서 바로 보기', l1:'듣고 있어요', l2:'편하게 말씀하세요', st:'그만하기'};
@@ -749,6 +1045,13 @@ function applyLang(code){
   $('lst1').textContent = s.l1; $('lst2').textContent = s.l2;
   $('stopbtn').textContent = s.st;
   $('langbtn').textContent = '🌏 ' + L.n;
+  const u = U();
+  $('st1t').textContent = u.st1; $('st1d').textContent = u.st1d;
+  $('st2t').textContent = u.st2; $('w2d').textContent = u.st2d;
+  $('st3t').textContent = u.st3; $('st3d').textContent = u.st3d;
+  $('doneT').textContent = u.dT; $('homeBtn').textContent = u.home;
+  $('sheetP').textContent = u.shP; $('confirm').textContent = u.yes;
+  $('cancelBtn').textContent = u.no;
   const CL = CHIPS_L[code] || CHIPS_L.ko;
   document.querySelectorAll('.chip').forEach((b, i) => {
     const [q, m, lv] = CL.c[i] || CL.c[0];
@@ -843,7 +1146,16 @@ function run(text, live){
     });
     cur = hit;
   }
-  const c = CASES[cur], heard = live ? text : c.heard;
+  const c = CASES[cur], u = U();
+  const code = Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko';
+  let heard;
+  if(live) heard = text;
+  else if(code === 'ko') heard = c.heard;
+  else {
+    const q = (CHIPS_L[code] && CHIPS_L[code].c[cur]) ? CHIPS_L[code].c[cur][0] : c.heard;
+    heard = q.replace(/<[^>]+>/g,'');
+  }
+  const fixHtml = (code === 'ko') ? c.fix : u.fix(c.book.t);
 
   show('s-work');
   ['w1','w2','w3'].forEach(i => $(i).className = 'stp');
@@ -851,31 +1163,54 @@ function run(text, live){
 
   setTimeout(()=>{ $('w1').className='stp on'; $('heard').textContent = '“'+heard+'”'; }, 250);
   setTimeout(()=>{ $('w1').className='stp done'; $('w2').className='stp on';
-                   $('fixed').innerHTML = c.fix;
+                   $('fixed').innerHTML = fixHtml;
                    say(L.m ? L.m.mid(c.book.t) : `${c.book.t}로 이해했습니다. 가까운 곳부터 확인하고 있습니다.`); }, 1250);
   setTimeout(()=>{ $('w2').className='stp done'; $('w3').className='stp on';
                    $('scan').innerHTML=''; }, 2350);
 
-  const SCAN = view(c).scan;
-  SCAN.forEach((s,i)=>{
+  const V = view(c);
+  const rows = V.scanK.map(([k, arg])=>{
+    switch(k){
+      case 'mineHave':    return [u.usual(내관), u.mineHave, true];
+      case 'mineBusy':    return [u.usual(내관), u.mineBusy, false];
+      case 'mineNone':    return [u.usual(내관), u.mineNone, false];
+      case 'innerOk':     return [u.inner, u.innerOk(arg), true];
+      case 'innerNone':   return [u.inner16, u.innerNone, false];
+      case 'innerNoneAll':return [u.inner16, u.innerNoneAll, false];
+      case 'nationFound': return [u.nation, u.nationFound(arg), true];
+      default:            return [u.nation, '…', true];
+    }
+  });
+  rows.forEach((r,i)=>{
     setTimeout(()=>{
       const d = document.createElement('div');
-      d.className = 'scanrow ' + (s.ok ? 'hit' : 'miss');
-      d.innerHTML = `<span class="sn">${s.n}</span><span class="sr">${s.ok?'✓ ':''}${s.r}</span>`;
+      d.className = 'scanrow ' + (r[2] ? 'hit' : 'miss');
+      d.innerHTML = `<span class="sn">${r[0]}</span><span class="sr">${r[2]?'✓ ':''}${r[1]}</span>`;
       $('scan').appendChild(d);
     }, 2600 + i*750);
   });
-  setTimeout(()=>{ $('w3').className='stp done'; result(); }, 2600 + SCAN.length*750 + 500);
+  setTimeout(()=>{ $('w3').className='stp done'; result(); }, 2600 + rows.length*750 + 500);
 }
 
-/* ── 결과 : 첫 화면에 결론 + 버튼까지 ── */
-function result(){
-  const c = CASES[cur], V = view(c), T = TIER[V.tier];
+function eff(c){ return (c.real && c.bx[내관] === 'ok') ? 0 : (view(c).tier); }
+function dispName(u, l){ return l.raw ? u.NM(l.raw) : l.n; }
+function best(c){
+  const u = U(), V = view(c);
   const okL = V.libs.filter(l => l.s === 'ok');
-  const bt  = okL[0] || V.libs[0];
-  const alt = okL.filter(l => l !== bt).slice(0, 2);          // 핵심 3곳 = 추천 1 + 대안 2
+  if(eff(c) === 0) return okL.find(l => l.raw === 내관) || okL[0];
+  return okL.find(l => l.raw !== 내관) || okL[0] || V.libs[0];
+}
+
+function result(){
+  const c = CASES[cur], u = U(), V = view(c), t = eff(c);
+  const T = u.tier[t];                       // [badge, name, desc, btn, c1, c2]
+  const okL = V.libs.filter(l => l.s === 'ok');
+  const bt = (t === 0 ? okL.find(l => l.raw === 내관)
+                      : okL.find(l => l.raw !== 내관)) || okL[0] || V.libs[0];
+  const alt = okL.filter(l => l !== bt).slice(0, 2);
   const rest = V.libs.filter(l => l !== bt && alt.indexOf(l) < 0);
   const okN = V.okN != null ? V.okN : okL.length;
+  const btName = dispName(u, bt);
 
   let h = `
     <div class="bookcard">
@@ -883,140 +1218,131 @@ function result(){
       <div class="meta">
         <h3>${c.book.t}</h3>
         <p class="au">${c.book.a}${c.book.p ? ' · '+c.book.p : ''}${c.book.y ? ' ('+c.book.y+')' : ''}</p>
-        <p class="isbn">${c.book.isbn ? "ISBN "+c.book.isbn : "예시 자료 · 실데이터 수집 예정"}</p>
+        <p class="isbn">ISBN ${c.book.isbn}</p>
       </div>
     </div>
 
     <div class="tierbar">
-      <span class="tb ${T.color}">${T.step}단계</span>
-      <div class="ti"><div class="tn">${T.name}</div><div class="td">${T.desc}</div></div>
-      <div class="tc">${T.c1}<br>${T.c2}</div>
+      <span class="tb ${t===0?'ok':t===1?'mid':'far'}">${T[0]}</span>
+      <div class="ti"><div class="tn">${T[1]}</div><div class="td">${T[2]}</div></div>
+      <div class="tc">${T[4]}<br>${T[5]}</div>
     </div>`;
 
-  if(V.tier === 0){
-    h += `<div class="sumline">자주 가시는 <b>${NM(내관)}에 지금 있습니다.</b>
-      상호대차 없이 바로 빌리실 수 있어요.
-      <span class="s2">관내에서는 ${okN}곳이 대출 가능합니다.</span></div>`;
-  } else if(V.tier === 1){
-    h += `<div class="sumline"><b>${NM(내관)}은 지금 어렵지만</b>,
-      가까운 <b>${okN}개 분관</b>에서 빌려서 ${NM(내관)}으로 보내드릴 수 있어요.</div>`;
-  } else {
-    h += `<div class="sumline">부천 관내에는 없어서
-      <b>전국에서 ${okN}곳</b>을 찾았어요. 책바다로 신청하면 됩니다.</div>`;
-  }
+  h += `<div class="sumline">${ t===0 ? u.sum0(내관, okN) : t===1 ? u.sum1(내관, okN) : u.sum2(okN) }</div>`;
 
-  const tag = V.tier === 0 ? '바로 이용' : (V.tier === 1 ? '가장 빠름' : '가장 가까움');
+  const tag = t===0 ? u.tag0 : (t===1 ? u.tag1 : u.tag2);
   h += `<div class="lib best">
       <span class="pick">${tag}</span>
-      <div class="r1"><div class="nm">${bt.n}</div><span class="badge b-ok">대출 가능</span></div>
-      <div class="r2">${bt.code ? `도서관코드 <code>${bt.code}</code>` : ''}${bt.loc ? (bt.code?' · ':'')+bt.loc : ''}${bt.note ? '<br>'+bt.note : ''}</div>
+      <div class="r1"><div class="nm">${btName}</div><span class="badge b-ok">${u.bOk}</span></div>
+      <div class="r2">${bt.code ? `${u.code} <code>${bt.code}</code>` : ''}${bt.loc ? (bt.code?' · ':'')+bt.loc : ''}${bt.note ? '<br>'+bt.note : ''}</div>
     </div>
 
-    <button class="cta" id="apply">${T.btn}</button>
+    <button class="cta" id="apply">${T[3]}</button>
 
-    <div class="src">${c.real
-      ? `정보나루 실데이터 · ${기준일} 조회 · 16개 분관 전수 확인<br>대출 상태는 조회일 <b>전일</b> 기준 (Open API 사양)`
-      : `관외 구간은 예시 데이터 · 관내 16개 분관은 실데이터로 동작`}</div>`;
+    <div class="src">${c.real ? u.srcR(기준일) : u.srcD}</div>`;
 
-  if(V.tier === 0){
-    h += `<div class="rule">규정상 <b>${NM(내관)}에 자료가 있으면 상호대차 신청이 되지 않습니다.</b>
-      불필요한 신청을 만들지 않도록 미리 걸러냈습니다.</div>`;
-  }
+  if(t === 0) h += `<div class="rule">${u.rule(내관)}</div>`;
 
   if(alt.length){
-    h += `<div class="sec-t">여기도 가능합니다</div>`;
+    h += `<div class="sec-t">${u.also}</div>`;
     alt.forEach(l => {
-      let d = l.code ? `도서관코드 <code>${l.code}</code>` : '';
+      let d = l.code ? `${u.code} <code>${l.code}</code>` : '';
       if(l.loc)  d += (d?' · ':'') + l.loc;
       if(l.note) d += (d?'<br>':'') + l.note;
-      h += `<div class="lib"><div class="r1"><div class="nm">${l.n}</div>
-            <span class="badge b-ok">대출 가능</span></div>
+      h += `<div class="lib"><div class="r1"><div class="nm">${dispName(u,l)}</div>
+            <span class="badge b-ok">${u.bOk}</span></div>
             ${d ? `<div class="r2">${d}</div>` : ''}</div>`;
     });
   }
 
-  if(rest.length){
-    h += `<button class="fold" id="foldbtn">그 외 ${rest.length}곳 현황 보기 ＋</button>
+  const restAll = rest.slice();
+  const foldN = restAll.length + (V.agg ? 1 : 0);
+  if(foldN){
+    h += `<button class="fold" id="foldbtn">${u.fold(foldN)}</button>
           <div class="rest" id="rest">`;
-    rest.forEach(l => {
-      const bd = l.s === 'ok' ? '<span class="badge b-ok">대출 가능</span>'
-               : l.s === 'busy' ? '<span class="badge b-busy">대출 중</span>'
-               : '<span class="badge b-none">미소장</span>';
-      const me = (l.n === NM(내관)) ? '<span class="mytag">자주 가는 곳</span>' : '';
-      h += `<div class="restrow"><span class="rn">${l.n}${me}</span>${bd}</div>`;
+    restAll.forEach(l => {
+      const bd = l.s === 'ok' ? `<span class="badge b-ok">${u.bOk}</span>`
+               : l.s === 'busy' ? `<span class="badge b-busy">${u.bBusy}</span>`
+               : `<span class="badge b-none">${u.bNone}</span>`;
+      const me = (l.raw === 내관) ? `<span class="mytag">${u.my}</span>` : '';
+      h += `<div class="restrow"><span class="rn">${dispName(u,l)}${me}</span>${bd}</div>`;
     });
+    if(V.agg){
+      h += `<div class="restrow"><span class="rn">${u.others(V.agg.n)}<br>
+            <small style="font-weight:400;color:var(--ink3)">${V.agg.names.join(' · ')}</small></span>
+            <span class="badge b-none">${u.bNone}</span></div>`;
+    }
     h += `</div>`;
   }
 
   h += `<div class="axcard">
-      <div class="axt">이용자 조건에 따른 입구 · 확장 설계</div>
-      <div class="axrow">🎧 대체자료 함께 찾기 — 오디오북·점자·큰활자 (국가서지 대체자료목록 연계)</div>
-      <div class="axrow">🚚 책나래 우편 수령 — 거동불편·장애 이용자는 자택 배송으로 분기</div>
-      <div class="axrow">📞 전화 한 통 모드 — 대표번호로 같은 상담·신청 (화면 불필요)</div>
-      <div class="axrow">🌏 다국어 음성 — 10개 언어 인식·안내 <b>(동작 — 헤더 🌏 단추)</b></div>
+      <div class="axt">${u.ax[0]}</div>
+      <div class="axrow">${u.ax[1]}</div>
+      <div class="axrow">${u.ax[2]}</div>
+      <div class="axrow">${u.ax[3]}</div>
+      <div class="axrow">${u.ax[4]}</div>
     </div>
-    <button class="cta ghost" onclick="reset()">다시 검색</button>
-    <p class="caution">시연 화면입니다. 실제 신청은 이루어지지 않습니다.</p>`;
+    <button class="cta ghost" onclick="reset()">${u.again}</button>
+    <p class="caution">${u.caution}</p>`;
 
   $('s-result').innerHTML = h;
   show('s-result');
   $('apply').onclick = openSheet;
+  if($('foldbtn')) $('foldbtn').onclick = function(){
+    const r = $('rest'), on = r.classList.toggle('on');
+    this.innerHTML = on ? u.foldC : u.fold(foldN);
+  };
   {
-    const plain = document.createElement('div'); plain.innerHTML = h;
-    const sum = plain.querySelector('.sumline');
-    const sumTx = sum ? sum.textContent.replace(/\s+/g,' ').trim() : '';
-    if(L.m){ say(L.m.res(c.book.t, bt.n)); }
+    if(L.m){ say(L.m.res(c.book.t, btName)); }
     else {
+      const plain = document.createElement('div'); plain.innerHTML = h;
+      const sum = plain.querySelector('.sumline');
+      const sumTx = sum ? sum.textContent.replace(/\s+/g,' ').trim() : '';
       let guide;
-      if(V.tier === 0)      guide = `추천 도서관은 ${bt.n}입니다. 방문하시면 바로 빌리실 수 있습니다.`;
-      else if(V.tier === 1) guide = `추천 도서관은 ${bt.n}입니다. 신청하시려면 화면 가운데의 상호대차 신청 단추를 눌러 주세요.`;
-      else                  guide = `책바다로 신청하시려면 화면 가운데의 신청 단추를 눌러 주세요.`;
+      if(t === 0)      guide = `추천 도서관은 ${btName}입니다. 방문하시면 바로 빌리실 수 있습니다.`;
+      else if(t === 1) guide = `추천 도서관은 ${btName}입니다. 신청하시려면 화면 가운데의 상호대차 신청 단추를 눌러 주세요.`;
+      else             guide = `책바다로 신청하시려면 화면 가운데의 신청 단추를 눌러 주세요.`;
       say(`검색 결과입니다. ${c.book.t}, ${c.book.a}. ${sumTx} ${guide} 다시 검색하시려면 아래쪽 다시 검색 단추를 누르시면 됩니다.`);
     }
   }
-  if($('foldbtn')) $('foldbtn').onclick = function(){
-    const r = $('rest'), on = r.classList.toggle('on');
-    this.innerHTML = on ? '접기 －' : `그 외 ${rest.length}곳 현황 보기 ＋`;
-  };
 }
 
 function openSheet(){
-  const c = CASES[cur], V = view(c), T = TIER[V.tier];
-  const bt = V.libs.filter(l => l.s === 'ok')[0] || V.libs[0];
-  $('sheet-t').textContent = V.tier === 0 ? '자료를 찾아드릴까요?' : '상호대차를 신청할까요?';
+  const c = CASES[cur], u = U(), V = view(c), t = eff(c);
+  const T = u.tier[t], bt = best(c), btName = dispName(u, bt);
+  $('sheet-t').textContent = (t === 0) ? u.shT0 : u.shT;
   $('sheetkv').innerHTML = `
-    <div class="kv"><div class="k">도서</div><div class="v">${c.book.t}</div></div>
-    <div class="kv"><div class="k">방식</div><div class="v">${T.name}</div></div>
-    <div class="kv"><div class="k">${V.tier === 0 ? '보관 도서관' : '대출 도서관'}</div><div class="v">${bt.n}</div></div>
-    <div class="kv"><div class="k">수령 도서관</div><div class="v">${NM(내관)}</div></div>
-    <div class="kv"><div class="k">예상 소요</div><div class="v">${T.c1} · ${T.c2}</div></div>
-    <div class="kv"><div class="k">수령 방법</div><div class="v">${NM(내관)} 방문
-      <span class="vs">거동불편·장애 이용자는 책나래 우편 수령 선택 (확장 설계)</span></div></div>
-    <div class="kv"><div class="k">처리 경로</div><div class="v">도서관리시스템 커넥터(MCP)
-      <span class="vs">동일 시스템(알파스 등) 사용 도서관은 커넥터 재사용</span></div></div>
-    <div class="kv"><div class="k">신청자</div><div class="v">홍○○ (회원번호 ****1234)</div></div>`;
+    <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>
+    <div class="kv"><div class="k">${u.kMode}</div><div class="v">${T[1]}</div></div>
+    <div class="kv"><div class="k">${t===0 ? u.kKeep : u.kFrom}</div><div class="v">${btName}</div></div>
+    <div class="kv"><div class="k">${u.kTo}</div><div class="v">${u.NM(내관)}</div></div>
+    <div class="kv"><div class="k">${u.kTime}</div><div class="v">${T[4]} · ${T[5]}</div></div>
+    <div class="kv"><div class="k">${u.kRecv}</div><div class="v">${u.recvV(내관)}
+      <span class="vs">${u.recvS}</span></div></div>
+    <div class="kv"><div class="k">${u.kPath}</div><div class="v">${u.pathV}
+      <span class="vs">${u.pathS}</span></div></div>
+    <div class="kv"><div class="k">${u.kUser}</div><div class="v">${u.user}</div></div>`;
   $('sheet').classList.add('on');
-  if(L.m) say(L.m.sh(c.book.t, bt.n));
-  else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, ${V.tier === 0 ? '보관' : '대출'} 도서관 ${bt.n}, 수령 도서관 ${NM(내관)}, 예상 소요 ${T.c2}. 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`);
+  if(L.m) say(L.m.sh(c.book.t, btName));
+  else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, ${t === 0 ? '보관' : '대출'} 도서관 ${btName}, 수령 도서관 ${u.NM(내관)}, 예상 소요 ${T[5]}. 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`);
 }
 function closeSheet(){ $('sheet').classList.remove('on'); }
 
 $('confirm').onclick = () => {
   closeSheet();
-  const c = CASES[cur], V = view(c), T = TIER[V.tier];
-  const bt = V.libs.filter(l => l.s === 'ok')[0] || V.libs[0];
-  $('donetx').innerHTML = (V.tier === 0)
-    ? `<b>${bt.n}</b> 대출대에 보관 요청했습니다.<br>오늘 중 방문하시면 바로 받으실 수 있습니다.`
-    : `<b>${T.name}</b>으로 신청되었습니다.<br><b>${bt.n}</b>의 자료를 <b>${NM(내관)}</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`;
+  const c = CASES[cur], u = U(), t = eff(c);
+  const T = u.tier[t], bt = best(c), btName = dispName(u, bt);
+  $('doneT').textContent = u.dT;
+  $('donetx').innerHTML = (t === 0) ? u.d0(btName) : u.d1(T[1], btName, 내관);
   $('recap').innerHTML = `
-    <div class="kv"><div class="k">도서</div><div class="v">${c.book.t}</div></div>
-    <div class="kv"><div class="k">수령 도서관</div><div class="v">${NM(내관)}</div></div>
-    <div class="kv"><div class="k">예상 도착</div><div class="v">${T.c2}</div></div>
-    <div class="kv"><div class="k">접수번호</div><div class="v">ILL-2026-0819-0037</div></div>`;
+    <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>
+    <div class="kv"><div class="k">${u.kTo}</div><div class="v">${u.NM(내관)}</div></div>
+    <div class="kv"><div class="k">${u.kArr}</div><div class="v">${T[5]}</div></div>
+    <div class="kv"><div class="k">${u.kNum}</div><div class="v">ILL-2026-0819-0037</div></div>`;
   show('s-done');
   if(L.m) say(L.m.dn());
-  else say(V.tier === 0 ? `${bt.n} 대출대에 보관 요청했습니다.` :
-      `${T.name}으로 신청되었습니다. 도착하면 문자로 알려드립니다.`);
+  else say(t === 0 ? `${btName} 대출대에 보관 요청했습니다.` :
+      `${T[1]}으로 신청되었습니다. 도착하면 문자로 알려드립니다.`);
 };
 
 function reset(){

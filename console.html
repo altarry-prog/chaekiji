@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="책이지 MCP 콘솔 — 표준 도구 호출 시연 화면">
+<style>
+/* 표준 페이지 기본값 — 아티팩트 껍데기가 하던 역할을 대신한다 */
+:root{color-scheme:light dark}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>책이지 MCP 콘솔</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f6f8f7; --card:#ffffff; --ink:#1b2420; --ink2:#54615b; --ink3:#8a958f;
+  --line:#dfe6e2; --accent:#0d6e5f; --accent-soft:#e2efeb; --brass:#a06e24; --brass-soft:#f2e7d3;
+  --ok:#0d7a3e; --bad:#b3362a; --code-bg:#101a16; --code-ink:#d7e5de; --code-dim:#7d948a;
+  --code-key:#8fd4c2; --code-str:#e8c98a; --lane-a:#3d6db0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101614; --card:#18211d; --ink:#e6ece8; --ink2:#a7b3ac; --ink3:#6f7d76;
+    --line:#2a352f; --accent:#53b89e; --accent-soft:#1c2f29; --brass:#d3a55c; --brass-soft:#2c2415;
+    --ok:#5cc084; --bad:#e0776b; --code-bg:#0b110e; --code-ink:#cfe0d8; --code-dim:#6f857b;
+    --code-key:#7fcab6; --code-str:#dfc084; --lane-a:#7ea8dd;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101614; --card:#18211d; --ink:#e6ece8; --ink2:#a7b3ac; --ink3:#6f7d76;
+  --line:#2a352f; --accent:#53b89e; --accent-soft:#1c2f29; --brass:#d3a55c; --brass-soft:#2c2415;
+  --ok:#5cc084; --bad:#e0776b; --code-bg:#0b110e; --code-ink:#cfe0d8; --code-dim:#6f857b;
+  --code-key:#7fcab6; --code-str:#dfc084; --lane-a:#7ea8dd;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:400 15px/1.65 "IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.wrap{max-width:1060px;margin:0 auto;padding:28px 18px 70px}
+header{margin-bottom:14px}
+.kicker{font:600 11.5px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
+.lede{color:var(--ink2);margin:0;font-size:14.5px;max-width:46em}
+.strip{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 10px 6px;margin:18px 0 14px;overflow-x:auto}
+.strip svg{display:block;margin:0 auto;max-width:100%;height:auto;color:var(--ink)}
+.socket rect{transition:fill .25s, stroke .25s}
+.socket.lit rect{fill:var(--brass);stroke:var(--brass)}
+.socket.lit text{fill:#fff}
+.socket text{transition:fill .25s}
+.grid{display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px}
+.panel h2{font-size:14px;margin:0 0 10px;letter-spacing:.02em}
+.panel h2 small{font:600 10.5px "IBM Plex Mono",monospace;color:var(--ink3);margin-left:6px}
+.btn{display:block;width:100%;text-align:left;border:1.4px solid var(--line);background:var(--bg);
+  color:var(--ink);border-radius:10px;padding:10px 12px;margin:7px 0;cursor:pointer;
+  font:500 13.5px/1.45 "IBM Plex Sans KR",sans-serif}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn b{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent)}
+.btn.play{background:var(--accent);color:#fff;border-color:var(--accent);text-align:center;font-weight:700}
+.btn.play b{color:#d9efe8}
+.btn:disabled{opacity:.45;cursor:default}
+.cfg{border-top:1.5px dashed var(--line);margin-top:14px;padding-top:12px}
+.cfg label{display:flex;gap:8px;align-items:center;font-size:13px;margin:6px 0;cursor:pointer}
+.cfg input{accent-color:var(--accent)}
+.rules{font:400 11.5px/1.8 "IBM Plex Mono",monospace;color:var(--ink2);background:var(--bg);
+  border-radius:9px;padding:8px 11px;margin-top:8px}
+.rules b{color:var(--brass)}
+#log{display:flex;flex-direction:column;gap:10px;min-height:340px}
+.msg{border:1.4px solid var(--line);border-radius:12px;overflow:hidden;animation:pop .3s ease}
+@keyframes pop{from{opacity:0;transform:translateY(7px)}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.msg{animation:none}}
+.msg .head{display:flex;gap:8px;align-items:center;padding:7px 12px;font:600 11px "IBM Plex Mono",monospace;
+  background:var(--bg);border-bottom:1.4px solid var(--line)}
+.msg.res .head{background:var(--accent-soft)}
+.msg.err .head{background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.lane{border-radius:99px;padding:2.5px 9px;color:#fff;font-weight:700}
+.lane.ag{background:var(--lane-a)} .lane.mcp{background:var(--brass)} .lane.cn{background:var(--accent)}
+.arrow{color:var(--ink3)}
+.msg pre{margin:0;padding:11px 14px;background:var(--code-bg);color:var(--code-ink);
+  font:400 12px/1.65 "IBM Plex Mono",monospace;overflow-x:auto}
+.msg pre .k{color:var(--code-key)} .msg pre .s{color:var(--code-str)} .msg pre .d{color:var(--code-dim)}
+.verdict{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--card)}
+.chip{font:600 11px/1 "IBM Plex Mono",monospace;border-radius:99px;padding:5px 10px}
+.chip.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.chip.no{color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,transparent)}
+.say{padding:10px 13px;font-size:13.5px;background:var(--card);border-top:1.4px dashed var(--line)}
+.say b{color:var(--accent)}
+.note{font-size:12px;color:var(--ink3);border-top:1.5px solid var(--line);margin-top:26px;padding-top:14px;line-height:1.7}
+.confirmrow{display:flex;gap:8px;padding:10px 12px;background:var(--card)}
+.confirmrow button{flex:1;border:none;border-radius:9px;padding:9px 0;font:700 13px "IBM Plex Sans KR",sans-serif;cursor:pointer}
+.confirmrow .yes{background:var(--accent);color:#fff}
+.confirmrow .no{background:var(--bg);color:var(--ink2);border:1.4px solid var(--line)}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="kicker">Chaekiji MCP Live Console</span>
+  <h1>책이지 MCP 콘솔</h1>
+  <p class="lede">참조 서버(chaekiji-mcp)와 <b>동일한 도구·규칙·실측 데이터</b>를 브라우저에 옮겨,
+  에이전트의 도구 호출이 실제로 어떻게 오가는지 눈으로 확인하는 시연 콘솔입니다.
+  왼쪽 단추를 누르면 오른쪽에 전문(JSON)이 흐르고, 위 멀티탭에서 해당 콘센트에 불이 들어옵니다.</p>
+</header>
+
+<div class="strip">
+<svg viewBox="0 0 880 96" role="img" aria-label="MCP 표준 도구 6구 멀티탭. 도구가 호출되면 해당 콘센트에 불이 들어온다.">
+<g font-family="IBM Plex Mono,monospace" font-size="10.5" text-anchor="middle">
+<rect x="8" y="8" width="864" height="80" rx="16" fill="none" stroke="#a06e24" stroke-width="2"/>
+<text x="440" y="28" font-family="IBM Plex Sans KR,sans-serif" font-size="12" font-weight="700" fill="currentColor">MCP 도구 서버 — 핵심 6구 + 자동화 확장 2구 (v0.2)</text>
+<g id="sk-search_item" class="socket"><rect x="20" y="40" width="92" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="57" cy="52" r="2.5" fill="#a06e24"/><circle cx="75" cy="52" r="2.5" fill="#a06e24"/><text x="66" y="69" fill="currentColor" font-size="9.5">search_item</text></g>
+<g id="sk-check_availability" class="socket"><rect x="120" y="40" width="118" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="170" cy="52" r="2.5" fill="#a06e24"/><circle cx="188" cy="52" r="2.5" fill="#a06e24"/><text x="179" y="69" fill="currentColor" font-size="10">check_availability</text></g>
+<g id="sk-check_policy" class="socket"><rect x="246" y="40" width="94" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="284" cy="52" r="2.5" fill="#a06e24"/><circle cx="302" cy="52" r="2.5" fill="#a06e24"/><text x="293" y="69" fill="currentColor" font-size="9.5">check_policy</text></g>
+<g id="sk-request_service" class="socket"><rect x="348" y="40" width="108" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="393" cy="52" r="2.5" fill="#a06e24"/><circle cx="411" cy="52" r="2.5" fill="#a06e24"/><text x="402" y="69" fill="currentColor" font-size="10">request_service</text></g>
+<g id="sk-find_alternative" class="socket"><rect x="464" y="40" width="102" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="506" cy="52" r="2.5" fill="#a06e24"/><circle cx="524" cy="52" r="2.5" fill="#a06e24"/><text x="515" y="69" fill="currentColor" font-size="10">find_alternative</text></g>
+<g id="sk-notify_user" class="socket"><rect x="574" y="40" width="74" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="602" cy="52" r="2.5" fill="#a06e24"/><circle cx="620" cy="52" r="2.5" fill="#a06e24"/><text x="611" y="69" fill="currentColor" font-size="9.5">notify_user</text></g>
+<g id="sk-suggest_items" class="socket"><rect x="656" y="40" width="100" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="697" cy="52" r="2.5" fill="#a06e24"/><circle cx="715" cy="52" r="2.5" fill="#a06e24"/><text x="706" y="69" fill="currentColor" font-size="10">suggest_items</text></g>
+<g id="sk-manage_mandate" class="socket"><rect x="764" y="40" width="116" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="813" cy="52" r="2.5" fill="#a06e24"/><circle cx="831" cy="52" r="2.5" fill="#a06e24"/><text x="822" y="69" fill="currentColor" font-size="10">manage_mandate</text></g>
+</g>
+</svg>
+</div>
+
+<div class="grid">
+<div class="panel">
+  <h2>제어판 <small>SCENARIO</small></h2>
+  <button class="btn play" id="autoBtn">▶ 김순자 씨 시나리오 자동 재생 <b>①→⑤</b></button>
+  <button class="btn" data-step="1">① 발화 해석 <b>search_item</b><br><span style="color:var(--ink3);font-size:12px">"그 왜, 나미야 잡화점인가 하는 책…"</span></button>
+  <button class="btn" data-step="2">② 어디서 빌리지 <b>check_availability</b></button>
+  <button class="btn" data-step="3">③ 규정 판정 <b>check_policy</b></button>
+  <button class="btn" data-step="4">④ 신청 실행 <b>request_service</b><br><span style="color:var(--ink3);font-size:12px">확인 없이 → 거부 · 확인 후 → 접수</span></button>
+  <button class="btn" data-step="5">⑤ 도착 알림 <b>notify_user</b></button>
+  <button class="btn" data-step="6">＋ 대체자료 확인 <b>find_alternative</b><br><span style="color:var(--ink3);font-size:12px">『소년이 온다』 — 오디오북 → 책나래 분기</span></button>
+  <button class="btn" data-step="7">＋ 관내에 없는 책 <b>전국 폴백</b><br><span style="color:var(--ink3);font-size:12px">『지구 끝의 온실』 — 정보나루 · 전일 기준 명시</span></button>
+
+  <button class="btn" id="passBtn" style="border-color:#a06e24">▶ 책이지 패스 — 월간 자동 실행 <b>mandate</b><br><span style="color:var(--ink3);font-size:12px">위임 생성 → 무확인 실행 → 범위 밖 건너뜀</span></button>
+
+  <div class="cfg">
+    <h2>규정 설정 <small>CONFIG · 확산의 증명</small></h2>
+    <label><input type="radio" name="cfg" value="bucheon" checked> 부천시립도서관 <span style="font:600 11px 'IBM Plex Mono',monospace;color:var(--ink3)">bucheon.yaml</span></label>
+    <label><input type="radio" name="cfg" value="example"> 가상시(예시) <span style="font:600 11px 'IBM Plex Mono',monospace;color:var(--ink3)">example-city.yaml</span></label>
+    <div class="rules" id="ruleBox"></div>
+    <p style="font-size:12px;color:var(--ink3);margin:8px 0 0">설정을 바꾸고 ③을 다시 누르면 —
+    같은 코드·같은 회원인데 판정이 달라집니다. 확산이 "설정 파일을 새로 쓰는 일"인 이유.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>도구 호출 로그 <small>JSON-RPC · 요청 → 응답</small></h2>
+  <div id="log"><p style="color:var(--ink3);font-size:13px" id="empty">왼쪽에서 단추를 누르면 여기로 전문이 흐릅니다.</p></div>
+</div>
+</div>
+
+<p class="note"><b>정직 고지</b> — 이 콘솔은 파이썬 참조 서버 <span style="font-family:'IBM Plex Mono',monospace">chaekiji-mcp</span>의
+규칙 엔진·금고·실측 픽스처(2026. 8. 18. 정보나루 bookExist 64건)를 브라우저에 그대로 이식한 것입니다.
+실제 MCP 전송(stdio JSON-RPC)의 검증은 참조 서버의 적합성 시험 12건이 담당하며, 이 화면은 그 동작을 사람이 볼 수 있게 만든 창입니다.
+회원은 가상 인물, 대체자료·전국 소장 수는 예시 데이터입니다. · 2026. 8. 부천시립도서관 책이지 프로젝트</p>
+</div>
+<script>
+/* ── 참조 서버 이식: 픽스처 · 금고 · 규정 엔진 · 도구 6종 ─────────── */
+const HOLD = {
+ "9788972756194":{"꿈빛":"ok","꿈여울":"ok","도당":"ok","동화":"none","별빛마루":"busy","북부":"busy","상동":"busy","송내":"ok","수주":"busy","심곡":"ok","역곡":"busy","역곡밝은":"none","오정":"ok","원미":"ok","책마루":"none","한울빛":"ok"},
+ "9788936434120":{"꿈빛":"ok","꿈여울":"ok","도당":"ok","동화":"busy","별빛마루":"busy","북부":"busy","상동":"ok","송내":"ok","수주":"ok","심곡":"ok","역곡":"busy","역곡밝은":"busy","오정":"ok","원미":"ok","책마루":"ok","한울빛":"ok"},
+ "9791191824001":{}
+};
+const BOOK = {
+ namiya:{isbn13:"9788972756194",title:"나미야 잡화점의 기적",author:"히가시노 게이고",publisher:"현대문학"},
+ sonyeon:{isbn13:"9788936434120",title:"소년이 온다",author:"한강"},
+ onsil:{isbn13:"9791191824001",title:"지구 끝의 온실",author:"김초엽"}
+};
+const ALT = {"9788936434120":{audiobook:true,braille:true},"9791191824001":{audiobook:false,braille:false}};
+const CFG = {
+ bucheon:{name:"부천", home:"상동", rules:{ill:5,total:20,per:5}, eta:"2~3", notify:["sms","voice_call"]},
+ example:{name:"가상시(예시)", home:"중앙", rules:{ill:2,total:10,per:3}, eta:"3~4", notify:["sms"]}
+};
+let cfgKey="bucheon";
+const VAULT={tok_kimsj:"m-1004"};
+const MEMBER={"m-1004":{ill:2,total:7,at:{상동:3},pref:"voice_call"}};
+
+function policyCheck(c,m,onShelf,pickup){
+  const r=c.rules, at=(m.at[pickup]||0);
+  const checks=[
+    {rule:"수령관 동일도서 비치 시 불가", pass:!onShelf, detail:onShelf?"수령관 서가에 비치 중":"수령관 서가에 없음(대출중·미소장)"},
+    {rule:`상호대차 1인 ${r.ill}권`, pass:m.ill<r.ill, detail:`현재 ${m.ill}/${r.ill}권`},
+    {rule:`통합 대출 ${r.total}권`, pass:m.total<r.total, detail:`현재 ${m.total}/${r.total}권`},
+    {rule:`도서관별 ${r.per}권`, pass:at<r.per, detail:`${pickup} 현재 ${at}/${r.per}권`}
+  ];
+  return {allowed:checks.every(x=>x.pass), checks};
+}
+const TOOLS={
+ search_item(a){
+   const q=(a.utterance||"").replace(/\s/g,"");
+   const b=q.includes("나미야")||q.includes("잡화점")?BOOK.namiya:q.includes("소년")?BOOK.sonyeon:BOOK.onsil;
+   return {...b, confidence:0.97, evidence:"정보나루 srchBooks(모의 픽스처 · 실측 서지)"};
+ },
+ check_availability(a){
+   const c=CFG.bucheon, h=HOLD[a.isbn13]||{};
+   const ok=Object.keys(h).filter(k=>h[k]==="ok").sort();
+   const busy=Object.keys(h).filter(k=>h[k]==="busy").sort();
+   const res={city:"부천", home_library:c.home, home_status:h[c.home]||"none",
+              available_at:ok, loaned_at:busy, basis:"관내: 도서관리시스템 실시간(모의)"};
+   if(!ok.length) res.nation={basis:"전일 기준 · 정보나루", found_count:6, note:"전국 참여도서관(예시 데이터)"};
+   return res;
+ },
+ check_policy(a){
+   const m=MEMBER[VAULT[a.user]]; if(!m) throw "유효하지 않은 이용자 토큰";
+   const c=CFG[cfgKey];
+   const onShelf=(HOLD[a.isbn13]||{})[a.pickup]==="ok";
+   return policyCheck(c,m,onShelf,a.pickup);
+ },
+ request_service(a){
+   if(!a.confirmed_by_user) throw "이용자 확인(confirmed_by_user) 없이는 실행하지 않습니다";
+   const v=TOOLS.check_policy(a);
+   if(!v.allowed) return {accepted:false, why:v.checks.filter(x=>!x.pass)};
+   const m=MEMBER[VAULT[a.user]]; m.ill+=1;
+   const no="ILL-20260828-"+String(++REQN).padStart(4,"0");
+   return {accepted:true, receipt:no, eta_days:CFG[cfgKey].eta, executed_via:"알파스 커넥터(모의)"};
+ },
+ find_alternative(a){
+   const x=ALT[a.isbn13]||{audiobook:false,braille:false};
+   return {...x, basis:"국가서지 대체자료종합목록(모의)", chaeknarae_eligible:!!(x.audiobook||x.braille)};
+ },
+ notify_user(a){
+   const m=MEMBER[VAULT[a.user]];
+   const ch=CFG[cfgKey].notify.includes(m.pref)?m.pref:CFG[cfgKey].notify[0];
+   return {queued:true, channel:ch, message:a.message};
+ }
+};
+let REQN=0, RPCID=0, lastISBN=BOOK.namiya.isbn13;
+let MANDATE=null;
+TOOLS.suggest_items=a=>({items:[
+  {isbn13:BOOK.sonyeon.isbn13,title:"소년이 온다",reason:"이달의 문학"},
+  {isbn13:"9791161571188",title:"불편한 편의점",reason:"많이 찾는 책"},
+  {isbn13:BOOK.onsil.isbn13,title:"지구 끝의 온실",reason:"SF 추천"}].slice(0,a.count||3),
+  basis:"월간 추천(모의 픽스처)"});
+TOOLS.manage_mandate=a=>{
+  if(a.op==="create"){ MANDATE={mandate_id:"mnd-0001",active:true,used:0,
+    scope:{max_per_cycle:CFG[cfgKey].name==="부천"?3:2,free_routes_only:true,pickup:CFG[cfgKey].home,cancel:"언제든 해지 · 결과 매회 통지"}};
+    return MANDATE; }
+  if(a.op==="revoke"){ if(MANDATE) MANDATE.active=false; return {revoked:!!MANDATE}; }
+  return MANDATE||{active:false};
+};
+const _req=TOOLS.request_service;
+TOOLS.request_service=a=>{
+  if(a.mandate_id){
+    if(!MANDATE||!MANDATE.active||MANDATE.mandate_id!==a.mandate_id) throw "유효한 위임(구독)이 없습니다";
+    if(MANDATE.scope.free_routes_only&&a.route==="sea")
+      return {accepted:false,skipped:true,why:"실비 경로는 위임 범위 밖 — 자동 실행하지 않고 수동 확인으로 넘깁니다"};
+    if(MANDATE.used>=MANDATE.scope.max_per_cycle)
+      return {accepted:false,skipped:true,why:`이번 주기 한도(${MANDATE.scope.max_per_cycle}권) 소진`};
+    const v=TOOLS.check_policy(a);
+    if(!v.allowed) return {accepted:false,why:v.checks.filter(x=>!x.pass)};
+    MANDATE.used++; const m=MEMBER[VAULT[a.user]]; m.ill+=1;
+    return {accepted:true,receipt:"ILL-20261001-"+String(++REQN).padStart(4,"0"),
+            eta_days:CFG[cfgKey].eta,authorized_by:"사전 위임 "+a.mandate_id};
+  }
+  return _req(a);
+};
+
+/* ── 화면 ───────────────────────────────────────────── */
+const $=id=>document.getElementById(id);
+const log=$("log");
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function pretty(o){
+  return esc(JSON.stringify(o,null,1))
+    .replace(/"([^"]+)":/g,'<span class="k">"$1"</span>:')
+    .replace(/: "([^"]*)"/g,': <span class="s">"$1"</span>');
+}
+function light(name){
+  document.querySelectorAll(".socket").forEach(s=>s.classList.remove("lit"));
+  const el=$("sk-"+name); if(el){el.classList.add("lit"); setTimeout(()=>el.classList.remove("lit"),1600);}
+}
+function card(kind,laneTxt,laneCls,title,body,extra){
+  $("empty")&&$("empty").remove();
+  const d=document.createElement("div");
+  d.className="msg "+kind;
+  d.innerHTML=`<div class="head"><span class="lane ${laneCls}">${laneTxt}</span>
+    <span class="arrow">${kind==="req"?"─▶":"◀─"}</span><span>${title}</span></div>`+
+    (body?`<pre>${body}</pre>`:"")+(extra||"");
+  log.appendChild(d); d.scrollIntoView({behavior:"smooth",block:"end"});
+}
+function callTool(name,args,sayFn){
+  RPCID++;
+  light(name);
+  card("req","에이전트","ag",`tools/call · <b>${name}</b>  (id ${RPCID})`,pretty({tool:name,arguments:args}));
+  let out,err=null;
+  try{ out=TOOLS[name](args); }catch(e){ err=String(e); }
+  setTimeout(()=>{
+    if(err){ card("err","MCP 서버","mcp",`오류 응답 (id ${RPCID})`,esc(err)); return; }
+    let extra="";
+    if(name==="check_policy"){
+      extra=`<div class="verdict">${out.checks.map(c=>
+        `<span class="chip ${c.pass?"ok":"no"}">${c.pass?"✓":"✗"} ${esc(c.rule)} · ${esc(c.detail)}</span>`).join("")}
+        <span class="chip ${out.allowed?"ok":"no"}" style="font-size:12px">${out.allowed?"판정: 신청 가능":"판정: 신청 불가"}</span></div>`;
+    }
+    if(sayFn) extra+=`<div class="say">🗣 <b>책이지</b> ${sayFn(out)}</div>`;
+    card("res","커넥터→MCP","cn",`결과 (id ${RPCID}) · ${cfgKey==="bucheon"?"bucheon.yaml":"example-city.yaml"}`,pretty(out),extra);
+  },380);
+  return out;
+}
+
+/* ── 시나리오 단계 ───────────────────────────────────── */
+const STEPS = {
+ 1(){ const b=callTool("search_item",{utterance:"그 왜 나미야 잡화점인가 하는 책",lang:"ko"},
+      o=>`『${o.title}』(${o.author})으로 찾았어요.`); lastISBN=b.isbn13; },
+ 2(){ callTool("check_availability",{isbn13:lastISBN,realtime:true},
+      o=>o.available_at.length?`상동 책은 지금 대출 중이에요. 관내 ${o.available_at.length}곳에서 빌릴 수 있어요.`:`관내에는 없어서 전국을 찾아봤어요.`); },
+ 3(){ callTool("check_policy",{user:"tok_kimsj",isbn13:lastISBN,pickup:CFG[cfgKey].home==="상동"?"상동":"중앙"},
+      o=>o.allowed?`규정 확인 끝 — 신청하실 수 있어요.`:`지금은 규정상 신청이 어려워요. 사유를 위에 표시했어요.`); },
+ 4(){
+   RPCID++; light("request_service");
+   card("req","에이전트","ag",`tools/call · <b>request_service</b>  (id ${RPCID}) — <b>확인 없이 시도</b>`,
+        pretty({tool:"request_service",arguments:{user:"tok_kimsj",isbn13:lastISBN,from_lib:"한울빛",pickup:"상동",confirmed_by_user:false}}));
+   setTimeout(()=>{
+     card("err","MCP 서버","mcp",`거부 (id ${RPCID})`,esc("이용자 확인(confirmed_by_user) 없이는 실행하지 않습니다"),
+       `<div class="say">🗣 <b>책이지</b> 한울빛 것을 상동으로 가져다 드릴게요. 무료, ${CFG[cfgKey].eta}일. <b>신청할까요?</b></div>
+        <div class="confirmrow"><button class="yes" onclick="confirmGo(this)">네, 신청합니다</button>
+        <button class="no" onclick="this.closest('.msg').querySelector('.say').insertAdjacentHTML('beforeend',' — 취소했습니다')">아니요</button></div>`);
+   },380);
+ },
+ 5(){ callTool("notify_user",{user:"tok_kimsj",event:"arrival",message:"신청하신 책이 상동도서관에 도착했습니다"},
+      o=>`(3일 뒤) ${o.channel==="voice_call"?"자동 음성전화":"문자"}로 알려드려요 — "${o.message}"`); },
+ 6(){ callTool("find_alternative",{isbn13:BOOK.sonyeon.isbn13,user:"tok_kimsj"},
+      o=>o.audiobook?`이 책은 오디오북으로도 있어요. 책나래 우편 수령으로 받아보실 수 있어요.`:`대체자료는 아직 없네요.`); },
+ 7(){ const keep=lastISBN; lastISBN=BOOK.onsil.isbn13;
+      callTool("check_availability",{isbn13:BOOK.onsil.isbn13,realtime:true},
+      o=>`부천 관내에는 없고, 전국 ${o.nation.found_count}곳에 있어요(${o.nation.basis}). 책바다는 실비가 들어요.`);
+      lastISBN=keep; }
+};
+function confirmGo(btn){
+  btn.closest(".confirmrow").remove();
+  callTool("request_service",{user:"tok_kimsj",isbn13:lastISBN,from_lib:"한울빛",pickup:"상동",confirmed_by_user:true},
+    o=>o.accepted?`접수했어요. 접수번호 ${o.receipt}, ${o.eta_days}일 뒤 도착 예정이에요.`:`규정에 걸려 접수하지 못했어요.`);
+}
+document.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>STEPS[+b.dataset.step]());
+
+$("passBtn").onclick=async function(){
+  this.disabled=true;
+  const W=t=>new Promise(r=>setTimeout(r,t));
+  callTool("manage_mandate",{user:"tok_kimsj",op:"create"},
+    o=>`구독 동의를 받았어요(확인은 이번 한 번). 위임 ${o.mandate_id} — 월 ${o.scope.max_per_cycle}권 · 무료 경로만 · 언제든 해지.`);
+  await W(1400);
+  callTool("suggest_items",{user:"tok_kimsj",count:3},
+    o=>`이달의 추천 ${o.items.length}권을 받았어요: ${o.items.map(i=>i.title).join(", ")}.`);
+  await W(1400);
+  callTool("request_service",{user:"tok_kimsj",isbn13:"9791161571188",from_lib:"꿈빛",pickup:CFG[cfgKey].home,mandate_id:"mnd-0001",route:"ill"},
+    o=>o.accepted?`『불편한 편의점』 — 확인 없이 접수(${o.authorized_by}). ${o.receipt}.`:`접수하지 못했어요.`);
+  await W(1400);
+  callTool("request_service",{user:"tok_kimsj",isbn13:BOOK.onsil.isbn13,from_lib:"전국",pickup:CFG[cfgKey].home,mandate_id:"mnd-0001",route:"sea"},
+    o=>o.skipped?`『지구 끝의 온실』 — 실비 경로라 자동 실행하지 않고 건너뛰었어요(위임 범위 밖).`:``);
+  await W(1400);
+  callTool("notify_user",{user:"tok_kimsj",event:"pass_cycle",message:"이달의 책 1권 접수·1권 제외 — 자세한 내용은 앱에서"},
+    o=>`실행 결과를 ${o.channel==="voice_call"?"음성전화":"문자"}로 알려드렸어요. 다음 달 1일에 다시 실행됩니다.`);
+  this.disabled=false;
+};
+
+$("autoBtn").onclick=async function(){
+  this.disabled=true; log.innerHTML="";
+  for(const s of [1,2,3,4]){ STEPS[s](); await new Promise(r=>setTimeout(r,1450)); }
+  const yes=log.querySelector(".confirmrow .yes");
+  if(yes){ await new Promise(r=>setTimeout(r,700)); yes.click(); }
+  await new Promise(r=>setTimeout(r,1450)); STEPS[5]();
+  this.disabled=false;
+};
+
+/* 설정 토글 */
+function drawRules(){
+  const c=CFG[cfgKey];
+  $("ruleBox").innerHTML=`city: <b>${c.name}</b><br>ill_limit: <b>${c.rules.ill}</b> · total_limit: <b>${c.rules.total}</b> · per_lib_limit: <b>${c.rules.per}</b><br>notify: ${c.notify.join(", ")}`;
+}
+document.querySelectorAll('input[name=cfg]').forEach(r=>r.onchange=e=>{cfgKey=e.target.value; drawRules();});
+drawRules();
+</script>
+
+</body>
+</html>

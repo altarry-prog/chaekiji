@@ -2,8 +2,16 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>책이지 — 부천시립도서관 AI 도서 안내 (시안)</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0d6e5f">
+<meta name="description" content="말 한마디로 도서를 찾고 상호대차까지 안내받는 AI 도서 안내 서비스 (시안)">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="책이지">
 <style>
 :root{
   --brand:#0d6e5f; --brand-d:#0a5548; --brand-l:#e7f3f0;
@@ -70,20 +78,78 @@ body{
   width:118px;height:118px;border-radius:50%;border:none;cursor:pointer;
   background:var(--brand);color:#fff;font-size:44px;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 0 4px var(--brand),0 8px 26px rgba(13,110,95,.34);transition:transform .16s;
+  box-shadow:0 8px 26px rgba(13,110,95,.34);transition:transform .16s;
   position:relative;
 }
 .mic:active{transform:scale(.94)}
+/* 홈화면 설치 안내 */
+.inst{display:none;margin:10px 14px 0;padding:12px 14px;border-radius:13px;
+  background:var(--brand-l);border:1.4px solid #bfded6;font-size:13.5px;line-height:1.6;color:#14483e}
+.inst.on{display:block}
+.inst b{display:block;font-size:14.5px;margin-bottom:3px}
+.inst .row{display:flex;gap:8px;margin-top:9px}
+.inst button{flex:1;border:none;border-radius:9px;padding:9px 0;font-size:13.5px;
+  font-weight:700;cursor:pointer;font-family:inherit}
+.inst .yes{background:var(--brand);color:#fff}
+.inst .no{background:#fff;color:var(--ink2);border:1.4px solid var(--line)}
+/* AI 책큐 일괄 처리 */
+.bqcard{width:100%;text-align:left;margin-top:12px;padding:13px 15px;border-radius:14px;cursor:pointer;
+  border:1.5px solid #cfe3dc;background:linear-gradient(135deg,#eef7f4,#e3f1ec);font-family:inherit}
+.bqcard b{display:block;font-size:14.5px;color:#0b5c4f;margin-bottom:2px}
+.bqcard span{font-size:12px;color:var(--ink2);line-height:1.5}
+.bqhead{padding:8px 0 6px}
+.bqbadge{display:inline-block;font-size:11px;font-weight:700;color:#0b5c4f;background:#dff0ea;border-radius:99px;padding:3px 11px;margin-bottom:9px}
+.bqhead h2{font-size:18.5px;margin:0 0 4px}
+.bqhead p{font-size:12.5px;color:var(--ink2);margin:0}
+.bqrow{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--card);
+  border:1.4px solid var(--line);border-radius:12px;padding:10px 13px;margin-top:8px}
+.bqrow .bt{font-size:13.5px;font-weight:700}
+.bqrow .ba{font-size:11.5px;color:var(--ink3);margin-top:1px}
+.bqst{font-size:12px;font-weight:700;white-space:nowrap}
+.bqst.now{color:var(--ok)}.bqst.ill{color:#0d5f8a}.bqst.sea{color:var(--ink3)}
+.bqplan{margin-top:14px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:15px}
+.bqplan h3{font-size:15.5px;margin:0 0 6px}
+.bqg{font-size:12.5px;margin:11px 0 3px;font-weight:700;color:var(--ink2)}
+.bqitems{font-size:13px;line-height:1.55}
+.bqsea{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink2);margin-top:4px}
+.bqsea input{margin-top:3px;accent-color:var(--brand)}
+.gaug{margin:13px 0 2px}
+.gbar{height:8px;border-radius:99px;background:#e8edeb;overflow:hidden}
+.gbar i{display:block;height:100%;width:0;background:var(--brand);border-radius:99px;transition:width .5s}
+.gtxt{font-size:11.5px;color:var(--ink2);margin-top:5px;display:block}
+.bqnote{font-size:11.5px;color:var(--ink3);text-align:center;margin:9px 0 0}
+/* 책이지 패스 — 슬림 카드 · 1화면 실행 */
+.bqcard.slim{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:11px 14px;margin-top:8px}
+.bqcard.slim b{margin:0;font-size:13.5px;line-height:1.4}
+.bqcard.slim span{display:none}
+.bqcard.slim .go{font-size:15px;color:#a06e24;flex:none}
+#s-pass .bqhead{padding:6px 0 2px}
+#s-pass .bqhead h2{font-size:16.5px;margin:0 0 2px}
+#s-pass .bqrow{padding:8px 12px;margin-top:6px}
+#s-pass .bqrow .bt{font-size:12.5px}
+#s-pass .bqrow .ba{display:none}
+#s-pass .bqst{font-size:10.5px;white-space:normal;text-align:right;max-width:56%;line-height:1.45}
+#s-pass .bqplan{padding:12px 13px;margin-top:10px}
+#s-pass .bqplan h3{font-size:14px;margin:0 0 7px}
+#s-pass .bqitems{font-size:12px;line-height:1.55}
+#s-pass .bqg{margin:8px 0 2px}
+.psbtns{display:flex;gap:8px;margin-top:11px}
+.psbtns .cta{margin-top:0;flex:1;padding:11px 0;font-size:13.5px}
+#s-pass .bqnote{margin:7px 0 0;font-size:10.5px}
+body.bigmode .bqrow .bt{font-size:16px}
+body.bigmode .bqcard b{font-size:17px}
+body.bigmode .bqitems{font-size:15.5px}
 .micimg{
   width:100%;height:100%;border-radius:50%;display:block;pointer-events:none;
-  background:url("data:image/png;base64,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") center/cover no-repeat;
+  background:url("data:image/png;base64,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") center/contain no-repeat;
 }
 .mic::after{
   content:'';position:absolute;inset:-9px;border-radius:50%;
   border:2px solid var(--brand);opacity:.28;animation:ping 2.3s ease-out infinite;
 }
 @keyframes ping{0%{transform:scale(1);opacity:.35}70%{transform:scale(1.22);opacity:0}100%{opacity:0}}
-.mic.live{background:#c0392b;box-shadow:0 0 0 5px #c0392b,0 10px 26px rgba(192,57,43,.45)}
+.mic.live{background:#c0392b;box-shadow:0 8px 26px rgba(192,57,43,.4)}
 .mic.live::after{border-color:#c0392b;animation-duration:1s}
 
 .orsplit{display:flex;align-items:center;gap:10px;margin:6px 0 14px;color:var(--ink3);font-size:11.5px}
@@ -394,6 +460,14 @@ body.bigmode .foot{font-size:12px}
     <!-- 대기 -->
     <div class="screen on" id="s-idle">
       <div class="err" id="micerr"></div>
+      <div class="inst" id="instbox">
+        <b id="instT">휴대폰에 설치할 수 있어요</b>
+        <span id="instD">홈 화면에 두면 앱처럼 바로 열리고, 인터넷이 끊겨도 열립니다.</span>
+        <div class="row">
+          <button class="yes" id="instYes">설치하기</button>
+          <button class="no" id="instNo">나중에</button>
+        </div>
+      </div>
       <div class="hi">
         <h2 id="hero1">찾으시는 책,<br>말씀만 하세요</h2>
         <p id="hero2">제목이 정확하지 않아도 괜찮습니다</p>
@@ -423,6 +497,14 @@ body.bigmode .foot{font-size:12px}
         <div class="lbl" style="margin-top:9px" id="chipnote">
           ‘불편한 편의점’, ‘설민석 한국사 대모험’도 실데이터로 검색됩니다
         </div>
+        <button class="bqcard" id="bqcard" onclick="bqOpen()">
+          <b id="bqE1">AI 책큐 추천, 한 번에 처리</b>
+          <span id="bqE2">추천 도서를 자주 가는 도서관으로 모아드립니다 · 시연</span>
+        </button>
+        <button class="bqcard slim" id="passcard" onclick="passOpen()" style="background:linear-gradient(135deg,#fdf6ea,#f7ecd8);border-color:#e2cfa8">
+          <b id="psE1" style="color:#7c5514">책이지 패스 — 이달의 3권, 자동으로 준비</b>
+          <span id="psE2"></span><span class="go" aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
 
@@ -468,6 +550,66 @@ body.bigmode .foot{font-size:12px}
 
     <!-- 결과 -->
     <div class="screen" id="s-result"></div>
+
+    <!-- AI 책큐 일괄 처리 -->
+    <div class="screen" id="s-bq">
+      <div class="bqhead">
+        <span class="bqbadge" id="bqBadge"></span>
+        <h2 id="bqT"></h2>
+        <p id="bqS"></p>
+      </div>
+      <div id="bqList"></div>
+      <div class="bqplan" id="bqPlan" hidden>
+        <h3 id="bqPermT"></h3>
+        <div id="bqGroups"></div>
+        <div class="gaug"><div class="gbar"><i id="bqGfill"></i></div><span class="gtxt" id="bqGtxt"></span></div>
+        <button class="cta" id="bqGo" style="margin-top:12px"></button>
+        <button class="cta ghost" id="bqCancel" onclick="reset()"></button>
+        <p class="bqnote" id="bqNote"></p>
+      </div>
+      <div id="bqDone" hidden>
+        <div class="done">
+          <div class="check">✓</div>
+          <h2 id="bqDoneT"></h2>
+          <div class="recap" id="bqRecap"></div>
+          <p class="bqnote" id="bqNote2"></p>
+          <button class="cta ghost" onclick="reset()" id="bqHome"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 책이지 패스 -->
+    <div class="screen" id="s-pass">
+      <div class="bqhead">
+        <span class="bqbadge" id="psBadge" style="color:#7c5514;background:#f3e6cc"></span>
+        <h2 id="psT"></h2>
+      </div>
+      <div id="psAgree">
+        <div class="bqplan">
+          <h3 id="psAgT"></h3>
+          <div class="bqitems" id="psScope"></div>
+          <p style="font-size:12.5px;color:var(--ink2);margin:10px 0 0" id="psMand"></p>
+          <div class="psbtns">
+            <button class="cta ghost" onclick="reset()" id="psNo" style="flex:.55"></button>
+            <button class="cta" id="psStart"></button>
+          </div>
+          <p class="bqnote" id="psNote1"></p>
+        </div>
+      </div>
+      <div id="psRun" hidden>
+        <div class="bqg" id="psRunT" style="font-size:13.5px"></div>
+        <div id="psRows"></div>
+        <div class="bqplan" id="psSum" hidden>
+          <div class="bqitems" id="psSumTx"></div>
+          <p style="font-size:12.5px;color:var(--ink2);margin:8px 0 0" id="psNoti"></p>
+          <div class="psbtns">
+            <button class="cta ghost" id="psCancel"></button>
+            <button class="cta ghost" onclick="reset()" id="psHome"></button>
+          </div>
+          <p class="bqnote" id="psNote2"></p>
+        </div>
+      </div>
+    </div>
 
     <!-- 완료 -->
     <div class="screen" id="s-done">
@@ -733,8 +875,230 @@ const CHIPS_L = {
 };
 
 /* 전 화면 언어팩 — 도서명·도서관명은 원어 유지 */
+
+
+/* ── 책이지 패스(구독 자동화) 문구 ── */
+const PASS = {
+ko:{pe1:'책이지 패스 — 이달의 3권, 자동으로 준비',pe2:'한 번만 동의하면 매달 알아서 예약해 드려요 · 시연',
+ pe1on:'책이지 패스 · 구독 중',pe2on:'이번 달 자동 실행 결과 보기 · 시연',badge:'구독 자동화 · 시연',
+ agT:'구독 동의 — 확인은 이 한 번입니다',
+ sc:['매월 추천 도서 3권까지','무료 경로(관내)만 자동 실행 — 실비 경로는 제외','대출 한도에 여유가 있을 때만','수령: 상동도서관 · 언제든 해지 가능'],
+ mand:'위 범위 안에서 책이지가 확인 없이 자동으로 준비하고, 결과는 매번 알려드립니다.',
+ start:'구독 시작 (위임 동의)',runT:'10월 1일 아침 — 자동 실행',
+ ready:'상동 서가에 있음 → 대출대 보관',booked:k=>`관내 ${k}곳 중 최적관 → 상호대차 접수`,
+ skip:'관내 없음 → 실비 경로라 자동 제외 (위임 범위 밖)',
+ sum:(a,b)=>`이번 달 ${a+b}권 준비 완료 · 1권은 제외 사유를 남겼어요`,
+ noti:'결과를 문자·음성전화로 알려드려요 · 다음 달 1일에 다시 실행됩니다',
+ cancel:'구독 해지',canceled:'해지되었습니다 — 자동 실행이 멈춥니다',
+ say:'책이지 패스가 이번 달 추천 도서를 준비했습니다. 두 권은 준비되고, 한 권은 위임 범위 밖이라 제외했습니다.'},
+en:{pe1:'Chaekiji Pass — 3 picks a month, prepared automatically',pe2:'Agree once and it books for you monthly · demo',
+ pe1on:'Chaekiji Pass · subscribed',pe2on:'See this month’s auto run · demo',badge:'Subscription automation · demo',
+ agT:'Subscribe — this is the only confirmation',
+ sc:['Up to 3 recommended books a month','Free routes only — paid routes excluded','Only when loan limits allow','Pickup: Sangdong · cancel anytime'],
+ mand:'Within this scope, Chaekiji acts without asking each time, and reports every result.',
+ start:'Start subscription (grant mandate)',runT:'Oct 1, morning — auto run',
+ ready:'On the shelf here → held at desk',booked:k=>`Best of ${k} branches → ILL placed`,
+ skip:'Not in the city → paid route, auto-skipped (outside mandate)',
+ sum:(a,b)=>`${a+b} books prepared this month · 1 skipped with reason`,
+ noti:'Results sent by SMS/voice call · runs again on the 1st',
+ cancel:'Cancel subscription',canceled:'Canceled — automation stops',
+ say:'Chaekiji Pass prepared this month’s picks. Two are ready; one was outside the mandate.'},
+zh:{pe1:'책이지 Pass — 每月3本自动备好',pe2:'同意一次，每月自动预约 · 演示',
+ pe1on:'책이지 Pass · 订阅中',pe2on:'查看本月自动执行 · 演示',badge:'订阅自动化 · 演示',
+ agT:'订阅同意 — 只需这一次确认',
+ sc:['每月最多3本推荐图书','仅免费渠道 — 收费渠道除外','仅在借阅额度允许时','取书:상동 · 随时可取消'],
+ mand:'在此范围内 책이지 自动执行，并每次告知结果。',
+ start:'开始订阅（授权）',runT:'10月1日早晨 — 自动执行',
+ ready:'本馆在架 → 柜台保留',booked:k=>`${k}馆中最优 → 互借受理`,
+ skip:'市内无藏 → 收费渠道，自动跳过（超出授权）',
+ sum:(a,b)=>`本月备好${a+b}本 · 1本已注明跳过原因`,
+ noti:'结果以短信/语音通知 · 下月1日再次执行',
+ cancel:'取消订阅',canceled:'已取消 — 自动执行停止',
+ say:'Pass已备好本月推荐。'},
+ja:{pe1:'책이지パス — 毎月3冊、自動でご用意',pe2:'一度の同意で毎月おまかせ · デモ',
+ pe1on:'책이지パス · 購読中',pe2on:'今月の自動実行を見る · デモ',badge:'購読自動化 · デモ',
+ agT:'購読同意 — 確認はこの一回だけ',
+ sc:['毎月おすすめ3冊まで','無料経路のみ — 実費経路は除外','貸出枠に余裕があるときのみ','受取:상동 · いつでも解約可'],
+ mand:'この範囲内で책이지が自動で進め、結果は毎回お知らせします。',
+ start:'購読開始（委任同意）',runT:'10月1日朝 — 自動実行',
+ ready:'当館在架 → 取り置き',booked:k=>`${k}館から最適館 → 相互貸借受付`,
+ skip:'市内になし → 実費経路のため自動除外（委任範囲外）',
+ sum:(a,b)=>`今月${a+b}冊準備 · 1冊は除外理由を記録`,
+ noti:'結果はSMS/音声でお知らせ · 来月1日に再実行',
+ cancel:'購読解約',canceled:'解約しました — 自動実行は停止します',
+ say:'パスが今月のおすすめを準備しました。'},
+vi:{pe1:'Chaekiji Pass — 3 cuốn mỗi tháng, tự động chuẩn bị',pe2:'Đồng ý một lần, hàng tháng tự đặt · demo',
+ pe1on:'Chaekiji Pass · đang đăng ký',pe2on:'Xem lần chạy tự động tháng này · demo',badge:'Tự động hóa đăng ký · demo',
+ agT:'Đồng ý đăng ký — chỉ xác nhận một lần này',
+ sc:['Tối đa 3 cuốn gợi ý mỗi tháng','Chỉ tuyến miễn phí — loại trừ tuyến có phí','Chỉ khi hạn mức còn','Nhận: 상동 · hủy bất cứ lúc nào'],
+ mand:'Trong phạm vi này Chaekiji tự thực hiện và báo kết quả mỗi lần.',
+ start:'Bắt đầu đăng ký (ủy quyền)',runT:'Sáng 1/10 — chạy tự động',
+ ready:'Có tại đây → giữ ở quầy',booked:k=>`Tốt nhất trong ${k} chi nhánh → đã đăng ký mượn`,
+ skip:'Không có trong TP → tuyến có phí, tự bỏ qua (ngoài ủy quyền)',
+ sum:(a,b)=>`Tháng này chuẩn bị ${a+b} cuốn · 1 cuốn ghi lý do bỏ qua`,
+ noti:'Kết quả báo qua SMS/gọi thoại · chạy lại ngày 1 tháng sau',
+ cancel:'Hủy đăng ký',canceled:'Đã hủy — dừng tự động',
+ say:'Pass đã chuẩn bị gợi ý tháng này.'},
+th:{pe1:'Chaekiji Pass — เดือนละ 3 เล่ม เตรียมให้อัตโนมัติ',pe2:'ยินยอมครั้งเดียว จองให้ทุกเดือน · เดโม',
+ pe1on:'Chaekiji Pass · กำลังสมัคร',pe2on:'ดูการทำงานอัตโนมัติเดือนนี้ · เดโม',badge:'สมัครอัตโนมัติ · เดโม',
+ agT:'ยินยอมสมัคร — ยืนยันครั้งนี้ครั้งเดียว',
+ sc:['หนังสือแนะนำสูงสุด 3 เล่ม/เดือน','เฉพาะช่องทางฟรี — ยกเว้นช่องทางมีค่าใช้จ่าย','เมื่อโควตายืมยังเหลือ','รับที่ 상동 · ยกเลิกได้ทุกเมื่อ'],
+ mand:'ภายในขอบเขตนี้ Chaekiji ทำให้อัตโนมัติ และแจ้งผลทุกครั้ง',
+ start:'เริ่มสมัคร (มอบอำนาจ)',runT:'เช้า 1 ต.ค. — ทำงานอัตโนมัติ',
+ ready:'มีที่นี่ → ฝากที่เคาน์เตอร์',booked:k=>`ดีที่สุดใน ${k} สาขา → ยื่นยืมแล้ว`,
+ skip:'ในเมืองไม่มี → ช่องทางมีค่าใช้จ่าย ข้ามอัตโนมัติ',
+ sum:(a,b)=>`เดือนนี้เตรียม ${a+b} เล่ม · 1 เล่มบันทึกเหตุผลข้าม`,
+ noti:'แจ้งผลทาง SMS/โทรศัพท์ · ทำงานอีกครั้งวันที่ 1',
+ cancel:'ยกเลิกสมัคร',canceled:'ยกเลิกแล้ว — หยุดอัตโนมัติ',
+ say:'Pass เตรียมหนังสือแนะนำเดือนนี้แล้ว'},
+ru:{pe1:'Chaekiji Pass — 3 книги в месяц автоматически',pe2:'Одно согласие — бронирует каждый месяц · демо',
+ pe1on:'Chaekiji Pass · подписка активна',pe2on:'Смотреть запуск за этот месяц · демо',badge:'Автоматизация по подписке · демо',
+ agT:'Согласие на подписку — подтверждение только одно',
+ sc:['До 3 рекомендованных книг в месяц','Только бесплатные маршруты','Только при свободном лимите','Выдача: 상동 · отмена в любой момент'],
+ mand:'В этих рамках Chaekiji действует сам и каждый раз сообщает результат.',
+ start:'Начать подписку (мандат)',runT:'1 октября, утро — автозапуск',
+ ready:'Есть здесь → отложена',booked:k=>`Лучший из ${k} филиалов → заявка МБА`,
+ skip:'В городе нет → платный маршрут, пропуск (вне мандата)',
+ sum:(a,b)=>`Готово ${a+b} книги · 1 пропущена с указанием причины`,
+ noti:'Результат — SMS/звонок · снова 1-го числа',
+ cancel:'Отменить подписку',canceled:'Отменено — автозапуск остановлен',
+ say:'Pass подготовил подборку месяца.'},
+mn:{pe1:'Chaekiji Pass — сард 3 ном автоматаар',pe2:'Нэг удаа зөвшөөрөхөд сар бүр өөрөө захиалНА · демо',
+ pe1on:'Chaekiji Pass · бүртгэлтэй',pe2on:'Энэ сарын автомат ажиллагааг үзэх · демо',badge:'Захиалгын автоматжуулалт · демо',
+ agT:'Зөвшөөрөл — баталгаажуулалт ганц удаа',
+ sc:['Сард 3 хүртэл санал болгосон ном','Зөвхөн үнэгүй зам','Зээлийн эрх хүрэлцэх үед л','Авах: 상동 · хэзээ ч цуцалж болно'],
+ mand:'Энэ хүрээнд Chaekiji өөрөө гүйцэтгэж, үр дүнг тухай бүр мэдэгдэнэ.',
+ start:'Захиалга эхлүүлэх (итгэмжлэл)',runT:'10-р сарын 1, өглөө — автомат',
+ ready:'Энд байна → лангуунд хадгалав',booked:k=>`${k} салбараас шилдэг → хүсэлт илгээв`,
+ skip:'Хотод алга → төлбөртэй зам, автоматаар алгасав',
+ sum:(a,b)=>`Энэ сар ${a+b} ном бэлэн · 1-ийг шалтгаантай алгасав`,
+ noti:'Үр дүнг SMS/дуудлагаар · дараа сарын 1-нд дахин',
+ cancel:'Захиалга цуцлах',canceled:'Цуцлагдлаа — автомат зогсоно',
+ say:'Pass энэ сарын номыг бэлдлээ.'},
+uz:{pe1:'Chaekiji Pass — oyiga 3 kitob avtomatik tayyor',pe2:'Bir marta rozilik — har oy o‘zi band qiladi · demo',
+ pe1on:'Chaekiji Pass · obuna faol',pe2on:'Shu oygi avtomatik ishga tushishni ko‘rish · demo',badge:'Obuna avtomatlashtiruvi · demo',
+ agT:'Obuna roziligi — tasdiq faqat shu bir marta',
+ sc:['Oyiga 3 tagacha tavsiya kitob','Faqat bepul yo‘nalishlar','Limit yetarli bo‘lganda','Olish: 상동 · istalgan payt bekor'],
+ mand:'Shu doirada Chaekiji o‘zi bajaradi va natijani har safar xabar qiladi.',
+ start:'Obunani boshlash (vakolat)',runT:'1-oktabr, ertalab — avtomatik',
+ ready:'Shu yerda bor → peshtaxtada',booked:k=>`${k} filialdan eng yaxshisi → so‘rov yuborildi`,
+ skip:'Shaharda yo‘q → pullik yo‘nalish, avtomatik o‘tkazib yuborildi',
+ sum:(a,b)=>`Bu oy ${a+b} kitob tayyor · 1 tasi sabab bilan o‘tkazildi`,
+ noti:'Natija SMS/qo‘ng‘iroq orqali · keyingi oy 1-sida yana',
+ cancel:'Obunani bekor qilish',canceled:'Bekor qilindi — avtomatika to‘xtaydi',
+ say:'Pass shu oygi tavsiyalarni tayyorladi.'},
+id:{pe1:'Chaekiji Pass — 3 buku per bulan, disiapkan otomatis',pe2:'Setuju sekali, dipesan tiap bulan · demo',
+ pe1on:'Chaekiji Pass · berlangganan',pe2on:'Lihat eksekusi otomatis bulan ini · demo',badge:'Otomasi langganan · demo',
+ agT:'Persetujuan langganan — konfirmasi hanya sekali ini',
+ sc:['Hingga 3 buku rekomendasi per bulan','Hanya jalur gratis — jalur berbayar dikecualikan','Hanya saat kuota pinjam cukup','Ambil: 상동 · batal kapan saja'],
+ mand:'Dalam cakupan ini Chaekiji bertindak otomatis dan melaporkan tiap hasil.',
+ start:'Mulai langganan (beri mandat)',runT:'1 Okt pagi — eksekusi otomatis',
+ ready:'Ada di sini → disimpan di meja',booked:k=>`Terbaik dari ${k} cabang → permintaan dibuat`,
+ skip:'Tidak ada di kota → jalur berbayar, dilewati otomatis (di luar mandat)',
+ sum:(a,b)=>`${a+b} buku siap bulan ini · 1 dilewati dengan alasan`,
+ noti:'Hasil via SMS/telepon · jalan lagi tanggal 1',
+ cancel:'Batalkan langganan',canceled:'Dibatalkan — otomasi berhenti',
+ say:'Pass menyiapkan pilihan bulan ini.'},
+};
+
+/* ── AI 책큐 일괄 처리 문구 (10개 언어) ── */
+const BQ = {
+ko:{entry:'AI 책큐 추천, 한 번에 처리',entryd:'추천 도서를 자주 가는 도서관으로 모아드립니다 · 시연',
+ badge:'AI 책큐 연계 · 시연',title:'이번 주 추천 도서 5권',sub:'어디서 빌릴 수 있는지 확인하고 있어요…',
+ got:'확인이 끝났어요. 아래 계획을 봐 주세요.',perm:'이대로 진행할까요?',
+ gNow:'자주 가는 도서관에 있음 → 대출대 보관',gIll:m=>`관내 상호대차로 ${m}에 모으기`,gSea:'관내에 없음 → 전국(책바다)',
+ seaNote:'실비 발생 · 별도 한도(1인 3권) · 선택하면 함께 진행합니다',
+ rNow:'상동에 있음',rIll:k=>`관내 ${k}곳 → 배송`,rSea:'관내 없음',
+ gauge:n=>`상호대차 한도 5권 중 ${n}권 사용`,go:n=>`좋아요, ${n}권 진행`,
+ doneT:'모두 처리했어요',dNow:k=>`${k}권 · 대출대 보관 요청`,dIll:k=>`${k}권 · 상호대차 접수`,dSea:'1권 · 책바다 신청 경로 안내',
+ note:'시연 화면입니다 · 실제 신청은 접수되지 않습니다',
+ sayDone:'추천 도서 처리가 끝났습니다. 두 권은 서가에 준비되고, 두 권은 상호대차로 배송됩니다.'},
+en:{entry:'AI BookQ picks — handle all at once',entryd:'Gather recommended books at your usual library · demo',
+ badge:'AI BookQ · demo',title:'5 picks for this week',sub:'Checking where each one is available…',
+ got:'Done. Review the plan below.',perm:'Proceed with this plan?',
+ gNow:'At your usual library → hold at desk',gIll:m=>`Send to ${m} via interlibrary loan`,gSea:'Not in the city → nationwide (Chaekbada)',
+ seaNote:'Small fee · separate limit (3 per person) · optional',
+ rNow:'Available here',rIll:k=>`${k} branches → delivery`,rSea:'Not in the city',
+ gauge:n=>`Using ${n} of 5 ILL slots`,go:n=>`Looks good — process ${n} books`,
+ doneT:'All done',dNow:k=>`${k} held at the desk`,dIll:k=>`${k} ILL requests placed`,dSea:'1 guided to Chaekbada',
+ note:'Demo screen · no real requests are made',
+ sayDone:'Your picks are handled. Two are ready on the shelf, two are on the way by interlibrary loan.'},
+zh:{entry:'AI书荐推荐 一键处理',entryd:'把推荐图书集中到常去的图书馆 · 演示',
+ badge:'AI书荐联动 · 演示',title:'本周推荐 5 本',sub:'正在确认各馆馆藏…',
+ got:'确认完毕，请查看以下计划。',perm:'按此计划进行吗？',
+ gNow:'常去的馆有藏 → 柜台保留',gIll:m=>`馆际互借集中到${m}`,gSea:'市内无藏 → 全国(Chaekbada)',
+ seaNote:'需实费 · 另设限额(每人3本) · 可选',
+ rNow:'本馆在架',rIll:k=>`市内${k}馆 → 配送`,rSea:'市内无藏',
+ gauge:n=>`互借限额5本中使用${n}本`,go:n=>`好的，处理${n}本`,
+ doneT:'全部完成',dNow:k=>`${k}本 · 柜台保留`,dIll:k=>`${k}本 · 互借受理`,dSea:'1本 · 引导至Chaekbada',
+ note:'演示画面 · 不会真正提交申请',sayDone:'推荐图书已全部处理完毕。'},
+ja:{entry:'AIブックQのおすすめを一括処理',entryd:'おすすめ本をいつもの図書館に集めます · デモ',
+ badge:'AIブックQ連携 · デモ',title:'今週のおすすめ5冊',sub:'所蔵を確認しています…',
+ got:'確認が終わりました。下の計画をご覧ください。',perm:'この内容で進めますか？',
+ gNow:'いつもの館にあり → カウンター取り置き',gIll:m=>`相互貸借で${m}に集約`,gSea:'市内になし → 全国(チェクバダ)',
+ seaNote:'実費 · 別枠(1人3冊) · 任意',
+ rNow:'当館にあり',rIll:k=>`市内${k}館 → 配送`,rSea:'市内になし',
+ gauge:n=>`相互貸借枠5冊中${n}冊`,go:n=>`OK、${n}冊すすめる`,
+ doneT:'すべて完了',dNow:k=>`${k}冊 · 取り置き`,dIll:k=>`${k}冊 · 相互貸借受付`,dSea:'1冊 · チェクバダ案内',
+ note:'デモ画面 · 実際の申請は行われません',sayDone:'おすすめ本の処理が完了しました。'},
+vi:{entry:'Gợi ý AI BookQ — xử lý một lần',entryd:'Gom sách gợi ý về thư viện bạn hay đến · bản demo',
+ badge:'AI BookQ · demo',title:'5 cuốn gợi ý tuần này',sub:'Đang kiểm tra nơi có sách…',
+ got:'Xong. Xem kế hoạch bên dưới.',perm:'Tiến hành theo kế hoạch này?',
+ gNow:'Có ở thư viện quen → giữ tại quầy',gIll:m=>`Mượn liên thư viện về ${m}`,gSea:'Thành phố không có → toàn quốc (Chaekbada)',
+ seaNote:'Có phí · hạn mức riêng (3 cuốn/người) · tùy chọn',
+ rNow:'Có tại đây',rIll:k=>`${k} chi nhánh → giao về`,rSea:'Thành phố không có',
+ gauge:n=>`Dùng ${n}/5 lượt mượn liên TV`,go:n=>`Đồng ý, xử lý ${n} cuốn`,
+ doneT:'Đã xong',dNow:k=>`${k} cuốn · giữ tại quầy`,dIll:k=>`${k} cuốn · đã đăng ký mượn`,dSea:'1 cuốn · hướng dẫn Chaekbada',
+ note:'Màn hình demo · không gửi yêu cầu thật',sayDone:'Đã xử lý xong các sách gợi ý.'},
+th:{entry:'คำแนะนำ AI BookQ — จัดการทีเดียว',entryd:'รวมหนังสือแนะนำไว้ที่ห้องสมุดประจำ · เดโม',
+ badge:'AI BookQ · เดโม',title:'แนะนำ 5 เล่มสัปดาห์นี้',sub:'กำลังตรวจสอบว่ามีที่ไหน…',
+ got:'เสร็จแล้ว ดูแผนด้านล่าง',perm:'ดำเนินการตามนี้ไหม?',
+ gNow:'มีที่ห้องสมุดประจำ → ฝากไว้ที่เคาน์เตอร์',gIll:m=>`ยืมระหว่างห้องสมุดมาที่ ${m}`,gSea:'ในเมืองไม่มี → ทั่วประเทศ (Chaekbada)',
+ seaNote:'มีค่าส่ง · โควตาแยก (3 เล่ม/คน) · เลือกได้',
+ rNow:'มีที่นี่',rIll:k=>`${k} สาขา → จัดส่ง`,rSea:'ในเมืองไม่มี',
+ gauge:n=>`ใช้โควตายืม ${n}/5 เล่ม`,go:n=>`ตกลง ดำเนินการ ${n} เล่ม`,
+ doneT:'เสร็จทั้งหมด',dNow:k=>`${k} เล่ม · ฝากเคาน์เตอร์`,dIll:k=>`${k} เล่ม · รับคำขอแล้ว`,dSea:'1 เล่ม · แนะนำ Chaekbada',
+ note:'หน้าจอเดโม · ไม่ได้ส่งคำขอจริง',sayDone:'จัดการหนังสือแนะนำเสร็จแล้ว'},
+ru:{entry:'Подборка AI BookQ — обработать разом',entryd:'Соберём книги в вашу библиотеку · демо',
+ badge:'AI BookQ · демо',title:'5 книг недели',sub:'Проверяю наличие…',
+ got:'Готово. Посмотрите план ниже.',perm:'Действуем по плану?',
+ gNow:'Есть в вашей библиотеке → отложить',gIll:m=>`МБА: доставить в ${m}`,gSea:'В городе нет → по стране (Chaekbada)',
+ seaNote:'Платно · отдельный лимит (3 шт.) · по желанию',
+ rNow:'В наличии здесь',rIll:k=>`${k} филиалов → доставка`,rSea:'В городе нет',
+ gauge:n=>`Лимит МБА: ${n} из 5`,go:n=>`Хорошо, обработать ${n}`,
+ doneT:'Всё готово',dNow:k=>`${k} · отложено`,dIll:k=>`${k} · заявки МБА`,dSea:'1 · маршрут Chaekbada',
+ note:'Демо-экран · настоящие заявки не отправляются',sayDone:'Подборка обработана.'},
+mn:{entry:'AI BookQ санал — нэг дор',entryd:'Санал болгосон номыг таны номын санд цуглуулна · демо',
+ badge:'AI BookQ · демо',title:'Энэ 7 хоногийн 5 ном',sub:'Хаана байгааг шалгаж байна…',
+ got:'Боллоо. Доорх төлөвлөгөөг харна уу.',perm:'Ингэж үргэлжлүүлэх үү?',
+ gNow:'Таны номын санд байна → лангуунд хадгална',gIll:m=>`Сан хоорондын зээлээр ${m}-д цуглуулна`,gSea:'Хотод алга → улс даяар (Chaekbada)',
+ seaNote:'Төлбөртэй · тусдаа хязгаар (3 ш) · сонголтоор',
+ rNow:'Энд байна',rIll:k=>`${k} салбар → хүргэлт`,rSea:'Хотод алга',
+ gauge:n=>`Зээлийн эрх: 5-аас ${n}`,go:n=>`За, ${n} ном`,
+ doneT:'Бүгд боллоо',dNow:k=>`${k} · хадгалсан`,dIll:k=>`${k} · хүсэлт илгээсэн`,dSea:'1 · Chaekbada заавар',
+ note:'Демо дэлгэц · бодит хүсэлт илгээгдэхгүй',sayDone:'Санал болгосон номууд боллоо.'},
+uz:{entry:'AI BookQ tavsiyalari — bir yo‘la',entryd:'Tavsiya kitoblarni odatiy kutubxonangizga yig‘amiz · demo',
+ badge:'AI BookQ · demo',title:'Shu haftaning 5 kitobi',sub:'Qayerda borligini tekshiryapman…',
+ got:'Tayyor. Quyidagi rejani ko‘ring.',perm:'Shu reja bo‘yicha davom etaymi?',
+ gNow:'Odatiy kutubxonada bor → peshtaxtada saqlash',gIll:m=>`Kutubxonalararo: ${m}ga yig‘ish`,gSea:'Shaharda yo‘q → butun mamlakat (Chaekbada)',
+ seaNote:'Pullik · alohida limit (3 ta) · ixtiyoriy',
+ rNow:'Shu yerda bor',rIll:k=>`${k} filial → yetkazish`,rSea:'Shaharda yo‘q',
+ gauge:n=>`Limit: 5 tadan ${n}`,go:n=>`Yaxshi, ${n} kitob`,
+ doneT:'Hammasi tayyor',dNow:k=>`${k} · saqlab qo‘yildi`,dIll:k=>`${k} · so‘rov yuborildi`,dSea:'1 · Chaekbada yo‘riqnoma',
+ note:'Demo ekran · haqiqiy so‘rov yuborilmaydi',sayDone:'Tavsiya kitoblar hal bo‘ldi.'},
+id:{entry:'Rekomendasi AI BookQ — sekali proses',entryd:'Kumpulkan buku rekomendasi di perpustakaan langganan · demo',
+ badge:'AI BookQ · demo',title:'5 buku pekan ini',sub:'Memeriksa ketersediaan…',
+ got:'Selesai. Lihat rencana di bawah.',perm:'Lanjut dengan rencana ini?',
+ gNow:'Ada di perpustakaan langganan → simpan di meja',gIll:m=>`Pinjam antarperpustakaan ke ${m}`,gSea:'Tidak ada di kota → nasional (Chaekbada)',
+ seaNote:'Berbayar · kuota terpisah (3/orang) · opsional',
+ rNow:'Tersedia di sini',rIll:k=>`${k} cabang → antar`,rSea:'Tidak ada di kota',
+ gauge:n=>`Kuota pinjam: ${n} dari 5`,go:n=>`Oke, proses ${n} buku`,
+ doneT:'Semua beres',dNow:k=>`${k} · disimpan di meja`,dIll:k=>`${k} · permintaan dibuat`,dSea:'1 · panduan Chaekbada',
+ note:'Layar demo · tidak ada permintaan sungguhan',sayDone:'Buku rekomendasi selesai diproses.'},
+};
+
 const UI = {
-ko:{ NM:n=>n+'도서관',
+ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면에 두면 앱처럼 바로 열리고, 인터넷이 끊겨도 열립니다.', instY:'설치하기', instN:'나중에', instIOS:'아래 공유 단추를 누르고 「홈 화면에 추가」를 선택하세요.', NM:n=>n+'도서관',
  st1:'말씀 옮겨 적기',st1d:'음성을 글자로 바꿉니다',st2:'AI가 무슨 책인지 파악',st2d:'불완전한 말도 해석합니다',
  st3:'범위를 넓혀가며 찾기',st3d:'가까운 곳부터 차례로 확인합니다',
  fix:t=>`<b>${t}</b> 로 이해했습니다`,
@@ -764,7 +1128,7 @@ ko:{ NM:n=>n+'도서관',
  d0:l=>`<b>${l}</b> 대출대에 보관 요청했습니다.<br>오늘 중 방문하시면 바로 받으실 수 있습니다.`,
  d1:(md,l,m)=>`<b>${md}</b>으로 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
  kArr:'예상 도착',kNum:'접수번호',home:'처음으로' },
-en:{ NM:n=>`${n} Library`,
+en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home screen — it opens like an app and works offline.', instY:'Install', instN:'Later', instIOS:'Tap the Share button below, then choose “Add to Home Screen”.', NM:n=>`${n} Library`,
  st1:'Transcribing your words',st1d:'Turning speech into text',st2:'AI identifies the book',st2d:'Even imperfect phrases work',
  st3:'Searching, nearest first',st3d:'Checking libraries step by step',
  fix:t=>`Understood as <b>${t}</b>`,
@@ -794,7 +1158,7 @@ en:{ NM:n=>`${n} Library`,
  d0:l=>`We asked <b>${l}</b> to hold it at the desk.<br>Visit today and pick it up.`,
  d1:(md,l,m)=>`Requested via <b>${md}</b>.<br>The item is moving from <b>${l}</b> to <b>${m} Library</b>.<br>We'll text you when it arrives.`,
  kArr:'Expected arrival',kNum:'Reference no.',home:'Start over' },
-zh:{ NM:n=>`${n}图书馆`,
+zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，像应用一样打开，断网也能使用。', instY:'安装', instN:'以后再说', instIOS:'点击下方分享按钮，选择“添加到主屏幕”。', NM:n=>`${n}图书馆`,
  st1:'转写您的话',st1d:'把语音变成文字',st2:'AI 识别图书',st2d:'说得不准也能理解',
  st3:'由近及远查找',st3d:'从最近的图书馆开始确认',
  fix:t=>`已识别为 <b>${t}</b>`,
@@ -824,7 +1188,7 @@ zh:{ NM:n=>`${n}图书馆`,
  d0:l=>`已请<b>${l}</b>在借书台为您保留。<br>今天到馆即可取书。`,
  d1:(md,l,m)=>`已通过<b>${md}</b>申请。<br>图书正从<b>${l}</b>调往<b>${m}图书馆</b>。<br>到馆后将短信通知您。`,
  kArr:'预计到达',kNum:'受理编号',home:'返回首页' },
-ja:{ NM:n=>`${n}図書館`,
+ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に置くとアプリのように開き、オフラインでも使えます。', instY:'インストール', instN:'あとで', instIOS:'下の共有ボタンから「ホーム画面に追加」を選んでください。', NM:n=>`${n}図書館`,
  st1:'発話の書き起こし',st1d:'音声を文字にします',st2:'AIが本を特定',st2d:'あいまいな言い方でも大丈夫',
  st3:'近い順に検索',st3d:'近くの図書館から順に確認します',
  fix:t=>`<b>${t}</b> と理解しました`,
@@ -854,7 +1218,7 @@ ja:{ NM:n=>`${n}図書館`,
  d0:l=>`<b>${l}</b>の貸出カウンターに取り置きを依頼しました。<br>本日ご来館いただければ受け取れます。`,
  d1:(md,l,m)=>`<b>${md}</b>で申請しました。<br>資料は<b>${l}</b>から<b>${m}図書館</b>へ移動中です。<br>到着したらメッセージでお知らせします。`,
  kArr:'到着予定',kNum:'受付番号',home:'最初に戻る' },
-vi:{ NM:n=>`Thư viện ${n}`,
+vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào màn hình chính để mở như ứng dụng, dùng được cả khi mất mạng.', instY:'Cài đặt', instN:'Để sau', instIOS:'Nhấn nút Chia sẻ bên dưới rồi chọn “Thêm vào MH chính”.', NM:n=>`Thư viện ${n}`,
  st1:'Ghi lại lời bạn nói',st1d:'Chuyển giọng nói thành chữ',st2:'AI nhận diện cuốn sách',st2d:'Nói không chính xác cũng được',
  st3:'Tìm từ gần đến xa',st3d:'Kiểm tra lần lượt từ thư viện gần nhất',
  fix:t=>`Đã hiểu là <b>${t}</b>`,
@@ -884,7 +1248,7 @@ vi:{ NM:n=>`Thư viện ${n}`,
  d0:l=>`Đã nhờ <b>${l}</b> giữ sách tại quầy.<br>Đến trong hôm nay là nhận được.`,
  d1:(md,l,m)=>`Đã đăng ký qua <b>${md}</b>.<br>Sách đang được chuyển từ <b>${l}</b> đến <b>Thư viện ${m}</b>.<br>Khi đến nơi sẽ nhắn tin cho bạn.`,
  kArr:'Dự kiến đến',kNum:'Số tiếp nhận',home:'Về đầu' },
-th:{ NM:n=>`ห้องสมุด${n}`,
+th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', instD:'เพิ่มไปหน้าจอหลัก เปิดได้เหมือนแอป และใช้ได้แม้ไม่มีเน็ต', instY:'ติดตั้ง', instN:'ไว้ทีหลัง', instIOS:'แตะปุ่มแชร์ด้านล่าง แล้วเลือก “เพิ่มไปยังหน้าจอโฮม”', NM:n=>`ห้องสมุด${n}`,
  st1:'ถอดคำพูดของคุณ',st1d:'เปลี่ยนเสียงเป็นข้อความ',st2:'AI ระบุหนังสือ',st2d:'พูดไม่ตรงเป๊ะก็เข้าใจ',
  st3:'ค้นหาจากใกล้ไปไกล',st3d:'ตรวจสอบทีละแห่งจากที่ใกล้ที่สุด',
  fix:t=>`เข้าใจว่า <b>${t}</b>`,
@@ -914,7 +1278,7 @@ th:{ NM:n=>`ห้องสมุด${n}`,
  d0:l=>`ขอให้<b>${l}</b>เก็บเล่มไว้ที่เคาน์เตอร์แล้ว<br>ไปรับได้ภายในวันนี้`,
  d1:(md,l,m)=>`ขอผ่าน<b>${md}</b>แล้ว<br>หนังสือกำลังย้ายจาก<b>${l}</b>ไปยัง<b>ห้องสมุด${m}</b><br>ถึงแล้วจะส่งข้อความแจ้ง`,
  kArr:'คาดว่าถึง',kNum:'เลขที่รับเรื่อง',home:'กลับหน้าแรก' },
-ru:{ NM:n=>`Библиотека ${n}`,
+ru:{ bq:BQ.ru, instT:'Можно установить на телефон', instD:'Добавьте на главный экран — откроется как приложение и работает без интернета.', instY:'Установить', instN:'Позже', instIOS:'Нажмите кнопку «Поделиться» внизу и выберите «На экран «Домой»».', NM:n=>`Библиотека ${n}`,
  st1:'Записываю вашу речь',st1d:'Превращаю голос в текст',st2:'ИИ определяет книгу',st2d:'Неточная фраза тоже подойдёт',
  st3:'Поиск от ближнего к дальнему',st3d:'Проверяю библиотеки по очереди',
  fix:t=>`Понял как <b>${t}</b>`,
@@ -944,7 +1308,7 @@ ru:{ NM:n=>`Библиотека ${n}`,
  d0:l=>`Попросили <b>${l}</b> отложить книгу на стойке.<br>Заходите сегодня и забирайте.`,
  d1:(md,l,m)=>`Оформлено через <b>${md}</b>.<br>Книга едет из <b>${l}</b> в <b>библиотеку ${m}</b>.<br>Пришлём сообщение о прибытии.`,
  kArr:'Ожидаемое прибытие',kNum:'Номер заявки',home:'В начало' },
-mn:{ NM:n=>`${n} номын сан`,
+mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үндсэн дэлгэц дээр нэмбэл апп шиг нээгдэж, интернэтгүй ч ажиллана.', instY:'Суулгах', instN:'Дараа', instIOS:'Доорх «Хуваалцах» товчийг дараад «Үндсэн дэлгэцэд нэмэх»-ийг сонгоно уу.', NM:n=>`${n} номын сан`,
  st1:'Таны яриаг буулгаж байна',st1d:'Дуу хоолойг текст болгоно',st2:'AI номыг таньж байна',st2d:'Бүрэн бус хэллэг ч ойлгоно',
  st3:'Ойроос хол руу хайх',st3d:'Ойрын номын сангаас эхлэн шалгана',
  fix:t=>`<b>${t}</b> гэж ойлголоо`,
@@ -974,7 +1338,7 @@ mn:{ NM:n=>`${n} номын сан`,
  d0:l=>`<b>${l}</b>-д лангуун дээр хадгалахыг хүслээ.<br>Өнөөдөр очвол авна.`,
  d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээлээ.<br>Ном <b>${l}</b>-аас <b>${m} номын сан</b> руу явж байна.<br>Ирэхэд мессеж илгээнэ.`,
  kArr:'Ирэх хугацаа',kNum:'Бүртгэлийн дугаар',home:'Эхлэл рүү' },
-uz:{ NM:n=>`${n} kutubxonasi`,
+uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo‘shsangiz, ilova kabi ochiladi va internetsiz ham ishlaydi.', instY:'O‘rnatish', instN:'Keyinroq', instIOS:'Quyidagi «Ulashish» tugmasini bosib, «Bosh ekranga qo‘shish»ni tanlang.', NM:n=>`${n} kutubxonasi`,
  st1:"So'zingizni yozib olyapman",st1d:"Ovozni matnga aylantiraman",st2:'AI kitobni aniqlaydi',st2d:"Noaniq aytsangiz ham tushunadi",
  st3:'Yaqin joydan boshlab qidirish',st3d:'Kutubxonalarni birma-bir tekshiradi',
  fix:t=>`<b>${t}</b> deb tushundim`,
@@ -1004,7 +1368,7 @@ uz:{ NM:n=>`${n} kutubxonasi`,
  d0:l=>`<b>${l}</b>dan peshtaxtada saqlashni so'radik.<br>Bugun borib oling.`,
  d1:(md,l,m)=>`<b>${md}</b> orqali buyurtma berildi.<br>Kitob <b>${l}</b>dan <b>${m} kutubxonasi</b>ga ketmoqda.<br>Yetib kelganda xabar yuboramiz.`,
  kArr:'Yetib kelishi',kNum:'Qabul raqami',home:'Boshiga' },
-id:{ NM:n=>`Perpustakaan ${n}`,
+id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama — terbuka seperti aplikasi dan tetap jalan tanpa internet.', instY:'Pasang', instN:'Nanti', instIOS:'Ketuk tombol Bagikan di bawah, lalu pilih “Tambahkan ke Layar Utama”.', NM:n=>`Perpustakaan ${n}`,
  st1:'Mencatat ucapan Anda',st1d:'Mengubah suara jadi teks',st2:'AI mengenali bukunya',st2d:'Ucapan kurang tepat pun dipahami',
  st3:'Mencari dari yang terdekat',st3d:'Memeriksa perpustakaan satu per satu',
  fix:t=>`Dipahami sebagai <b>${t}</b>`,
@@ -1062,6 +1426,8 @@ function applyLang(code){
     b.innerHTML = q + `<span class="m">${m}${lv ? `<em class="lv">${lv}</em>` : ''}</span>`;
   });
   $('chipnote').textContent = CL.note;
+  const B_ = U().bq; $('bqE1').textContent = B_.entry; $('bqE2').textContent = B_.entryd;
+  passCardSync();
   document.querySelectorAll('#langgrid button').forEach(b =>
     b.classList.toggle('on', b.dataset.lang === code));
   if(TTS_ON) say(L.m ? L.m.sw() : '한국어로 바뀌었습니다.');
@@ -1349,6 +1715,137 @@ $('confirm').onclick = () => {
       `${T[1]}으로 신청되었습니다. 도착하면 문자로 알려드립니다.`);
 };
 
+/* ─────────── AI 책큐 일괄 처리 (시연) ───────────
+   추천 목록의 각 도서를 기존 view() 판정 논리에 그대로 태워
+   ① 바로 이용 ② 관내 상호대차 ③ 전국 으로 묶고,
+   에이전트가 계획을 보여 준 뒤 확인 한 번으로 일괄 처리한다. */
+/* ─────────── 책이지 패스 — 구독형 완전 자동화 (시연) ───────────
+   확인은 구독 동의 한 번뿐. 이후 매월: 추천 → 판정 → 무료 경로만 자동 실행 →
+   범위 밖(실비)은 스스로 제외 → 결과 통지. 해지는 언제든. */
+const PS_ORDER = [4, 3, 2];      // 설민석(보유→보관) · 불편한(관내→접수) · 지구끝(실비→제외)
+function P_(){ return PASS[(L===LANGS.ko)?'ko':Object.keys(LANGS).find(k=>LANGS[k]===L)] || PASS.ko; }
+function passCardSync(){
+  const P=P_(), on=!!loadPref().pass;
+  $('psE1').textContent = on?P.pe1on:P.pe1;
+  $('psE2').textContent = on?P.pe2on:P.pe2;
+}
+function passOpen(){
+  const P=P_();
+  show('s-pass');
+  $('psBadge').textContent=P.badge; $('psT').textContent=P.pe1;
+  $('psT').style.display='';
+  if(loadPref().pass){ passRun(); return; }
+  $('psRun').hidden=true; $('psAgree').hidden=false;
+  $('psAgT').textContent=P.agT;
+  $('psScope').innerHTML=P.sc.map(x=>'· '+x).join('<br>');
+  $('psMand').textContent=P.mand;
+  $('psStart').textContent=P.start; $('psNo').textContent=U().no;
+  $('psNote1').textContent=U().bq.note;
+  $('psStart').onclick=()=>{ savePref({pass:true}); passCardSync(); passRun(); };
+}
+function passRun(){
+  const P=P_(), u=U();
+  $('psAgree').hidden=true; $('psRun').hidden=false; $('psSum').hidden=true;
+  $('psT').style.display='none';
+  $('psRunT').textContent='⚙ '+P.runT;
+  const rows=PS_ORDER.map(i=>{const c=CASES[i],v=view(c);return {c,v};});
+  $('psRows').innerHTML=rows.map((r,idx)=>`
+    <div class="bqrow" id="psr${idx}">
+      <div><div class="bt">${r.c.book.t}</div><div class="ba">${r.c.book.a}</div></div>
+      <div class="bqst" id="pss${idx}">…</div>
+    </div>`).join('');
+  let ready=0, booked=0;
+  rows.forEach((r,idx)=>{ setTimeout(()=>{
+    const el=$('pss'+idx);
+    if(r.v.tier===0){ el.textContent='✓ '+P.ready; el.className='bqst now'; ready++; }
+    else if(r.v.tier===1){ el.textContent='✓ '+P.booked(r.v.okN); el.className='bqst ill'; booked++; }
+    else { el.textContent='– '+P.skip; el.className='bqst sea'; }
+  }, 650*(idx+1)); });
+  setTimeout(()=>{
+    $('psSumTx').innerHTML='<b>'+P.sum(ready,booked)+'</b>';
+    $('psNoti').textContent='🔔 '+P.noti;
+    $('psCancel').textContent=P.cancel; $('psHome').textContent=u.home;
+    $('psNote2').textContent=u.bq.note;
+    $('psCancel').onclick=()=>{ savePref({pass:false}); passCardSync();
+      $('psSumTx').innerHTML='<b>'+P.canceled+'</b>'; $('psCancel').style.display='none'; };
+    $('psCancel').style.display=''; $('psSum').hidden=false;
+    say(P.say);
+  }, 650*rows.length+600);
+}
+
+const BQ_ORDER = [0, 3, 1, 4, 2];   // 소년이 온다 · 불편한 편의점 · 나미야 · 설민석 · 지구 끝의 온실
+
+function bqOpen(){
+  const B = U().bq;
+  show('s-bq');
+  $('bqBadge').textContent = B.badge;
+  $('bqT').textContent = B.title;
+  $('bqS').textContent = B.sub;
+  $('bqPlan').hidden = true; $('bqDone').hidden = true;
+  $('bqList').style.display = '';
+  const rows = BQ_ORDER.map(i => {
+    const c = CASES[i], v = view(c);
+    const g = v.tier === 0 ? 'now' : (v.tier === 1 ? 'ill' : 'sea');
+    return {c, v, g};
+  });
+  $('bqList').innerHTML = rows.map((r, idx) => `
+    <div class="bqrow" id="bqr${idx}">
+      <div><div class="bt">${r.c.book.t}</div><div class="ba">${r.c.book.a}</div></div>
+      <div class="bqst" id="bqs${idx}">…</div>
+    </div>`).join('');
+  rows.forEach((r, idx) => {
+    setTimeout(() => {
+      const el = $('bqs' + idx);
+      if(r.g === 'now'){ el.textContent = B.rNow; el.className = 'bqst now'; }
+      else if(r.g === 'ill'){ el.textContent = B.rIll(r.v.okN); el.className = 'bqst ill'; }
+      else { el.textContent = B.rSea; el.className = 'bqst sea'; }
+    }, 420 * (idx + 1));
+  });
+  setTimeout(() => bqPlanShow(rows), 420 * rows.length + 500);
+}
+
+function bqPlanShow(rows){
+  const B = U().bq, u = U();
+  const now = rows.filter(r => r.g === 'now'), ill = rows.filter(r => r.g === 'ill'), sea = rows.filter(r => r.g === 'sea');
+  $('bqS').textContent = B.got;
+  $('bqPermT').textContent = B.perm;
+  const li = a => a.map(r => `· ${r.c.book.t}`).join('<br>');
+  let h = '';
+  if(now.length) h += `<div class="bqg">✅ ${B.gNow}</div><div class="bqitems">${li(now)}</div>`;
+  if(ill.length) h += `<div class="bqg">🚚 ${B.gIll(u.NM(내관))}</div><div class="bqitems">${li(ill)}</div>`;
+  if(sea.length) h += `<div class="bqg">🌊 ${B.gSea}</div><div class="bqitems">${li(sea)}</div>
+    <label class="bqsea"><input type="checkbox" id="bqSeaCk"><span>${B.seaNote}</span></label>`;
+  $('bqGroups').innerHTML = h;
+  const gauge = () => {
+    $('bqGfill').style.width = (ill.length / 5 * 100) + '%';
+    $('bqGtxt').textContent = B.gauge(ill.length);
+    const n = now.length + ill.length + (($('bqSeaCk') && $('bqSeaCk').checked) ? sea.length : 0);
+    $('bqGo').textContent = B.go(n);
+  };
+  gauge();
+  const ck = $('bqSeaCk'); if(ck) ck.onchange = gauge;
+  $('bqCancel').textContent = u.no;
+  $('bqNote').textContent = B.note;
+  $('bqPlan').hidden = false;
+  $('bqGo').onclick = () => bqRun(now, ill, sea);
+}
+
+function bqRun(now, ill, sea){
+  const B = U().bq, u = U();
+  const withSea = $('bqSeaCk') && $('bqSeaCk').checked;
+  $('bqPlan').hidden = true; $('bqList').style.display = 'none';
+  let h = '';
+  if(now.length) h += `<div>${B.dNow(now.length)}</div>`;
+  if(ill.length) h += `<div>${B.dIll(ill.length)}</div>`;
+  if(withSea && sea.length) h += `<div>${B.dSea}</div>`;
+  $('bqDoneT').textContent = B.doneT;
+  $('bqRecap').innerHTML = h;
+  $('bqNote2').textContent = B.note;
+  $('bqHome').textContent = u.home;
+  $('bqDone').hidden = false;
+  say(B.sayDone);
+}
+
 function reset(){
   if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){}
   $('micerr').classList.remove('on');
@@ -1363,22 +1860,91 @@ function reset(){
     b.dataset.lang = code;
     b.innerHTML = LANGS[code].n + (code==='ko' ? '<small>기본</small>' : `<small>${LANGS[code].rec}</small>`);
     if(code==='ko') b.classList.add('on');
-    b.onclick = () => { applyLang(code); $('lsheet').classList.remove('on'); };
+    b.onclick = () => { applyLang(code); savePref({lang: code}); $('lsheet').classList.remove('on'); };
     g.appendChild(b);
   });
 }
 $('langbtn').onclick = () => $('lsheet').classList.add('on');
 $('bigbtn').onclick = function(){
-  document.body.classList.toggle('bigmode');
-  this.classList.toggle('on');
+  const on = document.body.classList.toggle('bigmode');
+  this.classList.toggle('on', on);
+  savePref({big: on});
 };
 $('ttsbtn').onclick = function(){
   TTS_ON = !TTS_ON;
   this.classList.toggle('on', TTS_ON);
+  savePref({tts: TTS_ON});
   if(TTS_ON) say(L.m ? L.m.on() : '음성 안내를 켰습니다. 검색 결과를 읽어 드립니다.');
   else if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){}
 };
 $('micbtn').onclick = startVoice;
+
+/* ─────────── 설정 기억 (언어 · 큰글자 · 음성안내) ───────────
+   개인정보는 저장하지 않는다. 화면 설정만 이 기기 안에 남는다.
+   저장이 막힌 환경(미리보기 창 등)에서도 오류 없이 그냥 동작한다. */
+const PREF = 'chaekiji.pref.v1';
+function loadPref(){ try{ return JSON.parse(localStorage.getItem(PREF)) || {}; }catch(e){ return {}; } }
+function savePref(patch){
+  try{ localStorage.setItem(PREF, JSON.stringify(Object.assign(loadPref(), patch))); }catch(e){}
+}
+(function restorePref(){
+  const p = loadPref();
+  passCardSync();
+  if(p.lang && LANGS[p.lang]) applyLang(p.lang);
+  if(p.big){ document.body.classList.add('bigmode'); $('bigbtn').classList.add('on'); }
+  if(p.tts){ TTS_ON = true; $('ttsbtn').classList.add('on'); }
+})();
+
+/* ─────────── 서비스워커 등록 (설치·오프라인) ─────────── */
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+/* ─────────── 홈 화면 설치 안내 ───────────
+   안드로이드·PC : 브라우저가 설치를 제안하면 우리 배너로 받는다.
+   아이폰 : 브라우저가 제안하지 않으므로 공유 → 홈 화면에 추가 안내를 띄운다. */
+(function installUI(){
+  const box = $('instbox'), yes = $('instYes'), no = $('instNo');
+  const DISMISS = 'chaekiji.inst.off';
+  const already = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  let dismissed = false;
+  try{ dismissed = localStorage.getItem(DISMISS) === '1'; }catch(e){}
+  if(already || dismissed) return;
+
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferred = e;
+    const u = U();
+    $('instT').textContent = u.instT; $('instD').textContent = u.instD;
+    yes.textContent = u.instY; no.textContent = u.instN;
+    box.classList.add('on');
+  });
+
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isSafari = isIOS && !/crios|fxios|edgios/i.test(navigator.userAgent);
+  if(isSafari){
+    setTimeout(() => {
+      const u = U();
+      $('instT').textContent = u.instT;
+      $('instD').textContent = u.instIOS;
+      yes.style.display = 'none';
+      no.textContent = u.instN;
+      box.classList.add('on');
+    }, 1400);
+  }
+
+  yes.onclick = async () => {
+    box.classList.remove('on');
+    if(deferred){ deferred.prompt(); try{ await deferred.userChoice; }catch(e){} deferred = null; }
+  };
+  no.onclick = () => {
+    box.classList.remove('on');
+    try{ localStorage.setItem(DISMISS, '1'); }catch(e){}
+  };
+})();
+
 showDiag();
 $('stopbtn').onclick = () => { if(rec) rec.stop(); show('s-idle'); };
 document.querySelectorAll('.chip').forEach(b => {

@@ -1098,7 +1098,7 @@ id:{entry:'Rekomendasi AI BookQ — sekali proses',entryd:'Kumpulkan buku rekome
 };
 
 const UI = {
-ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면에 두면 앱처럼 바로 열리고, 인터넷이 끊겨도 열립니다.', instY:'설치하기', instN:'나중에', instIOS:'아래 공유 단추를 누르고 「홈 화면에 추가」를 선택하세요.', NM:n=>n+'도서관',
+ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면에 두면 앱처럼 바로 열리고, 인터넷이 끊겨도 열립니다.', instY:'설치하기', instN:'나중에', instIOS:'아래 공유 단추를 누르고 「홈 화면에 추가」를 선택하세요.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>n+'도서관',
  st1:'말씀 옮겨 적기',st1d:'음성을 글자로 바꿉니다',st2:'AI가 무슨 책인지 파악',st2d:'불완전한 말도 해석합니다',
  st3:'범위를 넓혀가며 찾기',st3d:'가까운 곳부터 차례로 확인합니다',
  fix:t=>`<b>${t}</b> 로 이해했습니다`,
@@ -1128,7 +1128,7 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  d0:l=>`<b>${l}</b> 대출대에 보관 요청했습니다.<br>오늘 중 방문하시면 바로 받으실 수 있습니다.`,
  d1:(md,l,m)=>`<b>${md}</b>으로 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
  kArr:'예상 도착',kNum:'접수번호',home:'처음으로' },
-en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home screen — it opens like an app and works offline.', instY:'Install', instN:'Later', instIOS:'Tap the Share button below, then choose “Add to Home Screen”.', NM:n=>`${n} Library`,
+en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home screen — it opens like an app and works offline.', instY:'Install', instN:'Later', instIOS:'Tap the Share button below, then choose “Add to Home Screen”.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n} Library`,
  st1:'Transcribing your words',st1d:'Turning speech into text',st2:'AI identifies the book',st2d:'Even imperfect phrases work',
  st3:'Searching, nearest first',st3d:'Checking libraries step by step',
  fix:t=>`Understood as <b>${t}</b>`,
@@ -1158,7 +1158,7 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  d0:l=>`We asked <b>${l}</b> to hold it at the desk.<br>Visit today and pick it up.`,
  d1:(md,l,m)=>`Requested via <b>${md}</b>.<br>The item is moving from <b>${l}</b> to <b>${m} Library</b>.<br>We'll text you when it arrives.`,
  kArr:'Expected arrival',kNum:'Reference no.',home:'Start over' },
-zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，像应用一样打开，断网也能使用。', instY:'安装', instN:'以后再说', instIOS:'点击下方分享按钮，选择“添加到主屏幕”。', NM:n=>`${n}图书馆`,
+zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，像应用一样打开，断网也能使用。', instY:'安装', instN:'以后再说', instIOS:'点击下方分享按钮，选择“添加到主屏幕”。', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n}图书馆`,
  st1:'转写您的话',st1d:'把语音变成文字',st2:'AI 识别图书',st2d:'说得不准也能理解',
  st3:'由近及远查找',st3d:'从最近的图书馆开始确认',
  fix:t=>`已识别为 <b>${t}</b>`,
@@ -1188,7 +1188,7 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  d0:l=>`已请<b>${l}</b>在借书台为您保留。<br>今天到馆即可取书。`,
  d1:(md,l,m)=>`已通过<b>${md}</b>申请。<br>图书正从<b>${l}</b>调往<b>${m}图书馆</b>。<br>到馆后将短信通知您。`,
  kArr:'预计到达',kNum:'受理编号',home:'返回首页' },
-ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に置くとアプリのように開き、オフラインでも使えます。', instY:'インストール', instN:'あとで', instIOS:'下の共有ボタンから「ホーム画面に追加」を選んでください。', NM:n=>`${n}図書館`,
+ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に置くとアプリのように開き、オフラインでも使えます。', instY:'インストール', instN:'あとで', instIOS:'下の共有ボタンから「ホーム画面に追加」を選んでください。', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n}図書館`,
  st1:'発話の書き起こし',st1d:'音声を文字にします',st2:'AIが本を特定',st2d:'あいまいな言い方でも大丈夫',
  st3:'近い順に検索',st3d:'近くの図書館から順に確認します',
  fix:t=>`<b>${t}</b> と理解しました`,
@@ -1218,7 +1218,7 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  d0:l=>`<b>${l}</b>の貸出カウンターに取り置きを依頼しました。<br>本日ご来館いただければ受け取れます。`,
  d1:(md,l,m)=>`<b>${md}</b>で申請しました。<br>資料は<b>${l}</b>から<b>${m}図書館</b>へ移動中です。<br>到着したらメッセージでお知らせします。`,
  kArr:'到着予定',kNum:'受付番号',home:'最初に戻る' },
-vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào màn hình chính để mở như ứng dụng, dùng được cả khi mất mạng.', instY:'Cài đặt', instN:'Để sau', instIOS:'Nhấn nút Chia sẻ bên dưới rồi chọn “Thêm vào MH chính”.', NM:n=>`Thư viện ${n}`,
+vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào màn hình chính để mở như ứng dụng, dùng được cả khi mất mạng.', instY:'Cài đặt', instN:'Để sau', instIOS:'Nhấn nút Chia sẻ bên dưới rồi chọn “Thêm vào MH chính”.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`Thư viện ${n}`,
  st1:'Ghi lại lời bạn nói',st1d:'Chuyển giọng nói thành chữ',st2:'AI nhận diện cuốn sách',st2d:'Nói không chính xác cũng được',
  st3:'Tìm từ gần đến xa',st3d:'Kiểm tra lần lượt từ thư viện gần nhất',
  fix:t=>`Đã hiểu là <b>${t}</b>`,
@@ -1248,7 +1248,7 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  d0:l=>`Đã nhờ <b>${l}</b> giữ sách tại quầy.<br>Đến trong hôm nay là nhận được.`,
  d1:(md,l,m)=>`Đã đăng ký qua <b>${md}</b>.<br>Sách đang được chuyển từ <b>${l}</b> đến <b>Thư viện ${m}</b>.<br>Khi đến nơi sẽ nhắn tin cho bạn.`,
  kArr:'Dự kiến đến',kNum:'Số tiếp nhận',home:'Về đầu' },
-th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', instD:'เพิ่มไปหน้าจอหลัก เปิดได้เหมือนแอป และใช้ได้แม้ไม่มีเน็ต', instY:'ติดตั้ง', instN:'ไว้ทีหลัง', instIOS:'แตะปุ่มแชร์ด้านล่าง แล้วเลือก “เพิ่มไปยังหน้าจอโฮม”', NM:n=>`ห้องสมุด${n}`,
+th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', instD:'เพิ่มไปหน้าจอหลัก เปิดได้เหมือนแอป และใช้ได้แม้ไม่มีเน็ต', instY:'ติดตั้ง', instN:'ไว้ทีหลัง', instIOS:'แตะปุ่มแชร์ด้านล่าง แล้วเลือก “เพิ่มไปยังหน้าจอโฮม”', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`ห้องสมุด${n}`,
  st1:'ถอดคำพูดของคุณ',st1d:'เปลี่ยนเสียงเป็นข้อความ',st2:'AI ระบุหนังสือ',st2d:'พูดไม่ตรงเป๊ะก็เข้าใจ',
  st3:'ค้นหาจากใกล้ไปไกล',st3d:'ตรวจสอบทีละแห่งจากที่ใกล้ที่สุด',
  fix:t=>`เข้าใจว่า <b>${t}</b>`,
@@ -1278,7 +1278,7 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  d0:l=>`ขอให้<b>${l}</b>เก็บเล่มไว้ที่เคาน์เตอร์แล้ว<br>ไปรับได้ภายในวันนี้`,
  d1:(md,l,m)=>`ขอผ่าน<b>${md}</b>แล้ว<br>หนังสือกำลังย้ายจาก<b>${l}</b>ไปยัง<b>ห้องสมุด${m}</b><br>ถึงแล้วจะส่งข้อความแจ้ง`,
  kArr:'คาดว่าถึง',kNum:'เลขที่รับเรื่อง',home:'กลับหน้าแรก' },
-ru:{ bq:BQ.ru, instT:'Можно установить на телефон', instD:'Добавьте на главный экран — откроется как приложение и работает без интернета.', instY:'Установить', instN:'Позже', instIOS:'Нажмите кнопку «Поделиться» внизу и выберите «На экран «Домой»».', NM:n=>`Библиотека ${n}`,
+ru:{ bq:BQ.ru, instT:'Можно установить на телефон', instD:'Добавьте на главный экран — откроется как приложение и работает без интернета.', instY:'Установить', instN:'Позже', instIOS:'Нажмите кнопку «Поделиться» внизу и выберите «На экран «Домой»».', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`Библиотека ${n}`,
  st1:'Записываю вашу речь',st1d:'Превращаю голос в текст',st2:'ИИ определяет книгу',st2d:'Неточная фраза тоже подойдёт',
  st3:'Поиск от ближнего к дальнему',st3d:'Проверяю библиотеки по очереди',
  fix:t=>`Понял как <b>${t}</b>`,
@@ -1308,7 +1308,7 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  d0:l=>`Попросили <b>${l}</b> отложить книгу на стойке.<br>Заходите сегодня и забирайте.`,
  d1:(md,l,m)=>`Оформлено через <b>${md}</b>.<br>Книга едет из <b>${l}</b> в <b>библиотеку ${m}</b>.<br>Пришлём сообщение о прибытии.`,
  kArr:'Ожидаемое прибытие',kNum:'Номер заявки',home:'В начало' },
-mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үндсэн дэлгэц дээр нэмбэл апп шиг нээгдэж, интернэтгүй ч ажиллана.', instY:'Суулгах', instN:'Дараа', instIOS:'Доорх «Хуваалцах» товчийг дараад «Үндсэн дэлгэцэд нэмэх»-ийг сонгоно уу.', NM:n=>`${n} номын сан`,
+mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үндсэн дэлгэц дээр нэмбэл апп шиг нээгдэж, интернэтгүй ч ажиллана.', instY:'Суулгах', instN:'Дараа', instIOS:'Доорх «Хуваалцах» товчийг дараад «Үндсэн дэлгэцэд нэмэх»-ийг сонгоно уу.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n} номын сан`,
  st1:'Таны яриаг буулгаж байна',st1d:'Дуу хоолойг текст болгоно',st2:'AI номыг таньж байна',st2d:'Бүрэн бус хэллэг ч ойлгоно',
  st3:'Ойроос хол руу хайх',st3d:'Ойрын номын сангаас эхлэн шалгана',
  fix:t=>`<b>${t}</b> гэж ойлголоо`,
@@ -1338,7 +1338,7 @@ mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үнд
  d0:l=>`<b>${l}</b>-д лангуун дээр хадгалахыг хүслээ.<br>Өнөөдөр очвол авна.`,
  d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээлээ.<br>Ном <b>${l}</b>-аас <b>${m} номын сан</b> руу явж байна.<br>Ирэхэд мессеж илгээнэ.`,
  kArr:'Ирэх хугацаа',kNum:'Бүртгэлийн дугаар',home:'Эхлэл рүү' },
-uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo‘shsangiz, ilova kabi ochiladi va internetsiz ham ishlaydi.', instY:'O‘rnatish', instN:'Keyinroq', instIOS:'Quyidagi «Ulashish» tugmasini bosib, «Bosh ekranga qo‘shish»ni tanlang.', NM:n=>`${n} kutubxonasi`,
+uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo‘shsangiz, ilova kabi ochiladi va internetsiz ham ishlaydi.', instY:'O‘rnatish', instN:'Keyinroq', instIOS:'Quyidagi «Ulashish» tugmasini bosib, «Bosh ekranga qo‘shish»ni tanlang.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n} kutubxonasi`,
  st1:"So'zingizni yozib olyapman",st1d:"Ovozni matnga aylantiraman",st2:'AI kitobni aniqlaydi',st2d:"Noaniq aytsangiz ham tushunadi",
  st3:'Yaqin joydan boshlab qidirish',st3d:'Kutubxonalarni birma-bir tekshiradi',
  fix:t=>`<b>${t}</b> deb tushundim`,
@@ -1368,7 +1368,7 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
  d0:l=>`<b>${l}</b>dan peshtaxtada saqlashni so'radik.<br>Bugun borib oling.`,
  d1:(md,l,m)=>`<b>${md}</b> orqali buyurtma berildi.<br>Kitob <b>${l}</b>dan <b>${m} kutubxonasi</b>ga ketmoqda.<br>Yetib kelganda xabar yuboramiz.`,
  kArr:'Yetib kelishi',kNum:'Qabul raqami',home:'Boshiga' },
-id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama — terbuka seperti aplikasi dan tetap jalan tanpa internet.', instY:'Pasang', instN:'Nanti', instIOS:'Ketuk tombol Bagikan di bawah, lalu pilih “Tambahkan ke Layar Utama”.', NM:n=>`Perpustakaan ${n}`,
+id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama — terbuka seperti aplikasi dan tetap jalan tanpa internet.', instY:'Pasang', instN:'Nanti', instIOS:'Ketuk tombol Bagikan di bawah, lalu pilih “Tambahkan ke Layar Utama”.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`Perpustakaan ${n}`,
  st1:'Mencatat ucapan Anda',st1d:'Mengubah suara jadi teks',st2:'AI mengenali bukunya',st2d:'Ucapan kurang tepat pun dipahami',
  st3:'Mencari dari yang terdekat',st3d:'Memeriksa perpustakaan satu per satu',
  fix:t=>`Dipahami sebagai <b>${t}</b>`,
@@ -1910,7 +1910,10 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   const DISMISS = 'chaekiji.inst.off';
   const already = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   let dismissed = false;
-  try{ dismissed = localStorage.getItem(DISMISS) === '1'; }catch(e){}
+  try{
+    const t = +(localStorage.getItem(DISMISS) || 0);
+    dismissed = t && (Date.now() - t) < 7*24*60*60*1000;   /* 7일간만 숨김 */
+  }catch(e){}
   if(already || dismissed) return;
 
   let deferred = null;
@@ -1923,16 +1926,30 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   });
 
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isSafari = isIOS && !/crios|fxios|edgios/i.test(navigator.userAgent);
-  if(isSafari){
+  const iosOther = isIOS && /crios|fxios|edgios|whale|naver|kakao/i.test(navigator.userAgent);
+  const isSafari = isIOS && !iosOther;
+  if(isIOS){
     setTimeout(() => {
       const u = U();
       $('instT').textContent = u.instT;
-      $('instD').textContent = u.instIOS;
+      /* 아이폰: 사파리는 공유→홈 화면에 추가 / 그 밖의 앱은 사파리로 열어야 설치된다 */
+      $('instD').textContent = isSafari ? u.instIOS : u.instIOSother;
       yes.style.display = 'none';
       no.textContent = u.instN;
       box.classList.add('on');
     }, 1400);
+  }
+  /* 안드로이드인데 브라우저가 설치를 제안하지 않는 경우(이미 판정 캐시 등)에도 길을 알려준다 */
+  if(!isIOS){
+    setTimeout(() => {
+      if(deferred || box.classList.contains('on')) return;
+      const u = U();
+      $('instT').textContent = u.instT;
+      $('instD').textContent = u.instAOS;
+      yes.style.display = 'none';
+      no.textContent = u.instN;
+      box.classList.add('on');
+    }, 3000);
   }
 
   yes.onclick = async () => {
@@ -1941,7 +1958,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   };
   no.onclick = () => {
     box.classList.remove('on');
-    try{ localStorage.setItem(DISMISS, '1'); }catch(e){}
+    try{ localStorage.setItem(DISMISS, String(Date.now())); }catch(e){}
   };
 })();
 

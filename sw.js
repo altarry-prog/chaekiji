@@ -1,5 +1,5 @@
 /* 책이지 서비스워커 — 화면은 항상 최신, 인터넷이 끊겨도 열림 */
-const CACHE = 'chaekiji-v4';
+const CACHE = 'chaekiji-v5';
 const SHELL = ['./index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

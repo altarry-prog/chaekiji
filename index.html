@@ -1427,6 +1427,22 @@ function applyLang(code){
   });
   $('chipnote').textContent = CL.note;
   const B_ = U().bq; $('bqE1').textContent = B_.entry; $('bqE2').textContent = B_.entryd;
+  /* 설치 안내 배너가 떠 있으면 그 문구도 함께 바꾼다 */
+  try{
+    const ib=$('instbox');
+    if(ib && ib.classList.contains('on')){
+      const u2=U();
+      if($('instYes') && $('instYes').style.display!=='none' && !$('instYes').hidden){ $('instT').textContent=u2.instT; }
+      else { $('instT').textContent=u2.instT; }
+      const dEl=$('instD');
+      if(dEl && dEl.dataset.mode==='ios') dEl.textContent=u2.instIOS;
+      else if(dEl && dEl.dataset.mode==='iosother') dEl.textContent=u2.instIOSother;
+      else if(dEl && dEl.dataset.mode==='aos') dEl.textContent=u2.instAOS;
+      else if(dEl) dEl.textContent=u2.instD;
+      if($('instYes')) $('instYes').textContent=u2.instY;
+      if($('instNo')) $('instNo').textContent=u2.instN;
+    }
+  }catch(e){}
   passCardSync();
   document.querySelectorAll('#langgrid button').forEach(b =>
     b.classList.toggle('on', b.dataset.lang === code));

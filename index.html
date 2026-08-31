@@ -1098,7 +1098,7 @@ id:{entry:'Rekomendasi AI BookQ — sekali proses',entryd:'Kumpulkan buku rekome
 };
 
 const UI = {
-ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면에 두면 앱처럼 바로 열리고, 인터넷이 끊겨도 열립니다.', instY:'설치하기', instN:'나중에', instIOS:'아래 공유 단추를 누르고 「홈 화면에 추가」를 선택하세요.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>n+'도서관',
+ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면에 두면 앱처럼 바로 열리고, 인터넷이 끊겨도 열립니다.', instY:'설치하기', instN:'나중에', instIOS:'아래 「공유」 단추(없으면 「•••」 → 「공유」)를 누른 뒤, 목록을 내려 「홈 화면에 추가」를 선택하세요.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 「공유」(또는 「•••」 → 「공유」) → 「홈 화면에 추가」.', NM:n=>n+'도서관',
  st1:'말씀 옮겨 적기',st1d:'음성을 글자로 바꿉니다',st2:'AI가 무슨 책인지 파악',st2d:'불완전한 말도 해석합니다',
  st3:'범위를 넓혀가며 찾기',st3d:'가까운 곳부터 차례로 확인합니다',
  fix:t=>`<b>${t}</b> 로 이해했습니다`,
@@ -1128,7 +1128,7 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  d0:l=>`<b>${l}</b> 대출대에 보관 요청했습니다.<br>오늘 중 방문하시면 바로 받으실 수 있습니다.`,
  d1:(md,l,m)=>`<b>${md}</b>으로 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
  kArr:'예상 도착',kNum:'접수번호',home:'처음으로' },
-en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home screen — it opens like an app and works offline.', instY:'Install', instN:'Later', instIOS:'Tap the Share button below, then choose “Add to Home Screen”.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n} Library`,
+en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home screen — it opens like an app and works offline.', instY:'Install', instN:'Later', instIOS:'Tap Share (or ••• → Share), then scroll down and choose “Add to Home Screen”.', instAOS:'Open the browser menu (⋮) and tap “Install app” or “Add to Home screen”.', instIOSother:'On iPhone, open this page in Safari to install. In Safari: Share (or ••• → Share) → “Add to Home Screen”.', NM:n=>`${n} Library`,
  st1:'Transcribing your words',st1d:'Turning speech into text',st2:'AI identifies the book',st2d:'Even imperfect phrases work',
  st3:'Searching, nearest first',st3d:'Checking libraries step by step',
  fix:t=>`Understood as <b>${t}</b>`,
@@ -1158,7 +1158,7 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  d0:l=>`We asked <b>${l}</b> to hold it at the desk.<br>Visit today and pick it up.`,
  d1:(md,l,m)=>`Requested via <b>${md}</b>.<br>The item is moving from <b>${l}</b> to <b>${m} Library</b>.<br>We'll text you when it arrives.`,
  kArr:'Expected arrival',kNum:'Reference no.',home:'Start over' },
-zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，像应用一样打开，断网也能使用。', instY:'安装', instN:'以后再说', instIOS:'点击下方分享按钮，选择“添加到主屏幕”。', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n}图书馆`,
+zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，像应用一样打开，断网也能使用。', instY:'安装', instN:'以后再说', instIOS:'点击「分享」（或「•••」→「分享」），向下滑动并选择“添加到主屏幕”。', instAOS:'打开浏览器菜单（⋮），点击“安装应用”或“添加到主屏幕”。', instIOSother:'iPhone 请用 Safari 打开才能安装。在 Safari 中：分享（或「•••」→ 分享）→“添加到主屏幕”。', NM:n=>`${n}图书馆`,
  st1:'转写您的话',st1d:'把语音变成文字',st2:'AI 识别图书',st2d:'说得不准也能理解',
  st3:'由近及远查找',st3d:'从最近的图书馆开始确认',
  fix:t=>`已识别为 <b>${t}</b>`,
@@ -1188,7 +1188,7 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  d0:l=>`已请<b>${l}</b>在借书台为您保留。<br>今天到馆即可取书。`,
  d1:(md,l,m)=>`已通过<b>${md}</b>申请。<br>图书正从<b>${l}</b>调往<b>${m}图书馆</b>。<br>到馆后将短信通知您。`,
  kArr:'预计到达',kNum:'受理编号',home:'返回首页' },
-ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に置くとアプリのように開き、オフラインでも使えます。', instY:'インストール', instN:'あとで', instIOS:'下の共有ボタンから「ホーム画面に追加」を選んでください。', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n}図書館`,
+ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に置くとアプリのように開き、オフラインでも使えます。', instY:'インストール', instN:'あとで', instIOS:'「共有」ボタン（または「•••」→「共有」）を押し、下にスクロールして「ホーム画面に追加」を選んでください。', instAOS:'ブラウザのメニュー（⋮）から「アプリをインストール」または「ホーム画面に追加」を押してください。', instIOSother:'iPhone は Safari で開くと設置できます。Safari で「共有」（または「•••」→「共有」）→「ホーム画面に追加」。', NM:n=>`${n}図書館`,
  st1:'発話の書き起こし',st1d:'音声を文字にします',st2:'AIが本を特定',st2d:'あいまいな言い方でも大丈夫',
  st3:'近い順に検索',st3d:'近くの図書館から順に確認します',
  fix:t=>`<b>${t}</b> と理解しました`,
@@ -1218,7 +1218,7 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  d0:l=>`<b>${l}</b>の貸出カウンターに取り置きを依頼しました。<br>本日ご来館いただければ受け取れます。`,
  d1:(md,l,m)=>`<b>${md}</b>で申請しました。<br>資料は<b>${l}</b>から<b>${m}図書館</b>へ移動中です。<br>到着したらメッセージでお知らせします。`,
  kArr:'到着予定',kNum:'受付番号',home:'最初に戻る' },
-vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào màn hình chính để mở như ứng dụng, dùng được cả khi mất mạng.', instY:'Cài đặt', instN:'Để sau', instIOS:'Nhấn nút Chia sẻ bên dưới rồi chọn “Thêm vào MH chính”.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`Thư viện ${n}`,
+vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào màn hình chính để mở như ứng dụng, dùng được cả khi mất mạng.', instY:'Cài đặt', instN:'Để sau', instIOS:'Nhấn nút Chia sẻ (hoặc ••• → Chia sẻ), kéo xuống và chọn “Thêm vào MH chính”.', instAOS:'Mở menu trình duyệt (⋮) rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào MH chính”.', instIOSother:'Trên iPhone, hãy mở bằng Safari để cài. Trong Safari: Chia sẻ (hoặc ••• → Chia sẻ) → “Thêm vào MH chính”.', NM:n=>`Thư viện ${n}`,
  st1:'Ghi lại lời bạn nói',st1d:'Chuyển giọng nói thành chữ',st2:'AI nhận diện cuốn sách',st2d:'Nói không chính xác cũng được',
  st3:'Tìm từ gần đến xa',st3d:'Kiểm tra lần lượt từ thư viện gần nhất',
  fix:t=>`Đã hiểu là <b>${t}</b>`,
@@ -1248,7 +1248,7 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  d0:l=>`Đã nhờ <b>${l}</b> giữ sách tại quầy.<br>Đến trong hôm nay là nhận được.`,
  d1:(md,l,m)=>`Đã đăng ký qua <b>${md}</b>.<br>Sách đang được chuyển từ <b>${l}</b> đến <b>Thư viện ${m}</b>.<br>Khi đến nơi sẽ nhắn tin cho bạn.`,
  kArr:'Dự kiến đến',kNum:'Số tiếp nhận',home:'Về đầu' },
-th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', instD:'เพิ่มไปหน้าจอหลัก เปิดได้เหมือนแอป และใช้ได้แม้ไม่มีเน็ต', instY:'ติดตั้ง', instN:'ไว้ทีหลัง', instIOS:'แตะปุ่มแชร์ด้านล่าง แล้วเลือก “เพิ่มไปยังหน้าจอโฮม”', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`ห้องสมุด${n}`,
+th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', instD:'เพิ่มไปหน้าจอหลัก เปิดได้เหมือนแอป และใช้ได้แม้ไม่มีเน็ต', instY:'ติดตั้ง', instN:'ไว้ทีหลัง', instIOS:'แตะปุ่มแชร์ (หรือ ••• → แชร์) เลื่อนลงแล้วเลือก “เพิ่มไปยังหน้าจอโฮม”', instAOS:'เปิดเมนูเบราว์เซอร์ (⋮) แล้วแตะ “ติดตั้งแอป” หรือ “เพิ่มไปยังหน้าจอโฮม”', instIOSother:'บน iPhone ต้องเปิดด้วย Safari จึงจะติดตั้งได้ ใน Safari: แชร์ (หรือ ••• → แชร์) → “เพิ่มไปยังหน้าจอโฮม”', NM:n=>`ห้องสมุด${n}`,
  st1:'ถอดคำพูดของคุณ',st1d:'เปลี่ยนเสียงเป็นข้อความ',st2:'AI ระบุหนังสือ',st2d:'พูดไม่ตรงเป๊ะก็เข้าใจ',
  st3:'ค้นหาจากใกล้ไปไกล',st3d:'ตรวจสอบทีละแห่งจากที่ใกล้ที่สุด',
  fix:t=>`เข้าใจว่า <b>${t}</b>`,
@@ -1278,7 +1278,7 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  d0:l=>`ขอให้<b>${l}</b>เก็บเล่มไว้ที่เคาน์เตอร์แล้ว<br>ไปรับได้ภายในวันนี้`,
  d1:(md,l,m)=>`ขอผ่าน<b>${md}</b>แล้ว<br>หนังสือกำลังย้ายจาก<b>${l}</b>ไปยัง<b>ห้องสมุด${m}</b><br>ถึงแล้วจะส่งข้อความแจ้ง`,
  kArr:'คาดว่าถึง',kNum:'เลขที่รับเรื่อง',home:'กลับหน้าแรก' },
-ru:{ bq:BQ.ru, instT:'Можно установить на телефон', instD:'Добавьте на главный экран — откроется как приложение и работает без интернета.', instY:'Установить', instN:'Позже', instIOS:'Нажмите кнопку «Поделиться» внизу и выберите «На экран «Домой»».', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`Библиотека ${n}`,
+ru:{ bq:BQ.ru, instT:'Можно установить на телефон', instD:'Добавьте на главный экран — откроется как приложение и работает без интернета.', instY:'Установить', instN:'Позже', instIOS:'Нажмите «Поделиться» (или ••• → «Поделиться»), пролистайте вниз и выберите «На экран «Домой»».', instAOS:'Откройте меню браузера (⋮) и нажмите «Установить приложение» или «Добавить на главный экран».', instIOSother:'На iPhone установка возможна только в Safari. В Safari: «Поделиться» (или ••• → «Поделиться») → «На экран «Домой»».', NM:n=>`Библиотека ${n}`,
  st1:'Записываю вашу речь',st1d:'Превращаю голос в текст',st2:'ИИ определяет книгу',st2d:'Неточная фраза тоже подойдёт',
  st3:'Поиск от ближнего к дальнему',st3d:'Проверяю библиотеки по очереди',
  fix:t=>`Понял как <b>${t}</b>`,
@@ -1308,7 +1308,7 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  d0:l=>`Попросили <b>${l}</b> отложить книгу на стойке.<br>Заходите сегодня и забирайте.`,
  d1:(md,l,m)=>`Оформлено через <b>${md}</b>.<br>Книга едет из <b>${l}</b> в <b>библиотеку ${m}</b>.<br>Пришлём сообщение о прибытии.`,
  kArr:'Ожидаемое прибытие',kNum:'Номер заявки',home:'В начало' },
-mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үндсэн дэлгэц дээр нэмбэл апп шиг нээгдэж, интернэтгүй ч ажиллана.', instY:'Суулгах', instN:'Дараа', instIOS:'Доорх «Хуваалцах» товчийг дараад «Үндсэн дэлгэцэд нэмэх»-ийг сонгоно уу.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n} номын сан`,
+mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үндсэн дэлгэц дээр нэмбэл апп шиг нээгдэж, интернэтгүй ч ажиллана.', instY:'Суулгах', instN:'Дараа', instIOS:'«Хуваалцах» товч (эсвэл ••• → «Хуваалцах») дараад, доош гүйлгэж «Үндсэн дэлгэцэд нэмэх»-ийг сонгоно уу.', instAOS:'Хөтчийн цэс (⋮)-г нээж «Апп суулгах» эсвэл «Үндсэн дэлгэцэд нэмэх» дарна уу.', instIOSother:'iPhone дээр Safari-гаар нээж суулгана. Safari дээр: «Хуваалцах» (эсвэл ••• → «Хуваалцах») → «Үндсэн дэлгэцэд нэмэх».', NM:n=>`${n} номын сан`,
  st1:'Таны яриаг буулгаж байна',st1d:'Дуу хоолойг текст болгоно',st2:'AI номыг таньж байна',st2d:'Бүрэн бус хэллэг ч ойлгоно',
  st3:'Ойроос хол руу хайх',st3d:'Ойрын номын сангаас эхлэн шалгана',
  fix:t=>`<b>${t}</b> гэж ойлголоо`,
@@ -1338,7 +1338,7 @@ mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үнд
  d0:l=>`<b>${l}</b>-д лангуун дээр хадгалахыг хүслээ.<br>Өнөөдөр очвол авна.`,
  d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээлээ.<br>Ном <b>${l}</b>-аас <b>${m} номын сан</b> руу явж байна.<br>Ирэхэд мессеж илгээнэ.`,
  kArr:'Ирэх хугацаа',kNum:'Бүртгэлийн дугаар',home:'Эхлэл рүү' },
-uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo‘shsangiz, ilova kabi ochiladi va internetsiz ham ishlaydi.', instY:'O‘rnatish', instN:'Keyinroq', instIOS:'Quyidagi «Ulashish» tugmasini bosib, «Bosh ekranga qo‘shish»ni tanlang.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`${n} kutubxonasi`,
+uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo‘shsangiz, ilova kabi ochiladi va internetsiz ham ishlaydi.', instY:'O‘rnatish', instN:'Keyinroq', instIOS:"«Ulashish» tugmasini (yoki ••• → «Ulashish») bosing, pastga suring va «Bosh ekranga qo‘shish»ni tanlang.", instAOS:"Brauzer menyusini (⋮) oching va «Ilovani o‘rnatish» yoki «Bosh ekranga qo‘shish»ni bosing.", instIOSother:"iPhone’da o‘rnatish uchun Safari’da oching. Safari’da: «Ulashish» (yoki ••• → «Ulashish») → «Bosh ekranga qo‘shish».", NM:n=>`${n} kutubxonasi`,
  st1:"So'zingizni yozib olyapman",st1d:"Ovozni matnga aylantiraman",st2:'AI kitobni aniqlaydi',st2d:"Noaniq aytsangiz ham tushunadi",
  st3:'Yaqin joydan boshlab qidirish',st3d:'Kutubxonalarni birma-bir tekshiradi',
  fix:t=>`<b>${t}</b> deb tushundim`,
@@ -1368,7 +1368,7 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
  d0:l=>`<b>${l}</b>dan peshtaxtada saqlashni so'radik.<br>Bugun borib oling.`,
  d1:(md,l,m)=>`<b>${md}</b> orqali buyurtma berildi.<br>Kitob <b>${l}</b>dan <b>${m} kutubxonasi</b>ga ketmoqda.<br>Yetib kelganda xabar yuboramiz.`,
  kArr:'Yetib kelishi',kNum:'Qabul raqami',home:'Boshiga' },
-id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama — terbuka seperti aplikasi dan tetap jalan tanpa internet.', instY:'Pasang', instN:'Nanti', instIOS:'Ketuk tombol Bagikan di bawah, lalu pilih “Tambahkan ke Layar Utama”.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 공유 단추 → 「홈 화면에 추가」.', NM:n=>`Perpustakaan ${n}`,
+id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama — terbuka seperti aplikasi dan tetap jalan tanpa internet.', instY:'Pasang', instN:'Nanti', instIOS:'Ketuk tombol Bagikan (atau ••• → Bagikan), gulir ke bawah lalu pilih “Tambahkan ke Layar Utama”.', instAOS:'Buka menu browser (⋮) lalu ketuk “Instal aplikasi” atau “Tambahkan ke Layar Utama”.', instIOSother:'Di iPhone, buka lewat Safari untuk memasang. Di Safari: Bagikan (atau ••• → Bagikan) → “Tambahkan ke Layar Utama”.', NM:n=>`Perpustakaan ${n}`,
  st1:'Mencatat ucapan Anda',st1d:'Mengubah suara jadi teks',st2:'AI mengenali bukunya',st2d:'Ucapan kurang tepat pun dipahami',
  st3:'Mencari dari yang terdekat',st3d:'Memeriksa perpustakaan satu per satu',
  fix:t=>`Dipahami sebagai <b>${t}</b>`,
@@ -1433,14 +1433,51 @@ function applyLang(code){
   if(TTS_ON) say(L.m ? L.m.sw() : '한국어로 바뀌었습니다.');
 }
 let cur = 0, rec = null, TTS_ON = false;
-function say(t){
-  if(!TTS_ON || !window.speechSynthesis) return;
+
+/* ─────────── 안내 음성과 화면의 속도 맞추기 ───────────
+   화면이 안내 음성을 앞질러 가지 않도록, say()에 「음성이 끝난 뒤
+   실행할 동작」을 넘길 수 있게 했다. 음성이 꺼져 있거나 브라우저가
+   끝 신호(onend)를 주지 않는 기기에서도 멈추지 않도록,
+   예상 낭독 시간을 계산해 안전장치를 둔다. */
+const TTS_RATE = 0.92;          // 조금 천천히 — 고령 이용자 기준
+let SPEAK_SEQ = 0;              // 새 안내가 시작되면 이전 안내의 뒷동작은 버린다
+let SCENE = 0;                  // 화면이 바뀌면 이전 화면의 예약된 동작은 버린다
+
+function estSayMs(t){
+  const s = String(t);
+  const cjk = (s.match(/[\u1100-\u11FF\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]/g) || []).length;
+  const etc = s.length - cjk;
+  return Math.min(20000, Math.round((cjk*195 + etc*78) * (0.95/TTS_RATE)) + 900);
+}
+function stopSay(){
+  SPEAK_SEQ++;
+  if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){}
+}
+function say(t, done){
+  const fin = (typeof done === 'function') ? done : null;
+  if(!TTS_ON || !window.speechSynthesis){ if(fin) setTimeout(fin, 0); return; }
   try{
+    const seq = ++SPEAK_SEQ;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(t);
-    u.lang = L.tts; u.rate = 0.95;
+    u.lang = L.tts; u.rate = TTS_RATE;
+    let called = false;
+    const go = () => { if(called || seq !== SPEAK_SEQ) return; called = true; if(fin) fin(); };
+    u.onend = go; u.onerror = go;
+    setTimeout(go, estSayMs(t) + 2000);   // 끝 신호가 오지 않아도 멈추지 않도록
     speechSynthesis.speak(u);
-  }catch(e){}
+    /* 기기가 음성을 시작조차 못한 경우(아이폰 등)에는 오래 기다리지 않는다.
+       speaking·pending을 정확히 알려 주는 브라우저에서만 앞당겨 진행한다. */
+    setTimeout(()=>{ try{
+      const ss = speechSynthesis;
+      if(ss.speaking === false && ss.pending === false) go();
+    }catch(e){} }, 900);
+  }catch(e){ if(fin) setTimeout(fin, 0); }
+}
+/* 음성이 꺼져 있을 때도 장면이 너무 빨리 넘어가지 않게 최소 간격(ms)을 둔다 */
+function sayThen(t, ms, done){
+  if(TTS_ON) say(t, done);
+  else { say(t); setTimeout(done, ms); }
 }
 const $ = id => document.getElementById(id);
 const show = id => {
@@ -1528,15 +1565,9 @@ function run(text, live){
   const fixHtml = (code === 'ko') ? c.fix : u.fix(c.book.t);
 
   show('s-work');
+  const scene = ++SCENE;
   ['w1','w2','w3'].forEach(i => $(i).className = 'stp');
   $('heard').textContent = ''; $('fixed').innerHTML = '';
-
-  setTimeout(()=>{ $('w1').className='stp on'; $('heard').textContent = '“'+heard+'”'; }, 250);
-  setTimeout(()=>{ $('w1').className='stp done'; $('w2').className='stp on';
-                   $('fixed').innerHTML = fixHtml;
-                   say(L.m ? L.m.mid(c.book.t) : `${c.book.t}로 이해했습니다. 가까운 곳부터 확인하고 있습니다.`); }, 1250);
-  setTimeout(()=>{ $('w2').className='stp done'; $('w3').className='stp on';
-                   $('scan').innerHTML=''; }, 2350);
 
   const V = view(c);
   const rows = V.scanK.map(([k, arg])=>{
@@ -1551,15 +1582,41 @@ function run(text, live){
       default:            return [u.nation, '…', true];
     }
   });
-  rows.forEach((r,i)=>{
+
+  /* 음성 안내가 켜져 있으면 탐색 줄도 귀가 따라올 속도로 흐르게 한다 */
+  const ROW = TTS_ON ? 1150 : 750;
+  const midTx = L.m ? L.m.mid(c.book.t)
+                    : `${c.book.t}로 이해했습니다. 가까운 곳부터 확인하고 있습니다.`;
+
+  const stepScan = () => {
+    if(scene !== SCENE) return;
+    $('w2').className='stp done'; $('w3').className='stp on';
+    $('scan').innerHTML='';
+    rows.forEach((r,i)=>{
+      setTimeout(()=>{
+        if(scene !== SCENE) return;
+        const d = document.createElement('div');
+        d.className = 'scanrow ' + (r[2] ? 'hit' : 'miss');
+        d.innerHTML = `<span class="sn">${r[0]}</span><span class="sr">${r[2]?'✓ ':''}${r[1]}</span>`;
+        $('scan').appendChild(d);
+      }, 260 + i*ROW);
+    });
     setTimeout(()=>{
-      const d = document.createElement('div');
-      d.className = 'scanrow ' + (r[2] ? 'hit' : 'miss');
-      d.innerHTML = `<span class="sn">${r[0]}</span><span class="sr">${r[2]?'✓ ':''}${r[1]}</span>`;
-      $('scan').appendChild(d);
-    }, 2600 + i*750);
-  });
-  setTimeout(()=>{ $('w3').className='stp done'; result(); }, 2600 + rows.length*750 + 500);
+      if(scene !== SCENE) return;
+      $('w3').className='stp done'; result();
+    }, 260 + rows.length*ROW + 600);
+  };
+
+  setTimeout(()=>{
+    if(scene !== SCENE) return;
+    $('w1').className='stp on'; $('heard').textContent = '“'+heard+'”';
+  }, 250);
+  setTimeout(()=>{
+    if(scene !== SCENE) return;
+    $('w1').className='stp done'; $('w2').className='stp on';
+    $('fixed').innerHTML = fixHtml;
+    sayThen(midTx, 1100, stepScan);      // ← 안내가 끝나야 탐색 장면으로 넘어간다
+  }, 1250);
 }
 
 function eff(c){ return (c.real && c.bx[내관] === 'ok') ? 0 : (view(c).tier); }
@@ -1731,6 +1788,7 @@ function passCardSync(){
 }
 function passOpen(){
   const P=P_();
+  stopSay();
   show('s-pass');
   $('psBadge').textContent=P.badge; $('psT').textContent=P.pe1;
   $('psT').style.display='';
@@ -1742,6 +1800,8 @@ function passOpen(){
   $('psStart').textContent=P.start; $('psNo').textContent=U().no;
   $('psNote1').textContent=U().bq.note;
   $('psStart').onclick=()=>{ savePref({pass:true}); passCardSync(); passRun(); };
+  /* 위임 범위는 눈으로만이 아니라 귀로도 고지한다 (기존에는 안내가 없었다) */
+  say(P.agT + '. ' + P.sc.join(', ') + '. ' + P.mand);
 }
 function passRun(){
   const P=P_(), u=U();
@@ -1754,30 +1814,41 @@ function passRun(){
       <div><div class="bt">${r.c.book.t}</div><div class="ba">${r.c.book.a}</div></div>
       <div class="bqst" id="pss${idx}">…</div>
     </div>`).join('');
+  const scene = ++SCENE;
   let ready=0, booked=0;
-  rows.forEach((r,idx)=>{ setTimeout(()=>{
-    const el=$('pss'+idx);
-    if(r.v.tier===0){ el.textContent='✓ '+P.ready; el.className='bqst now'; ready++; }
-    else if(r.v.tier===1){ el.textContent='✓ '+P.booked(r.v.okN); el.className='bqst ill'; booked++; }
-    else { el.textContent='– '+P.skip; el.className='bqst sea'; }
-  }, 650*(idx+1)); });
-  setTimeout(()=>{
-    $('psSumTx').innerHTML='<b>'+P.sum(ready,booked)+'</b>';
-    $('psNoti').textContent='🔔 '+P.noti;
-    $('psCancel').textContent=P.cancel; $('psHome').textContent=u.home;
-    $('psNote2').textContent=u.bq.note;
-    $('psCancel').onclick=()=>{ savePref({pass:false}); passCardSync();
-      $('psSumTx').innerHTML='<b>'+P.canceled+'</b>'; $('psCancel').style.display='none'; };
-    $('psCancel').style.display=''; $('psSum').hidden=false;
-    say(P.say);
-  }, 650*rows.length+600);
+  const STEP = TTS_ON ? 950 : 650;
+  const runRows = () => {
+    if(scene !== SCENE) return;
+    rows.forEach((r,idx)=>{ setTimeout(()=>{
+      if(scene !== SCENE) return;
+      const el=$('pss'+idx);
+      if(r.v.tier===0){ el.textContent='✓ '+P.ready; el.className='bqst now'; ready++; }
+      else if(r.v.tier===1){ el.textContent='✓ '+P.booked(r.v.okN); el.className='bqst ill'; booked++; }
+      else { el.textContent='– '+P.skip; el.className='bqst sea'; }
+    }, STEP*(idx+1)); });
+    setTimeout(()=>{
+      if(scene !== SCENE) return;
+      $('psSumTx').innerHTML='<b>'+P.sum(ready,booked)+'</b>';
+      $('psNoti').textContent='🔔 '+P.noti;
+      $('psCancel').textContent=P.cancel; $('psHome').textContent=u.home;
+      $('psNote2').textContent=u.bq.note;
+      $('psCancel').onclick=()=>{ savePref({pass:false}); passCardSync();
+        $('psSumTx').innerHTML='<b>'+P.canceled+'</b>'; $('psCancel').style.display='none'; };
+      $('psCancel').style.display=''; $('psSum').hidden=false;
+      say(P.say);
+    }, STEP*rows.length+700);
+  };
+  /* 자동 실행도 먼저 말하고 시작한다 (기존에는 끝난 뒤에만 안내가 있었다) */
+  sayThen(P.runT, 400, runRows);
 }
 
 const BQ_ORDER = [0, 3, 1, 4, 2];   // 소년이 온다 · 불편한 편의점 · 나미야 · 설민석 · 지구 끝의 온실
 
 function bqOpen(){
   const B = U().bq;
+  stopSay();
   show('s-bq');
+  const scene = ++SCENE;
   $('bqBadge').textContent = B.badge;
   $('bqT').textContent = B.title;
   $('bqS').textContent = B.sub;
@@ -1793,15 +1864,23 @@ function bqOpen(){
       <div><div class="bt">${r.c.book.t}</div><div class="ba">${r.c.book.a}</div></div>
       <div class="bqst" id="bqs${idx}">…</div>
     </div>`).join('');
-  rows.forEach((r, idx) => {
-    setTimeout(() => {
-      const el = $('bqs' + idx);
-      if(r.g === 'now'){ el.textContent = B.rNow; el.className = 'bqst now'; }
-      else if(r.g === 'ill'){ el.textContent = B.rIll(r.v.okN); el.className = 'bqst ill'; }
-      else { el.textContent = B.rSea; el.className = 'bqst sea'; }
-    }, 420 * (idx + 1));
-  });
-  setTimeout(() => bqPlanShow(rows), 420 * rows.length + 500);
+  /* 안내 음성이 켜져 있으면 목록도 그 속도에 맞춰 한 줄씩 */
+  const STEP = TTS_ON ? 700 : 420;
+  const runList = () => {
+    if(scene !== SCENE) return;
+    rows.forEach((r, idx) => {
+      setTimeout(() => {
+        if(scene !== SCENE) return;
+        const el = $('bqs' + idx);
+        if(r.g === 'now'){ el.textContent = B.rNow; el.className = 'bqst now'; }
+        else if(r.g === 'ill'){ el.textContent = B.rIll(r.v.okN); el.className = 'bqst ill'; }
+        else { el.textContent = B.rSea; el.className = 'bqst sea'; }
+      }, STEP * (idx + 1));
+    });
+    setTimeout(() => { if(scene === SCENE) bqPlanShow(rows); }, STEP * rows.length + 600);
+  };
+  /* 화면을 열면 먼저 무엇을 하는지 말해 준다 (기존에는 안내가 없었다) */
+  sayThen(B.title + '. ' + String(B.sub).replace(/[.\u2026\s]+$/,''), 400, runList);
 }
 
 function bqPlanShow(rows){
@@ -1828,6 +1907,7 @@ function bqPlanShow(rows){
   $('bqNote').textContent = B.note;
   $('bqPlan').hidden = false;
   $('bqGo').onclick = () => bqRun(now, ill, sea);
+  say(B.got + ' ' + B.gauge(ill.length) + '. ' + B.perm);
 }
 
 function bqRun(now, ill, sea){
@@ -1847,7 +1927,7 @@ function bqRun(now, ill, sea){
 }
 
 function reset(){
-  if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){}
+  stopSay(); SCENE++;
   $('micerr').classList.remove('on');
   $('tinput').value = '';
   show('s-idle');

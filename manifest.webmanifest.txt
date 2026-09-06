@@ -1,0 +1,20 @@
+{
+  "name": "책이지 — 말 한마디면 끝나는 상호대차",
+  "short_name": "책이지",
+  "description": "말 한마디면 상호대차가 끝나는 절차 대행 AI 에이전트 — 음성·전화·10개 언어, 부천시립도서관 시연 모델",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f4f5",
+  "theme_color": "#0d6e5f",
+  "categories": ["books", "education", "utilities"],
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

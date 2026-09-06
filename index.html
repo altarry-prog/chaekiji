@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>책이지 — 부천시립도서관 AI 도서 안내 (시안)</title>
+<title>책이지 — 말 한마디면 끝나는 상호대차 (시안)</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#0d6e5f">
-<meta name="description" content="말 한마디로 도서를 찾고 상호대차까지 안내받는 AI 도서 안내 서비스 (시안)">
+<meta name="description" content="말 한마디면 상호대차가 끝나는 절차 대행 AI 에이전트 — 답하는 AI에서 대신 하는 AI로 (부천시립도서관 시연 모델)">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,7 +34,7 @@ body{
 }
 /* 데스크톱에서는 폰 프레임 */
 .phone{
-  width:100%;max-width:430px;background:var(--card);min-height:100vh;
+  width:100%;max-width:430px;background:var(--card);min-height:100vh;height:100vh;height:100dvh;
   position:relative;overflow:hidden;display:flex;flex-direction:column;
 }
 @media (min-width:600px){
@@ -47,7 +47,7 @@ body{
 
 /* ── 헤더 ── */
 .top{
-  background:var(--brand);color:#fff;padding:14px 18px 46px;flex:none;position:relative;
+  background:var(--brand);color:#fff;padding:11px 16px 44px;flex:none;position:relative;
 }
 .top .row{display:flex;align-items:center;gap:9px}
 .logo{
@@ -64,18 +64,19 @@ body{
 }
 
 /* ── 본문 ── */
-.body{flex:1;overflow-y:auto;padding:20px 17px 30px}
+.body{flex:1;overflow-y:auto;padding:12px 16px 14px;display:flex;flex-direction:column}
 .screen{display:none}
+#s-idle.on{display:flex;flex-direction:column;flex:1;min-height:0}
 .screen.on{display:block;animation:fade .32s ease both}
 @keyframes fade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
 
 /* ── 대기 ── */
-.hi{text-align:center;padding:14px 0 4px}
-.hi h2{font-size:21px;margin:0 0 7px;letter-spacing:-.6px;line-height:1.42}
+.hi{text-align:center;padding:4px 0 0}
+.hi h2{font-size:21px;margin:0 0 4px;letter-spacing:-.6px;line-height:1.38}
 .hi p{font-size:13.5px;color:var(--ink2);margin:0}
-.micwrap{display:flex;justify-content:center;padding:30px 0 22px}
+.micwrap{display:flex;justify-content:center;align-items:center;padding:10px 0 8px;flex:1;min-height:128px}
 .mic{
-  width:118px;height:118px;border-radius:50%;border:none;cursor:pointer;
+  width:112px;height:112px;border-radius:50%;border:none;cursor:pointer;
   background:var(--brand);color:#fff;font-size:44px;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 8px 26px rgba(13,110,95,.34);transition:transform .16s;
@@ -83,12 +84,13 @@ body{
 }
 .mic:active{transform:scale(.94)}
 /* 홈화면 설치 안내 */
-.inst{display:none;margin:10px 14px 0;padding:12px 14px;border-radius:13px;
-  background:var(--brand-l);border:1.4px solid #bfded6;font-size:13.5px;line-height:1.6;color:#14483e}
-.inst.on{display:block}
-.inst b{display:block;font-size:14.5px;margin-bottom:3px}
-.inst .row{display:flex;gap:8px;margin-top:9px}
-.inst button{flex:1;border:none;border-radius:9px;padding:9px 0;font-size:13.5px;
+.inst{display:none;margin:0 0 8px;padding:9px 11px;border-radius:12px;
+  background:var(--brand-l);border:1.4px solid #bfded6;font-size:11.5px;line-height:1.4;color:#14483e}
+.inst.on{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:10px;align-items:center}
+.inst b{grid-column:1;grid-row:1;display:block;font-size:13px;margin:0 0 2px}
+.inst > span{grid-column:1;grid-row:2;color:#2f5a50}
+.inst .row{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;gap:5px;margin:0}
+.inst button{border:none;border-radius:9px;padding:6px 12px;font-size:12.5px;white-space:nowrap;
   font-weight:700;cursor:pointer;font-family:inherit}
 .inst .yes{background:var(--brand);color:#fff}
 .inst .no{background:#fff;color:var(--ink2);border:1.4px solid var(--line)}
@@ -123,6 +125,7 @@ body{
   padding:11px 14px;margin-top:8px}
 .bqcard.slim b{margin:0;font-size:13.5px;line-height:1.4}
 .bqcard.slim span{display:none}
+.bqcard.slim span.go{display:inline}
 .bqcard.slim .go{font-size:15px;color:#a06e24;flex:none}
 #s-pass .bqhead{padding:6px 0 2px}
 #s-pass .bqhead h2{font-size:16.5px;margin:0 0 2px}
@@ -152,7 +155,7 @@ body.bigmode .bqitems{font-size:15.5px}
 .mic.live{background:#c0392b;box-shadow:0 8px 26px rgba(192,57,43,.4)}
 .mic.live::after{border-color:#c0392b;animation-duration:1s}
 
-.orsplit{display:flex;align-items:center;gap:10px;margin:6px 0 14px;color:var(--ink3);font-size:11.5px}
+.orsplit{display:flex;align-items:center;gap:10px;margin:0 0 8px;color:var(--ink3);font-size:11.5px}
 .orsplit::before,.orsplit::after{content:'';flex:1;height:1px;background:var(--line)}
 
 .tin{display:flex;gap:7px}
@@ -165,16 +168,18 @@ body.bigmode .bqitems{font-size:15.5px}
   border:none;background:var(--brand);color:#fff;border-radius:11px;
   padding:0 17px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;
 }
-.chips{margin-top:17px}
-.chips .lbl{font-size:11.5px;color:var(--ink3);margin-bottom:8px}
+.chips{margin-top:11px}
+.chips .lbl{font-size:11.5px;color:var(--ink3);margin-bottom:6px}
 .chip{
   display:block;width:100%;text-align:left;background:#fff;border:1.4px solid var(--line);
-  border-radius:11px;padding:11px 13px;font-size:13.5px;font-family:inherit;color:var(--ink);
-  margin-bottom:7px;cursor:pointer;line-height:1.5;
+  border-radius:11px;padding:8px 12px;font-size:13.5px;font-family:inherit;color:var(--ink);
+  margin-bottom:6px;cursor:pointer;line-height:1.45;
 }
+.quick{margin-top:4px}
+.quick .bqcard.slim{margin-top:6px}
 .chip:active{background:var(--brand-l);border-color:var(--brand)}
 .chip b{color:var(--brand);font-weight:700}
-.chip .m{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
+.chip .m{display:block;font-size:11.2px;color:var(--ink3);margin-top:1px}
 
 /* ── 듣는 중 ── */
 .listen{text-align:center;padding:56px 0 0}
@@ -316,6 +321,9 @@ body.bigmode .bqitems{font-size:15.5px}
 .kv:last-of-type{border-bottom:none}
 .kv .k{width:82px;color:var(--ink3);flex:none}
 .kv .v{flex:1;font-weight:700}
+.did{margin-top:12px;padding:11px 13px;border-radius:12px;background:var(--brand-l);border:1.4px solid #cfe3dc;text-align:left}
+.did b{display:block;font-size:12.5px;color:var(--brand-d);margin-bottom:3px}
+.did span{display:block;font-size:12px;color:var(--ink2);line-height:1.55}
 
 /* ── 완료 ── */
 .done{text-align:center;padding:44px 0 0}
@@ -332,10 +340,63 @@ body.bigmode .bqitems{font-size:15.5px}
 }
 
 /* ── 푸터 ── */
-.foot{
-  flex:none;background:#fafbfb;border-top:1px solid var(--line);
-  padding:9px 16px;font-size:10.5px;color:var(--ink3);text-align:center;line-height:1.55;
+.foot{flex:none;background:#fafbfb;border-top:1px solid var(--line);padding:0}
+.foot button{
+  width:100%;border:none;background:none;font-family:inherit;cursor:pointer;
+  padding:9px 12px;font-size:11px;color:var(--ink3);line-height:1.4;text-align:center;
 }
+.foot button b{color:var(--brand-d);font-weight:700}
+.foot button:active{background:var(--brand-l)}
+/* 안내 시트 — 항목 정렬 */
+.kv.i{padding:7px 0;font-size:12.6px;line-height:1.55;align-items:flex-start}
+.kv.i .k{width:64px;font-weight:700;color:var(--brand-d)}
+.kv.i .v{font-weight:400;color:var(--ink)}
+.kv.i .v small{display:block;color:var(--ink3);font-size:11.3px}
+#isheet .sheet-in{max-height:86%;overflow-y:auto}
+/* 화면이 낮은 기기(브라우저 툴바 포함) — 한 화면 유지용 압축 */
+@media (max-height:720px){
+  .top{padding:9px 16px 40px}
+  .hi h2{font-size:19px}.hi p{font-size:12.5px}
+  .micwrap{min-height:104px;padding:6px 0}
+  .mic{width:96px;height:96px}
+  .chips{margin-top:8px}.chips .lbl{display:none}
+  .chip{padding:6px 11px;font-size:13px;margin-bottom:5px}
+  .chip .m{font-size:10.8px}
+  .bqcard.slim{padding:9px 13px}
+  .body{padding:10px 16px 10px}
+  #s-idle:is(.instOn,.errOn) .micwrap{min-height:64px;padding:2px 0}
+  #s-idle:is(.instOn,.errOn) .mic{width:72px;height:72px}
+  #s-idle:is(.instOn,.errOn) .hi p{display:none}
+  #s-idle:is(.instOn,.errOn) .inst{padding:7px 10px;margin-bottom:6px}
+}
+@media (max-height:700px){
+  #s-idle:is(.instOn,.errOn) .orsplit{display:none}
+  #s-idle:is(.instOn,.errOn) .tin{margin-top:6px}
+  #s-idle:is(.instOn,.errOn) .chip{margin-bottom:3px;padding:5px 10px}
+  #s-idle:is(.instOn,.errOn) .bqcard.slim{padding:7px 12px}
+  .body{padding:8px 16px 8px}
+}
+@media (max-height:620px){
+  .hi p{display:none}
+  .micwrap{min-height:56px;padding:2px 0}
+  .mic{width:64px;height:64px}
+  .orsplit{display:none}.tin{margin-top:6px}
+  .chip{margin-bottom:3px;padding:5px 10px}
+  .chip .m{font-size:10.5px}
+  .bqcard.slim{padding:7px 12px}
+  #s-idle:is(.instOn,.errOn) .chip .m{display:none}
+  #s-idle:is(.instOn,.errOn) .inst{padding:6px 10px;margin-bottom:5px}
+}
+@media (max-height:780px){
+  #s-idle:is(.instOn,.errOn) .micwrap{min-height:64px;padding:3px 0}
+  #s-idle:is(.instOn,.errOn) .mic{width:72px;height:72px}
+  #s-idle:is(.instOn,.errOn) .inst{padding:7px 10px;margin-bottom:6px}
+  #s-idle:is(.instOn,.errOn) .chips .lbl{display:none}
+  #s-idle:is(.instOn,.errOn) .chips{margin-top:8px}
+}
+#s-idle:is(.instOn,.errOn) .hi p{display:none}
+#s-idle:is(.instOn,.errOn) .micwrap{min-height:80px;padding:6px 0}
+#s-idle:is(.instOn,.errOn) .mic{width:80px;height:80px}
 .err{
   background:#fdf0e6;border:1px solid #f0cba6;border-radius:12px;padding:13px 14px;
   font-size:12.5px;color:#7d420f;margin-bottom:15px;line-height:1.72;display:none;
@@ -343,6 +404,7 @@ body.bigmode .bqitems{font-size:15.5px}
 .err.on{display:block}
 .err b{color:#5f3208}
 .err.info{background:#eef4fb;border-color:#c2d6ee;color:#2a4f78}
+#s-idle.errOn .err{margin-bottom:8px;padding:9px 12px;line-height:1.55}
 .err.info b{color:#173a5e}
 
 /* ── 데이터 출처 표시 ── */
@@ -400,16 +462,49 @@ body.bigmode .bqitems{font-size:15.5px}
 .restrow:last-child{border-bottom:none}
 .restrow .rn{font-weight:700;letter-spacing:-.2px}
 
+/* ── 전화 한 통 모드 (시연) ── */
+#psheet .sheet-in{max-height:88%;overflow-y:auto}
+.pcall{position:absolute;inset:0;z-index:30;background:#10201b;color:#fff;display:none;flex-direction:column}
+.pcall.on{display:flex;animation:fade .2s both}
+.pc-top{padding:14px 16px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.12);position:relative}
+.pc-num{font-size:16px;font-weight:700}
+.pc-sub{font-size:12.5px;opacity:.78;margin-top:3px}
+.pc-demo{font-size:10.5px;opacity:.55;margin-top:3px}
+.pc-x{position:absolute;right:10px;top:10px;background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:9px;padding:5px 9px;font-size:12px;font-family:inherit}
+.pc-log{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.pb{max-width:88%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.5;word-break:keep-all}
+.pb.a{background:rgba(255,255,255,.12);align-self:flex-start;border-bottom-left-radius:4px}
+.pb.u{background:var(--brand);align-self:flex-end;border-bottom-right-radius:4px}
+.pb.s{background:transparent;color:#9dbfb6;font-size:11.5px;align-self:center;text-align:center;padding:2px 0}
+.pb.d{background:rgba(255,255,255,.07);border:1px dashed rgba(255,255,255,.32);align-self:stretch;max-width:100%;font-size:12px;color:#d9e8e3}
+.pb.d b{display:block;color:#bfe3d8;margin-bottom:2px}
+.pc-ctl{padding:9px 14px 13px;border-top:1px solid rgba(255,255,255,.12)}
+.pc-status{font-size:12.5px;text-align:center;opacity:.85;min-height:18px;margin-bottom:8px}
+.pc-status.live::before{content:'●';color:#ff6b6b;margin-right:6px;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.15}}
+.pc-yn{display:none;gap:8px;margin-bottom:8px}.pc-yn.on{display:flex}
+.pc-yn button{flex:1;padding:12px;border-radius:12px;border:none;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}
+#pcYes{background:var(--brand);color:#fff}#pcNo{background:rgba(255,255,255,.16);color:#fff}
+.pc-tin{display:none;gap:7px;margin-bottom:8px}.pc-tin.on{display:flex}
+.pc-tin input{flex:1;min-width:0;padding:10px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-family:inherit}
+.pc-tin button{padding:10px 13px;border-radius:11px;border:none;background:var(--brand);color:#fff;font-weight:700;font-family:inherit}
+.pc-chips{display:none;flex-wrap:wrap;gap:6px;margin-bottom:8px}.pc-chips.on{display:flex}
+.pc-chips button{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;font-size:12px;font-family:inherit;cursor:pointer}
+.pc-hang{width:100%;padding:13px;border-radius:12px;border:none;background:#c0392b;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}
+.pc-hang.re{background:var(--brand)}
+@media (max-width:380px){.atools{gap:5px;left:14px;right:10px}.atools button{padding:5px 7px;font-size:11.5px}}
+.atools button{white-space:nowrap}.atools{flex-wrap:nowrap}
+
 /* ── 접근 기능 ── */
 .atools{position:absolute;left:18px;right:13px;bottom:9px;display:flex;gap:6px;justify-content:flex-end}
 .atools button{
   border:1.4px solid rgba(255,255,255,.45);background:rgba(255,255,255,.13);color:#fff;
-  border-radius:9px;padding:3px 9px;font-size:12px;font-weight:700;font-family:inherit;
-  cursor:pointer;line-height:1.5;
+  border-radius:9px;padding:5px 10px;font-size:12px;font-weight:700;font-family:inherit;
+  cursor:pointer;line-height:1.4;
 }
 .atools button.on{background:#fff;color:var(--brand-d);border-color:#fff}
 body.bigmode .body{zoom:1.18}
-body.bigmode .foot{font-size:12px}
+body.bigmode .foot button{font-size:12.5px}
 .axcard{
   background:#fff;border:1.4px dashed #b9c6c2;border-radius:12px;
   padding:11px 13px;margin-top:12px;
@@ -436,6 +531,7 @@ body.bigmode .foot{font-size:12px}
       <button id="bigbtn" aria-label="큰글자 모드">큰글자</button>
       <button id="ttsbtn" aria-label="음성 안내">🔊 음성안내</button>
       <button id="langbtn" aria-label="언어 선택">🌏 한국어</button>
+      <button id="phonebtn" aria-label="전화 한 통 모드">📞 전화</button>
     </div>
     <div class="row">
       <div class="logo">
@@ -450,7 +546,7 @@ body.bigmode .foot{font-size:12px}
         </div>
       <div>
         <h1>책이지</h1>
-        <p class="sub">부천시립도서관 · 말로 찾는 도서 안내</p>
+        <p class="sub">부천시립도서관 · 말 한마디면 끝나는 상호대차</p>
       </div>
     </div>
   </div>
@@ -469,8 +565,8 @@ body.bigmode .foot{font-size:12px}
         </div>
       </div>
       <div class="hi">
-        <h2 id="hero1">찾으시는 책,<br>말씀만 하세요</h2>
-        <p id="hero2">제목이 정확하지 않아도 괜찮습니다</p>
+        <h2 id="hero1">무슨 책 찾으세요?</h2>
+        <p id="hero2">제목이 정확하지 않아도 괜찮아요</p>
       </div>
       <div class="micwrap">
         <button class="mic" id="micbtn" aria-label="음성으로 검색"><span class="micimg"></span></button>
@@ -494,12 +590,11 @@ body.bigmode .foot{font-size:12px}
           “<b>지구 끝의 온실</b> 찾아주세요”
           <span class="m">③ 관내에 없음 → 책바다(전국)</span>
         </button>
-        <div class="lbl" style="margin-top:9px" id="chipnote">
-          ‘불편한 편의점’, ‘설민석 한국사 대모험’도 실데이터로 검색됩니다
-        </div>
-        <button class="bqcard" id="bqcard" onclick="bqOpen()">
+      </div>
+      <div class="quick">
+        <button class="bqcard slim" id="bqcard" onclick="bqOpen()">
           <b id="bqE1">AI 책큐 추천, 한 번에 처리</b>
-          <span id="bqE2">추천 도서를 자주 가는 도서관으로 모아드립니다 · 시연</span>
+          <span id="bqE2">추천 도서를 자주 가는 도서관으로 모아드립니다 · 시연</span><span class="go" aria-hidden="true">›</span>
         </button>
         <button class="bqcard slim" id="passcard" onclick="passOpen()" style="background:linear-gradient(135deg,#fdf6ea,#f7ecd8);border-color:#e2cfa8">
           <b id="psE1" style="color:#7c5514">책이지 패스 — 이달의 3권, 자동으로 준비</b>
@@ -625,10 +720,59 @@ body.bigmode .foot{font-size:12px}
   </div>
 
   <div class="foot">
-    3단계 판단 · 조회: 정보나루 전국 규격 / <b>실행: MCP 커넥터 — 시스템(알파스 등) 단위 확산</b><br>
-    큰글자·음성안내·<b>10개 언어</b> 단추 제공 · 대체자료 매칭·책나래·전화 모드는 확장 설계<br>
-    소장·대출 정보 출처 : 도서관 정보나루 Open API (2026. 8. 18. 조회, 전일 기준)<br>
-    2026. 8. 부천시립도서관 · 화면 시안
+    <button id="infobtn" onclick="document.getElementById('isheet').classList.add('on')" aria-label="책이지 안내 열기">
+      <b>ⓘ 안내</b> · 정보나루 Open API 2026. 8. 18. 기준 · 시연 모델
+    </button>
+  </div>
+
+  <!-- 안내 -->
+  <div class="sheet" id="isheet">
+    <div class="sheet-in">
+      <h3>책이지 안내</h3>
+      <p class="p">답하는 AI가 아니라 대신 하는 AI — 말 한마디면 상호대차가 끝나는 시연 모델입니다</p>
+      <div class="kv i"><span class="k">탐색</span><span class="v">자주 가는 도서관 → 관내 16개관 → 전국(책바다)</span></div>
+      <div class="kv i"><span class="k">판정</span><span class="v">수령관 비치 · 한도 · 연체 · 제외 자료 · 중복 신청<small>규정 7종을 자동 검토하고 사유를 함께 안내</small></span></div>
+      <div class="kv i"><span class="k">실행</span><span class="v">MCP 표준 도구 10종<small>도서관리시스템(알파스 등) 단위로 확산</small></span></div>
+      <div class="kv i"><span class="k">접근성</span><span class="v">큰글자 · 음성 안내 · 10개 언어</span></div>
+      <div class="kv i"><span class="k">전화 한 통</span><span class="v">대표번호로 같은 상담·신청, 화면 없이<small>헤더의 📞 단추에서 통화 흐름을 체험할 수 있습니다 (전화망 연결은 운영 단계 과제)</small></span></div>
+      <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
+      <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>2026. 8. 18. 조회 · 대출 상태는 전일 기준</small></span></div>
+      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">‘불편한 편의점’, ‘설민석 한국사 대모험’도 실데이터로 검색됩니다</span></div>
+      <div class="kv i"><span class="k">성격</span><span class="v">실현가능성 검증용 시연 모델<small>실제 신청이 접수되지 않습니다 · 2026. 8. 부천시립도서관 상동도서관</small></span></div>
+      <button class="cta ghost" onclick="document.getElementById('isheet').classList.remove('on')">닫기</button>
+    </div>
+  </div>
+
+  <!-- 전화 한 통 모드 안내 -->
+  <div class="sheet" id="psheet">
+    <div class="sheet-in">
+      <h3>📞 전화 한 통 모드</h3>
+      <p class="p">스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마칩니다.</p>
+      <div class="kv i"><span class="k">본인 확인</span><span class="v">등록된 번호로 걸었는지 확인<small>이름은 첫 글자만 부르고, 회원번호는 어디에도 나오지 않습니다</small></span></div>
+      <div class="kv i"><span class="k">하는 일</span><span class="v">소장 확인 · 관내 상호대차 신청 · 예약 · 위임 해지<small>무료이고 취소할 수 있는 일만 전화로 대신합니다</small></span></div>
+      <div class="kv i"><span class="k">안 하는 일</span><span class="v">책바다(실비) 신청 · 회원정보 변경 · 결제<small>위험한 일일수록 문을 세게 — 앱(재인증)이나 창구로 안내합니다</small></span></div>
+      <div class="kv i"><span class="k">지금 상태</span><span class="v">대화 흐름은 아래에서 그대로 체험할 수 있습니다<small>실제 전화망 연결은 통신 사업자 연동(AI 콜센터 API 또는 070 회선)이 필요한 운영 단계 과제 · 시연 모델은 전화가 걸리지 않습니다</small></span></div>
+      <button class="cta" id="phStartBtn">통화 흐름 체험하기</button>
+      <button class="cta ghost" onclick="document.getElementById('psheet').classList.remove('on')">닫기</button>
+    </div>
+  </div>
+
+  <!-- 통화 시뮬레이션 -->
+  <div class="pcall" id="pcall" role="dialog" aria-label="전화 통화 시연">
+    <div class="pc-top">
+      <div class="pc-num">📞 <span id="pcNum">부천시립도서관 책이지</span></div>
+      <div class="pc-sub"><span id="pcState">연결 중…</span> · <span id="pcTimer">00:00</span></div>
+      <div class="pc-demo" id="pcDemo">시연 · 실제 전화는 연결되지 않습니다</div>
+      <button class="pc-x" id="pcClose">닫기</button>
+    </div>
+    <div class="pc-log" id="pcLog" aria-live="polite"></div>
+    <div class="pc-ctl">
+      <div class="pc-status" id="pcStatus"></div>
+      <div class="pc-chips" id="pcChips"></div>
+      <div class="pc-tin" id="pcTin"><input id="pcIn" placeholder="말하는 대신 입력" autocomplete="off"><button id="pcGo">보내기</button></div>
+      <div class="pc-yn" id="pcYN"><button id="pcYes">예</button><button id="pcNo">아니오</button></div>
+      <button class="pc-hang" id="pcHang">끊기</button>
+    </div>
   </div>
 
   <!-- 언어 선택 -->
@@ -753,10 +897,15 @@ function view(c){
     tier = 1;
     scanK = [[mine==='busy'?"mineBusy":"mineNone"], ["innerOk", ok.length]];
     order = ok.concat([내관], busy);
+  } else if(busy.length || mine === 'busy'){
+    /* 관내 소장은 있으나 전부 대출 중 — 책바다(전국)는 관내 미소장 자료가 대상이므로 예약으로 분기 */
+    tier = 3;
+    scanK = [[mine==='busy'?"mineBusy":"mineNone"], ["innerBusy", busy.length + (mine==='busy'?1:0)]];
+    order = busy.concat([내관]);
   } else {
     tier = 2;
     scanK = [[mine==='busy'?"mineBusy":"mineNone"], ["innerNone"], ["nationSearch"]];
-    order = [내관].concat(busy);
+    order = [내관];
   }
   const libs = order.map(n=>({raw:n, s:c.bx[n]||'none', code:LIB[n], loc:"", note:""}));
   const agg = none.length ? {n:none.length, names:none} : null;
@@ -766,56 +915,56 @@ function view(c){
 const LANGS = {
   ko:{n:'한국어',   rec:'ko-KR', tts:'ko-KR'},
   en:{n:'English',  rec:'en-US', tts:'en-US',
-      s:{h1:"Just say the book<br>you're looking for", h2:"The title doesn't have to be exact",
+      s:{h1:"What book are you looking for?", h2:"The title doesn't have to be exact",
          or:'or type it', ph:'e.g., Namiya General Store', go:'Search', lbl:'Tap to try examples',
          l1:'Listening…', l2:'Speak naturally', st:'Stop'},
       m:{on:()=>`Voice guidance is on. I will read the results aloud.`, sw:()=>`Language switched to English.`, mid:(t)=>`I understood ${t}. Checking nearby libraries.`,
          res:(t,l)=>`Search result: ${t}. Recommended library: ${l}. Tap the green button to request an interlibrary loan.`,
          sh:(t,l)=>`Please confirm. Book ${t}, from ${l}. Tap Yes to submit.`, dn:()=>`Your request has been submitted.`}},
   zh:{n:'中文',     rec:'zh-CN', tts:'zh-CN',
-      s:{h1:'想找的书，<br>说出来就行', h2:'书名不必完全准确', or:'或直接输入', ph:'例：解忧杂货店',
+      s:{h1:'想找什么书？', h2:'书名不必完全准确', or:'或直接输入', ph:'例：解忧杂货店',
          go:'搜索', lbl:'点击查看示例', l1:'正在听…', l2:'请自然地说', st:'停止'},
       m:{on:()=>`语音引导已开启，我会为您朗读结果。`, sw:()=>`已切换为中文。`, mid:(t)=>`已识别为《${t}》，正在查询附近的图书馆。`,
          res:(t,l)=>`搜索结果：${t}。推荐图书馆：${l}。点击绿色按钮申请馆际互借。`,
          sh:(t,l)=>`请确认申请内容。图书 ${t}，从 ${l} 借出。`, dn:()=>`申请已受理。`}},
   ja:{n:'日本語',   rec:'ja-JP', tts:'ja-JP',
-      s:{h1:'探している本を<br>話すだけ', h2:'正確なタイトルでなくても大丈夫', or:'または入力', ph:'例：ナミヤ雑貨店',
+      s:{h1:'どんな本をお探しですか？', h2:'正確なタイトルでなくても大丈夫', or:'または入力', ph:'例：ナミヤ雑貨店',
          go:'検索', lbl:'例を見る', l1:'聞いています…', l2:'自然に話してください', st:'停止'},
       m:{on:()=>`音声ガイドをオンにしました。結果を読み上げます。`, sw:()=>`日本語に切り替えました。`, mid:(t)=>`「${t}」ですね。近くの図書館を確認しています。`,
          res:(t,l)=>`検索結果：${t}。おすすめの図書館：${l}。緑のボタンで相互貸借を申請できます。`,
          sh:(t,l)=>`申請内容をご確認ください。${t}、${l}から取り寄せます。`, dn:()=>`申請を受け付けました。`}},
   vi:{n:'Tiếng Việt', rec:'vi-VN', tts:'vi-VN',
-      s:{h1:'Chỉ cần nói tên sách<br>bạn muốn tìm', h2:'Không cần nói chính xác tên sách', or:'hoặc nhập',
+      s:{h1:'Bạn tìm sách gì?', h2:'Không cần nói chính xác tên sách', or:'hoặc nhập',
          ph:'VD: Tiệm tạp hóa Namiya', go:'Tìm', lbl:'Chạm để xem ví dụ', l1:'Đang nghe…', l2:'Hãy nói tự nhiên', st:'Dừng'},
       m:{on:()=>`Đã bật hướng dẫn bằng giọng nói. Tôi sẽ đọc kết quả cho bạn.`, sw:()=>`Đã chuyển sang tiếng Việt.`, mid:(t)=>`Tôi hiểu là ${t}. Đang kiểm tra các thư viện gần bạn.`,
          res:(t,l)=>`Kết quả: ${t}. Thư viện đề xuất: ${l}. Nhấn nút xanh để đăng ký mượn liên thư viện.`,
          sh:(t,l)=>`Vui lòng xác nhận. Sách ${t}, từ ${l}.`, dn:()=>`Đã tiếp nhận yêu cầu.`}},
   th:{n:'ไทย',      rec:'th-TH', tts:'th-TH',
-      s:{h1:'อยากได้เล่มไหน<br>พูดได้เลย', h2:'ชื่อหนังสือไม่ต้องเป๊ะก็ได้', or:'หรือพิมพ์', ph:'เช่น ร้านนามิยะ',
+      s:{h1:'หาหนังสือเล่มไหนคะ?', h2:'ชื่อหนังสือไม่ต้องเป๊ะก็ได้', or:'หรือพิมพ์', ph:'เช่น ร้านนามิยะ',
          go:'ค้นหา', lbl:'แตะเพื่อดูตัวอย่าง', l1:'กำลังฟัง…', l2:'พูดได้ตามสบาย', st:'หยุด'},
       m:{on:()=>`เปิดเสียงแนะนำแล้ว ฉันจะอ่านผลลัพธ์ให้ฟัง`, sw:()=>`เปลี่ยนเป็นภาษาไทยแล้ว`, mid:(t)=>`เข้าใจว่า ${t} กำลังตรวจสอบห้องสมุดใกล้เคียง`,
          res:(t,l)=>`ผลการค้นหา: ${t} ห้องสมุดแนะนำ: ${l} กดปุ่มสีเขียวเพื่อยืมระหว่างห้องสมุด`,
          sh:(t,l)=>`โปรดยืนยัน: ${t} จาก ${l}`, dn:()=>`รับคำขอแล้ว`}},
   ru:{n:'Русский',  rec:'ru-RU', tts:'ru-RU',
-      s:{h1:'Просто скажите,<br>какую книгу ищете', h2:'Название может быть неточным', or:'или введите',
+      s:{h1:'Какую книгу ищете?', h2:'Название может быть неточным', or:'или введите',
          ph:'Напр.: лавка Намия', go:'Поиск', lbl:'Примеры', l1:'Слушаю…', l2:'Говорите свободно', st:'Стоп'},
       m:{on:()=>`Голосовые подсказки включены. Я озвучу результаты.`, sw:()=>`Язык переключён на русский.`, mid:(t)=>`Понял: ${t}. Проверяю ближайшие библиотеки.`,
          res:(t,l)=>`Результат: ${t}. Рекомендуемая библиотека: ${l}. Нажмите зелёную кнопку для заказа.`,
          sh:(t,l)=>`Подтвердите: ${t}, из ${l}.`, dn:()=>`Заявка принята.`}},
   mn:{n:'Монгол',   rec:'mn-MN', tts:'mn-MN',
-      s:{h1:'Хайж буй номоо<br>хэлэхэд л хангалттай', h2:'Нэр нь яг таг байх шаардлагагүй', or:'эсвэл бичнэ үү',
+      s:{h1:'Ямар ном хайж байна?', h2:'Нэр нь яг таг байх шаардлагагүй', or:'эсвэл бичнэ үү',
          ph:'Ж: Намия дэлгүүр', go:'Хайх', lbl:'Жишээ үзэх', l1:'Сонсож байна…', l2:'Чөлөөтэй ярина уу', st:'Зогсоох'},
       m:{on:()=>`Дуут заавар асаалаа. Үр дүнг уншиж өгнө.`, sw:()=>`Монгол хэл рүү шилжлээ.`, mid:(t)=>`${t} гэж ойлголоо. Ойролцоох номын сангуудыг шалгаж байна.`,
          res:(t,l)=>`Хайлтын үр дүн: ${t}. Санал болгох номын сан: ${l}. Ногоон товчийг дарна уу.`,
          sh:(t,l)=>`Баталгаажуулна уу: ${t}, ${l}-аас.`, dn:()=>`Хүсэлт хүлээн авлаа.`}},
   uz:{n:"O'zbekcha", rec:'uz-UZ', tts:'uz-UZ',
-      s:{h1:"Qidirayotgan kitobingizni<br>ayting, bo'ldi", h2:"Nomi aniq bo'lishi shart emas", or:'yoki yozing',
+      s:{h1:"Qaysi kitobni qidiryapsiz?", h2:"Nomi aniq bo'lishi shart emas", or:'yoki yozing',
          ph:"Masalan: Namiya do'koni", go:'Qidirish', lbl:'Namunalar', l1:'Eshityapman…', l2:'Bemalol gapiring', st:"To'xtatish"},
       m:{on:()=>`Ovozli yo'riqnoma yoqildi. Natijalarni o'qib beraman.`, sw:()=>`O'zbek tiliga o'tildi.`, mid:(t)=>`${t} deb tushundim. Yaqin kutubxonalarni tekshiryapman.`,
          res:(t,l)=>`Natija: ${t}. Tavsiya etilgan kutubxona: ${l}. Yashil tugmani bosing.`,
          sh:(t,l)=>`Tasdiqlang: ${t}, ${l}dan.`, dn:()=>`So'rov qabul qilindi.`}},
   id:{n:'Bahasa Indonesia', rec:'id-ID', tts:'id-ID',
-      s:{h1:'Sebutkan saja buku<br>yang Anda cari', h2:'Judul tidak harus persis', or:'atau ketik',
+      s:{h1:'Cari buku apa?', h2:'Judul tidak harus persis', or:'atau ketik',
          ph:'cth: Toko Kelontong Namiya', go:'Cari', lbl:'Ketuk untuk contoh', l1:'Mendengarkan…', l2:'Bicara saja dengan santai', st:'Berhenti'},
       m:{on:()=>`Panduan suara aktif. Saya akan membacakan hasilnya.`, sw:()=>`Bahasa diganti ke Bahasa Indonesia.`, mid:(t)=>`Saya mengerti ${t}. Memeriksa perpustakaan terdekat.`,
          res:(t,l)=>`Hasil: ${t}. Perpustakaan yang disarankan: ${l}. Tekan tombol hijau untuk meminjam.`,
@@ -1107,10 +1256,12 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  innerNone:'대출 가능한 곳 없음',innerNoneAll:'소장한 곳 없음',nation:'전국 참여 도서관',nationFound:k=>`${k}곳에서 발견`,
  tier:{0:['관내 보유','바로 이용','상동도서관에 지금 있습니다','자료 위치 안내받기','무료','오늘 바로'],
        1:['2단계','관내 상호대차','부천시립도서관 16개관 간 이동','상호대차 신청','무료','2~3일'],
-       2:['3단계','책바다','전국 상호대차 · 1인 3권','책바다로 신청','전국','5~7일']},
+       2:['3단계','책바다','전국 상호대차 · 별도 가입·사서 승인','책바다 안내 받기','실비','5~7일'],
+       3:['예약','관내 예약 대기','관내 소장 있음 · 지금은 모두 대출 중','예약 신청','무료','반납되는 대로']},
  sum0:(m,k)=>`자주 가시는 <b>${m}도서관에 지금 있습니다.</b> 상호대차 없이 바로 빌리실 수 있어요. <span class="s2">관내에서는 ${k}곳이 대출 가능합니다.</span>`,
  sum1:(m,k)=>`<b>${m}도서관은 지금 어렵지만</b>, 가까운 <b>${k}개 분관</b>에서 빌려서 ${m}도서관으로 보내드릴 수 있어요.`,
- sum2:k=>`부천 관내에는 없어서 <b>전국에서 ${k}곳</b>을 찾았어요. 책바다로 신청하면 됩니다.`,
+ sum2:k=>`부천 관내에는 없어서 <b>전국에서 ${k}곳</b>을 찾았어요. 책바다는 별도 가입과 사서 승인이 필요해서, 신청 대신 안내를 드릴게요.`,
+ sum3:(m,k)=>`관내 <b>${k}곳</b>이 갖고 있지만 지금은 모두 대출 중이에요. 예약해 두면 반납되는 대로 <b>${m}도서관</b>으로 보내드립니다.`,
  rec:'추천',tag0:'바로 이용',tag1:'가장 빠름',tag2:'가장 가까움',also:'여기도 가능합니다',
  fold:n=>`그 외 ${n}곳 현황 보기 ＋`,foldC:'접기 －',bOk:'대출 가능',bBusy:'대출 중',bNone:'미소장',
  my:'자주 가는 곳',code:'도서관코드',others:n=>`그 밖 ${n}개 분관`,again:'다시 검색',
@@ -1127,6 +1278,8 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  dT:'신청이 접수됐습니다',
  d0:l=>`<b>${l}</b> 대출대에 보관 요청했습니다.<br>오늘 중 방문하시면 바로 받으실 수 있습니다.`,
  d1:(md,l,m)=>`<b>${md}</b>으로 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
+ innerBusy:k=>`${k}곳 소장 · 모두 대출 중`,tag3:'반납 대기',shT2:'책바다 신청 안내를 받을까요?',shT3:'예약을 신청할까요?',yes2:'네, 안내 받을게요',kProc:'절차',procV:'책바다 가입 → 사서 승인 → 배송비 결제',procS:'왕복 5,800원 · 장애인 무료 · 별도 시스템이라 직접 신청은 안내로 대신합니다',kHold:'수령 기한',holdV:'도착 후 3일 안에 방문',holdS:'기한 내 미수령 시 10일간 신청 제한 (예시 규정)',kCancel:'취소',cancelV:'접수 상태에서만 가능 · 이송이 시작되면 도서관에 문의',didT:'책이지가 대신 한 일',didV:'말을 글로 옮김 → 무슨 책인지 확정 → 16개관 소장·대출 확인 → 규정 7종 검토 → 접수 · 이용자는 말 한마디, 확인 한 번',kNext:'다음 단계',nextV:'문자로 보낸 안내대로 책바다 가입 → 도서관에서 승인',d2:m=>`책바다 신청 방법을 문자로 보내드렸어요.<br>가입과 승인은 <b>${m}도서관</b>에서 도와드립니다.`,d3:(l,m)=>`예약이 접수되었습니다.<br><b>${l}</b>에서 반납되면 상호대차로 자동 전환되어 <b>${m}도서관</b>으로 옵니다.<br>도착하면 문자로 알려드립니다.`,
+ shP2:'아래 내용을 문자로 안내해 드립니다',dT2:'안내를 보내드렸습니다',didV2:'말을 글로 옮김 → 무슨 책인지 확정 → 관내 16개관·전국 확인 → 신청 경로 판정 → 안내 발송 · 이용자는 말 한마디, 확인 한 번',
  kArr:'예상 도착',kNum:'접수번호',home:'처음으로' },
 en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home screen — it opens like an app and works offline.', instY:'Install', instN:'Later', instIOS:'Tap Share (or ••• → Share), then scroll down and choose “Add to Home Screen”.', instAOS:'Open the browser menu (⋮) and tap “Install app” or “Add to Home screen”.', instIOSother:'On iPhone, open this page in Safari to install. In Safari: Share (or ••• → Share) → “Add to Home Screen”.', NM:n=>`${n} Library`,
  st1:'Transcribing your words',st1d:'Turning speech into text',st2:'AI identifies the book',st2d:'Even imperfect phrases work',
@@ -1137,10 +1290,12 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  innerNone:'None available',innerNoneAll:'Not held anywhere',nation:'Libraries nationwide',nationFound:k=>`found at ${k}`,
  tier:{0:['On site','Use right away','Available at your library now','Get shelf directions','Free','Today'],
        1:['Step 2','Bucheon interlibrary loan','Between 16 Bucheon branches','Request interlibrary loan','Free','2–3 days'],
-       2:['Step 3','Chaekbada (national)','Nationwide loan · 3 books per person','Request via Chaekbada','Nationwide','5–7 days']},
+       2:['Step 3','Chaekbada (national)','Nationwide · separate sign-up & librarian approval','Get Chaekbada guidance','Fee','5–7 days'],
+       3:['Hold','Place a hold','Held in Bucheon · all copies out now','Place a hold','Free','When returned']},
  sum0:(m,k)=>`<b>It's at ${m} Library right now.</b> No loan needed — just walk in. <span class="s2">${k} branches have it available.</span>`,
  sum1:(m,k)=>`<b>${m} Library can't lend it now</b>, but <b>${k} branches</b> can — we'll bring it to ${m} for you.`,
- sum2:k=>`Not in Bucheon, but <b>found at ${k} libraries nationwide</b>. You can request it via Chaekbada.`,
+ sum2:k=>`Not in Bucheon, but <b>found at ${k} libraries nationwide</b>. Chaekbada needs a separate sign-up and librarian approval, so we'll guide you instead of requesting for you.`,
+ sum3:(m,k)=>`<b>${k} Bucheon branches</b> hold it, but every copy is out. Place a hold and we'll send it to <b>${m} Library</b> as soon as one is returned.`,
  rec:'Recommended',tag0:'Use now',tag1:'Fastest',tag2:'Nearest',also:'Also available here',
  fold:n=>`See ${n} more branches ＋`,foldC:'Close －',bOk:'Available',bBusy:'Checked out',bNone:'Not held',
  my:'your usual',code:'Library code',others:n=>`${n} other branches`,again:'Search again',
@@ -1157,6 +1312,8 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  dT:'Request submitted',
  d0:l=>`We asked <b>${l}</b> to hold it at the desk.<br>Visit today and pick it up.`,
  d1:(md,l,m)=>`Requested via <b>${md}</b>.<br>The item is moving from <b>${l}</b> to <b>${m} Library</b>.<br>We'll text you when it arrives.`,
+ innerBusy:k=>`held at ${k} · all out`,tag3:'Waiting for return',shT2:'Get guidance for Chaekbada?',shT3:'Place a hold?',yes2:'Yes, guide me',kProc:'Steps',procV:'Sign up for Chaekbada → librarian approval → pay shipping',procS:'KRW 5,800 round trip · free for people with disabilities · separate system, so we guide rather than request',kHold:'Pickup window',holdV:'Within 3 days of arrival',holdS:'Not picked up in time → requests blocked for 10 days (sample rule)',kCancel:'Cancel',cancelV:'Only while “received” · once in transit, contact the library',didT:'What Chaekiji did for you',didV:'Transcribed → identified the book → checked 16 branches → reviewed 7 rules → submitted · You: one sentence, one tap',kNext:'Next step',nextV:'Follow the text message: sign up for Chaekbada → the library approves',d2:m=>`We texted you how to request via Chaekbada.<br><b>${m} Library</b> will help with sign-up and approval.`,d3:(l,m)=>`Your hold is placed.<br>When <b>${l}</b>'s copy is returned it converts to an interlibrary loan to <b>${m} Library</b>.<br>We'll text you on arrival.`,
+ shP2:'We will text you the steps below',dT2:'Guidance sent',didV2:'Transcribed → identified the book → checked 16 branches & nationwide → determined the route → sent guidance · You: one sentence, one tap',
  kArr:'Expected arrival',kNum:'Reference no.',home:'Start over' },
 zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，像应用一样打开，断网也能使用。', instY:'安装', instN:'以后再说', instIOS:'点击「分享」（或「•••」→「分享」），向下滑动并选择“添加到主屏幕”。', instAOS:'打开浏览器菜单（⋮），点击“安装应用”或“添加到主屏幕”。', instIOSother:'iPhone 请用 Safari 打开才能安装。在 Safari 中：分享（或「•••」→ 分享）→“添加到主屏幕”。', NM:n=>`${n}图书馆`,
  st1:'转写您的话',st1d:'把语音变成文字',st2:'AI 识别图书',st2d:'说得不准也能理解',
@@ -1167,10 +1324,12 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  innerNone:'均不可借',innerNoneAll:'均无馆藏',nation:'全国参与图书馆',nationFound:k=>`${k}馆有藏`,
  tier:{0:['在馆','立即使用','您常去的图书馆现有此书','获取书架位置','免费','今天'],
        1:['第2步','市内馆际互借','富川16个分馆之间调拨','申请馆际互借','免费','2~3天'],
-       2:['第3步','Chaekbada(全国)','全国互借 · 每人3册','通过全国服务申请','全国','5~7天']},
+       2:['第3步','Chaekbada(全国)','全国互借 · 需另行注册与馆员审核','获取申请指引','自费','5~7天'],
+       3:['预约','馆内预约等待','市内有藏 · 目前全部借出','申请预约','免费','归还后']},
  sum0:(m,k)=>`<b>${m}图书馆现在就有这本书。</b>无需互借，直接去借即可。<span class="s2">市内共有${k}馆可借。</span>`,
  sum1:(m,k)=>`<b>${m}图书馆暂时借不到</b>，但<b>${k}个分馆</b>可借出并送到${m}图书馆。`,
- sum2:k=>`富川市内没有，但<b>全国${k}个图书馆</b>有藏，可通过全国互借申请。`,
+ sum2:k=>`富川市内没有，但<b>全国${k}个图书馆</b>有藏。Chaekbada需另行注册并经馆员审核，因此我们提供申请指引。`,
+ sum3:(m,k)=>`市内<b>${k}个馆</b>有藏，但目前全部借出。预约后，一旦归还即调往<b>${m}图书馆</b>。`,
  rec:'推荐',tag0:'立即使用',tag1:'最快',tag2:'最近',also:'这些馆也可以',
  fold:n=>`查看其余${n}馆 ＋`,foldC:'收起 －',bOk:'可借',bBusy:'已借出',bNone:'无馆藏',
  my:'常去',code:'图书馆代码',others:n=>`其余${n}个分馆`,again:'重新搜索',
@@ -1187,6 +1346,8 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  dT:'申请已受理',
  d0:l=>`已请<b>${l}</b>在借书台为您保留。<br>今天到馆即可取书。`,
  d1:(md,l,m)=>`已通过<b>${md}</b>申请。<br>图书正从<b>${l}</b>调往<b>${m}图书馆</b>。<br>到馆后将短信通知您。`,
+ innerBusy:k=>`${k}馆有藏 · 全部借出`,tag3:'等待归还',shT2:'要获取Chaekbada申请指引吗？',shT3:'要申请预约吗？',yes2:'是，获取指引',kProc:'流程',procV:'注册Chaekbada → 馆员审核 → 支付运费',procS:'往返5,800韩元 · 残障人士免费 · 属另一系统，故以指引代替代办',kHold:'取书期限',holdV:'到馆后3天内',holdS:'逾期未取 → 10天内不能申请（示例规定）',kCancel:'取消',cancelV:'仅受理状态可取消 · 开始调拨后请联系图书馆',didT:'Chaekiji替您完成的事',didV:'转写 → 确定图书 → 查询16馆 → 核对7项规定 → 受理 · 您只说了一句话、点了一次确认',kNext:'下一步',nextV:'按短信指引注册Chaekbada → 图书馆审核',d2:m=>`已短信发送Chaekbada申请方法。<br>注册与审核由<b>${m}图书馆</b>协助。`,d3:(l,m)=>`预约已受理。<br><b>${l}</b>归还后自动转为馆际互借，调往<b>${m}图书馆</b>。<br>到馆后短信通知。`,
+ shP2:'将以短信发送以下指引',dT2:'已发送指引',didV2:'转写 → 确定图书 → 查询16馆及全国 → 判定申请路径 → 发送指引 · 您只说了一句话、点了一次确认',
  kArr:'预计到达',kNum:'受理编号',home:'返回首页' },
 ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に置くとアプリのように開き、オフラインでも使えます。', instY:'インストール', instN:'あとで', instIOS:'「共有」ボタン（または「•••」→「共有」）を押し、下にスクロールして「ホーム画面に追加」を選んでください。', instAOS:'ブラウザのメニュー（⋮）から「アプリをインストール」または「ホーム画面に追加」を押してください。', instIOSother:'iPhone は Safari で開くと設置できます。Safari で「共有」（または「•••」→「共有」）→「ホーム画面に追加」。', NM:n=>`${n}図書館`,
  st1:'発話の書き起こし',st1d:'音声を文字にします',st2:'AIが本を特定',st2d:'あいまいな言い方でも大丈夫',
@@ -1197,10 +1358,12 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  innerNone:'貸出可能館なし',innerNoneAll:'所蔵館なし',nation:'全国の参加図書館',nationFound:k=>`${k}館で発見`,
  tier:{0:['所蔵中','すぐ利用','いつもの図書館にあります','書架の場所を案内','無料','本日'],
        1:['第2段階','市内相互貸借','富川16館の間で取り寄せ','相互貸借を申請','無料','2~3日'],
-       2:['第3段階','チェクバダ(全国)','全国相互貸借 · 1人3冊','全国サービスで申請','全国','5~7日']},
+       2:['第3段階','チェクバダ(全国)','全国相互貸借 · 別途登録・司書承認','申請案内を受ける','実費','5~7日'],
+       3:['予約','館内予約待ち','市内に所蔵 · 現在すべて貸出中','予約する','無料','返却され次第']},
  sum0:(m,k)=>`<b>${m}図書館に今あります。</b>取り寄せ不要、そのまま借りられます。<span class="s2">市内では${k}館で貸出可能です。</span>`,
  sum1:(m,k)=>`<b>${m}図書館では今借りられませんが</b>、<b>${k}分館</b>から取り寄せて${m}図書館へお届けできます。`,
- sum2:k=>`富川市内にはありませんが、<b>全国${k}館</b>で見つかりました。チェクバダで申請できます。`,
+ sum2:k=>`富川市内にはありませんが、<b>全国${k}館</b>で見つかりました。チェクバダは別途登録と司書承認が必要なため、申請の代わりにご案内します。`,
+ sum3:(m,k)=>`市内<b>${k}館</b>に所蔵がありますが、現在すべて貸出中です。予約しておけば返却され次第<b>${m}図書館</b>へお送りします。`,
  rec:'おすすめ',tag0:'すぐ利用',tag1:'最速',tag2:'最寄り',also:'こちらでも可能',
  fold:n=>`他${n}館を見る ＋`,foldC:'閉じる －',bOk:'貸出可',bBusy:'貸出中',bNone:'所蔵なし',
  my:'いつもの',code:'図書館コード',others:n=>`その他${n}分館`,again:'再検索',
@@ -1217,6 +1380,8 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  dT:'申請を受け付けました',
  d0:l=>`<b>${l}</b>の貸出カウンターに取り置きを依頼しました。<br>本日ご来館いただければ受け取れます。`,
  d1:(md,l,m)=>`<b>${md}</b>で申請しました。<br>資料は<b>${l}</b>から<b>${m}図書館</b>へ移動中です。<br>到着したらメッセージでお知らせします。`,
+ innerBusy:k=>`${k}館所蔵 · すべて貸出中`,tag3:'返却待ち',shT2:'チェクバダの申請案内を受けますか？',shT3:'予約を申請しますか？',yes2:'はい、案内を受けます',kProc:'手順',procV:'チェクバダ登録 → 司書承認 → 送料決済',procS:'往復5,800ウォン · 障害者無料 · 別システムのため代行ではなく案内',kHold:'受取期限',holdV:'到着後3日以内',holdS:'期限内に受け取らないと10日間申請不可（例示規定）',kCancel:'キャンセル',cancelV:'受付中のみ可能 · 移送開始後は図書館へ',didT:'Chaekijiが代わりにしたこと',didV:'文字起こし → 本を特定 → 16館確認 → 規定7項目を確認 → 受付 · あなたは一言と確認一回',kNext:'次のステップ',nextV:'SMSの案内に沿ってチェクバダ登録 → 図書館が承認',d2:m=>`チェクバダの申請方法をSMSでお送りしました。<br>登録と承認は<b>${m}図書館</b>がお手伝いします。`,d3:(l,m)=>`予約を受け付けました。<br><b>${l}</b>で返却され次第、相互貸借に切り替わり<b>${m}図書館</b>へ届きます。<br>到着したらSMSでお知らせします。`,
+ shP2:'以下の内容をSMSでご案内します',dT2:'案内を送りました',didV2:'文字起こし → 本を特定 → 16館と全国を確認 → 経路を判定 → 案内送付 · あなたは一言と確認一回',
  kArr:'到着予定',kNum:'受付番号',home:'最初に戻る' },
 vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào màn hình chính để mở như ứng dụng, dùng được cả khi mất mạng.', instY:'Cài đặt', instN:'Để sau', instIOS:'Nhấn nút Chia sẻ (hoặc ••• → Chia sẻ), kéo xuống và chọn “Thêm vào MH chính”.', instAOS:'Mở menu trình duyệt (⋮) rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào MH chính”.', instIOSother:'Trên iPhone, hãy mở bằng Safari để cài. Trong Safari: Chia sẻ (hoặc ••• → Chia sẻ) → “Thêm vào MH chính”.', NM:n=>`Thư viện ${n}`,
  st1:'Ghi lại lời bạn nói',st1d:'Chuyển giọng nói thành chữ',st2:'AI nhận diện cuốn sách',st2d:'Nói không chính xác cũng được',
@@ -1227,10 +1392,12 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  innerNone:'Không nơi nào mượn được',innerNoneAll:'Không nơi nào có',nation:'Thư viện toàn quốc',nationFound:k=>`tìm thấy ở ${k} nơi`,
  tier:{0:['Có sẵn','Dùng ngay','Thư viện quen thuộc đang có sách','Chỉ vị trí kệ sách','Miễn phí','Hôm nay'],
        1:['Bước 2','Mượn liên thư viện Bucheon','Giữa 16 chi nhánh Bucheon','Đăng ký mượn liên thư viện','Miễn phí','2–3 ngày'],
-       2:['Bước 3','Chaekbada (toàn quốc)','Mượn toàn quốc · 3 cuốn/người','Đăng ký qua Chaekbada','Toàn quốc','5–7 ngày']},
+       2:['Bước 3','Chaekbada (toàn quốc)','Toàn quốc · đăng ký riêng & thủ thư duyệt','Nhận hướng dẫn Chaekbada','Có phí','5–7 ngày'],
+       3:['Đặt trước','Chờ đặt trước trong thành phố','Có trong Bucheon · hiện đều đang mượn','Đặt trước','Miễn phí','Khi được trả']},
  sum0:(m,k)=>`<b>Thư viện ${m} đang có sách.</b> Không cần mượn liên thư viện — đến lấy ngay. <span class="s2">${k} chi nhánh đang có thể cho mượn.</span>`,
  sum1:(m,k)=>`<b>Thư viện ${m} hiện không mượn được</b>, nhưng <b>${k} chi nhánh</b> có thể cho mượn và chuyển về ${m} cho bạn.`,
- sum2:k=>`Bucheon không có, nhưng <b>tìm thấy ở ${k} thư viện toàn quốc</b>. Có thể đăng ký qua Chaekbada.`,
+ sum2:k=>`Bucheon không có, nhưng <b>tìm thấy ở ${k} thư viện toàn quốc</b>. Chaekbada cần đăng ký riêng và thủ thư duyệt, nên chúng tôi sẽ hướng dẫn thay vì đăng ký hộ.`,
+ sum3:(m,k)=>`<b>${k} chi nhánh</b> trong Bucheon có sách nhưng hiện đều đang mượn. Đặt trước, sách sẽ được gửi đến <b>Thư viện ${m}</b> ngay khi được trả.`,
  rec:'Đề xuất',tag0:'Dùng ngay',tag1:'Nhanh nhất',tag2:'Gần nhất',also:'Những nơi này cũng được',
  fold:n=>`Xem thêm ${n} chi nhánh ＋`,foldC:'Thu gọn －',bOk:'Mượn được',bBusy:'Đang cho mượn',bNone:'Không có',
  my:'quen thuộc',code:'Mã thư viện',others:n=>`${n} chi nhánh khác`,again:'Tìm lại',
@@ -1247,6 +1414,8 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  dT:'Đã tiếp nhận yêu cầu',
  d0:l=>`Đã nhờ <b>${l}</b> giữ sách tại quầy.<br>Đến trong hôm nay là nhận được.`,
  d1:(md,l,m)=>`Đã đăng ký qua <b>${md}</b>.<br>Sách đang được chuyển từ <b>${l}</b> đến <b>Thư viện ${m}</b>.<br>Khi đến nơi sẽ nhắn tin cho bạn.`,
+ innerBusy:k=>`${k} nơi có · đều đang mượn`,tag3:'Chờ trả',shT2:'Nhận hướng dẫn Chaekbada?',shT3:'Đặt trước cuốn này?',yes2:'Có, hướng dẫn tôi',kProc:'Các bước',procV:'Đăng ký Chaekbada → thủ thư duyệt → trả phí vận chuyển',procS:'5.800 won khứ hồi · miễn phí cho người khuyết tật · hệ thống riêng nên chỉ hướng dẫn',kHold:'Hạn nhận',holdV:'Trong 3 ngày sau khi đến',holdS:'Không nhận đúng hạn → khóa đăng ký 10 ngày (quy định mẫu)',kCancel:'Hủy',cancelV:'Chỉ khi còn “đã tiếp nhận” · đã vận chuyển thì liên hệ thư viện',didT:'Chaekiji đã làm thay bạn',didV:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh → xét 7 quy định → tiếp nhận · Bạn: một câu, một lần chạm',kNext:'Bước tiếp',nextV:'Theo tin nhắn: đăng ký Chaekbada → thư viện duyệt',d2:m=>`Đã nhắn cách đăng ký Chaekbada.<br><b>Thư viện ${m}</b> sẽ hỗ trợ đăng ký và duyệt.`,d3:(l,m)=>`Đã đặt trước.<br>Khi <b>${l}</b> được trả, tự chuyển thành mượn liên thư viện đến <b>Thư viện ${m}</b>.<br>Sẽ nhắn tin khi sách đến.`,
+ shP2:'Chúng tôi sẽ nhắn các bước dưới đây',dT2:'Đã gửi hướng dẫn',didV2:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh & toàn quốc → xác định lộ trình → gửi hướng dẫn · Bạn: một câu, một lần chạm',
  kArr:'Dự kiến đến',kNum:'Số tiếp nhận',home:'Về đầu' },
 th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', instD:'เพิ่มไปหน้าจอหลัก เปิดได้เหมือนแอป และใช้ได้แม้ไม่มีเน็ต', instY:'ติดตั้ง', instN:'ไว้ทีหลัง', instIOS:'แตะปุ่มแชร์ (หรือ ••• → แชร์) เลื่อนลงแล้วเลือก “เพิ่มไปยังหน้าจอโฮม”', instAOS:'เปิดเมนูเบราว์เซอร์ (⋮) แล้วแตะ “ติดตั้งแอป” หรือ “เพิ่มไปยังหน้าจอโฮม”', instIOSother:'บน iPhone ต้องเปิดด้วย Safari จึงจะติดตั้งได้ ใน Safari: แชร์ (หรือ ••• → แชร์) → “เพิ่มไปยังหน้าจอโฮม”', NM:n=>`ห้องสมุด${n}`,
  st1:'ถอดคำพูดของคุณ',st1d:'เปลี่ยนเสียงเป็นข้อความ',st2:'AI ระบุหนังสือ',st2d:'พูดไม่ตรงเป๊ะก็เข้าใจ',
@@ -1257,10 +1426,12 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  innerNone:'ไม่มีที่ยืมได้',innerNoneAll:'ไม่มีที่ใดมี',nation:'ห้องสมุดทั่วประเทศ',nationFound:k=>`พบ ${k} แห่ง`,
  tier:{0:['มีเล่มอยู่','ใช้ได้เลย','ห้องสมุดประจำของคุณมีเล่มนี้','ขอตำแหน่งชั้นหนังสือ','ฟรี','วันนี้'],
        1:['ขั้นที่ 2','ยืมข้ามสาขาบูชอน','ระหว่าง 16 สาขาในบูชอน','ขอยืมข้ามสาขา','ฟรี','2–3 วัน'],
-       2:['ขั้นที่ 3','แชกบาดา (ทั่วประเทศ)','ยืมทั่วประเทศ · คนละ 3 เล่ม','ขอผ่านแชกบาดา','ทั่วประเทศ','5–7 วัน']},
+       2:['ขั้นที่ 3','แชกบาดา (ทั่วประเทศ)','ทั่วประเทศ · สมัครแยกและบรรณารักษ์อนุมัติ','รับคำแนะนำแชกบาดา','มีค่าใช้จ่าย','5–7 วัน'],
+       3:['จอง','จองในเมือง','มีในบูชอน · ตอนนี้ถูกยืมหมด','จองหนังสือ','ฟรี','เมื่อคืนแล้ว']},
  sum0:(m,k)=>`<b>ห้องสมุด${m}มีเล่มนี้อยู่ตอนนี้</b> ไม่ต้องยืมข้ามสาขา ไปรับได้เลย <span class="s2">ในเมืองยืมได้ ${k} แห่ง</span>`,
  sum1:(m,k)=>`<b>ห้องสมุด${m}ยืมไม่ได้ตอนนี้</b> แต่<b> ${k} สาขา</b>ให้ยืมได้ และจะส่งมาที่${m}ให้คุณ`,
- sum2:k=>`ในบูชอนไม่มี แต่<b>พบที่ ${k} ห้องสมุดทั่วประเทศ</b> ขอผ่านแชกบาดาได้`,
+ sum2:k=>`ในบูชอนไม่มี แต่<b>พบที่ ${k} ห้องสมุดทั่วประเทศ</b> แชกบาดาต้องสมัครแยกและให้บรรณารักษ์อนุมัติ จึงขอแนะนำวิธีแทนการขอให้`,
+ sum3:(m,k)=>`มีที่ <b>${k} สาขา</b>ในบูชอน แต่ตอนนี้ถูกยืมหมด จองไว้แล้วเมื่อคืนจะส่งไป<b>ห้องสมุด${m}</b>ทันที`,
  rec:'แนะนำ',tag0:'ใช้ได้เลย',tag1:'เร็วที่สุด',tag2:'ใกล้ที่สุด',also:'ที่นี่ก็ได้เช่นกัน',
  fold:n=>`ดูอีก ${n} สาขา ＋`,foldC:'ย่อ －',bOk:'ยืมได้',bBusy:'ถูกยืมอยู่',bNone:'ไม่มี',
  my:'ประจำ',code:'รหัสห้องสมุด',others:n=>`อีก ${n} สาขา`,again:'ค้นหาใหม่',
@@ -1277,6 +1448,8 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  dT:'รับคำขอแล้ว',
  d0:l=>`ขอให้<b>${l}</b>เก็บเล่มไว้ที่เคาน์เตอร์แล้ว<br>ไปรับได้ภายในวันนี้`,
  d1:(md,l,m)=>`ขอผ่าน<b>${md}</b>แล้ว<br>หนังสือกำลังย้ายจาก<b>${l}</b>ไปยัง<b>ห้องสมุด${m}</b><br>ถึงแล้วจะส่งข้อความแจ้ง`,
+ innerBusy:k=>`มี ${k} แห่ง · ถูกยืมหมด`,tag3:'รอคืน',shT2:'รับคำแนะนำแชกบาดาไหม?',shT3:'จองเล่มนี้ไหม?',yes2:'ใช่ ขอคำแนะนำ',kProc:'ขั้นตอน',procV:'สมัครแชกบาดา → บรรณารักษ์อนุมัติ → ชำระค่าส่ง',procS:'ไป-กลับ 5,800 วอน · ผู้พิการฟรี · เป็นระบบแยก จึงแนะนำแทนการขอให้',kHold:'กำหนดรับ',holdV:'ภายใน 3 วันหลังถึง',holdS:'ไม่มารับตามกำหนด → ระงับการขอ 10 วัน (กฎตัวอย่าง)',kCancel:'ยกเลิก',cancelV:'ทำได้เฉพาะสถานะรับเรื่อง · เริ่มขนส่งแล้วให้ติดต่อห้องสมุด',didT:'สิ่งที่ Chaekiji ทำแทนคุณ',didV:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขา → ตรวจกฎ 7 ข้อ → รับเรื่อง · คุณพูดหนึ่งประโยค กดหนึ่งครั้ง',kNext:'ขั้นต่อไป',nextV:'ทำตาม SMS: สมัครแชกบาดา → ห้องสมุดอนุมัติ',d2:m=>`ส่งวิธีขอผ่านแชกบาดาทาง SMS แล้ว<br><b>ห้องสมุด${m}</b>จะช่วยสมัครและอนุมัติ`,d3:(l,m)=>`จองแล้ว<br>เมื่อ<b>${l}</b>ได้รับคืน จะเปลี่ยนเป็นยืมข้ามสาขาไป<b>ห้องสมุด${m}</b>อัตโนมัติ<br>ถึงแล้วจะแจ้งทาง SMS`,
+ shP2:'จะส่งขั้นตอนด้านล่างทาง SMS',dT2:'ส่งคำแนะนำแล้ว',didV2:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขาและทั่วประเทศ → ตัดสินเส้นทาง → ส่งคำแนะนำ · คุณพูดหนึ่งประโยค กดหนึ่งครั้ง',
  kArr:'คาดว่าถึง',kNum:'เลขที่รับเรื่อง',home:'กลับหน้าแรก' },
 ru:{ bq:BQ.ru, instT:'Можно установить на телефон', instD:'Добавьте на главный экран — откроется как приложение и работает без интернета.', instY:'Установить', instN:'Позже', instIOS:'Нажмите «Поделиться» (или ••• → «Поделиться»), пролистайте вниз и выберите «На экран «Домой»».', instAOS:'Откройте меню браузера (⋮) и нажмите «Установить приложение» или «Добавить на главный экран».', instIOSother:'На iPhone установка возможна только в Safari. В Safari: «Поделиться» (или ••• → «Поделиться») → «На экран «Домой»».', NM:n=>`Библиотека ${n}`,
  st1:'Записываю вашу речь',st1d:'Превращаю голос в текст',st2:'ИИ определяет книгу',st2d:'Неточная фраза тоже подойдёт',
@@ -1287,10 +1460,12 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  innerNone:'Нигде не доступна',innerNoneAll:'Нигде нет в фонде',nation:'Библиотеки по всей стране',nationFound:k=>`найдена в ${k}`,
  tier:{0:['На месте','Взять сразу','Есть в вашей библиотеке','Показать, где стоит','Бесплатно','Сегодня'],
        1:['Шаг 2','Обмен внутри Пучхона','Между 16 филиалами','Заказать обмен','Бесплатно','2–3 дня'],
-       2:['Шаг 3','Чекпада (по стране)','По всей стране · 3 книги','Заказать через Чекпада','По стране','5–7 дней']},
+       2:['Шаг 3','Чекпада (по стране)','По стране · отдельная регистрация и одобрение библиотекаря','Получить инструкцию','Платно','5–7 дней'],
+       3:['Бронь','Ожидание в городе','Есть в Пучхоне · сейчас все выданы','Забронировать','Бесплатно','По возврату']},
  sum0:(m,k)=>`<b>Книга сейчас в библиотеке ${m}.</b> Обмен не нужен — просто приходите. <span class="s2">Доступна в ${k} филиалах.</span>`,
  sum1:(m,k)=>`<b>В библиотеке ${m} сейчас нельзя взять</b>, но <b>${k} филиалов</b> могут выдать — доставим в ${m}.`,
- sum2:k=>`В Пучхоне нет, но <b>найдена в ${k} библиотеках страны</b>. Можно заказать через Чекпада.`,
+ sum2:k=>`В Пучхоне нет, но <b>найдена в ${k} библиотеках страны</b>. Для Чекпады нужна отдельная регистрация и одобрение библиотекаря, поэтому мы подскажем, как оформить.`,
+ sum3:(m,k)=>`Есть в <b>${k} филиалах</b> Пучхона, но все экземпляры выданы. Забронируйте — как только вернут, отправим в <b>библиотеку ${m}</b>.`,
  rec:'Рекомендуем',tag0:'Взять сразу',tag1:'Быстрее всего',tag2:'Ближе всего',also:'Также доступна здесь',
  fold:n=>`Ещё ${n} филиалов ＋`,foldC:'Свернуть －',bOk:'Доступна',bBusy:'Выдана',bNone:'Нет',
  my:'обычная',code:'Код библиотеки',others:n=>`ещё ${n} филиалов`,again:'Искать снова',
@@ -1307,6 +1482,8 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  dT:'Заявка принята',
  d0:l=>`Попросили <b>${l}</b> отложить книгу на стойке.<br>Заходите сегодня и забирайте.`,
  d1:(md,l,m)=>`Оформлено через <b>${md}</b>.<br>Книга едет из <b>${l}</b> в <b>библиотеку ${m}</b>.<br>Пришлём сообщение о прибытии.`,
+ innerBusy:k=>`есть в ${k} · все выданы`,tag3:'Ждём возврата',shT2:'Получить инструкцию по Чекпаде?',shT3:'Забронировать?',yes2:'Да, подскажите',kProc:'Порядок',procV:'Регистрация в Чекпаде → одобрение библиотекаря → оплата доставки',procS:'5 800 вон туда-обратно · бесплатно для людей с инвалидностью · отдельная система, поэтому только подсказываем',kHold:'Срок получения',holdV:'В течение 3 дней после прибытия',holdS:'Не забрали вовремя → заказы закрыты на 10 дней (пример правила)',kCancel:'Отмена',cancelV:'Только пока заявка «принята» · после отправки — через библиотеку',didT:'Что сделал Chaekiji за вас',didV:'Распознал речь → определил книгу → проверил 16 филиалов → сверил 7 правил → оформил · Вы: одна фраза, одно касание',kNext:'Далее',nextV:'По SMS: регистрация в Чекпаде → библиотека одобряет',d2:m=>`Мы прислали SMS с инструкцией по Чекпаде.<br><b>Библиотека ${m}</b> поможет с регистрацией и одобрением.`,d3:(l,m)=>`Бронь оформлена.<br>Когда экземпляр из <b>${l}</b> вернут, заявка станет МБА в <b>библиотеку ${m}</b>.<br>Сообщим по SMS.`,
+ shP2:'Пришлём по SMS шаги ниже',dT2:'Инструкция отправлена',didV2:'Распознал речь → определил книгу → проверил 16 филиалов и страну → выбрал маршрут → отправил инструкцию · Вы: одна фраза, одно касание',
  kArr:'Ожидаемое прибытие',kNum:'Номер заявки',home:'В начало' },
 mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үндсэн дэлгэц дээр нэмбэл апп шиг нээгдэж, интернэтгүй ч ажиллана.', instY:'Суулгах', instN:'Дараа', instIOS:'«Хуваалцах» товч (эсвэл ••• → «Хуваалцах») дараад, доош гүйлгэж «Үндсэн дэлгэцэд нэмэх»-ийг сонгоно уу.', instAOS:'Хөтчийн цэс (⋮)-г нээж «Апп суулгах» эсвэл «Үндсэн дэлгэцэд нэмэх» дарна уу.', instIOSother:'iPhone дээр Safari-гаар нээж суулгана. Safari дээр: «Хуваалцах» (эсвэл ••• → «Хуваалцах») → «Үндсэн дэлгэцэд нэмэх».', NM:n=>`${n} номын сан`,
  st1:'Таны яриаг буулгаж байна',st1d:'Дуу хоолойг текст болгоно',st2:'AI номыг таньж байна',st2d:'Бүрэн бус хэллэг ч ойлгоно',
@@ -1317,10 +1494,12 @@ mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үнд
  innerNone:'Боломжтой газар алга',innerNoneAll:'Хаана ч байхгүй',nation:'Улс даяарх номын сангууд',nationFound:k=>`${k} газраас олдлоо`,
  tier:{0:['Байгаа','Шууд ашиглах','Таны номын санд одоо байна','Тавиурын байрлал заах','Үнэгүй','Өнөөдөр'],
        1:['2-р алхам','Бүчон доторх солилцоо','16 салбарын хооронд','Солилцоо хүсэх','Үнэгүй','2–3 хоног'],
-       2:['3-р алхам','Чекпада (улс даяар)','Улс даяар · хүн бүр 3 ном','Чекпадагаар хүсэх','Улс даяар','5–7 хоног']},
+       2:['3-р алхам','Чекпада (улс даяар)','Улс даяар · тусдаа бүртгэл, номын санчийн зөвшөөрөл','Чекпада заавар авах','Төлбөртэй','5–7 хоног'],
+       3:['Захиалга','Хот дотор хүлээх','Бүчонд бий · одоо бүгд зээлэгдсэн','Захиалах','Үнэгүй','Буцаж ирмэгц']},
  sum0:(m,k)=>`<b>${m} номын санд одоо байна.</b> Солилцоо хэрэггүй — очоод аваарай. <span class="s2">${k} салбарт боломжтой.</span>`,
  sum1:(m,k)=>`<b>${m} номын сангаас одоо авах боломжгүй</b> ч <b>${k} салбараас</b> зээлж ${m} руу хүргэж өгнө.`,
- sum2:k=>`Бүчонд байхгүй ч <b>улс даяар ${k} газраас</b> олдлоо. Чекпадагаар хүсч болно.`,
+ sum2:k=>`Бүчонд байхгүй ч <b>улс даяар ${k} газраас</b> олдлоо. Чекпада тусдаа бүртгэл, номын санчийн зөвшөөрөл шаарддаг тул хүсэлтийн оронд зааварчилгаа өгье.`,
+ sum3:(m,k)=>`Бүчоны <b>${k} салбарт</b> бий ч одоо бүгд зээлэгдсэн. Захиалбал буцаж ирмэгц <b>${m} номын сан</b> руу илгээнэ.`,
  rec:'Санал болгож буй',tag0:'Шууд',tag1:'Хамгийн хурдан',tag2:'Хамгийн ойр',also:'Эндээс ч болно',
  fold:n=>`Өөр ${n} салбар үзэх ＋`,foldC:'Хаах －',bOk:'Боломжтой',bBusy:'Зээлэгдсэн',bNone:'Байхгүй',
  my:'байнгын',code:'Номын сангийн код',others:n=>`бусад ${n} салбар`,again:'Дахин хайх',
@@ -1337,6 +1516,8 @@ mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үнд
  dT:'Хүсэлт хүлээн авлаа',
  d0:l=>`<b>${l}</b>-д лангуун дээр хадгалахыг хүслээ.<br>Өнөөдөр очвол авна.`,
  d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээлээ.<br>Ном <b>${l}</b>-аас <b>${m} номын сан</b> руу явж байна.<br>Ирэхэд мессеж илгээнэ.`,
+ innerBusy:k=>`${k} газарт бий · бүгд зээлэгдсэн`,tag3:'Буцаахыг хүлээж байна',shT2:'Чекпада заавар авах уу?',shT3:'Захиалах уу?',yes2:'Тийм, зааварчилна уу',kProc:'Дараалал',procV:'Чекпадад бүртгүүлэх → номын санч зөвшөөрөх → хүргэлтийн төлбөр',procS:'Хоёр тийш 5,800 вон · хөгжлийн бэрхшээлтэй хүнд үнэгүй · тусдаа систем тул зөвхөн зааварчилна',kHold:'Авах хугацаа',holdV:'Ирснээс хойш 3 хоногт',holdS:'Хугацаандаа аваагүй бол 10 хоног хүсэлт хориглоно (жишээ дүрэм)',kCancel:'Цуцлах',cancelV:'Зөвхөн хүлээн авсан үед · тээвэрлэж эхэлбэл номын сантай холбогдоно',didT:'Chaekiji таны өмнөөс хийсэн зүйл',didV:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар шалгасан → 7 дүрэм шалгасан → хүлээн авсан · Та нэг үг, нэг товшилт',kNext:'Дараагийн алхам',nextV:'Мессежийн дагуу Чекпадад бүртгүүлэх → номын сан зөвшөөрнө',d2:m=>`Чекпадагаар хүсэх аргыг мессежээр илгээлээ.<br>Бүртгэл, зөвшөөрлийг <b>${m} номын сан</b> туслана.`,d3:(l,m)=>`Захиалга хүлээн авлаа.<br><b>${l}</b>-аас буцаж ирмэгц солилцоо болж <b>${m} номын сан</b> руу ирнэ.<br>Ирэхэд мессеж илгээнэ.`,
+ shP2:'Доорх алхмуудыг мессежээр илгээнэ',dT2:'Заавар илгээлээ',didV2:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар, улс даяар шалгасан → замыг тогтоосон → заавар илгээсэн · Та нэг үг, нэг товшилт',
  kArr:'Ирэх хугацаа',kNum:'Бүртгэлийн дугаар',home:'Эхлэл рүү' },
 uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo‘shsangiz, ilova kabi ochiladi va internetsiz ham ishlaydi.', instY:'O‘rnatish', instN:'Keyinroq', instIOS:"«Ulashish» tugmasini (yoki ••• → «Ulashish») bosing, pastga suring va «Bosh ekranga qo‘shish»ni tanlang.", instAOS:"Brauzer menyusini (⋮) oching va «Ilovani o‘rnatish» yoki «Bosh ekranga qo‘shish»ni bosing.", instIOSother:"iPhone’da o‘rnatish uchun Safari’da oching. Safari’da: «Ulashish» (yoki ••• → «Ulashish») → «Bosh ekranga qo‘shish».", NM:n=>`${n} kutubxonasi`,
  st1:"So'zingizni yozib olyapman",st1d:"Ovozni matnga aylantiraman",st2:'AI kitobni aniqlaydi',st2d:"Noaniq aytsangiz ham tushunadi",
@@ -1347,10 +1528,12 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
  innerNone:'Hech qayerda mavjud emas',innerNoneAll:"Hech qayerda yo'q",nation:'Butun mamlakat kutubxonalari',nationFound:k=>`${k} joyda topildi`,
  tier:{0:['Joyida','Darhol olish','Doimiy kutubxonangizda bor','Javon joyini ko\'rsatish','Bepul','Bugun'],
        1:['2-qadam','Bucheon ichida almashish','16 filial orasida','Almashishga buyurtma','Bepul','2–3 kun'],
-       2:['3-qadam','Chaekbada (mamlakat)','Butun mamlakat · 3 kitob','Chaekbada orqali','Mamlakat','5–7 kun']},
+       2:['3-qadam','Chaekbada (mamlakat)',"Mamlakat bo'ylab · alohida ro'yxat va kutubxonachi tasdig'i",'Chaekbada yo‘riqnomasi','Pullik','5–7 kun'],
+       3:['Band qilish','Shahar ichida kutish','Bucheonda bor · hozir hammasi berilgan','Band qilish','Bepul','Qaytarilgach']},
  sum0:(m,k)=>`<b>${m} kutubxonasida hozir bor.</b> Almashish shart emas — borib oling. <span class="s2">${k} filialda mavjud.</span>`,
  sum1:(m,k)=>`<b>${m} kutubxonasida hozir bo'lmaydi</b>, lekin <b>${k} filial</b> berib, ${m}ga yetkazamiz.`,
- sum2:k=>`Bucheonda yo'q, lekin <b>mamlakat bo'ylab ${k} kutubxonada</b> topildi. Chaekbada orqali so'rash mumkin.`,
+ sum2:k=>`Bucheonda yo'q, lekin <b>mamlakat bo'ylab ${k} kutubxonada</b> topildi. Chaekbada alohida ro'yxat va kutubxonachi tasdig'ini talab qiladi, shuning uchun buyurtma o'rniga yo'riqnoma beramiz.`,
+ sum3:(m,k)=>`Bucheondagi <b>${k} filialda</b> bor, lekin hozir hammasi berilgan. Band qilsangiz, qaytarilishi bilan <b>${m} kutubxonasi</b>ga yuboramiz.`,
  rec:'Tavsiya',tag0:'Darhol',tag1:'Eng tez',tag2:'Eng yaqin',also:'Bu yerlarda ham bor',
  fold:n=>`Yana ${n} filialni ko'rish ＋`,foldC:'Yopish －',bOk:'Mavjud',bBusy:'Berilgan',bNone:"Yo'q",
  my:'doimiy',code:'Kutubxona kodi',others:n=>`yana ${n} filial`,again:'Qayta qidirish',
@@ -1367,6 +1550,8 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
  dT:"So'rov qabul qilindi",
  d0:l=>`<b>${l}</b>dan peshtaxtada saqlashni so'radik.<br>Bugun borib oling.`,
  d1:(md,l,m)=>`<b>${md}</b> orqali buyurtma berildi.<br>Kitob <b>${l}</b>dan <b>${m} kutubxonasi</b>ga ketmoqda.<br>Yetib kelganda xabar yuboramiz.`,
+ innerBusy:k=>`${k} joyda bor · hammasi berilgan`,tag3:'Qaytarilishini kutmoqda',shT2:"Chaekbada yo'riqnomasini olasizmi?",shT3:'Band qilinsinmi?',yes2:"Ha, yo'riqnoma",kProc:'Tartib',procV:"Chaekbadaga ro'yxat → kutubxonachi tasdig'i → yetkazib berish to'lovi",procS:"Borib-kelish 5 800 von · nogironlar uchun bepul · alohida tizim, shuning uchun faqat yo'riqnoma",kHold:'Olish muddati',holdV:'Kelganidan keyin 3 kun ichida',holdS:"O'z vaqtida olinmasa → 10 kun buyurtma yopiladi (namuna qoida)",kCancel:'Bekor qilish',cancelV:"Faqat “qabul qilindi” holatida · yo'lga chiqqach kutubxonaga murojaat",didT:'Chaekiji siz uchun qilgan ishlar',didV:"Nutqni yozdi → kitobni aniqladi → 16 filialni tekshirdi → 7 qoidani ko'rdi → qabul qildi · Siz: bir jumla, bir bosish",kNext:'Keyingi qadam',nextV:"SMS bo'yicha Chaekbadaga ro'yxatdan o'ting → kutubxona tasdiqlaydi",d2:m=>`Chaekbada orqali so'rash usulini SMS qildik.<br>Ro'yxat va tasdiqda <b>${m} kutubxonasi</b> yordam beradi.`,d3:(l,m)=>`Band qilindi.<br><b>${l}</b> nusxasi qaytgach almashuvga aylanib <b>${m} kutubxonasi</b>ga keladi.<br>Kelganda SMS yuboramiz.`,
+ shP2:'Quyidagi qadamlarni SMS qilamiz',dT2:"Yo'riqnoma yuborildi",didV2:"Nutqni yozdi → kitobni aniqladi → 16 filial va mamlakatni tekshirdi → yo'lni belgiladi → yo'riqnoma yubordi · Siz: bir jumla, bir bosish",
  kArr:'Yetib kelishi',kNum:'Qabul raqami',home:'Boshiga' },
 id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama — terbuka seperti aplikasi dan tetap jalan tanpa internet.', instY:'Pasang', instN:'Nanti', instIOS:'Ketuk tombol Bagikan (atau ••• → Bagikan), gulir ke bawah lalu pilih “Tambahkan ke Layar Utama”.', instAOS:'Buka menu browser (⋮) lalu ketuk “Instal aplikasi” atau “Tambahkan ke Layar Utama”.', instIOSother:'Di iPhone, buka lewat Safari untuk memasang. Di Safari: Bagikan (atau ••• → Bagikan) → “Tambahkan ke Layar Utama”.', NM:n=>`Perpustakaan ${n}`,
  st1:'Mencatat ucapan Anda',st1d:'Mengubah suara jadi teks',st2:'AI mengenali bukunya',st2d:'Ucapan kurang tepat pun dipahami',
@@ -1377,10 +1562,12 @@ id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama 
  innerNone:'Tidak ada yang tersedia',innerNoneAll:'Tidak dimiliki di mana pun',nation:'Perpustakaan se-nasional',nationFound:k=>`ditemukan di ${k}`,
  tier:{0:['Tersedia','Pakai sekarang','Ada di perpustakaan langganan Anda','Tunjukkan lokasi rak','Gratis','Hari ini'],
        1:['Langkah 2','Pinjam antar-cabang Bucheon','Antara 16 cabang Bucheon','Ajukan pinjam antar-cabang','Gratis','2–3 hari'],
-       2:['Langkah 3','Chaekbada (nasional)','Se-nasional · 3 buku/orang','Ajukan via Chaekbada','Nasional','5–7 hari']},
+       2:['Langkah 3','Chaekbada (nasional)','Nasional · daftar terpisah & persetujuan pustakawan','Minta panduan Chaekbada','Berbayar','5–7 hari'],
+       3:['Pesan','Antre pesan di kota','Ada di Bucheon · semua sedang dipinjam','Pesan buku','Gratis','Saat dikembalikan']},
  sum0:(m,k)=>`<b>Ada di Perpustakaan ${m} sekarang.</b> Tak perlu antar-cabang — langsung datang saja. <span class="s2">${k} cabang menyediakannya.</span>`,
  sum1:(m,k)=>`<b>Perpustakaan ${m} sedang tidak bisa</b>, tapi <b>${k} cabang</b> bisa meminjamkan dan mengirimkannya ke ${m}.`,
- sum2:k=>`Tidak ada di Bucheon, tapi <b>ditemukan di ${k} perpustakaan nasional</b>. Bisa diajukan via Chaekbada.`,
+ sum2:k=>`Tidak ada di Bucheon, tapi <b>ditemukan di ${k} perpustakaan nasional</b>. Chaekbada perlu daftar terpisah dan persetujuan pustakawan, jadi kami memandu alih-alih mengajukan untuk Anda.`,
+ sum3:(m,k)=>`Ada di <b>${k} cabang</b> Bucheon, tapi semua sedang dipinjam. Pesan sekarang, begitu dikembalikan akan dikirim ke <b>Perpustakaan ${m}</b>.`,
  rec:'Rekomendasi',tag0:'Pakai sekarang',tag1:'Tercepat',tag2:'Terdekat',also:'Di sini juga bisa',
  fold:n=>`Lihat ${n} cabang lain ＋`,foldC:'Tutup －',bOk:'Tersedia',bBusy:'Dipinjam',bNone:'Tidak ada',
  my:'langganan',code:'Kode perpustakaan',others:n=>`${n} cabang lain`,again:'Cari lagi',
@@ -1397,13 +1584,25 @@ id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama 
  dT:'Permintaan diterima',
  d0:l=>`Kami minta <b>${l}</b> menyimpannya di meja layanan.<br>Datang hari ini untuk mengambilnya.`,
  d1:(md,l,m)=>`Diajukan via <b>${md}</b>.<br>Buku sedang dipindah dari <b>${l}</b> ke <b>Perpustakaan ${m}</b>.<br>Kami SMS saat tiba.`,
+ innerBusy:k=>`ada di ${k} · semua dipinjam`,tag3:'Menunggu dikembalikan',shT2:'Minta panduan Chaekbada?',shT3:'Pesan buku ini?',yes2:'Ya, pandu saya',kProc:'Langkah',procV:'Daftar Chaekbada → persetujuan pustakawan → bayar ongkir',procS:'PP 5.800 won · gratis untuk penyandang disabilitas · sistem terpisah, jadi kami memandu saja',kHold:'Batas ambil',holdV:'Dalam 3 hari setelah tiba',holdS:'Tidak diambil tepat waktu → permintaan diblokir 10 hari (aturan contoh)',kCancel:'Batal',cancelV:'Hanya saat status “diterima” · sudah dikirim, hubungi perpustakaan',didT:'Yang Chaekiji lakukan untuk Anda',didV:'Transkrip → identifikasi buku → cek 16 cabang → tinjau 7 aturan → diterima · Anda: satu kalimat, satu ketukan',kNext:'Langkah berikut',nextV:'Ikuti SMS: daftar Chaekbada → perpustakaan menyetujui',d2:m=>`Cara mengajukan lewat Chaekbada sudah kami SMS.<br><b>Perpustakaan ${m}</b> akan membantu pendaftaran dan persetujuan.`,d3:(l,m)=>`Pesanan diterima.<br>Saat buku di <b>${l}</b> dikembalikan, otomatis menjadi pinjam antar-cabang ke <b>Perpustakaan ${m}</b>.<br>Kami SMS saat tiba.`,
+ shP2:'Kami akan SMS langkah di bawah',dT2:'Panduan terkirim',didV2:'Transkrip → identifikasi buku → cek 16 cabang & nasional → tentukan jalur → kirim panduan · Anda: satu kalimat, satu ketukan',
  kArr:'Perkiraan tiba',kNum:'No. penerimaan',home:'Kembali ke awal' },
 };
 function U(){ return UI[ (L===LANGS.ko) ? 'ko' : Object.keys(LANGS).find(k=>LANGS[k]===L) ] || UI.ko; }
 
 let L = LANGS.ko;
-const KO_S = {h1:'찾으시는 책,<br>말씀만 하세요', h2:'제목이 정확하지 않아도 괜찮습니다', or:'또는 직접 입력',
+const KO_S = {h1:'무슨 책 찾으세요?', h2:'제목이 정확하지 않아도 괜찮아요', or:'또는 직접 입력',
   ph:'예: 나미야 잡화점', go:'검색', lbl:'눌러서 바로 보기', l1:'듣고 있어요', l2:'편하게 말씀하세요', st:'그만하기'};
+/* 좁은 화면(≤380px)에서는 헤더 단추 4개가 한 줄에 들어오도록 짧은 이름을 쓴다 */
+const LANG_SHORT = {ko:'한국어',en:'EN',zh:'中文',ja:'日本',vi:'VI',th:'ไทย',ru:'RU',mn:'MN',uz:'UZ',id:'ID'};
+function fitTools(){
+  const code = Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko';
+  const narrow = window.innerWidth <= 380;
+  $('langbtn').textContent = '🌏 ' + (narrow ? (LANG_SHORT[code]||code.toUpperCase()) : L.n);
+  $('ttsbtn').textContent = narrow ? '🔊 음성' : '🔊 음성안내';
+  $('phonebtn').textContent = narrow ? '📞' : '📞 전화';
+}
+window.addEventListener('resize', fitTools);
 function applyLang(code){
   L = LANGS[code] || LANGS.ko;
   const s = L.s || KO_S;
@@ -1412,7 +1611,7 @@ function applyLang(code){
   $('tgo').textContent = s.go; $('chiplbl').textContent = s.lbl;
   $('lst1').textContent = s.l1; $('lst2').textContent = s.l2;
   $('stopbtn').textContent = s.st;
-  $('langbtn').textContent = '🌏 ' + L.n;
+  fitTools();
   const u = U();
   $('st1t').textContent = u.st1; $('st1d').textContent = u.st1d;
   $('st2t').textContent = u.st2; $('w2d').textContent = u.st2d;
@@ -1531,10 +1730,10 @@ function diagnose(){
 function showDiag(silent){
   const r = diagnose(), box = $('micerr');
   box.classList.remove('info');
-  if(r.ok && !r.info){ box.classList.remove('on'); return true; }
-  if(r.info && silent){ box.classList.remove('on'); return true; }
+  if(r.ok && !r.info){ box.classList.remove('on'); $('s-idle').classList.remove('errOn'); return true; }
+  if(r.info && silent){ box.classList.remove('on'); $('s-idle').classList.remove('errOn'); return true; }
   box.innerHTML = `<b>🎙️ ${r.t}</b><br>${r.d}`;
-  box.classList.add('on');
+  box.classList.add('on'); $('s-idle').classList.add('errOn');
   if(r.info) box.classList.add('info');
   return !!r.ok;
 }
@@ -1552,7 +1751,7 @@ function startVoice(){
     $('micerr').innerHTML = (e.error === 'not-allowed' || e.error === 'service-not-allowed')
       ? "마이크 사용이 차단되어 있습니다. 주소창의 자물쇠 → 마이크 <b>허용</b> 후 다시 시도해 주세요."
       : "음성을 인식하지 못했습니다. 아래 예시 버튼을 눌러 보세요.";
-    $('micerr').classList.add('on');
+    $('micerr').classList.add('on'); $('s-idle').classList.add('errOn');
   };
   rec.onend = () => $('micbtn').classList.remove('live');
   try{ rec.start(); }catch(err){}
@@ -1593,6 +1792,7 @@ function run(text, live){
       case 'mineNone':    return [u.usual(내관), u.mineNone, false];
       case 'innerOk':     return [u.inner, u.innerOk(arg), true];
       case 'innerNone':   return [u.inner16, u.innerNone, false];
+      case 'innerBusy':   return [u.inner16, u.innerBusy(arg), false];
       case 'innerNoneAll':return [u.inner16, u.innerNoneAll, false];
       case 'nationFound': return [u.nation, u.nationFound(arg), true];
       default:            return [u.nation, '…', true];
@@ -1666,14 +1866,15 @@ function result(){
     </div>
 
     <div class="tierbar">
-      <span class="tb ${t===0?'ok':t===1?'mid':'far'}">${T[0]}</span>
+      <span class="tb ${t===0?'ok':(t===1||t===3)?'mid':'far'}">${T[0]}</span>
       <div class="ti"><div class="tn">${T[1]}</div><div class="td">${T[2]}</div></div>
       <div class="tc">${T[4]}<br>${T[5]}</div>
     </div>`;
 
-  h += `<div class="sumline">${ t===0 ? u.sum0(내관, okN) : t===1 ? u.sum1(내관, okN) : u.sum2(okN) }</div>`;
+  const busyN = V.libs.filter(l => l.s === 'busy').length;
+  h += `<div class="sumline">${ t===0 ? u.sum0(내관, okN) : t===1 ? u.sum1(내관, okN) : t===3 ? u.sum3(내관, busyN) : u.sum2(okN) }</div>`;
 
-  const tag = t===0 ? u.tag0 : (t===1 ? u.tag1 : u.tag2);
+  const tag = t===0 ? u.tag0 : (t===1 ? u.tag1 : t===3 ? u.tag3 : u.tag2);
   h += `<div class="lib best">
       <span class="pick">${tag}</span>
       <div class="r1"><div class="nm">${btName}</div><span class="badge b-ok">${u.bOk}</span></div>
@@ -1744,7 +1945,8 @@ function result(){
       let guide;
       if(t === 0)      guide = `추천 도서관은 ${btName}입니다. 방문하시면 바로 빌리실 수 있습니다.`;
       else if(t === 1) guide = `추천 도서관은 ${btName}입니다. 신청하시려면 화면 가운데의 상호대차 신청 단추를 눌러 주세요.`;
-      else             guide = `책바다로 신청하시려면 화면 가운데의 신청 단추를 눌러 주세요.`;
+      else if(t === 3) guide = `관내에 있지만 모두 대출 중입니다. 예약하시려면 화면 가운데의 예약 신청 단추를 눌러 주세요.`;
+      else             guide = `책바다는 별도 가입과 사서 승인이 필요합니다. 안내를 받으시려면 화면 가운데의 단추를 눌러 주세요.`;
       say(`검색 결과입니다. ${c.book.t}, ${c.book.a}. ${sumTx} ${guide} 다시 검색하시려면 아래쪽 다시 검색 단추를 누르시면 됩니다.`);
     }
   }
@@ -1753,13 +1955,22 @@ function result(){
 function openSheet(){
   const c = CASES[cur], u = U(), V = view(c), t = eff(c);
   const T = u.tier[t], bt = best(c), btName = dispName(u, bt);
-  $('sheet-t').textContent = (t === 0) ? u.shT0 : u.shT;
-  $('sheetkv').innerHTML = `
-    <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>
+  $('sheet-t').textContent = (t === 0) ? u.shT0 : (t === 2) ? u.shT2 : (t === 3) ? u.shT3 : u.shT;
+  $('confirm').textContent = (t === 2) ? u.yes2 : u.yes;
+  $('sheetP').textContent = (t === 2) ? u.shP2 : u.shP;
+  const holdRow = (t === 1 || t === 3) ? `
+    <div class="kv"><div class="k">${u.kHold}</div><div class="v">${u.holdV}
+      <span class="vs">${u.holdS}</span></div></div>` : '';
+  const midRows = (t === 2) ? `
     <div class="kv"><div class="k">${u.kMode}</div><div class="v">${T[1]}</div></div>
-    <div class="kv"><div class="k">${t===0 ? u.kKeep : u.kFrom}</div><div class="v">${btName}</div></div>
+    <div class="kv"><div class="k">${u.kProc}</div><div class="v">${u.procV}
+      <span class="vs">${u.procS}</span></div></div>` : `
+    <div class="kv"><div class="k">${u.kMode}</div><div class="v">${T[1]}</div></div>
+    <div class="kv"><div class="k">${t===0 ? u.kKeep : u.kFrom}</div><div class="v">${btName}</div></div>`;
+  $('sheetkv').innerHTML = `
+    <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>${midRows}
     <div class="kv"><div class="k">${u.kTo}</div><div class="v">${u.NM(내관)}</div></div>
-    <div class="kv"><div class="k">${u.kTime}</div><div class="v">${T[4]} · ${T[5]}</div></div>
+    <div class="kv"><div class="k">${u.kTime}</div><div class="v">${T[4]} · ${T[5]}</div></div>${holdRow}
     <div class="kv"><div class="k">${u.kRecv}</div><div class="v">${u.recvV(내관)}
       <span class="vs">${u.recvS}</span></div></div>
     <div class="kv"><div class="k">${u.kPath}</div><div class="v">${u.pathV}
@@ -1767,7 +1978,8 @@ function openSheet(){
     <div class="kv"><div class="k">${u.kUser}</div><div class="v">${u.user}</div></div>`;
   $('sheet').classList.add('on');
   if(L.m) say(L.m.sh(c.book.t, btName));
-  else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, ${t === 0 ? '보관' : '대출'} 도서관 ${btName}, 수령 도서관 ${u.NM(내관)}, 예상 소요 ${T[5]}. 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`);
+  else if(t === 2) say(`책바다는 별도 가입과 사서 승인이 필요합니다. 신청 방법 안내를 받으시려면 네, 안내 받을게요 단추를 눌러 주세요.`);
+  else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, ${t === 0 ? '보관' : '대출'} 도서관 ${btName}, 수령 도서관 ${u.NM(내관)}, 예상 소요 ${T[5]}.${(t===1||t===3) ? ' 도착 후 3일 안에 찾아가 주세요. 기한 안에 찾아가지 않으면 열흘간 신청이 제한됩니다.' : ''} 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`);
 }
 function closeSheet(){ $('sheet').classList.remove('on'); }
 
@@ -1775,17 +1987,23 @@ $('confirm').onclick = () => {
   closeSheet();
   const c = CASES[cur], u = U(), t = eff(c);
   const T = u.tier[t], bt = best(c), btName = dispName(u, bt);
-  $('doneT').textContent = u.dT;
-  $('donetx').innerHTML = (t === 0) ? u.d0(btName) : u.d1(T[1], btName, 내관);
+  $('doneT').textContent = (t === 2) ? u.dT2 : u.dT;
+  $('donetx').innerHTML = (t === 0) ? u.d0(btName) : (t === 2) ? u.d2(내관) : (t === 3) ? u.d3(btName, 내관) : u.d1(T[1], btName, 내관);
+  const tail = (t === 2) ? `
+    <div class="kv"><div class="k">${u.kNext}</div><div class="v">${u.nextV}</div></div>` : `
+    <div class="kv"><div class="k">${u.kArr}</div><div class="v">${T[5]}</div></div>
+    <div class="kv"><div class="k">${u.kNum}</div><div class="v">${t===3 ? 'RSV' : 'ILL'}-2026-0819-0037</div></div>${(t===1||t===3) ? `
+    <div class="kv"><div class="k">${u.kCancel}</div><div class="v">${u.cancelV}</div></div>` : ''}`;
   $('recap').innerHTML = `
     <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>
-    <div class="kv"><div class="k">${u.kTo}</div><div class="v">${u.NM(내관)}</div></div>
-    <div class="kv"><div class="k">${u.kArr}</div><div class="v">${T[5]}</div></div>
-    <div class="kv"><div class="k">${u.kNum}</div><div class="v">ILL-2026-0819-0037</div></div>`;
+    <div class="kv"><div class="k">${u.kTo}</div><div class="v">${u.NM(내관)}</div></div>${tail}
+    <div class="did"><b>${u.didT}</b><span>${t===2 ? u.didV2 : u.didV}</span></div>`;
   show('s-done');
   if(L.m) say(L.m.dn());
   else say(t === 0 ? `${btName} 대출대에 보관 요청했습니다.` :
-      `${T[1]}으로 신청되었습니다. 도착하면 문자로 알려드립니다.`);
+      t === 2 ? `책바다 신청 방법을 문자로 보내드렸습니다. 가입과 승인은 도서관에서 도와드립니다.` :
+      t === 3 ? `예약이 접수되었습니다. 반납되면 상호대차로 자동 전환되어 도착하면 문자로 알려드립니다.` :
+      `${T[1]}으로 신청되었습니다. 도착하면 문자로 알려드립니다. 도착 후 3일 안에 찾아가 주세요.`);
 };
 
 /* ─────────── AI 책큐 일괄 처리 (시연) ───────────
@@ -1839,7 +2057,7 @@ function passRun(){
       if(scene !== SCENE) return;
       const el=$('pss'+idx);
       if(r.v.tier===0){ el.textContent='✓ '+P.ready; el.className='bqst now'; ready++; }
-      else if(r.v.tier===1){ el.textContent='✓ '+P.booked(r.v.okN); el.className='bqst ill'; booked++; }
+      else if(r.v.tier===1 || r.v.tier===3){ el.textContent='✓ '+P.booked(r.v.okN); el.className='bqst ill'; booked++; }
       else { el.textContent='– '+P.skip; el.className='bqst sea'; }
     }, STEP*(idx+1)); });
     setTimeout(()=>{
@@ -1872,7 +2090,7 @@ function bqOpen(){
   $('bqList').style.display = '';
   const rows = BQ_ORDER.map(i => {
     const c = CASES[i], v = view(c);
-    const g = v.tier === 0 ? 'now' : (v.tier === 1 ? 'ill' : 'sea');
+    const g = v.tier === 0 ? 'now' : ((v.tier === 1 || v.tier === 3) ? 'ill' : 'sea');
     return {c, v, g};
   });
   $('bqList').innerHTML = rows.map((r, idx) => `
@@ -1944,7 +2162,7 @@ function bqRun(now, ill, sea){
 
 function reset(){
   stopSay(); SCENE++;
-  $('micerr').classList.remove('on');
+  $('micerr').classList.remove('on'); $('s-idle').classList.remove('errOn');
   $('tinput').value = '';
   show('s-idle');
 }
@@ -2018,7 +2236,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     const u = U();
     $('instT').textContent = u.instT; $('instD').textContent = u.instD;
     yes.textContent = u.instY; no.textContent = u.instN;
-    box.classList.add('on');
+    box.classList.add('on'); $('s-idle').classList.add('instOn');
   });
 
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -2032,7 +2250,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
       $('instD').textContent = isSafari ? u.instIOS : u.instIOSother;
       yes.style.display = 'none';
       no.textContent = u.instN;
-      box.classList.add('on');
+      box.classList.add('on'); $('s-idle').classList.add('instOn');
     }, 1400);
   }
   /* 안드로이드인데 브라우저가 설치를 제안하지 않는 경우(이미 판정 캐시 등)에도 길을 알려준다 */
@@ -2044,21 +2262,21 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
       $('instD').textContent = u.instAOS;
       yes.style.display = 'none';
       no.textContent = u.instN;
-      box.classList.add('on');
+      box.classList.add('on'); $('s-idle').classList.add('instOn');
     }, 3000);
   }
 
   yes.onclick = async () => {
-    box.classList.remove('on');
+    box.classList.remove('on'); $('s-idle').classList.remove('instOn');
     if(deferred){ deferred.prompt(); try{ await deferred.userChoice; }catch(e){} deferred = null; }
   };
   no.onclick = () => {
-    box.classList.remove('on');
+    box.classList.remove('on'); $('s-idle').classList.remove('instOn');
     try{ localStorage.setItem(DISMISS, String(Date.now())); }catch(e){}
   };
 })();
 
-showDiag();
+showDiag(); fitTools();
 $('stopbtn').onclick = () => { if(rec) rec.stop(); show('s-idle'); };
 document.querySelectorAll('.chip').forEach(b => {
   b.onclick = () => { cur = +b.dataset.case; run(null, false); };
@@ -2066,5 +2284,288 @@ document.querySelectorAll('.chip').forEach(b => {
 $('tgo').onclick = () => { const v = $('tinput').value.trim(); if(v) run(v, true); };
 $('tinput').addEventListener('keydown', e => { if(e.key === 'Enter') $('tgo').click(); });
 </script>
+<script>
+/* ══════════ 전화 한 통 모드 — 통화 흐름 시연 (v1.3) ══════════
+   진짜 전화가 아니라, 전화로 걸었을 때의 대화를 목소리만으로 끝까지 재현한다.
+   화면은 통화 기록(자막)일 뿐이며, 판정·분기는 앱과 같은 view()/eff()를 그대로 쓴다. */
+const PHONE = {
+ko:{num:'부천시립도서관 책이지',demo:'시연 · 실제 전화는 연결되지 않습니다',ring:'☎ 대표번호로 거는 중…',connecting:'연결 중…',inCall:'통화 중',ended:'통화 종료',
+ talking:'책이지가 말하는 중',listening:'듣고 있어요 — 말씀하세요',tapOr:'마이크를 못 쓰면 아래 단추나 입력으로 답하셔도 됩니다',
+ hi:'안녕하세요, 부천시립도서관 책이지입니다. 찾으시는 책을 말씀해 주세요.',
+ auth:'등록된 번호로 거셨네요. 홍 님, 확인됐습니다.',
+ r0:m=>`말씀하신 책은 자주 가시는 ${m}도서관에 지금 있습니다. 상호대차 없이 바로 빌리실 수 있어요. 자료 위치를 문자로 보내 드릴까요?`,
+ r1:(m,k)=>`${m}도서관은 지금 대출 중이지만, 관내 ${k}개 도서관에서 빌릴 수 있습니다. ${m}도서관으로 받아보시겠어요? 무료이고 2~3일 걸립니다.`,
+ r2:k=>`부천 안에는 없고 전국 ${k}개 도서관에 있습니다. 책바다는 별도 가입과 사서 승인이 필요해서 전화로는 신청을 대신할 수 없어요. 안내 문자를 보내 드릴까요?`,
+ r3:(m,k)=>`관내 ${k}곳이 갖고 있지만 지금은 모두 대출 중입니다. 예약을 걸어 두면 반납되는 대로 ${m}도서관으로 보내 드릴까요?`,
+ ask:'예, 아니오로 말씀해 주세요.',askAgain:'죄송해요, 잘 못 들었어요. 예 또는 아니오로 말씀해 주세요.',
+ unk:'잘 못 들었어요. 책 제목이나 지은이를 다시 말씀해 주세요.',unk2:'찾지 못했어요. 예를 들어 나미야 잡화점의 기적, 이렇게 말씀해 주세요.',
+ y0:'자료 위치를 문자로 보내 드렸습니다.',
+ y1:m=>`접수됐습니다. 도착하면 문자로 알려 드릴게요. 도착 후 3일 안에 ${m}도서관에서 찾아가시면 되고, 취소는 이송 전까지 이 번호로 다시 전화 주세요.`,
+ y2:'책바다 안내 문자를 보내 드렸습니다. 필요하시면 창구에서 사서가 도와드립니다.',
+ y3:m=>`예약을 접수했습니다. 반납되면 ${m}도서관으로 옮겨 드리고 문자로 알려 드릴게요.`,
+ no:'알겠습니다. 신청하지 않았습니다.',bye:'이용해 주셔서 감사합니다. 안녕히 계세요.',
+ did0:'말을 글로 옮김 → 무슨 책인지 확정 → 자주 가는 도서관 확인 → 규정상 신청 불필요 판정 → 위치 안내 · 이용자는 말 한마디, 예 한 번',
+ yes:'예',noBtn:'아니오',typePh:'말하는 대신 입력',send:'보내기',hang:'끊기',again:'다시 걸기'},
+en:{num:'Bucheon City Library · Chaekiji',demo:'Demo · no real call is placed',ring:'☎ Calling the library line…',connecting:'Connecting…',inCall:'In call',ended:'Call ended',
+ talking:'Chaekiji is speaking',listening:'Listening — go ahead',tapOr:'No mic? You can answer with the buttons or by typing',
+ hi:'Hello, this is Chaekiji at Bucheon City Library. Which book are you looking for?',
+ auth:'You are calling from a registered number. Verified, Mr. or Ms. Hong.',
+ r0:m=>`That book is available right now at your usual library, ${m}. You can borrow it directly, no interlibrary request needed. Shall I text you where it is?`,
+ r1:(m,k)=>`${m} Library has it out on loan, but ${k} libraries in Bucheon can lend it. Shall I have it sent to ${m} Library? It is free and takes 2 to 3 days.`,
+ r2:k=>`It is not held in Bucheon, but ${k} libraries nationwide have it. Chaekbada needs a separate sign-up and librarian approval, so I cannot request it by phone. Shall I text you the guidance?`,
+ r3:(m,k)=>`${k} libraries in Bucheon hold it, but every copy is out. Shall I place a hold and send it to ${m} Library as soon as it is returned?`,
+ ask:'Please say yes or no.',askAgain:'Sorry, I did not catch that. Please say yes or no.',
+ unk:'I did not catch that. Please say the title or the author again.',unk2:'I could not find it. For example, say: The Miracles of the Namiya General Store.',
+ y0:'I have texted you the shelf location.',
+ y1:m=>`Done. I will text you when it arrives. Pick it up at ${m} Library within 3 days of arrival; to cancel before transfer, call this number again.`,
+ y2:'I have texted you the Chaekbada guidance. A librarian can help you at the desk.',
+ y3:m=>`Hold placed. When it is returned I will send it to ${m} Library and text you.`,
+ no:'Understood. Nothing was requested.',bye:'Thank you for calling. Goodbye.',
+ did0:'Speech to text → book identified → usual library checked → rule: no request needed → location sent · you said one sentence and one yes',
+ yes:'Yes',noBtn:'No',typePh:'Type instead of speaking',send:'Send',hang:'Hang up',again:'Call again'},
+zh:{num:'富川市立图书馆 책이지',demo:'演示 · 不会真正拨打电话',ring:'☎ 正在拨打图书馆代表号…',connecting:'连接中…',inCall:'通话中',ended:'通话结束',
+ talking:'책이지正在说话',listening:'正在听 — 请说',tapOr:'无法使用麦克风时，可用下方按钮或输入回答',
+ hi:'您好，这里是富川市立图书馆 책이지。请说出您要找的书。',
+ auth:'您使用的是已登记的号码。洪先生/女士，已确认。',
+ r0:m=>`这本书现在就在您常去的${m}图书馆。无需馆际互借，可直接借阅。要把位置发短信给您吗？`,
+ r1:(m,k)=>`${m}图书馆已借出，但富川市内有${k}个图书馆可以借。要送到${m}图书馆吗？免费，需要2到3天。`,
+ r2:k=>`富川市内没有，全国有${k}个图书馆有。책바다需要另行注册和馆员审核，电话无法代为申请。要发送指引短信吗？`,
+ r3:(m,k)=>`市内有${k}个馆收藏，但目前全部借出。要预约吗？归还后会送到${m}图书馆。`,
+ ask:'请回答“是”或“不是”。',askAgain:'抱歉没听清，请说“是”或“不是”。',
+ unk:'没听清，请再说一次书名或作者。',unk2:'没有找到。例如可以说：解忧杂货店。',
+ y0:'已把位置发短信给您。',
+ y1:m=>`已受理。到馆后会短信通知您，请在到馆后3天内到${m}图书馆领取；如需在转运前取消，请再拨打此号码。`,
+ y2:'已发送책바다指引短信，需要时柜台馆员会协助您。',
+ y3:m=>`预约已受理。归还后会送到${m}图书馆并短信通知您。`,
+ no:'好的，未申请。',bye:'感谢您的来电，再见。',
+ did0:'语音转文字 → 确定书目 → 确认常去图书馆 → 判定无需申请 → 发送位置 · 您只说了一句话和一个“是”',
+ yes:'是',noBtn:'不是',typePh:'不方便说话时可输入',send:'发送',hang:'挂断',again:'再次拨打'},
+ja:{num:'富川市立図書館 책이지',demo:'デモ · 実際の電話はかかりません',ring:'☎ 図書館の代表番号に発信中…',connecting:'接続中…',inCall:'通話中',ended:'通話終了',
+ talking:'책이지が話しています',listening:'聞いています — どうぞ',tapOr:'マイクが使えない場合は下のボタンや入力で答えられます',
+ hi:'こんにちは、富川市立図書館の책이지です。お探しの本をお話しください。',
+ auth:'登録済みの番号からのお電話ですね。ホン様、確認できました。',
+ r0:m=>`その本はいつもの${m}図書館に今あります。相互貸借なしでそのまま借りられます。場所をメッセージで送りましょうか。`,
+ r1:(m,k)=>`${m}図書館は貸出中ですが、市内${k}館で借りられます。${m}図書館で受け取りますか。無料で2〜3日かかります。`,
+ r2:k=>`富川市内にはなく、全国${k}館にあります。책바다は別途登録と司書の承認が必要なため、電話では代わりに申し込めません。案内をメッセージで送りましょうか。`,
+ r3:(m,k)=>`市内${k}館が所蔵していますが、今はすべて貸出中です。予約しておいて、返却され次第${m}図書館へ送りましょうか。`,
+ ask:'「はい」か「いいえ」でお答えください。',askAgain:'すみません、聞き取れませんでした。「はい」か「いいえ」でお答えください。',
+ unk:'聞き取れませんでした。書名か著者名をもう一度お話しください。',unk2:'見つかりませんでした。例えば「ナミヤ雑貨店の奇蹟」のようにお話しください。',
+ y0:'場所をメッセージで送りました。',
+ y1:m=>`受け付けました。到着したらメッセージでお知らせします。到着後3日以内に${m}図書館でお受け取りください。移送前の取消はこの番号にもう一度お電話ください。`,
+ y2:'책바다の案内をメッセージで送りました。必要ならカウンターで司書がお手伝いします。',
+ y3:m=>`予約を受け付けました。返却され次第${m}図書館へ送り、メッセージでお知らせします。`,
+ no:'承知しました。申し込みはしていません。',bye:'ご利用ありがとうございました。失礼します。',
+ did0:'音声を文字に → 本を特定 → いつもの図書館を確認 → 規定上申請不要と判定 → 場所を案内 · 利用者は一言と「はい」一回',
+ yes:'はい',noBtn:'いいえ',typePh:'話す代わりに入力',send:'送信',hang:'切る',again:'もう一度かける'},
+vi:{num:'Thư viện TP Bucheon · Chaekiji',demo:'Demo · không thực hiện cuộc gọi thật',ring:'☎ Đang gọi số tổng đài thư viện…',connecting:'Đang kết nối…',inCall:'Đang gọi',ended:'Kết thúc cuộc gọi',
+ talking:'Chaekiji đang nói',listening:'Đang nghe — mời bạn nói',tapOr:'Không dùng được micro? Bạn có thể trả lời bằng nút hoặc nhập chữ',
+ hi:'Xin chào, đây là Chaekiji của Thư viện TP Bucheon. Bạn muốn tìm sách gì?',
+ auth:'Bạn gọi từ số đã đăng ký. Đã xác nhận, anh/chị Hong.',
+ r0:m=>`Sách này hiện có tại thư viện ${m} bạn hay đến. Bạn có thể mượn ngay, không cần mượn liên thư viện. Tôi nhắn vị trí sách cho bạn nhé?`,
+ r1:(m,k)=>`Thư viện ${m} đã cho mượn, nhưng ${k} thư viện trong Bucheon có thể cho mượn. Gửi về thư viện ${m} nhé? Miễn phí, mất 2–3 ngày.`,
+ r2:k=>`Trong Bucheon không có, nhưng ${k} thư viện toàn quốc có. Chaekbada cần đăng ký riêng và thủ thư phê duyệt nên tôi không thể đăng ký hộ qua điện thoại. Tôi nhắn hướng dẫn cho bạn nhé?`,
+ r3:(m,k)=>`${k} thư viện trong Bucheon có sách nhưng tất cả đang được mượn. Đặt trước và gửi về thư viện ${m} ngay khi sách được trả nhé?`,
+ ask:'Bạn trả lời có hoặc không nhé.',askAgain:'Xin lỗi, tôi chưa nghe rõ. Bạn nói có hoặc không nhé.',
+ unk:'Tôi chưa nghe rõ. Bạn nói lại tên sách hoặc tác giả nhé.',unk2:'Không tìm thấy. Ví dụ: Điều kỳ diệu của tiệm tạp hóa Namiya.',
+ y0:'Tôi đã nhắn vị trí sách cho bạn.',
+ y1:m=>`Đã tiếp nhận. Khi sách đến tôi sẽ nhắn tin. Bạn nhận tại thư viện ${m} trong 3 ngày sau khi sách đến; muốn hủy trước khi chuyển, gọi lại số này.`,
+ y2:'Đã nhắn hướng dẫn Chaekbada. Thủ thư tại quầy có thể hỗ trợ bạn.',
+ y3:m=>`Đã đặt trước. Khi sách được trả, tôi sẽ chuyển về thư viện ${m} và nhắn tin.`,
+ no:'Đã hiểu. Không đăng ký gì cả.',bye:'Cảm ơn bạn đã gọi. Tạm biệt.',
+ did0:'Chuyển giọng nói thành chữ → xác định sách → kiểm tra thư viện quen → xét quy định: không cần đăng ký → nhắn vị trí · bạn chỉ nói một câu và một lần “có”',
+ yes:'Có',noBtn:'Không',typePh:'Nhập thay vì nói',send:'Gửi',hang:'Cúp máy',again:'Gọi lại'},
+th:{num:'ห้องสมุดเมืองบูชอน · Chaekiji',demo:'เดโม · ไม่มีการโทรจริง',ring:'☎ กำลังโทรหาห้องสมุด…',connecting:'กำลังเชื่อมต่อ…',inCall:'กำลังคุย',ended:'วางสายแล้ว',
+ talking:'Chaekiji กำลังพูด',listening:'กำลังฟัง — พูดได้เลย',tapOr:'ใช้ไมค์ไม่ได้? ตอบด้วยปุ่มหรือพิมพ์ด้านล่างได้',
+ hi:'สวัสดีค่ะ นี่คือ Chaekiji ห้องสมุดเมืองบูชอน ต้องการหาหนังสือเล่มไหนคะ',
+ auth:'โทรจากหมายเลขที่ลงทะเบียนไว้ ยืนยันตัวตนคุณฮงแล้วค่ะ',
+ r0:m=>`หนังสือเล่มนี้มีอยู่ที่ห้องสมุด ${m} ที่คุณไปประจำ ยืมได้เลยโดยไม่ต้องขอยืมข้ามห้องสมุด ให้ส่งตำแหน่งหนังสือทางข้อความไหมคะ`,
+ r1:(m,k)=>`ห้องสมุด ${m} ถูกยืมอยู่ แต่มี ${k} แห่งในบูชอนที่ยืมได้ ให้ส่งมาที่ห้องสมุด ${m} ไหมคะ ฟรีและใช้เวลา 2–3 วัน`,
+ r2:k=>`ในบูชอนไม่มี แต่มีที่ ${k} แห่งทั่วประเทศ Chaekbada ต้องสมัครแยกและให้บรรณารักษ์อนุมัติ จึงขอแทนทางโทรศัพท์ไม่ได้ ให้ส่งคำแนะนำทางข้อความไหมคะ`,
+ r3:(m,k)=>`มี ${k} แห่งในบูชอนแต่ถูกยืมหมด ให้จองไว้แล้วส่งมาที่ห้องสมุด ${m} ทันทีที่ถูกคืนไหมคะ`,
+ ask:'กรุณาตอบว่า ใช่ หรือ ไม่',askAgain:'ขอโทษค่ะ ไม่ได้ยิน กรุณาตอบว่า ใช่ หรือ ไม่',
+ unk:'ไม่ได้ยินค่ะ กรุณาบอกชื่อหนังสือหรือผู้แต่งอีกครั้ง',unk2:'ไม่พบค่ะ ลองพูดเช่น ปาฏิหาริย์ร้านชำของคุณนามิยะ',
+ y0:'ส่งตำแหน่งหนังสือทางข้อความแล้วค่ะ',
+ y1:m=>`รับเรื่องแล้วค่ะ เมื่อหนังสือมาถึงจะส่งข้อความแจ้ง กรุณารับที่ห้องสมุด ${m} ภายใน 3 วันหลังมาถึง หากต้องการยกเลิกก่อนจัดส่ง โทรมาที่หมายเลขนี้อีกครั้ง`,
+ y2:'ส่งคำแนะนำ Chaekbada ทางข้อความแล้วค่ะ บรรณารักษ์ที่เคาน์เตอร์ช่วยได้',
+ y3:m=>`จองแล้วค่ะ เมื่อถูกคืนจะส่งมาที่ห้องสมุด ${m} และแจ้งทางข้อความ`,
+ no:'รับทราบค่ะ ไม่ได้ทำรายการ',bye:'ขอบคุณที่ใช้บริการค่ะ สวัสดีค่ะ',
+ did0:'แปลงเสียงเป็นข้อความ → ระบุหนังสือ → ตรวจห้องสมุดประจำ → ตัดสินตามกฎว่าไม่ต้องขอ → แจ้งตำแหน่ง · คุณพูดแค่ประโยคเดียวและตอบใช่ครั้งเดียว',
+ yes:'ใช่',noBtn:'ไม่',typePh:'พิมพ์แทนการพูด',send:'ส่ง',hang:'วางสาย',again:'โทรอีกครั้ง'},
+ru:{num:'Библиотека Пучхона · Chaekiji',demo:'Демо · настоящий звонок не совершается',ring:'☎ Звоним в библиотеку…',connecting:'Соединение…',inCall:'Разговор',ended:'Звонок завершён',
+ talking:'Говорит Chaekiji',listening:'Слушаю — говорите',tapOr:'Нет микрофона? Ответьте кнопками или введите текст',
+ hi:'Здравствуйте, это Chaekiji, городская библиотека Пучхона. Какую книгу вы ищете?',
+ auth:'Вы звоните с зарегистрированного номера. Подтверждено, господин или госпожа Хон.',
+ r0:m=>`Эта книга сейчас есть в вашей библиотеке ${m}. Можно взять сразу, без межбиблиотечного запроса. Прислать вам место на полке сообщением?`,
+ r1:(m,k)=>`В библиотеке ${m} книга на руках, но её могут выдать ${k} библиотек Пучхона. Доставить в библиотеку ${m}? Бесплатно, 2–3 дня.`,
+ r2:k=>`В Пучхоне книги нет, но она есть в ${k} библиотеках страны. Для Chaekbada нужна отдельная регистрация и одобрение библиотекаря, поэтому по телефону оформить нельзя. Прислать инструкцию сообщением?`,
+ r3:(m,k)=>`Книга есть в ${k} библиотеках Пучхона, но все экземпляры выданы. Поставить в очередь и доставить в библиотеку ${m}, как только вернут?`,
+ ask:'Скажите, пожалуйста, да или нет.',askAgain:'Извините, не расслышал. Скажите да или нет.',
+ unk:'Не расслышал. Повторите название или автора.',unk2:'Не нашёл. Например, скажите: Чудеса магазинчика Намия.',
+ y0:'Я отправил место на полке сообщением.',
+ y1:m=>`Принято. Когда книга придёт, пришлю сообщение. Заберите её в библиотеке ${m} в течение 3 дней; чтобы отменить до отправки, позвоните на этот номер снова.`,
+ y2:'Инструкция по Chaekbada отправлена сообщением. Библиотекарь поможет вам на стойке.',
+ y3:m=>`Очередь оформлена. После возврата отправлю книгу в библиотеку ${m} и пришлю сообщение.`,
+ no:'Понял. Ничего не оформлено.',bye:'Спасибо за звонок. До свидания.',
+ did0:'Речь в текст → книга определена → проверена ваша библиотека → по правилам запрос не нужен → место отправлено · вы сказали одну фразу и одно «да»',
+ yes:'Да',noBtn:'Нет',typePh:'Ввести текст вместо речи',send:'Отправить',hang:'Завершить',again:'Позвонить снова'},
+mn:{num:'Бүчон хотын номын сан · Chaekiji',demo:'Демо · жинхэнэ дуудлага хийгдэхгүй',ring:'☎ Номын санд залгаж байна…',connecting:'Холбогдож байна…',inCall:'Ярьж байна',ended:'Дуудлага дууссан',
+ talking:'Chaekiji ярьж байна',listening:'Сонсож байна — ярина уу',tapOr:'Микрофон ажиллахгүй бол доорх товч эсвэл бичиж хариулж болно',
+ hi:'Сайн байна уу, Бүчон хотын номын сангийн Chaekiji байна. Ямар ном хайж байна вэ?',
+ auth:'Бүртгэлтэй дугаараас залгасан байна. Хон таныг баталгаажууллаа.',
+ r0:m=>`Энэ ном таны байнга очдог ${m} номын санд одоо байна. Хоорондын зээлгүйгээр шууд авч болно. Байршлыг мессежээр илгээх үү?`,
+ r1:(m,k)=>`${m} номын санд зээлэгдсэн ч Бүчоны ${k} номын сангаас авч болно. ${m} номын сан руу хүргүүлэх үү? Үнэгүй, 2–3 хоног.`,
+ r2:k=>`Бүчонд байхгүй, улсын хэмжээнд ${k} номын санд байна. Chaekbada-д тусдаа бүртгэл, номын санчийн зөвшөөрөл хэрэгтэй тул утсаар оронд нь захиалж чадахгүй. Зааврыг мессежээр илгээх үү?`,
+ r3:(m,k)=>`Бүчоны ${k} номын санд байгаа ч бүгд зээлэгдсэн. Захиалга үлдээж, буцаж ирмэгц ${m} номын сан руу хүргүүлэх үү?`,
+ ask:'Тийм эсвэл үгүй гэж хэлнэ үү.',askAgain:'Уучлаарай, сонсогдсонгүй. Тийм эсвэл үгүй гэж хэлнэ үү.',
+ unk:'Сонсогдсонгүй. Номын нэр эсвэл зохиолчийг дахин хэлнэ үү.',unk2:'Олдсонгүй. Жишээ нь: Намия дэлгүүрийн гайхамшиг гэж хэлнэ үү.',
+ y0:'Байршлыг мессежээр илгээлээ.',
+ y1:m=>`Хүлээн авлаа. Ном ирэхэд мессеж илгээнэ. Ирснээс хойш 3 хоногийн дотор ${m} номын сангаас аваарай; шилжүүлэхээс өмнө цуцлах бол энэ дугаарт дахин залгаарай.`,
+ y2:'Chaekbada-ийн зааврыг мессежээр илгээлээ. Лангуун дээр номын санч тусална.',
+ y3:m=>`Захиалга бүртгэлээ. Буцаж ирмэгц ${m} номын сан руу хүргэж, мессеж илгээнэ.`,
+ no:'Ойлголоо. Юу ч захиалаагүй.',bye:'Залгасанд баярлалаа. Баяртай.',
+ did0:'Яриаг текст болгосон → номыг тодорхойлсон → байнгын номын санг шалгасан → дүрмээр хүсэлт шаардлагагүй → байршил илгээсэн · та нэг өгүүлбэр, нэг «тийм» хэлсэн',
+ yes:'Тийм',noBtn:'Үгүй',typePh:'Ярихын оронд бичих',send:'Илгээх',hang:'Таслах',again:'Дахин залгах'},
+uz:{num:'Bucheon shahar kutubxonasi · Chaekiji',demo:'Demo · haqiqiy qo‘ng‘iroq qilinmaydi',ring:'☎ Kutubxonaga qo‘ng‘iroq qilinmoqda…',connecting:'Ulanmoqda…',inCall:'Suhbat',ended:'Qo‘ng‘iroq tugadi',
+ talking:'Chaekiji gapirmoqda',listening:'Tinglayapman — gapiring',tapOr:'Mikrofon yo‘qmi? Tugmalar yoki matn orqali javob bering',
+ hi:'Assalomu alaykum, bu Bucheon shahar kutubxonasining Chaekiji. Qaysi kitobni qidiryapsiz?',
+ auth:'Ro‘yxatdan o‘tgan raqamdan qo‘ng‘iroq qilyapsiz. Tasdiqlandi, Hong janob/xonim.',
+ r0:m=>`Bu kitob hozir siz doim boradigan ${m} kutubxonasida bor. Kutubxonalararo so‘rovsiz to‘g‘ridan-to‘g‘ri olishingiz mumkin. Joyini xabar bilan yuboraymi?`,
+ r1:(m,k)=>`${m} kutubxonasida kitob berilgan, lekin Bucheondagi ${k} ta kutubxona bera oladi. ${m} kutubxonasiga yetkazaymi? Bepul, 2–3 kun.`,
+ r2:k=>`Bucheonda yo‘q, lekin butun mamlakat bo‘yicha ${k} ta kutubxonada bor. Chaekbada uchun alohida ro‘yxat va kutubxonachi tasdig‘i kerak, shuning uchun telefon orqali so‘rov bera olmayman. Yo‘riqnomani xabar bilan yuboraymi?`,
+ r3:(m,k)=>`Bucheondagi ${k} ta kutubxonada bor, lekin hammasi berilgan. Navbatga qo‘yib, qaytarilishi bilan ${m} kutubxonasiga yuboraymi?`,
+ ask:'Ha yoki yo‘q deb ayting.',askAgain:'Kechirasiz, eshitmadim. Ha yoki yo‘q deb ayting.',
+ unk:'Eshitmadim. Kitob nomi yoki muallifini qayta ayting.',unk2:'Topilmadi. Masalan: Namiya do‘konining mo‘jizalari, deb ayting.',
+ y0:'Joyini xabar bilan yubordim.',
+ y1:m=>`Qabul qilindi. Kitob kelganda xabar yuboraman. Kelganidan keyin 3 kun ichida ${m} kutubxonasidan oling; yuborishdan oldin bekor qilish uchun shu raqamga qayta qo‘ng‘iroq qiling.`,
+ y2:'Chaekbada yo‘riqnomasini xabar bilan yubordim. Kutubxonachi peshtaxtada yordam beradi.',
+ y3:m=>`Navbatga qo‘yildi. Qaytarilgach ${m} kutubxonasiga yuboraman va xabar beraman.`,
+ no:'Tushunarli. Hech narsa so‘ralmadi.',bye:'Qo‘ng‘iroq uchun rahmat. Xayr.',
+ did0:'Nutq matnga → kitob aniqlandi → doimiy kutubxona tekshirildi → qoidaga ko‘ra so‘rov kerak emas → joy yuborildi · siz bir gap va bir «ha» dedingiz',
+ yes:'Ha',noBtn:'Yo‘q',typePh:'Gapirish o‘rniga yozing',send:'Yuborish',hang:'Tugatish',again:'Qayta qo‘ng‘iroq'},
+id:{num:'Perpustakaan Kota Bucheon · Chaekiji',demo:'Demo · tidak ada panggilan sungguhan',ring:'☎ Menghubungi perpustakaan…',connecting:'Menghubungkan…',inCall:'Dalam panggilan',ended:'Panggilan berakhir',
+ talking:'Chaekiji sedang berbicara',listening:'Mendengarkan — silakan bicara',tapOr:'Tidak ada mikrofon? Jawab dengan tombol atau ketik',
+ hi:'Halo, ini Chaekiji dari Perpustakaan Kota Bucheon. Buku apa yang Anda cari?',
+ auth:'Anda menelepon dari nomor terdaftar. Terverifikasi, Bapak/Ibu Hong.',
+ r0:m=>`Buku itu sekarang tersedia di perpustakaan langganan Anda, ${m}. Bisa langsung dipinjam tanpa pinjam antarperpustakaan. Mau saya kirim lokasinya lewat SMS?`,
+ r1:(m,k)=>`Di Perpustakaan ${m} sedang dipinjam, tetapi ${k} perpustakaan di Bucheon bisa meminjamkan. Mau dikirim ke Perpustakaan ${m}? Gratis, 2–3 hari.`,
+ r2:k=>`Tidak ada di Bucheon, tetapi ada di ${k} perpustakaan se-Korea. Chaekbada perlu pendaftaran terpisah dan persetujuan pustakawan, jadi tidak bisa saya ajukan lewat telepon. Mau saya kirim panduannya lewat SMS?`,
+ r3:(m,k)=>`${k} perpustakaan di Bucheon memilikinya, tetapi semua sedang dipinjam. Mau saya pesankan dan kirim ke Perpustakaan ${m} begitu dikembalikan?`,
+ ask:'Silakan jawab ya atau tidak.',askAgain:'Maaf, kurang jelas. Silakan jawab ya atau tidak.',
+ unk:'Kurang jelas. Sebutkan lagi judul atau pengarangnya.',unk2:'Tidak ditemukan. Misalnya, ucapkan: Keajaiban Toko Kelontong Namiya.',
+ y0:'Lokasi buku sudah saya kirim lewat SMS.',
+ y1:m=>`Diterima. Saat buku tiba saya kirim SMS. Ambil di Perpustakaan ${m} dalam 3 hari setelah tiba; untuk membatalkan sebelum dikirim, telepon nomor ini lagi.`,
+ y2:'Panduan Chaekbada sudah saya kirim lewat SMS. Pustakawan di meja layanan bisa membantu.',
+ y3:m=>`Pesanan diterima. Begitu dikembalikan, saya kirim ke Perpustakaan ${m} dan beri tahu lewat SMS.`,
+ no:'Baik. Tidak ada yang diajukan.',bye:'Terima kasih sudah menelepon. Sampai jumpa.',
+ did0:'Suara jadi teks → buku dikenali → perpustakaan langganan dicek → aturan: tak perlu pengajuan → lokasi dikirim · Anda hanya bicara satu kalimat dan satu “ya”',
+ yes:'Ya',noBtn:'Tidak',typePh:'Ketik alih-alih bicara',send:'Kirim',hang:'Tutup',again:'Telepon lagi'}
+};
+const PH_YES={ko:['네','예','응','좋아','그래','해주','부탁','신청','받을게','보내'],en:['yes','yeah','yep','sure','ok','okay','please'],zh:['是','好','对','要','可以','行'],ja:['はい','うん','お願い','いいよ','ええ','頼む'],vi:['có','vâng','được','ừ','đồng ý','dạ'],th:['ใช่','ค่ะ','ครับ','ได้','ตกลง','เอา'],ru:['да','давай','хорошо','конечно','ага'],mn:['тийм','за','болно','тэгье'],uz:['ha','xo‘p','xop','mayli','bo‘ladi','boladi'],id:['ya','iya','boleh','oke','ok','mau']};
+const PH_NO={ko:['아니','싫','괜찮','됐어','안 해','안해','말고'],en:['no','nope','not','don\'t','dont'],zh:['不','否','别','没'],ja:['いいえ','いや','結構','やめ','しない'],vi:['không','thôi','khỏi'],th:['ไม่'],ru:['нет','не надо','не нужно'],mn:['үгүй','хэрэггүй'],uz:['yo‘q','yoq','kerak emas','yo\'q'],id:['tidak','nggak','gak','jangan','enggak']};
+const PH={on:false,seq:0,rec:null,timer:null,t0:0,c:null,kind:null,tries:0,tier:1};
+function phCode(){ return Object.keys(LANGS).find(k=>LANGS[k]===L)||'ko'; }
+function phU(){ return PHONE[phCode()]||PHONE.en; }
+function phBubble(cls,html){ const d=document.createElement('div'); d.className='pb '+cls; d.innerHTML=html; $('pcLog').appendChild(d); $('pcLog').scrollTop=1e9; return d; }
+function phSpeak(t,done){
+  const seq=++PH.seq, fin=()=>{ if(seq!==PH.seq||!PH.on) return; if(done) done(); };
+  if(!window.speechSynthesis){ setTimeout(fin, estSayMs(t)); return; }
+  try{
+    stopSay();
+    const u=new SpeechSynthesisUtterance(t); u.lang=L.tts; u.rate=TTS_RATE;
+    let c=false; const go=()=>{ if(c) return; c=true; fin(); };
+    u.onend=go; u.onerror=go; setTimeout(go, estSayMs(t)+2500);
+    speechSynthesis.speak(u);
+    setTimeout(()=>{ try{ if(speechSynthesis.speaking===false && speechSynthesis.pending===false) go(); }catch(e){} }, 900);
+  }catch(e){ setTimeout(fin, estSayMs(t)); }
+}
+function phState(kind){ const p=phU(), el=$('pcStatus'); el.classList.toggle('live', kind==='listen');
+  el.textContent = kind==='talk'?p.talking : kind==='listen'?p.listening : kind==='end'?p.ended : ''; }
+function phCtl(kind){ $('pcYN').classList.toggle('on', kind==='yn'); $('pcTin').classList.toggle('on', kind==='book'); $('pcChips').classList.toggle('on', kind==='book'); }
+function phStopRec(){ try{ if(PH.rec){ PH.rec.onresult=null; PH.rec.onerror=null; PH.rec.onend=null; PH.rec.stop(); } }catch(e){} PH.rec=null; }
+function phListen(kind){
+  if(!PH.on) return; PH.kind=kind; phState('listen'); phCtl(kind);
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition, d=diagnose();
+  if(SR && d.ok){
+    try{
+      const r=new SR(); r.lang=L.rec; r.interimResults=false; r.maxAlternatives=1;
+      r.onresult=e=>phHandle(kind, e.results[0][0].transcript);
+      r.onerror=()=>{ if(PH.on && PH.kind===kind){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; } };
+      r.onend=()=>{ if(PH.on && PH.kind===kind && PH.rec===r){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; } };
+      PH.rec=r; r.start();
+    }catch(e){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; }
+  } else { $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; }
+}
+function phMatch(text){
+  const t=text.replace(/[\s,.·'’“”"-]/g,'').toLowerCase(); let hit=-1, score=0;
+  CASES.forEach((c,i)=>{ const n=c.key.filter(k=>t.indexOf(k.toLowerCase())>=0).length; if(n>score){ score=n; hit=i; } });
+  return hit;
+}
+function phYN(text){
+  const t=text.toLowerCase().replace(/\s/g,''), code=phCode();
+  const N=PH_NO[code]||PH_NO.en, Y=PH_YES[code]||PH_YES.en, norm=w=>w.toLowerCase().replace(/\s/g,'');
+  if(N.some(w=>t.indexOf(norm(w))>=0)) return false;
+  if(Y.some(w=>t.indexOf(norm(w))>=0)) return true;
+  return null;
+}
+function phHandle(kind, text, forced){
+  if(!PH.on) return;
+  phStopRec(); phCtl(null);
+  const p=phU(), u=U();
+  phBubble('u', text);
+  if(kind==='book'){
+    const i=phMatch(text);
+    if(i<0){ PH.tries++; const m=PH.tries>=2?p.unk2:p.unk; phBubble('a', m); phState('talk'); phSpeak(m, ()=>phListen('book')); return; }
+    PH.c=CASES[i]; const c=PH.c, V=view(c), tier=eff(c), m=내관; PH.tier=tier;
+    let msg;
+    if(tier===0) msg=p.r0(m);
+    else if(tier===1) msg=p.r1(m, V.okN);
+    else if(tier===3) msg=p.r3(m, V.libs.filter(l=>l.s==='busy').length);
+    else msg=p.r2(V.okN||6);
+    const full=p.auth+' '+msg+' '+p.ask;
+    phBubble('a', full); phState('talk'); phSpeak(full, ()=>phListen('yn')); return;
+  }
+  /* kind === 'yn' */
+  const yn=(forced===undefined)?phYN(text):forced;
+  if(yn===null){ phBubble('a', p.askAgain); phState('talk'); phSpeak(p.askAgain, ()=>phListen('yn')); return; }
+  const t=PH.tier;
+  const msg= yn ? (t===0?p.y0 : t===1?p.y1(내관) : t===3?p.y3(내관) : p.y2) : p.no;
+  phBubble('a', msg); phState('talk');
+  phSpeak(msg, ()=>{
+    if(!PH.on) return;
+    if(yn){ const did = t===0?p.did0 : t===2?u.didV2 : u.didV; phBubble('d', `<b>${u.didT}</b>${did}`); }
+    phBubble('a', p.bye); phSpeak(p.bye, phEnd);
+  });
+}
+function phEnd(){
+  phStopRec(); PH.on=false; clearInterval(PH.timer); phState('end'); phCtl(null);
+  const p=phU(); $('pcState').textContent=p.ended; $('pcHang').textContent=p.again; $('pcHang').classList.add('re');
+}
+function phStart(){
+  $('psheet').classList.remove('on');
+  const p=phU(), code=phCode();
+  $('pcall').classList.add('on'); $('pcLog').innerHTML='';
+  PH.on=true; PH.tries=0; PH.c=null; PH.kind=null; PH.tier=1;
+  $('pcNum').textContent=p.num; $('pcDemo').textContent=p.demo; $('pcState').textContent=p.connecting;
+  $('pcHang').textContent=p.hang; $('pcHang').classList.remove('re');
+  $('pcYes').textContent=p.yes; $('pcNo').textContent=p.noBtn; $('pcIn').placeholder=p.typePh; $('pcGo').textContent=p.send; $('pcIn').value='';
+  const CL=CHIPS_L[code]||CHIPS_L.ko; $('pcChips').innerHTML='';
+  [0,1,2].forEach(i=>{ const b=document.createElement('button'); const q=(CL.c[i]||CL.c[0])[0].replace(/<[^>]+>/g,'').replace(/[“”"]/g,'');
+    b.textContent=q; b.onclick=()=>phHandle('book', q); $('pcChips').appendChild(b); });
+  PH.t0=Date.now(); clearInterval(PH.timer); $('pcTimer').textContent='00:00';
+  PH.timer=setInterval(()=>{ const s=Math.floor((Date.now()-PH.t0)/1000); $('pcTimer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);
+  phBubble('s', p.ring); phState('talk'); phCtl(null);
+  setTimeout(()=>{ if(!PH.on) return; $('pcState').textContent=p.inCall; phBubble('a', p.hi); phSpeak(p.hi, ()=>phListen('book')); }, 1200);
+}
+function phClose(){ phStopRec(); PH.on=false; clearInterval(PH.timer); PH.seq++; stopSay(); $('pcall').classList.remove('on'); }
+$('phonebtn').onclick=()=>$('psheet').classList.add('on');
+$('phStartBtn').onclick=phStart;
+$('pcClose').onclick=phClose;
+$('pcHang').onclick=()=>{ if(PH.on) phEnd(); else phStart(); };
+$('pcYes').onclick=()=>phHandle('yn', phU().yes, true);
+$('pcNo').onclick=()=>phHandle('yn', phU().noBtn, false);
+$('pcGo').onclick=()=>{ const v=$('pcIn').value.trim(); if(v){ $('pcIn').value=''; phHandle(PH.kind||'book', v); } };
+$('pcIn').addEventListener('keydown', e=>{ if(e.key==='Enter') $('pcGo').click(); });
+</script>
 </body>
+
 </html>

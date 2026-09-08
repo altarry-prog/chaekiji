@@ -526,6 +526,12 @@ body.bigmode .bqitems{font-size:15.5px}
 }
 .atools button.on{background:#fff;color:var(--brand-d);border-color:#fff}
 body.bigmode .body{zoom:1.18}
+body.bigmode .pb{font-size:16px}body.bigmode .pb.s{font-size:13px}body.bigmode .pb.d{font-size:14px}
+body.bigmode .pc-num{font-size:18px}body.bigmode .pc-sub{font-size:14px}body.bigmode .pc-status{font-size:14.5px}
+body.bigmode .pc-chips button{font-size:14px;padding:8px 12px}body.bigmode .pc-tin input{font-size:16px}
+body.bigmode .pc-yn button{font-size:17px}body.bigmode .pc-hang{font-size:16px}
+body.bigmode .sheet h3{font-size:21px}body.bigmode .sheet .p{font-size:15.5px}
+body.bigmode .kv.i{font-size:14.5px}body.bigmode .kv.i .v small{font-size:13px}body.bigmode .kv.i .k{width:78px}
 body.bigmode .foot button{font-size:12.5px}
 .axcard{
   background:#fff;border:1.4px dashed #b9c6c2;border-radius:12px;
@@ -768,14 +774,14 @@ body.bigmode .foot button{font-size:12.5px}
   <!-- 전화 한 통 모드 안내 -->
   <div class="sheet" id="psheet">
     <div class="sheet-in">
-      <h3>📞 전화 한 통 모드</h3>
-      <p class="p">스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마칩니다.</p>
-      <div class="kv i"><span class="k">본인 확인</span><span class="v">등록된 번호로 걸었는지 확인<small>이름은 첫 글자만 부르고, 회원번호는 어디에도 나오지 않습니다</small></span></div>
-      <div class="kv i"><span class="k">하는 일</span><span class="v">소장 확인 · 관내 상호대차 신청 · 예약 · 위임 해지<small>무료이고 취소할 수 있는 일만 전화로 대신합니다</small></span></div>
-      <div class="kv i"><span class="k">안 하는 일</span><span class="v">책바다(실비) 신청 · 회원정보 변경 · 결제<small>위험한 일일수록 문을 세게 — 앱(재인증)이나 창구로 안내합니다</small></span></div>
-      <div class="kv i"><span class="k">지금 상태</span><span class="v">대화 흐름은 아래에서 그대로 체험할 수 있습니다<small>실제 전화망 연결은 통신 사업자 연동(AI 콜센터 API 또는 070 회선)이 필요한 운영 단계 과제 · 시연 모델은 전화가 걸리지 않습니다</small></span></div>
+      <h3 id="phsT">📞 전화 한 통 모드</h3>
+      <p class="p" id="phsP">스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마칩니다.</p>
+      <div class="kv i"><span class="k" id="phsK1">본인 확인</span><span class="v"><span id="phsV1">등록된 번호로 걸었는지 확인</span><small id="phsS1">이름은 첫 글자만 부르고, 회원번호는 어디에도 나오지 않습니다</small></span></div>
+      <div class="kv i"><span class="k" id="phsK2">하는 일</span><span class="v"><span id="phsV2">소장 확인 · 관내 상호대차 신청 · 예약 · 위임 해지</span><small id="phsS2">무료이고 취소할 수 있는 일만 전화로 대신합니다</small></span></div>
+      <div class="kv i"><span class="k" id="phsK3">안 하는 일</span><span class="v"><span id="phsV3">책바다(실비) 신청 · 회원정보 변경 · 결제</span><small id="phsS3">위험한 일일수록 문을 세게 — 앱(재인증)이나 창구로 안내합니다</small></span></div>
+      <div class="kv i"><span class="k" id="phsK4">지금 상태</span><span class="v"><span id="phsV4">대화 흐름은 아래에서 그대로 체험할 수 있습니다</span><small id="phsS4">실제 전화망 연결은 통신 사업자 연동(AI 콜센터 API 또는 070 회선)이 필요한 운영 단계 과제 · 시연 모델은 전화가 걸리지 않습니다</small></span></div>
       <button class="cta" id="phStartBtn">통화 흐름 체험하기</button>
-      <button class="cta ghost" onclick="document.getElementById('psheet').classList.remove('on')">닫기</button>
+      <button class="cta ghost" id="phsClose" onclick="document.getElementById('psheet').classList.remove('on')">닫기</button>
     </div>
   </div>
 
@@ -1617,12 +1623,32 @@ const KO_S = {h1:'무슨 책 찾으세요?', h2:'제목이 정확하지 않아�
   ph:'예: 나미야 잡화점', go:'검색', lbl:'눌러서 바로 보기', l1:'듣고 있어요', l2:'편하게 말씀하세요', st:'그만하기'};
 /* 좁은 화면(≤380px)에서는 헤더 단추 4개가 한 줄에 들어오도록 짧은 이름을 쓴다 */
 const LANG_SHORT = {ko:'한국어',en:'EN',zh:'中文',ja:'日本',vi:'VI',th:'ไทย',ru:'RU',mn:'MN',uz:'UZ',id:'ID'};
+/* 헤더 단추 이름 — 10개 언어 (긴 이름 / 좁은 화면용 짧은 이름) */
+const TOOLS = {
+  ko:{big:'큰글자',bigS:'큰글자',tts:'🔊 음성안내',ttsS:'🔊 음성',phone:'📞 전화',phoneS:'📞'},
+  en:{big:'Big text',bigS:'Big',tts:'🔊 Voice',ttsS:'🔊',phone:'📞 Phone',phoneS:'📞'},
+  zh:{big:'大字',bigS:'大字',tts:'🔊 语音',ttsS:'🔊',phone:'📞 电话',phoneS:'📞'},
+  ja:{big:'大きな字',bigS:'大字',tts:'🔊 音声',ttsS:'🔊',phone:'📞 電話',phoneS:'📞'},
+  vi:{big:'Chữ to',bigS:'Chữ to',tts:'🔊 Giọng nói',ttsS:'🔊',phone:'📞 Điện thoại',phoneS:'📞'},
+  th:{big:'ตัวใหญ่',bigS:'ใหญ่',tts:'🔊 เสียง',ttsS:'🔊',phone:'📞 โทร',phoneS:'📞'},
+  ru:{big:'Крупно',bigS:'Aa',tts:'🔊 Голос',ttsS:'🔊',phone:'📞 Звонок',phoneS:'📞'},
+  mn:{big:'Том үсэг',bigS:'Том',tts:'🔊 Дуу',ttsS:'🔊',phone:'📞 Утас',phoneS:'📞'},
+  uz:{big:'Katta harf',bigS:'Katta',tts:'🔊 Ovoz',ttsS:'🔊',phone:'📞 Telefon',phoneS:'📞'},
+  id:{big:'Teks besar',bigS:'Besar',tts:'🔊 Suara',ttsS:'🔊',phone:'📞 Telepon',phoneS:'📞'},
+};
 function fitTools(){
   const code = Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko';
-  const narrow = window.innerWidth <= 380;
-  $('langbtn').textContent = '🌏 ' + (narrow ? (LANG_SHORT[code]||code.toUpperCase()) : L.n);
-  $('ttsbtn').textContent = narrow ? '🔊 음성' : '🔊 음성안내';
-  $('phonebtn').textContent = narrow ? '📞' : '📞 전화';
+  const T = TOOLS[code] || TOOLS.ko, row = $('bigbtn').parentElement;
+  const set = short => {
+    $('bigbtn').textContent = short ? T.bigS : T.big;
+    $('ttsbtn').textContent = short ? T.ttsS : T.tts;
+    $('phonebtn').textContent = short ? T.phoneS : T.phone;
+    $('langbtn').textContent = '🌏 ' + (short ? (LANG_SHORT[code]||code.toUpperCase()) : L.n);
+  };
+  const overflow = () => { const bs = [...row.querySelectorAll('button')];
+    return new Set(bs.map(b => b.offsetTop)).size > 1 || row.scrollWidth > row.clientWidth + 1; };
+  set(false);
+  if(window.innerWidth <= 380 || overflow()) set(true);   /* 긴 이름이 한 줄에 안 들어오면 짧은 이름으로 */
 }
 window.addEventListener('resize', fitTools);
 function applyLang(code){
@@ -1668,6 +1694,7 @@ function applyLang(code){
   document.querySelectorAll('#langgrid button').forEach(b =>
     b.classList.toggle('on', b.dataset.lang === code));
   if(TTS_ON) say(L.m ? L.m.sw() : '한국어로 바뀌었습니다.');
+  try{ if(typeof phSheetLang==='function'){ phSheetLang(); if(PH.on) phLabels(); } }catch(e){}
 }
 let cur = 0, rec = null, TTS_ON = false;
 
@@ -1761,22 +1788,49 @@ function showDiag(silent){
 }
 
 /* ── 음성 인식 ── */
+/* 사파리(아이폰) 주의: 이전 인식 세션이 남아 있으면 새 start()가 조용히 실패한다.
+   → 시작 전에 반드시 이전 세션을 끊고(killRec), 첫 허용 직후의 'not-allowed'는 재시도 안내로 처리한다. */
+let PERM_NA = 0;
+function killRec(){
+  if(rec){ const r = rec; rec = null;
+    try{ r.onstart = r.onresult = r.onerror = r.onend = null; }catch(e){}
+    try{ r.abort(); }catch(e){ try{ r.stop(); }catch(e2){} }
+  }
+  $('micbtn').classList.remove('live');
+}
+function micNote(html, info){
+  const box = $('micerr'); box.innerHTML = html; box.classList.toggle('info', !!info);
+  box.classList.add('on'); $('s-idle').classList.add('errOn');
+}
 function startVoice(){
   if(!showDiag(true)) return;
+  killRec();
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  rec = new SR();
-  rec.lang = L.rec; rec.interimResults = false; rec.maxAlternatives = 1;
-  rec.onstart = () => { $('micbtn').classList.add('live'); show('s-listen'); };
-  rec.onresult = e => run(e.results[0][0].transcript, true);
-  rec.onerror = e => {
+  const r = new SR(); rec = r;
+  let got = false;
+  r.lang = L.rec; r.interimResults = false; r.maxAlternatives = 1;
+  r.onstart = () => { if(rec !== r) return; $('micbtn').classList.add('live'); show('s-listen'); };
+  r.onresult = e => { if(rec !== r) return; got = true; run(e.results[0][0].transcript, true); };
+  r.onerror = e => {
+    if(rec !== r) return; rec = null;
     $('micbtn').classList.remove('live'); show('s-idle');
-    $('micerr').innerHTML = (e.error === 'not-allowed' || e.error === 'service-not-allowed')
-      ? "마이크 사용이 차단되어 있습니다. 주소창의 자물쇠 → 마이크 <b>허용</b> 후 다시 시도해 주세요."
-      : "음성을 인식하지 못했습니다. 아래 예시 버튼을 눌러 보세요.";
-    $('micerr').classList.add('on'); $('s-idle').classList.add('errOn');
+    const na = (e.error === 'not-allowed' || e.error === 'service-not-allowed');
+    if(na && PERM_NA++ === 0)
+      micNote("마이크 <b>허용</b>을 눌렀다면 마이크 단추를 <b>한 번 더</b> 눌러 주세요. (처음 한 번은 허용 창 때문에 인식이 시작되지 않을 수 있어요)", true);
+    else if(na)
+      micNote("마이크 사용이 차단되어 있습니다. 아이폰: 주소창 <b>ㅏA → 웹사이트 설정 → 마이크 허용</b> / 안드로이드: 주소창 <b>자물쇠 → 권한 → 마이크</b> 허용 후 다시 눌러 주세요.");
+    else if(e.error === 'no-speech' || e.error === 'aborted')
+      micNote("소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.", true);
+    else
+      micNote("음성을 인식하지 못했습니다. 아래 예시 버튼을 눌러 보세요.");
   };
-  rec.onend = () => $('micbtn').classList.remove('live');
-  try{ rec.start(); }catch(err){}
+  r.onend = () => {
+    if(rec !== r) return; rec = null;
+    $('micbtn').classList.remove('live');
+    if(!got && $('s-listen').classList.contains('on')){ show('s-idle'); micNote("소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.", true); }
+  };
+  const go = () => { try{ r.start(); return true; }catch(err){ return false; } };
+  if(!go()){ setTimeout(() => { if(rec === r && !go()){ rec = null; micNote("마이크를 시작하지 못했어요. 한 번 더 눌러 주세요.", true); } }, 180); }
 }
 
 /* ── 처리 흐름 ── */
@@ -1788,6 +1842,14 @@ function run(text, live){
       const n = c.key.filter(k => t.indexOf(k.toLowerCase()) >= 0).length;
       if(n > score){ score = n; hit = i; }
     });
+    if(score === 0){
+      const code0 = Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko';
+      const P0 = (typeof PHONE !== 'undefined' && PHONE[code0]) ? PHONE[code0] : null;
+      const msg = P0 ? P0.unk2 : '찾지 못했어요. 예를 들어 나미야 잡화점의 기적, 이렇게 말씀해 주세요.';
+      const esc = x => String(x).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+      show('s-idle'); micNote(`“${esc(text)}” — ${esc(msg)}`, true); if(TTS_ON) say(msg);
+      return;
+    }
     cur = hit;
   }
   const c = CASES[cur], u = U();
@@ -2183,7 +2245,7 @@ function bqRun(now, ill, sea){
 }
 
 function reset(){
-  stopSay(); SCENE++;
+  stopSay(); SCENE++; killRec();
   $('micerr').classList.remove('on'); $('s-idle').classList.remove('errOn');
   $('tinput').value = '';
   show('s-idle');
@@ -2299,7 +2361,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 })();
 
 showDiag(); fitTools();
-$('stopbtn').onclick = () => { if(rec) rec.stop(); show('s-idle'); };
+$('stopbtn').onclick = () => { killRec(); show('s-idle'); };
 document.querySelectorAll('.chip').forEach(b => {
   b.onclick = () => { cur = +b.dataset.case; run(null, false); };
 });
@@ -2310,6 +2372,69 @@ $('tinput').addEventListener('keydown', e => { if(e.key === 'Enter') $('tgo').cl
 /* ══════════ 전화 한 통 모드 — 통화 흐름 시연 (v1.3) ══════════
    진짜 전화가 아니라, 전화로 걸었을 때의 대화를 목소리만으로 끝까지 재현한다.
    화면은 통화 기록(자막)일 뿐이며, 판정·분기는 앱과 같은 view()/eff()를 그대로 쓴다. */
+/* 전화 한 통 모드 안내 시트 — 10개 언어 */
+const PSHEET={
+ko:{t:'📞 전화 한 통 모드',p:'스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마칩니다.',
+ r:[['본인 확인','등록된 번호로 걸었는지 확인','이름은 첫 글자만 부르고, 회원번호는 어디에도 나오지 않습니다'],
+    ['하는 일','소장 확인 · 관내 상호대차 신청 · 예약 · 위임 해지','무료이고 취소할 수 있는 일만 전화로 대신합니다'],
+    ['안 하는 일','책바다(실비) 신청 · 회원정보 변경 · 결제','위험한 일일수록 문을 세게 — 앱(재인증)이나 창구로 안내합니다'],
+    ['지금 상태','대화 흐름은 아래에서 그대로 체험할 수 있습니다','실제 전화망 연결은 통신 사업자 연동(AI 콜센터 API 또는 070 회선)이 필요한 운영 단계 과제 · 시연 모델은 전화가 걸리지 않습니다']],
+ go:'통화 흐름 체험하기',close:'닫기'},
+en:{t:'📞 One-call mode',p:'An entrance for people who find smartphones or websites hard to use. Call the library’s main number and the same Chaekiji guides you by voice alone — all the way to an interlibrary loan request.',
+ r:[['Identity','Checks that you called from a registered number','Only the first letter of your name is spoken; your member ID never appears'],
+    ['What it does','Checks holdings · requests interlibrary loan · reserves · cancels a mandate','Only free, cancellable actions are done by phone'],
+    ['Never by phone','Chaekbada (paid) requests · changing member info · payments','The riskier the action, the tighter the door — you are guided to the app (re-authentication) or the desk'],
+    ['Current status','You can try the conversation flow below as it is','Connecting to the real phone network needs a carrier integration (AI call-center API or a 070 line) — an operations-stage task. This demo does not place calls']],
+ go:'Try the call flow',close:'Close'},
+zh:{t:'📞 一通电话模式',p:'为不便使用智能手机或网站的人准备的入口。拨打图书馆代表号码，同一个책이지仅凭语音为您引导，直至完成馆际互借申请。',
+ r:[['身份确认','确认是否从已登记的号码拨打','只念姓名的第一个字，会员编号不会出现在任何地方'],
+    ['能做的事','馆藏确认 · 馆际互借申请 · 预约 · 解除委托','只代办免费且可取消的事项'],
+    ['不做的事','책바다（实费）申请 · 修改会员信息 · 付款','越危险的操作门锁越紧 — 引导至应用（重新认证）或柜台'],
+    ['当前状态','可在下方直接体验对话流程','接入真实电话网需要与通信运营商对接（AI呼叫中心API或070线路），属于运营阶段课题 · 演示模型不会真正拨号']],
+ go:'体验通话流程',close:'关闭'},
+ja:{t:'📞 電話一本モード',p:'スマートフォンやホームページの操作が難しい方のための入口です。図書館の代表番号に電話すると、同じ책이지が声だけで案内し、館内相互貸借の申請まで済ませます。',
+ r:[['本人確認','登録された番号からの発信かを確認','名前は頭文字だけを呼び、会員番号はどこにも出ません'],
+    ['できること','所蔵確認 · 館内相互貸借の申請 · 予約 · 委任の解除','無料で取り消せることだけを電話で代行します'],
+    ['しないこと','책바다（実費）申請 · 会員情報の変更 · 決済','危険なことほど扉を固く — アプリ（再認証）や窓口へ案内します'],
+    ['現在の状態','会話の流れは下でそのまま体験できます','実際の電話網への接続は通信事業者との連携（AIコールセンターAPIまたは070回線）が必要な運用段階の課題 · デモでは電話はかかりません']],
+ go:'通話の流れを体験',close:'閉じる'},
+vi:{t:'📞 Chế độ một cuộc gọi',p:'Lối vào dành cho người khó dùng điện thoại thông minh hoặc trang web. Gọi đến số đại diện của thư viện, chính Chaekiji sẽ hướng dẫn bằng giọng nói và hoàn tất đăng ký mượn liên thư viện.',
+ r:[['Xác minh','Kiểm tra bạn gọi từ số đã đăng ký','Chỉ đọc chữ cái đầu của tên; mã hội viên không xuất hiện ở đâu cả'],
+    ['Việc làm được','Kiểm tra sách · đăng ký mượn liên thư viện · đặt trước · hủy ủy quyền','Chỉ làm thay những việc miễn phí và có thể hủy'],
+    ['Việc không làm','Đăng ký Chaekbada (có phí) · đổi thông tin hội viên · thanh toán','Việc càng rủi ro, cửa càng chặt — hướng dẫn sang ứng dụng (xác thực lại) hoặc quầy'],
+    ['Trạng thái','Bạn có thể trải nghiệm luồng hội thoại ngay bên dưới','Kết nối mạng điện thoại thật cần tích hợp với nhà mạng (API tổng đài AI hoặc đường 070) — nhiệm vụ giai đoạn vận hành · bản trình diễn không gọi điện thật']],
+ go:'Trải nghiệm cuộc gọi',close:'Đóng'},
+th:{t:'📞 โหมดโทรครั้งเดียว',p:'ทางเข้าสำหรับผู้ที่ใช้สมาร์ตโฟนหรือเว็บไซต์ได้ยาก โทรไปยังเบอร์กลางของห้องสมุด แล้ว Chaekiji ตัวเดียวกันจะแนะนำด้วยเสียงเท่านั้น จนถึงการยื่นขอยืมระหว่างห้องสมุด',
+ r:[['ยืนยันตัวตน','ตรวจว่าโทรจากเบอร์ที่ลงทะเบียนไว้','เรียกชื่อเพียงอักษรแรก และหมายเลขสมาชิกจะไม่ปรากฏที่ใด'],
+    ['สิ่งที่ทำ','ตรวจสอบหนังสือ · ยื่นขอยืมระหว่างห้องสมุด · จอง · ยกเลิกการมอบหมาย','ทำแทนเฉพาะเรื่องที่ฟรีและยกเลิกได้'],
+    ['สิ่งที่ไม่ทำ','ยื่น Chaekbada (มีค่าใช้จ่าย) · แก้ไขข้อมูลสมาชิก · ชำระเงิน','ยิ่งเสี่ยง ประตูยิ่งแน่น — แนะนำไปที่แอป (ยืนยันตัวตนใหม่) หรือเคาน์เตอร์'],
+    ['สถานะปัจจุบัน','ทดลองลำดับการสนทนาได้ด้านล่าง','การเชื่อมต่อเครือข่ายโทรศัพท์จริงต้องเชื่อมกับผู้ให้บริการ (API คอลเซ็นเตอร์ AI หรือสาย 070) — เป็นงานขั้นดำเนินการ · รุ่นสาธิตไม่โทรออกจริง']],
+ go:'ทดลองการสนทนา',close:'ปิด'},
+ru:{t:'📞 Режим одного звонка',p:'Вход для тех, кому трудно пользоваться смартфоном или сайтом. Позвоните по основному номеру библиотеки — тот же Chaekiji проведёт вас голосом и оформит запрос на межбиблиотечный обмен.',
+ r:[['Проверка','Проверяет, что звонок с зарегистрированного номера','Называется только первая буква имени; номер читателя нигде не звучит'],
+    ['Что делает','Проверка наличия · запрос обмена · бронь · отмена поручения','По телефону выполняются только бесплатные и отменяемые действия'],
+    ['Чего не делает','Заявки Chaekbada (платно) · изменение данных · оплата','Чем рискованнее действие, тем крепче дверь — направляем в приложение (повторная проверка) или к стойке'],
+    ['Состояние','Ход разговора можно попробовать ниже','Подключение к реальной телефонной сети требует интеграции с оператором (API AI-колл-центра или линия 070) — задача этапа эксплуатации · демо не звонит']],
+ go:'Попробовать разговор',close:'Закрыть'},
+mn:{t:'📞 Нэг дуудлагын горим',p:'Ухаалаг утас, вэб сайт ашиглахад бэрхшээлтэй хүмүүст зориулсан хаалга. Номын сангийн төв дугаарт залгахад мөн л Chaekiji зөвхөн дуу хоолойгоор чиглүүлж, номын сан хоорондын захиалгыг гүйцээнэ.',
+ r:[['Баталгаажуулалт','Бүртгэлтэй дугаараас залгасан эсэхийг шалгана','Нэрний зөвхөн эхний үсгийг дуудна; гишүүний дугаар хаана ч гарахгүй'],
+    ['Хийдэг зүйл','Ном байгаа эсэх · номын сан хоорондын захиалга · урьдчилсан захиалга · итгэмжлэл цуцлах','Зөвхөн үнэгүй, цуцалж болох зүйлийг утсаар гүйцэтгэнэ'],
+    ['Хийдэггүй зүйл','Chaekbada (төлбөртэй) захиалга · гишүүний мэдээлэл өөрчлөх · төлбөр','Эрсдэлтэй байх тусам хаалга чанга — апп (дахин баталгаажуулалт) эсвэл лангуу руу чиглүүлнэ'],
+    ['Одоогийн байдал','Ярианы урсгалыг доор шууд туршиж болно','Бодит утасны сүлжээнд холбогдоход оператортой холболт (AI дуудлагын төвийн API эсвэл 070 шугам) шаардлагатай — ашиглалтын шатны ажил · үзүүлэнгийн загвар залгадаггүй']],
+ go:'Яриаг туршиж үзэх',close:'Хаах'},
+uz:{t:'📞 Bir qo‘ng‘iroq rejimi',p:'Smartfon yoki veb-saytdan foydalanish qiyin bo‘lganlar uchun kirish yo‘li. Kutubxonaning asosiy raqamiga qo‘ng‘iroq qilsangiz, o‘sha Chaekiji faqat ovoz bilan yo‘naltirib, kutubxonalararo buyurtmani yakunlaydi.',
+ r:[['Tekshiruv','Ro‘yxatdan o‘tgan raqamdan qo‘ng‘iroq qilinganini tekshiradi','Ismning faqat birinchi harfi aytiladi; a’zolik raqami hech qayerda chiqmaydi'],
+    ['Nima qiladi','Kitob borligini tekshirish · kutubxonalararo buyurtma · band qilish · vakolatni bekor qilish','Telefon orqali faqat bepul va bekor qilsa bo‘ladigan ishlar bajariladi'],
+    ['Nima qilmaydi','Chaekbada (pullik) buyurtma · a’zo ma’lumotini o‘zgartirish · to‘lov','Xavf qancha katta bo‘lsa, eshik shuncha mahkam — ilova (qayta tasdiqlash) yoki peshtaxtaga yo‘naltiriladi'],
+    ['Hozirgi holat','Suhbat oqimini quyida sinab ko‘rishingiz mumkin','Haqiqiy telefon tarmog‘iga ulanish uchun operator bilan integratsiya (AI call-markaz API yoki 070 liniyasi) kerak — foydalanish bosqichi vazifasi · namoyish qo‘ng‘iroq qilmaydi']],
+ go:'Suhbatni sinab ko‘rish',close:'Yopish'},
+id:{t:'📞 Mode satu panggilan',p:'Pintu masuk bagi yang kesulitan memakai ponsel pintar atau situs web. Hubungi nomor utama perpustakaan, dan Chaekiji yang sama memandu hanya dengan suara sampai permohonan pinjam antarperpustakaan selesai.',
+ r:[['Verifikasi','Memastikan Anda menelepon dari nomor terdaftar','Hanya huruf pertama nama yang disebut; nomor anggota tidak muncul di mana pun'],
+    ['Yang dilakukan','Cek koleksi · permohonan pinjam antarperpustakaan · reservasi · batalkan mandat','Hanya hal yang gratis dan dapat dibatalkan yang dikerjakan lewat telepon'],
+    ['Tidak dilakukan','Permohonan Chaekbada (berbayar) · ubah data anggota · pembayaran','Makin berisiko, makin ketat pintunya — diarahkan ke aplikasi (autentikasi ulang) atau loket'],
+    ['Status saat ini','Alur percakapan bisa dicoba langsung di bawah','Koneksi ke jaringan telepon sungguhan perlu integrasi operator (API pusat panggilan AI atau saluran 070) — tugas tahap operasional · model demo tidak benar-benar menelepon']],
+ go:'Coba alur panggilan',close:'Tutup'}
+};
 const PHONE = {
 ko:{num:'부천시립도서관 책이지',demo:'시연 · 실제 전화는 연결되지 않습니다',ring:'☎ 대표번호로 거는 중…',connecting:'연결 중…',inCall:'통화 중',ended:'통화 종료',
  talking:'책이지가 말하는 중',listening:'듣고 있어요 — 말씀하세요',tapOr:'마이크를 못 쓰면 아래 단추나 입력으로 답하셔도 됩니다',
@@ -2503,17 +2628,19 @@ function phSpeak(t,done){
 function phState(kind){ const p=phU(), el=$('pcStatus'); el.classList.toggle('live', kind==='listen');
   el.textContent = kind==='talk'?p.talking : kind==='listen'?p.listening : kind==='end'?p.ended : ''; }
 function phCtl(kind){ $('pcYN').classList.toggle('on', kind==='yn'); $('pcTin').classList.toggle('on', kind==='book'); $('pcChips').classList.toggle('on', kind==='book'); }
-function phStopRec(){ try{ if(PH.rec){ PH.rec.onresult=null; PH.rec.onerror=null; PH.rec.onend=null; PH.rec.stop(); } }catch(e){} PH.rec=null; }
+function phStopRec(){ const r=PH.rec; PH.rec=null; if(r){ try{ r.onresult=null; r.onerror=null; r.onend=null; }catch(e){} try{ r.abort(); }catch(e){ try{ r.stop(); }catch(e2){} } } }
 function phListen(kind){
   if(!PH.on) return; PH.kind=kind; phState('listen'); phCtl(kind);
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition, d=diagnose();
   if(SR && d.ok){
+    killRec(); phStopRec();
     try{
       const r=new SR(); r.lang=L.rec; r.interimResults=false; r.maxAlternatives=1;
       r.onresult=e=>phHandle(kind, e.results[0][0].transcript);
       r.onerror=()=>{ if(PH.on && PH.kind===kind){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; } };
       r.onend=()=>{ if(PH.on && PH.kind===kind && PH.rec===r){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; } };
-      PH.rec=r; r.start();
+      PH.rec=r;
+      try{ r.start(); }catch(e1){ setTimeout(()=>{ try{ if(PH.rec===r) r.start(); }catch(e2){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; } }, 180); }
     }catch(e){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; }
   } else { $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; }
 }
@@ -2567,9 +2694,7 @@ function phStart(){
   const p=phU(), code=phCode();
   $('pcall').classList.add('on'); $('pcLog').innerHTML='';
   PH.on=true; PH.tries=0; PH.c=null; PH.kind=null; PH.tier=1;
-  $('pcNum').textContent=p.num; $('pcDemo').textContent=p.demo; $('pcState').textContent=p.connecting;
-  $('pcHang').textContent=p.hang; $('pcHang').classList.remove('re');
-  $('pcYes').textContent=p.yes; $('pcNo').textContent=p.noBtn; $('pcIn').placeholder=p.typePh; $('pcGo').textContent=p.send; $('pcIn').value='';
+  phLabels(); $('pcState').textContent=p.connecting; $('pcHang').classList.remove('re'); $('pcIn').value='';
   const CL=CHIPS_L[code]||CHIPS_L.ko; $('pcChips').innerHTML='';
   [0,1,2].forEach(i=>{ const b=document.createElement('button'); const q=(CL.c[i]||CL.c[0])[0].replace(/<[^>]+>/g,'').replace(/[“”"]/g,'');
     b.textContent=q; b.onclick=()=>phHandle('book', q); $('pcChips').appendChild(b); });
@@ -2578,6 +2703,14 @@ function phStart(){
   phBubble('s', p.ring); phState('talk'); phCtl(null);
   setTimeout(()=>{ if(!PH.on) return; $('pcState').textContent=p.inCall; phBubble('a', p.hi); phSpeak(p.hi, ()=>phListen('book')); }, 1200);
 }
+function phLabels(){ const p=phU();
+  $('pcNum').textContent=p.num; $('pcDemo').textContent=p.demo;
+  $('pcHang').textContent=$('pcHang').classList.contains('re')?p.again:p.hang;
+  $('pcYes').textContent=p.yes; $('pcNo').textContent=p.noBtn; $('pcIn').placeholder=p.typePh; $('pcGo').textContent=p.send; $('pcClose').textContent=(PSHEET[phCode()]||PSHEET.ko).close; }
+function phSheetLang(){ const code=phCode(), T=PSHEET[code]||PSHEET.ko;
+  $('phsT').textContent=T.t; $('phsP').textContent=T.p;
+  T.r.forEach((row,i)=>{ $('phsK'+(i+1)).textContent=row[0]; $('phsV'+(i+1)).textContent=row[1]; $('phsS'+(i+1)).textContent=row[2]; });
+  $('phStartBtn').textContent=T.go; $('phsClose').textContent=T.close; }
 function phClose(){ phStopRec(); PH.on=false; clearInterval(PH.timer); PH.seq++; stopSay(); $('pcall').classList.remove('on'); }
 $('phonebtn').onclick=()=>$('psheet').classList.add('on');
 $('phStartBtn').onclick=phStart;
@@ -2587,6 +2720,7 @@ $('pcYes').onclick=()=>phHandle('yn', phU().yes, true);
 $('pcNo').onclick=()=>phHandle('yn', phU().noBtn, false);
 $('pcGo').onclick=()=>{ const v=$('pcIn').value.trim(); if(v){ $('pcIn').value=''; phHandle(PH.kind||'book', v); } };
 $('pcIn').addEventListener('keydown', e=>{ if(e.key==='Enter') $('pcGo').click(); });
+phSheetLang();
 </script>
 </body>
 

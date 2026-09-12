@@ -58,6 +58,23 @@ body{
 .logo svg{width:25px;height:auto;display:block}
 .top h1{margin:0;font-size:16.5px;font-weight:700;letter-spacing:-.4px}
 .top .sub{margin:1px 0 0;font-size:11.5px;opacity:.82}
+.tin .cam{flex:none;padding:0 12px;background:#fff;color:var(--brand);border:1.6px solid var(--line);font-size:17px}
+.libgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:6px 0 4px}
+.libgrid button{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 4px;font-size:12.5px;
+  font-family:inherit;cursor:pointer;font-weight:700;color:var(--ink);word-break:keep-all}
+.libgrid button.on{border-color:var(--brand);background:var(--brand-l);color:var(--brand-d)}
+.scanov{position:fixed;inset:0;background:#000;z-index:60;display:none;flex-direction:column}
+.scanov.on{display:flex}
+.scanov video{flex:1;width:100%;height:100%;object-fit:cover}
+.scanov .sc-top{color:#fff;padding:12px 14px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;
+  gap:10px;background:rgba(0,0,0,.55);position:absolute;top:0;left:0;right:0;z-index:2}
+.scanov .sc-frame{position:absolute;left:10%;right:10%;top:38%;height:22%;border:3px solid #fff;border-radius:12px;
+  box-shadow:0 0 0 2000px rgba(0,0,0,.35);pointer-events:none}
+.scanov .sc-top button{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:9px;
+  padding:6px 11px;font-family:inherit;font-size:13px;flex:none}
+.lbadge{display:inline-block;margin-top:8px;font-size:11.5px;color:var(--brand-d);background:var(--brand-l);border-radius:999px;padding:3px 10px}
+.pknote{font-size:12px;color:var(--ink2);margin:8px 0 0;text-align:center;line-height:1.5}
+.pknote.busy{color:var(--brand-d);font-weight:700}
 .demo-tag{
   position:absolute;top:13px;right:15px;background:var(--demo);color:#fff;
   font-size:9.5px;font-weight:700;letter-spacing:.09em;padding:3px 8px;border-radius:20px;
@@ -556,6 +573,7 @@ body.bigmode .foot button{font-size:12.5px}
   <div class="top">
     <span class="demo-tag">시안</span>
     <div class="atools">
+      <button id="libbtn" aria-label="자주 가는 도서관 바꾸기">📍 상동</button>
       <button id="bigbtn" aria-label="큰글자 모드">큰글자</button>
       <button id="ttsbtn" aria-label="음성 안내">🔊 음성안내</button>
       <button id="langbtn" aria-label="언어 선택">🌏 한국어</button>
@@ -603,6 +621,7 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="tin">
         <input id="tinput" placeholder="예: 나미야 잡화점" autocomplete="off">
         <button id="tgo">검색</button>
+        <button id="scanbtn" class="cam" aria-label="책 바코드로 검색" title="바코드 검색" hidden>📷</button>
       </div>
       <div class="chips">
         <div class="lbl" id="chiplbl">눌러서 바로 보기</div>
@@ -637,6 +656,7 @@ body.bigmode .foot button{font-size:12.5px}
         <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <h3 id="lst1">듣고 있어요</h3>
         <p id="lst2">편하게 말씀하세요</p>
+        <span class="lbadge" id="localbadge" hidden>🔒 기기 안에서 인식</span>
         <button class="stopbtn" id="stopbtn">그만하기</button>
       </div>
     </div>
@@ -761,7 +781,10 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="kv i"><span class="k">탐색</span><span class="v">자주 가는 도서관 → 관내 16개관 → 전국(책바다)</span></div>
       <div class="kv i"><span class="k">판정</span><span class="v">수령관 비치 · 한도 · 연체 · 제외 자료 · 중복 신청<small>규정 7종을 자동 검토하고 사유를 함께 안내</small></span></div>
       <div class="kv i"><span class="k">실행</span><span class="v">MCP 표준 도구 10종<small>도서관리시스템(알파스 등) 단위로 확산</small></span></div>
-      <div class="kv i"><span class="k">접근성</span><span class="v">큰글자 · 음성 안내 · 10개 언어</span></div>
+      <div class="kv i"><span class="k">접근성</span><span class="v">큰글자 · 음성 안내 · 10개 언어 · 📷 바코드<small>말하기 어려우면 책 뒤표지 바코드를 찍어도 됩니다(지원 기기)</small></span></div>
+      <div class="kv i"><span class="k">등록된 기기</span><span class="v">첫 신청 때 지문·얼굴로 이 기기를 등록(패스키) → 무료 신청은 그 뒤 바로<small>위임(책이지 패스) 생성은 생체인증을 한 번 더 · 회원번호는 어디에도 표시하지 않음 · 시연에서는 기기 안에만 저장</small></span></div>
+      <div class="kv i"><span class="k">기기 내 인식</span><span class="v" id="lsrRow">지원 브라우저에서는 음성이 기기 안에서 글자로 바뀝니다<small id="lsrSt">이 기기: 확인 중</small></span></div>
+      <div class="kv i"><span class="k">브라우저 에이전트</span><span class="v">WebMCP — 브라우저 AI가 책이지의 도구(검색·확인·신청)를 직접 호출<small id="webmcpSt">이 브라우저: 미지원 · 신청 도구는 이용자 확인 없이는 거부</small></span></div>
       <div class="kv i"><span class="k">전화 한 통</span><span class="v">대표번호로 같은 상담·신청, 화면 없이<small>헤더의 📞 단추에서 통화 흐름을 체험할 수 있습니다 (전화망 연결은 운영 단계 과제)</small></span></div>
       <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
       <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>2026. 8. 18. 조회 · 대출 상태는 전일 기준</small></span></div>
@@ -804,6 +827,21 @@ body.bigmode .foot button{font-size:12.5px}
   </div>
 
   <!-- 언어 선택 -->
+  <div class="sheet" id="libsheet">
+    <div class="sheet-in">
+      <h3 id="libT">자주 가는 도서관</h3>
+      <p class="p" id="libP">수령 도서관이자 판정의 기준입니다 · 예시 결과도 이 도서관 기준으로 다시 계산됩니다</p>
+      <div class="libgrid" id="libgrid"></div>
+      <button class="cta ghost" id="libClose" onclick="document.getElementById('libsheet').classList.remove('on')">닫기</button>
+    </div>
+  </div>
+
+  <div class="scanov" id="scanov" aria-label="바코드 스캔">
+    <div class="sc-top"><span id="scanT">책 뒤표지 바코드를 네모 안에 맞춰 주세요</span><button id="scanClose">닫기</button></div>
+    <video id="scanvid" playsinline muted></video>
+    <div class="sc-frame"></div>
+  </div>
+
   <div class="sheet" id="lsheet">
     <div class="sheet-in">
       <h3>언어 선택 · Language</h3>
@@ -819,6 +857,7 @@ body.bigmode .foot button{font-size:12.5px}
       <h3 id="sheet-t">상호대차를 신청할까요?</h3>
       <p class="p" id="sheetP">아래 내용으로 접수됩니다</p>
       <div id="sheetkv"></div>
+      <p class="pknote" id="pknote" hidden></p>
       <button class="cta" id="confirm">네, 신청합니다</button>
       <button class="cta ghost" onclick="closeSheet()" id="cancelBtn">취소</button>
     </div>
@@ -834,7 +873,7 @@ body.bigmode .foot button{font-size:12.5px}
    · 예시     : 관외(책바다) 구간 — 실데이터 수집 예정
    ══════════════════════════════════════════════════════════════ */
 const 기준일 = "2026. 8. 18.";
-const 내관   = "상동";
+let 내관   = "상동";   /* v1.5: 「자주 가는 도서관」 선택으로 바뀐다 — 판정·수령·문구가 전부 따라온다 */
 
 /* 부천시립도서관 16곳 — 정보나루 도서관코드
    ※ 타 지자체 적용 시 이 표만 교체하면 그대로 동작 (표준모델 핵심) */
@@ -846,7 +885,7 @@ const LIB = {
 };
 
 const CASES = [
-  { real:true, key:["소년이","소년","온다","humanacts","少年"],
+  { real:true, key:["소년이","소년","온다","humanacts","少年","hankang","xankang","韩江","ハンガン","ハン・ガン","bảnchấtcủangười","bảnchất","ฮันคัง","ฮันกัง","ฮิวแมน","человеческиепоступки","поступки","ханган","хөвгүүнирлээ","хөвгүүн","matamalam"],
     heard:"한강 소년이 온다 찾아주세요",
     fix:"‘한강 소년이 온다’ → <b>소년이 온다</b> 로 이해했습니다",
     book:{t:"소년이 온다", a:"한강 지음", p:"창비", y:"2014", isbn:"9788936434120"},
@@ -854,7 +893,7 @@ const CASES = [
         "상동":"ok","송내":"ok","수주":"ok","심곡":"ok","역곡":"busy","역곡밝은":"busy",
         "오정":"ok","원미":"ok","책마루":"ok","한울빛":"ok"} },
 
-  { real:true, key:["나미야","잡화점","기적","namiya","ナミヤ","雑貨店","解忧杂货店","纳米亚","namiya","tạphóa","นามิยะ","намия","miracle"],
+  { real:true, key:["나미야","잡화점","기적","namiya","ナミヤ","雑貨店","解忧杂货店","纳米亚","tạphóa","นามิยะ","намия","намиа","namia","miracle","мөжизалари","mojizalari","mo'jizalari","keajaiban"],
     heard:"나미야 잡화점의 기적 빌리고 싶어요",
     fix:"‘나미야 잡화점’ → <b>나미야 잡화점의 기적</b> 으로 이해했습니다",
     book:{t:"나미야 잡화점의 기적", a:"히가시노 게이고 지음 · 양윤옥 옮김", p:"현대문학", y:"2012", isbn:"9788972756194"},
@@ -862,7 +901,7 @@ const CASES = [
         "상동":"busy","송내":"ok","수주":"busy","심곡":"ok","역곡":"busy","역곡밝은":"none",
         "오정":"ok","원미":"ok","책마루":"none","한울빛":"ok"} },
 
-  { real:false, tier:2, key:["온실","지구끝","지구","끝의","greenhouse","温室"],
+  { real:false, tier:2, key:["온실","지구끝","지구","끝의","greenhouse","温室","김초엽","kimchoyeop","kimchoyeob","nhàkính","nhakinh","เรือนกระจก","теплиц","оранжере","краюземли","хүлэмж","issiqxona","rumahkaca"],
     heard:"지구 끝에 온실 찾아주세요",
     fix:"‘지구 끝에 온실’ → <b>지구 끝의 온실</b> 로 이해했습니다",
     book:{t:"지구 끝의 온실", a:"김초엽 지음", p:"자이언트북스", y:"2021", isbn:"9791191824001"},
@@ -875,7 +914,7 @@ const CASES = [
       {n:"그 밖 3곳", s:"ok", loc:"전국", note:"대구·광주·대전"}
     ] },
 
-  { real:true, key:["불편한","편의점","convenience","便利店","コンビニ"],
+  { real:true, key:["불편한","편의점","convenience","便利店","コンビニ","tiệnlợi","สะดวกซื้อ","минимаркет","minimarket","김호연"],
     heard:"불편한 편의점 있나요",
     fix:"‘불편한 편의점’ → <b>불편한 편의점</b> (김호연) 으로 이해했습니다",
     book:{t:"불편한 편의점", a:"김호연 지음", p:"나무옆의자", y:"2021", isbn:"9791161571188"},
@@ -883,7 +922,7 @@ const CASES = [
         "상동":"busy","송내":"ok","수주":"ok","심곡":"ok","역곡":"none","역곡밝은":"none",
         "오정":"none","원미":"none","책마루":"none","한울빛":"none"} },
 
-  { real:true, key:["설민석","한국사","대모험"],
+  { real:true, key:["설민석","한국사","대모험","seolminseok","한국사대모험"],
     heard:"설민석 한국사 대모험 있어요",
     fix:"‘설민석 한국사’ → <b>설민석의 한국사 대모험</b> 으로 이해했습니다",
     book:{t:"설민석의 한국사 대모험", a:"설민석 글 · 정현희 그림", p:"휴먼큐브", y:"2017", isbn:"9791195794799"},
@@ -1020,34 +1059,34 @@ const CHIPS_L = {
     ['「<b>『地球の果ての温室』</b>を探して」','③ 富川市内に無し → 全国サービス',null]],
     note:'ほかの本も実データで検索できます'},
   vi:{c:[
-    ['“Tìm giúp tôi <b>소년이 온다</b> của Han Kang”','① Có tại TV Sangdong → dùng ngay','dữ liệu thực'],
+    ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','① Có tại TV Sangdong → dùng ngay','dữ liệu thực'],
     ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','② Sangdong đã cho mượn → mượn trong Bucheon','dữ liệu thực'],
-    ['“Tìm giúp tôi <b>지구 끝의 온실</b>”','③ Không có ở Bucheon → toàn quốc',null]],
+    ['“Tìm giúp tôi <b>Nhà kính ở tận cùng Trái Đất</b>”','③ Không có ở Bucheon → toàn quốc',null]],
     note:'Các sách khác cũng tìm được bằng dữ liệu thực'},
   th:{c:[
-    ['“ช่วยหา <b>소년이 온다</b> ของฮันคัง”','① มีที่ห้องสมุดซังดง → ใช้ได้เลย','ข้อมูลจริง'],
+    ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','① มีที่ห้องสมุดซังดง → ใช้ได้เลย','ข้อมูลจริง'],
     ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','② ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน','ข้อมูลจริง'],
-    ['“ช่วยหา <b>지구 끝의 온실</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null]],
+    ['“ช่วยหา <b>เรือนกระจกที่สุดขอบโลก</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null]],
     note:'เล่มอื่น ๆ ก็ค้นหาด้วยข้อมูลจริงได้'},
   ru:{c:[
-    ['«Найди <b>Human Acts</b> Хан Ган»','① Есть в библиотеке Сандон → сразу читать','реальные данные'],
+    ['«Найди <b>Человеческие поступки</b> Хан Ган»','① Есть в библиотеке Сандон → сразу читать','реальные данные'],
     ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','② В Сандоне выдана → обмен внутри Пучхона','реальные данные'],
-    ['«Найди <b>지구 끝의 온실</b>»','③ Нет в Пучхоне → по всей стране',null]],
+    ['«Найди <b>Теплицу на краю Земли</b>»','③ Нет в Пучхоне → по всей стране',null]],
     note:'Другие книги тоже ищутся по реальным данным'},
   mn:{c:[
-    ['“Хан Ганы <b>소년이 온다</b>-г олж өгөөч”','① Сандон номын санд байгаа → шууд ашиглах','бодит өгөгдөл'],
+    ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','① Сандон номын санд байгаа → шууд ашиглах','бодит өгөгдөл'],
     ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','② Сандонд зээлэгдсэн → Бүчон доторх солилцоо','бодит өгөгдөл'],
-    ['“<b>지구 끝의 온실</b>-г олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null]],
+    ['“<b>Дэлхийн захын хүлэмж</b>-ийг олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null]],
     note:'Бусад номыг ч бодит өгөгдлөөр хайж болно'},
   uz:{c:[
-    ['“Han Kangning <b>소년이 온다</b> kitobini toping”','① Sangdon kutubxonasida bor → darhol foydalaning','haqiqiy ma\'lumot'],
+    ['“Han Kangning <b>Human Acts</b> kitobini toping”','① Sangdon kutubxonasida bor → darhol foydalaning','haqiqiy ma\'lumot'],
     ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','② Sangdonda band → Bucheon ichida almashish','haqiqiy ma\'lumot'],
-    ['“<b>지구 끝의 온실</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null]],
+    ['“<b>Yer chekkasidagi issiqxona</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null]],
     note:'Boshqa kitoblar ham haqiqiy ma\'lumot bilan topiladi'},
   id:{c:[
-    ['“Carikan <b>Human Acts</b> karya Han Kang”','① Ada di Perpustakaan Sangdong → langsung pakai','data nyata'],
+    ['“Carikan <b>Mata Malam</b> karya Han Kang”','① Ada di Perpustakaan Sangdong → langsung pakai','data nyata'],
     ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','② Dipinjam di Sangdong → pinjam antar-cabang Bucheon','data nyata'],
-    ['“Carikan <b>지구 끝의 온실</b>”','③ Tidak ada di Bucheon → seluruh negeri',null]],
+    ['“Carikan <b>Rumah Kaca di Ujung Bumi</b>”','③ Tidak ada di Bucheon → seluruh negeri',null]],
     note:'Buku lain juga bisa dicari dengan data nyata'},
 };
 
@@ -1302,7 +1341,7 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  kBook:'도서',kMode:'방식',kFrom:'대출 도서관',kKeep:'보관 도서관',kTo:'수령 도서관',kTime:'예상 소요',
  kRecv:'수령 방법',recvV:m=>`${m}도서관 방문`,recvS:'거동불편·장애 이용자는 책나래 우편 수령 선택 (확장 설계)',
  kPath:'처리 경로',pathV:'도서관리시스템 커넥터(MCP)',pathS:'동일 시스템(알파스 등) 사용 도서관은 커넥터 재사용',
- kUser:'신청자',user:'홍○○ (회원번호 ****1234)',yes:'네, 신청합니다',no:'취소',
+ kUser:'신청자',user:'홍○○ · 등록된 기기',yes:'네, 신청합니다',no:'취소',
  dT:'신청이 접수됐습니다',
  d0:l=>`<b>${l}</b> 대출대에 보관 요청했습니다.<br>오늘 중 방문하시면 바로 받으실 수 있습니다.`,
  d1:(md,l,m)=>`<b>${md}</b>으로 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
@@ -1336,7 +1375,7 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  kBook:'Book',kMode:'Method',kFrom:'Lending library',kKeep:'Holding library',kTo:'Pickup library',kTime:'Estimated time',
  kRecv:'Pickup',recvV:m=>`Visit ${m} Library`,recvS:'Chaeknarae mail delivery available for users with disabilities (extended)',
  kPath:'Processing path',pathV:'Library-system connector (MCP)',pathS:'Reusable by any library on the same system',
- kUser:'Applicant',user:'Hong ○○ (member ****1234)',yes:'Yes, request it',no:'Cancel',
+ kUser:'Applicant',user:'Hong ○○ · registered device',yes:'Yes, request it',no:'Cancel',
  dT:'Request submitted',
  d0:l=>`We asked <b>${l}</b> to hold it at the desk.<br>Visit today and pick it up.`,
  d1:(md,l,m)=>`Requested via <b>${md}</b>.<br>The item is moving from <b>${l}</b> to <b>${m} Library</b>.<br>We'll text you when it arrives.`,
@@ -1370,7 +1409,7 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  kBook:'图书',kMode:'方式',kFrom:'出借馆',kKeep:'馆藏馆',kTo:'取书馆',kTime:'预计时间',
  kRecv:'取书方式',recvV:m=>`到${m}图书馆自取`,recvS:'残障用户可选择邮寄到家（扩展设计）',
  kPath:'处理路径',pathV:'图书馆系统连接器(MCP)',pathS:'同系统图书馆可复用连接器',
- kUser:'申请人',user:'洪○○（会员 ****1234）',yes:'是，申请',no:'取消',
+ kUser:'申请人',user:'洪○○ · 已登记设备',yes:'是，申请',no:'取消',
  dT:'申请已受理',
  d0:l=>`已请<b>${l}</b>在借书台为您保留。<br>今天到馆即可取书。`,
  d1:(md,l,m)=>`已通过<b>${md}</b>申请。<br>图书正从<b>${l}</b>调往<b>${m}图书馆</b>。<br>到馆后将短信通知您。`,
@@ -1404,7 +1443,7 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  kBook:'図書',kMode:'方式',kFrom:'貸出館',kKeep:'所蔵館',kTo:'受取館',kTime:'所要時間',
  kRecv:'受け取り',recvV:m=>`${m}図書館で受け取り`,recvS:'障がいのある方はチェクナレ郵送を選択可（拡張設計）',
  kPath:'処理経路',pathV:'図書館システムコネクタ(MCP)',pathS:'同一システムの図書館はコネクタを再利用',
- kUser:'申請者',user:'洪○○（会員 ****1234）',yes:'はい、申請します',no:'キャンセル',
+ kUser:'申請者',user:'洪○○ · 登録済み端末',yes:'はい、申請します',no:'キャンセル',
  dT:'申請を受け付けました',
  d0:l=>`<b>${l}</b>の貸出カウンターに取り置きを依頼しました。<br>本日ご来館いただければ受け取れます。`,
  d1:(md,l,m)=>`<b>${md}</b>で申請しました。<br>資料は<b>${l}</b>から<b>${m}図書館</b>へ移動中です。<br>到着したらメッセージでお知らせします。`,
@@ -1438,7 +1477,7 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  kBook:'Sách',kMode:'Hình thức',kFrom:'Thư viện cho mượn',kKeep:'Thư viện giữ sách',kTo:'Nơi nhận',kTime:'Thời gian dự kiến',
  kRecv:'Cách nhận',recvV:m=>`Đến Thư viện ${m}`,recvS:'Người khuyết tật có thể chọn giao tận nhà (mở rộng)',
  kPath:'Đường xử lý',pathV:'Bộ kết nối hệ thống thư viện (MCP)',pathS:'Thư viện cùng hệ thống dùng lại được',
- kUser:'Người đăng ký',user:'Hong ○○ (hội viên ****1234)',yes:'Có, đăng ký',no:'Hủy',
+ kUser:'Người đăng ký',user:'Hong ○○ · thiết bị đã đăng ký',yes:'Có, đăng ký',no:'Hủy',
  dT:'Đã tiếp nhận yêu cầu',
  d0:l=>`Đã nhờ <b>${l}</b> giữ sách tại quầy.<br>Đến trong hôm nay là nhận được.`,
  d1:(md,l,m)=>`Đã đăng ký qua <b>${md}</b>.<br>Sách đang được chuyển từ <b>${l}</b> đến <b>Thư viện ${m}</b>.<br>Khi đến nơi sẽ nhắn tin cho bạn.`,
@@ -1472,7 +1511,7 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  kBook:'หนังสือ',kMode:'วิธี',kFrom:'ห้องสมุดผู้ให้ยืม',kKeep:'ห้องสมุดที่มีเล่ม',kTo:'จุดรับ',kTime:'เวลาโดยประมาณ',
  kRecv:'วิธีรับ',recvV:m=>`ไปรับที่ห้องสมุด${m}`,recvS:'ผู้พิการเลือกส่งถึงบ้านได้ (ส่วนขยาย)',
  kPath:'เส้นทางประมวลผล',pathV:'ตัวเชื่อมระบบห้องสมุด (MCP)',pathS:'ห้องสมุดระบบเดียวกันใช้ซ้ำได้',
- kUser:'ผู้ขอ',user:'ฮง ○○ (สมาชิก ****1234)',yes:'ใช่ ขอยืม',no:'ยกเลิก',
+ kUser:'ผู้ขอ',user:'ฮง ○○ · อุปกรณ์ที่ลงทะเบียน',yes:'ใช่ ขอยืม',no:'ยกเลิก',
  dT:'รับคำขอแล้ว',
  d0:l=>`ขอให้<b>${l}</b>เก็บเล่มไว้ที่เคาน์เตอร์แล้ว<br>ไปรับได้ภายในวันนี้`,
  d1:(md,l,m)=>`ขอผ่าน<b>${md}</b>แล้ว<br>หนังสือกำลังย้ายจาก<b>${l}</b>ไปยัง<b>ห้องสมุด${m}</b><br>ถึงแล้วจะส่งข้อความแจ้ง`,
@@ -1506,7 +1545,7 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  kBook:'Книга',kMode:'Способ',kFrom:'Выдающая библиотека',kKeep:'Библиотека с книгой',kTo:'Пункт получения',kTime:'Срок',
  kRecv:'Получение',recvV:m=>`Визит в библиотеку ${m}`,recvS:'Для людей с инвалидностью — доставка почтой (расширение)',
  kPath:'Маршрут обработки',pathV:'Коннектор библиотечной системы (MCP)',pathS:'Повторно используется библиотеками той же системы',
- kUser:'Заявитель',user:'Хон ○○ (член ****1234)',yes:'Да, заказать',no:'Отмена',
+ kUser:'Заявитель',user:'Хон ○○ · зарегистрированное устройство',yes:'Да, заказать',no:'Отмена',
  dT:'Заявка принята',
  d0:l=>`Попросили <b>${l}</b> отложить книгу на стойке.<br>Заходите сегодня и забирайте.`,
  d1:(md,l,m)=>`Оформлено через <b>${md}</b>.<br>Книга едет из <b>${l}</b> в <b>библиотеку ${m}</b>.<br>Пришлём сообщение о прибытии.`,
@@ -1540,7 +1579,7 @@ mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үнд
  kBook:'Ном',kMode:'Хэлбэр',kFrom:'Зээлдүүлэгч сан',kKeep:'Хадгалагч сан',kTo:'Хүлээн авах газар',kTime:'Хугацаа',
  kRecv:'Хүлээн авах',recvV:m=>`${m} номын санд очих`,recvS:'Хөгжлийн бэрхшээлтэй бол гэрт хүргүүлж болно (өргөтгөл)',
  kPath:'Боловсруулах зам',pathV:'Номын сангийн системийн холбогч (MCP)',pathS:'Ижил системтэй сангууд дахин ашиглана',
- kUser:'Хүсэлт гаргагч',user:'Хон ○○ (гишүүн ****1234)',yes:'Тийм, хүсье',no:'Цуцлах',
+ kUser:'Хүсэлт гаргагч',user:'Хон ○○ · бүртгэлтэй төхөөрөмж',yes:'Тийм, хүсье',no:'Цуцлах',
  dT:'Хүсэлт хүлээн авлаа',
  d0:l=>`<b>${l}</b>-д лангуун дээр хадгалахыг хүслээ.<br>Өнөөдөр очвол авна.`,
  d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээлээ.<br>Ном <b>${l}</b>-аас <b>${m} номын сан</b> руу явж байна.<br>Ирэхэд мессеж илгээнэ.`,
@@ -1574,7 +1613,7 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
  kBook:'Kitob',kMode:'Usul',kFrom:'Beruvchi kutubxona',kKeep:'Saqlovchi kutubxona',kTo:'Olish joyi',kTime:'Taxminiy vaqt',
  kRecv:'Olish usuli',recvV:m=>`${m} kutubxonasiga borish`,recvS:"Nogironligi borlar uyga yetkazishni tanlashi mumkin (kengaytma)",
  kPath:'Ishlov yo\'li',pathV:'Kutubxona tizimi ulagichi (MCP)',pathS:'Bir xil tizimdagi kutubxonalar qayta ishlatadi',
- kUser:'Ariza beruvchi',user:'Hong ○○ (a\'zo ****1234)',yes:'Ha, buyurtma',no:'Bekor',
+ kUser:'Ariza beruvchi',user:'Hong ○○ · ro‘yxatdan o‘tgan qurilma',yes:'Ha, buyurtma',no:'Bekor',
  dT:"So'rov qabul qilindi",
  d0:l=>`<b>${l}</b>dan peshtaxtada saqlashni so'radik.<br>Bugun borib oling.`,
  d1:(md,l,m)=>`<b>${md}</b> orqali buyurtma berildi.<br>Kitob <b>${l}</b>dan <b>${m} kutubxonasi</b>ga ketmoqda.<br>Yetib kelganda xabar yuboramiz.`,
@@ -1608,7 +1647,7 @@ id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama 
  kBook:'Buku',kMode:'Metode',kFrom:'Perpustakaan peminjam',kKeep:'Perpustakaan pemilik',kTo:'Tempat ambil',kTime:'Perkiraan waktu',
  kRecv:'Cara ambil',recvV:m=>`Datang ke Perpustakaan ${m}`,recvS:'Difabel dapat memilih antar ke rumah (lanjutan)',
  kPath:'Jalur pemrosesan',pathV:'Konektor sistem perpustakaan (MCP)',pathS:'Dapat dipakai ulang perpustakaan bersistem sama',
- kUser:'Pemohon',user:'Hong ○○ (anggota ****1234)',yes:'Ya, ajukan',no:'Batal',
+ kUser:'Pemohon',user:'Hong ○○ · perangkat terdaftar',yes:'Ya, ajukan',no:'Batal',
  dT:'Permintaan diterima',
  d0:l=>`Kami minta <b>${l}</b> menyimpannya di meja layanan.<br>Datang hari ini untuk mengambilnya.`,
  d1:(md,l,m)=>`Diajukan via <b>${md}</b>.<br>Buku sedang dipindah dari <b>${l}</b> ke <b>Perpustakaan ${m}</b>.<br>Kami SMS saat tiba.`,
@@ -1644,6 +1683,9 @@ function fitTools(){
     $('ttsbtn').textContent = short ? T.ttsS : T.tts;
     $('phonebtn').textContent = short ? T.phoneS : T.phone;
     $('langbtn').textContent = '🌏 ' + (short ? (LANG_SHORT[code]||code.toUpperCase()) : L.n);
+    /* v1.5: 자주 가는 도서관 — 언어 단추처럼 현재 값을 보여 준다(도서관명은 원어). 좁으면 📍만 */
+    $('libbtn').textContent = short ? '📍' : '📍 ' + 내관;
+    try{ $('libbtn').setAttribute('aria-label', X().lib + ' — ' + 내관); }catch(e){}
   };
   const overflow = () => { const bs = [...row.querySelectorAll('button')];
     return new Set(bs.map(b => b.offsetTop)).size > 1 || row.scrollWidth > row.clientWidth + 1; };
@@ -1669,9 +1711,11 @@ function applyLang(code){
   $('cancelBtn').textContent = u.no;
   const CL = CHIPS_L[code] || CHIPS_L.ko;
   document.querySelectorAll('.chip').forEach((b, i) => {
-    const [q, m, lv] = CL.c[i] || CL.c[0];
+    let [q, m, lv] = CL.c[i] || CL.c[0];
+    if(내관 !== '상동'){ const ci = +b.dataset.case; const tt = U().tier[eff(CASES[ci])]; m = '→ ' + (tt ? tt[1] : ''); }
     b.innerHTML = q + `<span class="m">${m}${lv ? `<em class="lv">${lv}</em>` : ''}</span>`;
   });
+  try{ renderMyLib(); checkLocalSR(); }catch(e){}
   $('chipnote').textContent = CL.note;
   const B_ = U().bq; $('bqE1').textContent = B_.entry; $('bqE2').textContent = B_.entryd;
   /* 설치 안내 배너가 떠 있으면 그 문구도 함께 바꾼다 */
@@ -1695,6 +1739,7 @@ function applyLang(code){
     b.classList.toggle('on', b.dataset.lang === code));
   if(TTS_ON) say(L.m ? L.m.sw() : '한국어로 바뀌었습니다.');
   try{ if(typeof phSheetLang==='function'){ phSheetLang(); if(PH.on) phLabels(); } }catch(e){}
+  try{ const st=$('webmcpSt'); if(st) st.textContent = WEBMCP_ON ? X().mcpOn : X().mcpOff; }catch(e){}
 }
 let cur = 0, rec = null, TTS_ON = false;
 
@@ -1802,47 +1847,48 @@ function micNote(html, info){
   const box = $('micerr'); box.innerHTML = html; box.classList.toggle('info', !!info);
   box.classList.add('on'); $('s-idle').classList.add('errOn');
 }
+let NOSPEECH_N = 0;
 function startVoice(){
   if(!showDiag(true)) return;
   killRec();
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const r = new SR(); rec = r;
   let got = false;
-  r.lang = L.rec; r.interimResults = false; r.maxAlternatives = 1;
-  r.onstart = () => { if(rec !== r) return; $('micbtn').classList.add('live'); show('s-listen'); };
-  r.onresult = e => { if(rec !== r) return; got = true; run(e.results[0][0].transcript, true); };
+  r.lang = L.rec; r.interimResults = false; r.maxAlternatives = 3;   /* v1.5: 대안 3개 — 외국어 제목 오인식 대비 */
+  const local = !!LSR[L.rec]; if(local){ try{ r.processLocally = true; }catch(e){} }
+  r.onstart = () => { if(rec !== r) return; $('micbtn').classList.add('live'); $('localbadge').hidden = !local; show('s-listen'); };
+  r.onresult = e => { if(rec !== r) return; got = true; NOSPEECH_N = 0; run(pickAlt(e), true); };
   r.onerror = e => {
     if(rec !== r) return; rec = null;
     $('micbtn').classList.remove('live'); show('s-idle');
     const na = (e.error === 'not-allowed' || e.error === 'service-not-allowed');
     if(na && PERM_NA++ === 0)
-      micNote("마이크 <b>허용</b>을 눌렀다면 마이크 단추를 <b>한 번 더</b> 눌러 주세요. (처음 한 번은 허용 창 때문에 인식이 시작되지 않을 수 있어요)", true);
+      micNote(MX('micPerm1') || "마이크 <b>허용</b>을 눌렀다면 마이크 단추를 <b>한 번 더</b> 눌러 주세요. (처음 한 번은 허용 창 때문에 인식이 시작되지 않을 수 있어요)", true);
     else if(na)
-      micNote("마이크 사용이 차단되어 있습니다. 아이폰: 주소창 <b>ㅏA → 웹사이트 설정 → 마이크 허용</b> / 안드로이드: 주소창 <b>자물쇠 → 권한 → 마이크</b> 허용 후 다시 눌러 주세요.");
-    else if(e.error === 'no-speech' || e.error === 'aborted')
-      micNote("소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.", true);
-    else
-      micNote("음성을 인식하지 못했습니다. 아래 예시 버튼을 눌러 보세요.");
+      micNote(MX('micPerm2') || "마이크 사용이 차단되어 있습니다. 아이폰: 주소창 <b>ㅏA → 웹사이트 설정 → 마이크 허용</b> / 안드로이드: 주소창 <b>자물쇠 → 권한 → 마이크</b> 허용 후 다시 눌러 주세요.");
+    else if(e.error === 'language-not-supported')
+      micNote((MX('micLang') || "이 기기의 브라우저는 {lang} 음성 인식을 지원하지 않아요. 아래에 글로 입력하거나 다른 언어를 골라 주세요.").replace('{lang}', L.n));
+    else if(e.error === 'no-speech' || e.error === 'aborted'){
+      /* 외국어에서 무음이 두 번 이어지면 기기가 그 언어를 못 알아듣는 경우일 수 있다 — 글자 입력을 함께 안내 */
+      const twice = (L !== LANGS.ko) && (++NOSPEECH_N >= 2);
+      micNote((MX('micNoSound') || "소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.") + (twice ? ' ' + (MX('micLang') || '').replace('{lang}', L.n) : ''), true);
+    } else
+      micNote(MX('micFail') || "음성을 인식하지 못했습니다. 아래 예시 버튼을 눌러 보세요.");
   };
   r.onend = () => {
     if(rec !== r) return; rec = null;
     $('micbtn').classList.remove('live');
-    if(!got && $('s-listen').classList.contains('on')){ show('s-idle'); micNote("소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.", true); }
+    if(!got && $('s-listen').classList.contains('on')){ show('s-idle'); micNote(MX('micNoSound') || "소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.", true); }
   };
   const go = () => { try{ r.start(); return true; }catch(err){ return false; } };
-  if(!go()){ setTimeout(() => { if(rec === r && !go()){ rec = null; micNote("마이크를 시작하지 못했어요. 한 번 더 눌러 주세요.", true); } }, 180); }
+  if(!go()){ setTimeout(() => { if(rec === r && !go()){ rec = null; micNote(MX('micStart') || "마이크를 시작하지 못했어요. 한 번 더 눌러 주세요.", true); } }, 180); }
 }
 
 /* ── 처리 흐름 ── */
 function run(text, live){
   if(live){
-    const t = text.replace(/[\s,.·'’-]/g,'').toLowerCase();
-    let hit = 0, score = 0;
-    CASES.forEach((c,i)=>{
-      const n = c.key.filter(k => t.indexOf(k.toLowerCase()) >= 0).length;
-      if(n > score){ score = n; hit = i; }
-    });
-    if(score === 0){
+    const hit = matchCase(text);
+    if(hit < 0){
       const code0 = Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko';
       const P0 = (typeof PHONE !== 'undefined' && PHONE[code0]) ? PHONE[code0] : null;
       const msg = P0 ? P0.unk2 : '찾지 못했어요. 예를 들어 나미야 잡화점의 기적, 이렇게 말씀해 주세요.';
@@ -2061,15 +2107,29 @@ function openSheet(){
       <span class="vs">${u.pathS}</span></div></div>
     <div class="kv"><div class="k">${u.kUser}</div><div class="v">${u.user}</div></div>`;
   $('sheet').classList.add('on');
-  if(L.m) say(L.m.sh(c.book.t, btName));
-  else if(t === 2) say(`책바다는 별도 가입과 사서 승인이 필요합니다. 신청 방법 안내를 받으시려면 네, 안내 받을게요 단추를 눌러 주세요.`);
-  else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, ${t === 0 ? '보관' : '대출'} 도서관 ${btName}, 수령 도서관 ${u.NM(내관)}, 예상 소요 ${T[5]}.${(t===1||t===3) ? ' 도착 후 3일 안에 찾아가 주세요. 기한 안에 찾아가지 않으면 열흘간 신청이 제한됩니다.' : ''} 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`);
+  ynPrep();
+  const _yn = () => ynListen();
+  if(L.m) say(L.m.sh(c.book.t, btName), _yn);
+  else if(t === 2) say(`책바다는 별도 가입과 사서 승인이 필요합니다. 신청 방법 안내를 받으시려면 네, 안내 받을게요 단추를 눌러 주세요.`, _yn);
+  else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, ${t === 0 ? '보관' : '대출'} 도서관 ${btName}, 수령 도서관 ${u.NM(내관)}, 예상 소요 ${T[5]}.${(t===1||t===3) ? ' 도착 후 3일 안에 찾아가 주세요. 기한 안에 찾아가지 않으면 열흘간 신청이 제한됩니다.' : ''} 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`, _yn);
 }
-function closeSheet(){ $('sheet').classList.remove('on'); }
+function closeSheet(){ $('sheet').classList.remove('on'); ynStop(); }
 
-$('confirm').onclick = () => {
+$('confirm').onclick = async () => {
+  ynStop();
+  const x = X();
+  if(PK.avail && !PK.busy){
+    if(!pkId()){
+      PK.busy = true; pkNote(x.pkReg, true);
+      try{ await pkRegister(); PK.state = 'new'; }catch(e){ PK.state = 'skip'; }
+      PK.busy = false;
+    } else PK.state = 'ok';
+  } else PK.state = 'none';
+  finishRequest();
+};
+function finishRequest(){
   closeSheet();
-  const c = CASES[cur], u = U(), t = eff(c);
+  const c = CASES[cur], u = U(), t = eff(c), x = X();
   const T = u.tier[t], bt = best(c), btName = dispName(u, bt);
   $('doneT').textContent = (t === 2) ? u.dT2 : u.dT;
   $('donetx').innerHTML = (t === 0) ? u.d0(btName) : (t === 2) ? u.d2(내관) : (t === 3) ? u.d3(btName, 내관) : u.d1(T[1], btName, 내관);
@@ -2081,6 +2141,7 @@ $('confirm').onclick = () => {
   $('recap').innerHTML = `
     <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>
     <div class="kv"><div class="k">${u.kTo}</div><div class="v">${u.NM(내관)}</div></div>${tail}
+    <div class="kv"><div class="k">${x.kAuth}</div><div class="v">${PK.state==='new' ? x.pkNew : PK.state==='ok' ? x.pkOk : PK.state==='skip' ? x.pkSkip : x.pkNone}</div></div>
     <div class="did"><b>${u.didT}</b><span>${t===2 ? u.didV2 : u.didV}</span></div>`;
   show('s-done');
   if(L.m) say(L.m.dn());
@@ -2117,7 +2178,10 @@ function passOpen(){
   $('psMand').textContent=P.mand;
   $('psStart').textContent=P.start; $('psNo').textContent=U().no;
   $('psNote1').textContent=U().bq.note;
-  $('psStart').onclick=()=>{ savePref({pass:true}); passCardSync(); passRun(); };
+  $('psStart').onclick=async ()=>{
+    if(PK.avail){ const x=X(); $('psNote1').textContent=x.pkStep;
+      try{ await pkVerify(); }catch(e){ $('psNote1').textContent=x.pkCancel; return; } }
+    savePref({pass:true}); passCardSync(); passRun(); };
   /* 위임 범위는 눈으로만이 아니라 귀로도 고지한다 (기존에는 안내가 없었다) */
   say(P.agT + '. ' + P.sc.join(', ') + '. ' + P.mand);
 }
@@ -2360,6 +2424,191 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   };
 })();
 
+/* ═══════════ v1.5 ═══════════ */
+const X_ = {
+ ko:{micPerm1:"마이크 <b>허용</b>을 눌렀다면 마이크 단추를 <b>한 번 더</b> 눌러 주세요. (처음 한 번은 허용 창 때문에 인식이 시작되지 않을 수 있어요)",micPerm2:"마이크 사용이 차단되어 있습니다. 아이폰: 주소창 <b>ㅏA → 웹사이트 설정 → 마이크 허용</b> / 안드로이드: 주소창 <b>자물쇠 → 권한 → 마이크</b> 허용 후 다시 눌러 주세요.",micNoSound:"소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.",micFail:"음성을 인식하지 못했습니다. 아래 예시 버튼을 눌러 보세요.",micStart:"마이크를 시작하지 못했어요. 한 번 더 눌러 주세요.",micLang:"이 기기의 브라우저는 {lang} 음성 인식을 지원하지 않아요. 아래에 글로 입력하거나 다른 언어를 골라 주세요.",lib:'자주 가는 도서관',libP:'수령 도서관이자 판정의 기준입니다 · 예시 결과도 이 도서관 기준으로 다시 계산됩니다',close:'닫기',
+     scanT:'책 뒤표지 바코드를 네모 안에 맞춰 주세요',scanErr:'카메라를 열 수 없어요. 아래 예시나 직접 입력을 이용해 주세요.',scanNone:'시연 모델에는 예시 5권만 실려 있어요. 아래 예시를 눌러 보세요.',
+     kAuth:'본인 확인',pkReg:'이 기기를 등록할게요 — 지문이나 얼굴로 한 번만 확인해 주세요',pkNew:'등록된 기기 ✓ (방금 등록 · 다음부터 무료 신청은 바로)',pkOk:'등록된 기기 ✓ (무료 신청은 바로)',pkSkip:'기기 등록을 건너뜀 (시연 계속)',pkNone:'등록된 기기 (시연 · 이 브라우저는 생체인증 미지원)',
+     pkStep:'위임을 만들기 전에 지문·얼굴로 한 번 더 확인합니다…',pkCancel:'생체인증이 취소되어 위임을 만들지 않았습니다. 안전 쪽이 기본값이에요.',
+     voice:'🎙 「네」 또는 「아니오」로 답하셔도 됩니다',local:'🔒 기기 안에서 인식',lsrOn:'이 기기: 기기 내 인식 사용 중',lsrOff:'이 기기: 브라우저 제공사 인식(서비스 서버 미전송)',mcpOn:'이 브라우저: 연결됨 — 도구 3종 등록 · 신청 도구는 이용자 확인 없이는 거부',mcpOff:'이 브라우저: 미지원 · 신청 도구는 이용자 확인 없이는 거부'},
+ en:{micPerm1:"If you tapped Allow, please tap the microphone once more (the first try can be interrupted by the permission prompt).",micPerm2:"Microphone access is blocked. iPhone: tap ᴬA in the address bar → Website Settings → Microphone: Allow. Android: tap the lock icon → Permissions → Microphone.",micNoSound:"I didn't hear anything. Tap the microphone and speak right away.",micFail:"I couldn't recognize the speech. Try the examples below.",micStart:"Couldn't start the microphone. Please tap once more.",micLang:"This browser doesn't support {lang} speech recognition on this device. Please type below or choose another language.",lib:'My library',libP:'Pickup library and the basis for rule checks · example results are recalculated for it',close:'Close',
+     scanT:'Fit the barcode on the back cover inside the box',scanErr:'Could not open the camera. Use the examples or type instead.',scanNone:'This demo carries only the 5 example titles. Try one below.',
+     kAuth:'Identity',pkReg:'Registering this device — confirm once with fingerprint or face',pkNew:'Registered device ✓ (just registered · free requests go straight through next time)',pkOk:'Registered device ✓ (free requests go straight through)',pkSkip:'Device registration skipped (demo continues)',pkNone:'Registered device (demo · no biometrics in this browser)',
+     pkStep:'Confirm once more with fingerprint or face before creating the mandate…',pkCancel:'Biometric check cancelled — no mandate was created. Safe side is the default.',
+     voice:'🎙 You can also answer “yes” or “no”',local:'🔒 Recognised on device',lsrOn:'This device: on-device recognition',lsrOff:'This device: browser-vendor recognition (never sent to our server)',mcpOn:'This browser: connected — 3 tools registered · request tool refuses without user confirmation',mcpOff:'This browser: not supported · request tool refuses without user confirmation'},
+ zh:{micPerm1:"如果已点击「允许」，请再点一次麦克风按钮（第一次可能因权限提示而未开始识别）。",micPerm2:"麦克风已被禁止。iPhone：地址栏 ᴬA → 网站设置 → 麦克风 允许；Android：地址栏锁形图标 → 权限 → 麦克风。",micNoSound:"没有听到声音。请点击麦克风后立即说话。",micFail:"无法识别语音。请试试下面的示例。",micStart:"无法启动麦克风，请再点一次。",micLang:"此设备的浏览器不支持{lang}语音识别。请在下方输入文字或选择其他语言。",lib:'常去的图书馆',libP:'取书馆，也是规则判定的基准 · 示例结果会按此馆重新计算',close:'关闭',
+     scanT:'请把封底条形码对准方框',scanErr:'无法打开相机，请使用示例或直接输入。',scanNone:'演示模型只收录了 5 本示例书，请点下面的示例。',
+     kAuth:'本人确认',pkReg:'正在登记此设备 — 请用指纹或人脸确认一次',pkNew:'已登记设备 ✓（刚登记 · 下次免费申请直接通过）',pkOk:'已登记设备 ✓（免费申请直接通过）',pkSkip:'已跳过设备登记（演示继续）',pkNone:'已登记设备（演示 · 此浏览器不支持生物识别）',
+     pkStep:'创建委托前，请再用指纹或人脸确认一次…',pkCancel:'生物识别已取消，未创建委托。安全是默认值。',
+     voice:'🎙 也可以说“是”或“否”',local:'🔒 在设备内识别',lsrOn:'此设备：使用设备内识别',lsrOff:'此设备：浏览器厂商识别（不发送到我们的服务器）',mcpOn:'此浏览器：已连接 — 已注册 3 个工具 · 申请工具无用户确认即拒绝',mcpOff:'此浏览器：不支持 · 申请工具无用户确认即拒绝'},
+ ja:{micPerm1:"「許可」を押した場合は、もう一度マイクボタンを押してください（初回は許可画面のため認識が始まらないことがあります）。",micPerm2:"マイクがブロックされています。iPhone：アドレスバーの ᴬA → Webサイトの設定 → マイクを許可 / Android：鍵アイコン → 権限 → マイク。",micNoSound:"音声が聞き取れませんでした。マイクを押してすぐ話してください。",micFail:"音声を認識できませんでした。下の例をお試しください。",micStart:"マイクを開始できませんでした。もう一度押してください。",micLang:"この端末のブラウザは{lang}の音声認識に対応していません。下に入力するか、別の言語を選んでください。",lib:'いつもの図書館',libP:'受取館であり判定の基準です · 例の結果もこの館基準で再計算されます',close:'閉じる',
+     scanT:'裏表紙のバーコードを枠に合わせてください',scanErr:'カメラを開けません。例や直接入力をご利用ください。',scanNone:'デモには例の5冊だけ入っています。下の例をお試しください。',
+     kAuth:'本人確認',pkReg:'この端末を登録します — 指紋か顔で一度だけ確認してください',pkNew:'登録済み端末 ✓（登録完了 · 次回から無料申請はそのまま）',pkOk:'登録済み端末 ✓（無料申請はそのまま）',pkSkip:'端末登録をスキップ（デモ続行）',pkNone:'登録済み端末（デモ · このブラウザは生体認証非対応）',
+     pkStep:'委任を作る前に指紋・顔でもう一度確認します…',pkCancel:'生体認証がキャンセルされ、委任は作成しませんでした。安全側が既定です。',
+     voice:'🎙 「はい」「いいえ」と答えても構いません',local:'🔒 端末内で認識',lsrOn:'この端末：端末内認識を使用中',lsrOff:'この端末：ブラウザ提供元の認識（当方サーバーへは送信しません）',mcpOn:'このブラウザ：接続済み — ツール3種を登録 · 申請ツールは利用者確認なしでは拒否',mcpOff:'このブラウザ：非対応 · 申請ツールは利用者確認なしでは拒否'},
+ vi:{micPerm1:"Nếu bạn đã bấm Cho phép, hãy bấm nút micro thêm một lần nữa (lần đầu có thể bị gián đoạn bởi hộp thoại quyền).",micPerm2:"Micro đang bị chặn. iPhone: ᴬA trên thanh địa chỉ → Cài đặt trang web → Micro: Cho phép. Android: biểu tượng ổ khóa → Quyền → Micro.",micNoSound:"Tôi không nghe thấy gì. Hãy bấm micro và nói ngay.",micFail:"Không nhận dạng được giọng nói. Hãy thử các ví dụ bên dưới.",micStart:"Không khởi động được micro. Hãy bấm lại một lần nữa.",micLang:"Trình duyệt trên thiết bị này không hỗ trợ nhận dạng giọng nói {lang}. Hãy nhập chữ bên dưới hoặc chọn ngôn ngữ khác.",lib:'Thư viện quen thuộc',libP:'Nơi nhận sách và cơ sở xét quy định · kết quả ví dụ được tính lại theo thư viện này',close:'Đóng',
+     scanT:'Đưa mã vạch ở bìa sau vào trong khung',scanErr:'Không mở được máy ảnh. Hãy dùng ví dụ hoặc nhập tay.',scanNone:'Bản trình diễn chỉ có 5 cuốn ví dụ. Hãy thử ví dụ bên dưới.',
+     kAuth:'Xác minh',pkReg:'Đang đăng ký thiết bị này — xác nhận một lần bằng vân tay hoặc khuôn mặt',pkNew:'Thiết bị đã đăng ký ✓ (vừa đăng ký · lần sau yêu cầu miễn phí đi thẳng)',pkOk:'Thiết bị đã đăng ký ✓ (yêu cầu miễn phí đi thẳng)',pkSkip:'Bỏ qua đăng ký thiết bị (tiếp tục trình diễn)',pkNone:'Thiết bị đã đăng ký (trình diễn · trình duyệt này không hỗ trợ sinh trắc)',
+     pkStep:'Xác nhận thêm một lần bằng vân tay/khuôn mặt trước khi tạo ủy quyền…',pkCancel:'Đã hủy sinh trắc — không tạo ủy quyền. An toàn là mặc định.',
+     voice:'🎙 Bạn cũng có thể trả lời “có” hoặc “không”',local:'🔒 Nhận dạng trên thiết bị',lsrOn:'Thiết bị này: nhận dạng trên thiết bị',lsrOff:'Thiết bị này: nhận dạng của nhà cung cấp trình duyệt (không gửi tới máy chủ của chúng tôi)',mcpOn:'Trình duyệt này: đã kết nối — đăng ký 3 công cụ · công cụ yêu cầu từ chối nếu chưa được xác nhận',mcpOff:'Trình duyệt này: không hỗ trợ · công cụ yêu cầu từ chối nếu chưa được xác nhận'},
+ th:{micPerm1:"ถ้ากด อนุญาต แล้ว โปรดกดปุ่มไมโครโฟนอีกครั้ง (ครั้งแรกอาจไม่เริ่มฟังเพราะหน้าต่างขออนุญาต)",micPerm2:"ไมโครโฟนถูกบล็อก iPhone: ᴬA ในแถบที่อยู่ → การตั้งค่าเว็บไซต์ → ไมโครโฟน อนุญาต / Android: ไอคอนกุญแจ → สิทธิ์ → ไมโครโฟน",micNoSound:"ไม่ได้ยินเสียง โปรดกดไมโครโฟนแล้วพูดทันที",micFail:"ไม่สามารถรู้จำเสียงได้ ลองแตะตัวอย่างด้านล่าง",micStart:"เริ่มไมโครโฟนไม่ได้ โปรดกดอีกครั้ง",micLang:"เบราว์เซอร์ของอุปกรณ์นี้ไม่รองรับการรู้จำเสียงภาษา{lang} โปรดพิมพ์ด้านล่างหรือเลือกภาษาอื่น",lib:'ห้องสมุดประจำ',libP:'เป็นที่รับหนังสือและเกณฑ์การตัดสิน · ผลตัวอย่างจะคำนวณใหม่ตามห้องสมุดนี้',close:'ปิด',
+     scanT:'วางบาร์โค้ดปกหลังให้อยู่ในกรอบ',scanErr:'เปิดกล้องไม่ได้ กรุณาใช้ตัวอย่างหรือพิมพ์เอง',scanNone:'รุ่นสาธิตมีเพียง 5 เล่มตัวอย่าง ลองกดตัวอย่างด้านล่าง',
+     kAuth:'ยืนยันตัวตน',pkReg:'กำลังลงทะเบียนอุปกรณ์นี้ — ยืนยันด้วยลายนิ้วมือหรือใบหน้าหนึ่งครั้ง',pkNew:'อุปกรณ์ที่ลงทะเบียน ✓ (เพิ่งลงทะเบียน · ครั้งต่อไปคำขอฟรีผ่านทันที)',pkOk:'อุปกรณ์ที่ลงทะเบียน ✓ (คำขอฟรีผ่านทันที)',pkSkip:'ข้ามการลงทะเบียนอุปกรณ์ (สาธิตต่อ)',pkNone:'อุปกรณ์ที่ลงทะเบียน (สาธิต · เบราว์เซอร์นี้ไม่รองรับไบโอเมตริก)',
+     pkStep:'ยืนยันด้วยลายนิ้วมือ/ใบหน้าอีกครั้งก่อนสร้างการมอบหมาย…',pkCancel:'ยกเลิกไบโอเมตริก — ไม่ได้สร้างการมอบหมาย ค่าเริ่มต้นคือฝั่งปลอดภัย',
+     voice:'🎙 ตอบว่า “ใช่” หรือ “ไม่” ก็ได้',local:'🔒 รู้จำในอุปกรณ์',lsrOn:'อุปกรณ์นี้: รู้จำเสียงในอุปกรณ์',lsrOff:'อุปกรณ์นี้: รู้จำโดยผู้ให้บริการเบราว์เซอร์ (ไม่ส่งไปเซิร์ฟเวอร์ของเรา)',mcpOn:'เบราว์เซอร์นี้: เชื่อมต่อแล้ว — ลงทะเบียน 3 เครื่องมือ · เครื่องมือยื่นคำขอปฏิเสธหากไม่มีการยืนยัน',mcpOff:'เบราว์เซอร์นี้: ไม่รองรับ · เครื่องมือยื่นคำขอปฏิเสธหากไม่มีการยืนยัน'},
+ ru:{micPerm1:"Если вы нажали «Разрешить», нажмите кнопку микрофона ещё раз (в первый раз запрос разрешения может прервать распознавание).",micPerm2:"Доступ к микрофону заблокирован. iPhone: ᴬA в адресной строке → Настройки сайта → Микрофон: разрешить. Android: значок замка → Разрешения → Микрофон.",micNoSound:"Ничего не слышно. Нажмите микрофон и сразу говорите.",micFail:"Не удалось распознать речь. Попробуйте примеры ниже.",micStart:"Не удалось запустить микрофон. Нажмите ещё раз.",micLang:"Браузер на этом устройстве не поддерживает распознавание речи: {lang}. Введите текст ниже или выберите другой язык.",lib:'Моя библиотека',libP:'Место получения и основа проверки правил · примеры пересчитываются для неё',close:'Закрыть',
+     scanT:'Поместите штрихкод с задней обложки в рамку',scanErr:'Не удалось открыть камеру. Используйте примеры или ввод.',scanNone:'В демо только 5 примеров. Попробуйте пример ниже.',
+     kAuth:'Проверка личности',pkReg:'Регистрируем это устройство — подтвердите один раз отпечатком или лицом',pkNew:'Зарегистрированное устройство ✓ (только что · бесплатные заявки далее без подтверждения)',pkOk:'Зарегистрированное устройство ✓ (бесплатные заявки без подтверждения)',pkSkip:'Регистрация пропущена (демо продолжается)',pkNone:'Зарегистрированное устройство (демо · биометрия в этом браузере недоступна)',
+     pkStep:'Перед созданием поручения подтвердите ещё раз отпечатком или лицом…',pkCancel:'Биометрия отменена — поручение не создано. Безопасный вариант по умолчанию.',
+     voice:'🎙 Можно ответить «да» или «нет»',local:'🔒 Распознано на устройстве',lsrOn:'Это устройство: распознавание на устройстве',lsrOff:'Это устройство: распознавание поставщика браузера (на наш сервер не передаётся)',mcpOn:'Этот браузер: подключён — 3 инструмента · заявка без подтверждения отклоняется',mcpOff:'Этот браузер: не поддерживается · заявка без подтверждения отклоняется'},
+ mn:{micPerm1:"«Зөвшөөрөх» дарсан бол микрофоны товчийг дахин нэг удаа дарна уу (эхний удаад зөвшөөрлийн цонхны улмаас танилт эхлэхгүй байж болно).",micPerm2:"Микрофон хаалттай байна. iPhone: хаягийн мөрний ᴬA → Вэб сайтын тохиргоо → Микрофон зөвшөөрөх / Android: цоожны дүрс → Зөвшөөрөл → Микрофон.",micNoSound:"Дуу сонсогдсонгүй. Микрофоныг дараад шууд ярина уу.",micFail:"Яриаг таньж чадсангүй. Доорх жишээг туршиж үзнэ үү.",micStart:"Микрофоныг эхлүүлж чадсангүй. Дахин дарна уу.",micLang:"Энэ төхөөрөмжийн хөтөч {lang} хэлний ярианы танилтыг дэмждэггүй. Доор бичих эсвэл өөр хэл сонгоно уу.",lib:'Миний номын сан',libP:'Хүлээн авах газар, дүрмийн шалгалтын үндэс · жишээний үр дүн энэ сангаар дахин тооцно',close:'Хаах',
+     scanT:'Арын хавтасны зураасан кодыг хүрээнд тааруулна уу',scanErr:'Камер нээгдсэнгүй. Жишээ эсвэл гараар оруулна уу.',scanNone:'Үзүүлэнд зөвхөн 5 жишээ ном бий. Доорх жишээг үзнэ үү.',
+     kAuth:'Баталгаажуулалт',pkReg:'Энэ төхөөрөмжийг бүртгэж байна — хурууны хээ эсвэл царайгаар нэг удаа батална уу',pkNew:'Бүртгэлтэй төхөөрөмж ✓ (дөнгөж бүртгэсэн · дараагийн үнэгүй захиалга шууд)',pkOk:'Бүртгэлтэй төхөөрөмж ✓ (үнэгүй захиалга шууд)',pkSkip:'Бүртгэлийг алгассан (үзүүлэн үргэлжилнэ)',pkNone:'Бүртгэлтэй төхөөрөмж (үзүүлэн · энэ хөтөч биометр дэмжихгүй)',
+     pkStep:'Итгэмжлэл үүсгэхийн өмнө хурууны хээ/царайгаар дахин батална…',pkCancel:'Биометр цуцлагдсан — итгэмжлэл үүсгээгүй. Аюулгүй тал нь анхдагч.',
+     voice:'🎙 «Тийм» эсвэл «үгүй» гэж хариулж болно',local:'🔒 Төхөөрөмж дотор танина',lsrOn:'Энэ төхөөрөмж: төхөөрөмж доторх таних',lsrOff:'Энэ төхөөрөмж: хөтөч нийлүүлэгчийн таних (манай сервер рүү илгээхгүй)',mcpOn:'Энэ хөтөч: холбогдсон — 3 хэрэгсэл · захиалгын хэрэгсэл баталгаагүй бол татгалзана',mcpOff:'Энэ хөтөч: дэмжихгүй · захиалгын хэрэгсэл баталгаагүй бол татгалзана'},
+ uz:{micPerm1:"«Ruxsat berish»ni bosgan bo'lsangiz, mikrofon tugmasini yana bir marta bosing (birinchi safar ruxsat oynasi tufayli tanib olish boshlanmasligi mumkin).",micPerm2:"Mikrofon bloklangan. iPhone: manzil satridagi ᴬA → Veb-sayt sozlamalari → Mikrofon: ruxsat / Android: qulf belgisi → Ruxsatlar → Mikrofon.",micNoSound:"Ovoz eshitilmadi. Mikrofonni bosib, darhol gapiring.",micFail:"Nutq tanib olinmadi. Quyidagi namunalarni sinab ko'ring.",micStart:"Mikrofonni ishga tushirib bo'lmadi. Yana bir marta bosing.",micLang:"Bu qurilmadagi brauzer {lang} tilida nutqni tanib olishni qo'llab-quvvatlamaydi. Quyida yozing yoki boshqa tilni tanlang.",lib:'Doimiy kutubxonam',libP:'Olish joyi va qoida tekshiruvi asosi · misollar shu kutubxona bo‘yicha qayta hisoblanadi',close:'Yopish',
+     scanT:'Orqa muqovadagi shtrix-kodni ramkaga joylang',scanErr:'Kamera ochilmadi. Misollar yoki qo‘lda kiritishdan foydalaning.',scanNone:'Namoyishda faqat 5 ta misol kitob bor. Quyidagi misolni sinang.',
+     kAuth:'Shaxsni tasdiqlash',pkReg:'Bu qurilma ro‘yxatga olinmoqda — barmoq izi yoki yuz bilan bir marta tasdiqlang',pkNew:'Ro‘yxatdan o‘tgan qurilma ✓ (hozir · keyingi bepul buyurtmalar to‘g‘ridan-to‘g‘ri)',pkOk:'Ro‘yxatdan o‘tgan qurilma ✓ (bepul buyurtmalar to‘g‘ridan-to‘g‘ri)',pkSkip:'Ro‘yxat o‘tkazib yuborildi (namoyish davom etadi)',pkNone:'Ro‘yxatdan o‘tgan qurilma (namoyish · bu brauzerda biometriya yo‘q)',
+     pkStep:'Vakolat yaratishdan oldin barmoq izi/yuz bilan yana bir bor tasdiqlang…',pkCancel:'Biometriya bekor qilindi — vakolat yaratilmadi. Xavfsiz tomon — standart.',
+     voice:'🎙 «Ha» yoki «yo‘q» deb javob bersangiz ham bo‘ladi',local:'🔒 Qurilma ichida tanildi',lsrOn:'Bu qurilma: qurilma ichida tanish',lsrOff:'Bu qurilma: brauzer ta’minotchisi tanishi (bizning serverga yuborilmaydi)',mcpOn:'Bu brauzer: ulangan — 3 vosita · buyurtma vositasi tasdiqsiz rad etiladi',mcpOff:'Bu brauzer: qo‘llab-quvvatlanmaydi · buyurtma vositasi tasdiqsiz rad etiladi'},
+ id:{micPerm1:"Jika sudah menekan Izinkan, ketuk tombol mikrofon sekali lagi (percobaan pertama bisa terputus oleh dialog izin).",micPerm2:"Mikrofon diblokir. iPhone: ᴬA di bilah alamat → Pengaturan Situs Web → Mikrofon: Izinkan. Android: ikon gembok → Izin → Mikrofon.",micNoSound:"Tidak terdengar suara. Ketuk mikrofon lalu langsung bicara.",micFail:"Suara tidak dikenali. Coba contoh di bawah.",micStart:"Mikrofon tidak bisa dimulai. Ketuk sekali lagi.",micLang:"Browser di perangkat ini tidak mendukung pengenalan suara {lang}. Ketik di bawah atau pilih bahasa lain.",lib:'Perpustakaan langganan',libP:'Tempat pengambilan dan dasar pemeriksaan aturan · hasil contoh dihitung ulang untuk perpustakaan ini',close:'Tutup',
+     scanT:'Posisikan barcode sampul belakang di dalam kotak',scanErr:'Kamera tidak bisa dibuka. Gunakan contoh atau ketik.',scanNone:'Demo hanya memuat 5 judul contoh. Coba contoh di bawah.',
+     kAuth:'Verifikasi',pkReg:'Mendaftarkan perangkat ini — konfirmasi sekali dengan sidik jari atau wajah',pkNew:'Perangkat terdaftar ✓ (baru saja · permintaan gratis berikutnya langsung)',pkOk:'Perangkat terdaftar ✓ (permintaan gratis langsung)',pkSkip:'Pendaftaran perangkat dilewati (demo berlanjut)',pkNone:'Perangkat terdaftar (demo · browser ini tanpa biometrik)',
+     pkStep:'Konfirmasi sekali lagi dengan sidik jari/wajah sebelum membuat mandat…',pkCancel:'Biometrik dibatalkan — mandat tidak dibuat. Sisi aman adalah bawaan.',
+     voice:'🎙 Anda juga bisa menjawab “ya” atau “tidak”',local:'🔒 Dikenali di perangkat',lsrOn:'Perangkat ini: pengenalan di perangkat',lsrOff:'Perangkat ini: pengenalan vendor browser (tidak dikirim ke server kami)',mcpOn:'Browser ini: terhubung — 3 alat terdaftar · alat permintaan menolak tanpa konfirmasi pengguna',mcpOff:'Browser ini: tidak didukung · alat permintaan menolak tanpa konfirmasi pengguna'}
+};
+function X(){ return X_[Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko'] || X_.ko; }
+
+/* ── 자주 가는 도서관 ── */
+const LIB_LIST = Object.keys(LIB);
+const _PRIS = {};
+function _dc(v){ if(Array.isArray(v)) return v.map(_dc); if(v && typeof v === 'object') { const o = {}; for(const k in v) o[k] = _dc(v[k]); return o; } return v; }
+function _fill(dst, src, name){ for(const k in src){ const v = src[k];
+  if(typeof v === 'string') dst[k] = v.replace(/상동/g, name);
+  else if(v && typeof v === 'object') _fill(dst[k], v, name);
+  else dst[k] = v; } }
+function relabel(name){ if(!_PRIS.ok){ _PRIS.UI=_dc(UI); _PRIS.CHIPS_L=_dc(CHIPS_L); _PRIS.BQ=_dc(BQ); _PRIS.PASS=_dc(PASS); _PRIS.TIER=_dc(TIER); _PRIS.ok=true; }
+  _fill(UI,_PRIS.UI,name); _fill(CHIPS_L,_PRIS.CHIPS_L,name); _fill(BQ,_PRIS.BQ,name); _fill(PASS,_PRIS.PASS,name); _fill(TIER,_PRIS.TIER,name); }
+function renderMyLib(){ fitTools();   /* 헤더 📍 단추가 현재 도서관을 보여 준다 */
+  document.querySelectorAll('#libgrid button').forEach(b => b.classList.toggle('on', b.dataset.lib === 내관)); }
+function openLibSheet(){ const x = X(); $('libT').textContent = x.lib; $('libP').textContent = x.libP; $('libClose').textContent = x.close; renderMyLib();
+  $('libsheet').classList.add('on'); if(TTS_ON) say(x.lib + '. ' + x.libP); }
+function setMyLib(name){ if(LIB_LIST.indexOf(name) < 0) return; 내관 = name;
+  try{ localStorage.setItem('chaekiji.mylib', name); }catch(e){}
+  relabel(name); reset(); applyLang(Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko'); renderMyLib();
+  const x = X(); $('libT').textContent = x.lib; $('libP').textContent = x.libP; $('libClose').textContent = x.close; }
+(function(){ const g = $('libgrid'); LIB_LIST.forEach(n => { const b = document.createElement('button'); b.dataset.lib = n; b.textContent = n;
+    b.onclick = () => { setMyLib(n); $('libsheet').classList.remove('on'); if(TTS_ON) say(U().NM(n)); }; g.appendChild(b); });
+  $('libbtn').onclick = openLibSheet;
+  let saved = null; try{ saved = localStorage.getItem('chaekiji.mylib'); }catch(e){}
+  if(saved && LIB_LIST.indexOf(saved) >= 0 && saved !== '상동'){ 내관 = saved; relabel(saved);
+    applyLang(Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko'); }   /* 복원한 도서관으로 예시·문구·단추까지 다시 그린다 */
+})();
+
+/* ── 발화 → 사례 매칭 (WebMCP·바코드가 같이 씀) ── */
+function _norm(t){ return String(t).replace(/[\s,.·'’“”"«»「」『』《》()\-]/g,'').toLowerCase(); }
+let _TITLES = null;
+function _titles(){ if(_TITLES) return _TITLES; _TITLES = [];
+  Object.keys(CHIPS_L).forEach(code => { (CHIPS_L[code].c || []).forEach((row, i) => { const m = /<b>(.*?)<\/b>/.exec(row[0]); if(m) _TITLES.push([i, _norm(m[1].replace(/<[^>]+>/g,''))]); }); });
+  return _TITLES; }
+function _lcs(a, b){ /* 최장 공통 부분문자열 길이 — 짧은 문자열 전용 */
+  let best = 0, prev = new Array(b.length + 1).fill(0);
+  for(let i = 1; i <= a.length; i++){ const cur = new Array(b.length + 1).fill(0);
+    for(let j = 1; j <= b.length; j++){ if(a[i-1] === b[j-1]){ cur[j] = prev[j-1] + 1; if(cur[j] > best) best = cur[j]; } }
+    prev = cur; }
+  return best; }
+function matchCase(text){ const t = _norm(text); if(!t) return -1; let hit = -1, score = 0;
+  CASES.forEach((c,i) => { const n = c.key.filter(k => t.indexOf(_norm(k)) >= 0).length; if(n > score){ score = n; hit = i; } });
+  if(hit >= 0) return hit;
+  /* 2차: 어느 언어의 예시 제목이든 — 통째로 들어 있거나 제목의 6할 이상이 이어서 들어 있으면 그 사례로 */
+  let best = -1, bestR = 0;
+  _titles().forEach(([i, title]) => { if(title.length < 4) return; const r = t.indexOf(title) >= 0 ? 1 : _lcs(t, title) / title.length; if(r > bestR){ bestR = r; best = i; } });
+  return bestR >= 0.6 ? best : -1; }
+/* 인식 대안(최대 3개) 가운데 사례와 맞는 것을 고른다 — 외국어 제목·고유명사 오인식 대비 */
+function pickAlt(e){ const alts = []; try{ for(const a of e.results[0]) alts.push(a.transcript); }catch(x){}
+  if(!alts.length) return ''; return alts.find(a => matchCase(a) >= 0) || alts[0]; }
+function MX(k){ try{ const x = X(); if(x && x[k]) return x[k]; }catch(e){} return null; }
+
+/* ── 바코드 검색 (BarcodeDetector — 지원 기기에서만 단추 표시) ── */
+const SCAN = {};
+async function scanInit(){ try{ if(!('BarcodeDetector' in window) || !navigator.mediaDevices) return;
+    const f = await BarcodeDetector.getSupportedFormats(); if(f.indexOf('ean_13') < 0) return; $('scanbtn').hidden = false; }catch(e){} }
+async function scanStart(){ const x = X(), ov = $('scanov'), v = $('scanvid'); $('scanT').textContent = x.scanT; $('scanClose').textContent = x.close; ov.classList.add('on');
+  try{ SCAN.stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); v.srcObject = SCAN.stream; await v.play();
+    SCAN.det = new BarcodeDetector({formats:['ean_13']}); SCAN.timer = setInterval(scanTick, 350); }
+  catch(e){ scanStop(); micNote(x.scanErr, true); } }
+async function scanTick(){ try{ const codes = await SCAN.det.detect($('scanvid')); for(const c of codes){ const raw = String(c.rawValue||'');
+      if(/^97[89]\d{10}$/.test(raw)){ scanStop(); scanHit(raw); return; } } }catch(e){} }
+function scanStop(){ clearInterval(SCAN.timer); SCAN.timer = null; try{ (SCAN.stream && SCAN.stream.getTracks() || []).forEach(t => t.stop()); }catch(e){} SCAN.stream = null;
+  $('scanov').classList.remove('on'); }
+function scanHit(isbn){ const i = CASES.findIndex(c => c.book.isbn === isbn); if(i >= 0){ cur = i; run(null, false); } else micNote(`ISBN ${isbn} — ${X().scanNone}`, true); }
+$('scanbtn').onclick = scanStart; $('scanClose').onclick = scanStop;
+
+/* ── 등록된 기기 (패스키 시연 — 기기 안에만 저장, 서버 없음) ── */
+const PK = {key:'chaekiji.pk', avail:false, busy:false, state:'none'};
+function pkId(){ try{ return localStorage.getItem(PK.key); }catch(e){ return null; } }
+function pkNote(t, busy){ const n = $('pknote'); n.textContent = t || ''; n.hidden = !t; n.classList.toggle('busy', !!busy); }
+function _b64(buf){ return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+function _unb64(s){ s = s.replace(/-/g,'+').replace(/_/g,'/'); const b = atob(s + '==='.slice((s.length + 3) % 4)); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+async function pkRegister(){ const ch = crypto.getRandomValues(new Uint8Array(32)), uid = crypto.getRandomValues(new Uint8Array(16));
+  const rp = {name:'책이지'}; if(location.hostname) rp.id = location.hostname;
+  const cred = await navigator.credentials.create({publicKey:{challenge:ch, rp, user:{id:uid, name:'chaekiji-demo', displayName:'책이지 시연'},
+    pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred'}, timeout:60000, attestation:'none'}});
+  try{ localStorage.setItem(PK.key, _b64(cred.rawId)); }catch(e){} return true; }
+async function pkVerify(){ const id = pkId(); if(!id) return pkRegister(); const ch = crypto.getRandomValues(new Uint8Array(32));
+  const o = {challenge:ch, allowCredentials:[{type:'public-key', id:_unb64(id)}], userVerification:'required', timeout:60000}; if(location.hostname) o.rpId = location.hostname;
+  await navigator.credentials.get({publicKey:o}); return true; }
+(async function(){ try{ PK.avail = !!(window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); }catch(e){ PK.avail = false; } })();
+
+/* ── 확인 시트에서 「네/아니오」 듣기 (음성 안내가 켜져 있을 때) ── */
+const YN = {rec:null};
+function ynPrep(){ const ok = TTS_ON && !!(window.SpeechRecognition||window.webkitSpeechRecognition) && diagnose().ok && !(window.PH && PH.on); pkNote(ok ? X().voice : '', false); YN.ok = ok; }
+function ynStop(){ const r = YN.rec; YN.rec = null; if(r){ try{ r.onresult = r.onerror = r.onend = null; }catch(e){} try{ r.abort(); }catch(e){} } }
+function ynListen(){ if(!YN.ok || !$('sheet').classList.contains('on')) return; ynStop(); killRec();
+  const SR = window.SpeechRecognition||window.webkitSpeechRecognition; const r = new SR(); r.lang = L.rec; r.interimResults = false; r.maxAlternatives = 1;
+  if(LSR[L.rec]){ try{ r.processLocally = true; }catch(e){} }
+  r.onresult = e => { if(YN.rec !== r) return; YN.rec = null; const t = e.results[0][0].transcript; const yn = (typeof phYN === 'function') ? phYN(t) : null;
+    if(yn === true) $('confirm').click(); else if(yn === false) closeSheet(); };
+  r.onerror = () => { if(YN.rec === r) YN.rec = null; }; r.onend = () => { if(YN.rec === r) YN.rec = null; };
+  YN.rec = r; try{ r.start(); }catch(e){ YN.rec = null; } }
+
+/* ── 기기 내 음성 인식 가능 여부 (Web Speech processLocally) ── */
+const LSR = {};
+function checkLocalSR(){ const SR = window.SpeechRecognition||window.webkitSpeechRecognition; const st = $('lsrSt');
+  const ua = navigator.userAgent, androidChrome = /Android/.test(ua) && /Chrome\/(\d+)/.test(ua) && +RegExp.$1 >= 139 && !/Headless/.test(ua);
+  /* 기기 내 인식 API(available/processLocally)는 안드로이드 크롬 139+ 에서만 조회 — 그 밖의 환경은 조회 자체를 하지 않는다 */
+  if(!SR || typeof SR.available !== 'function' || !androidChrome){ if(st) st.textContent = X().lsrOff + ' · ' + L.rec; return; }
+  const lang = L.rec; let done = false; const fin = v => { if(done) return; done = true; LSR[lang] = !!v; if(st) st.textContent = (v ? X().lsrOn : X().lsrOff) + ' · ' + lang; };
+  setTimeout(() => fin(false), 3000);
+  try{ SR.available({langs:[lang], processLocally:true}).then(r => fin(r === 'available')).catch(() => fin(false)); }catch(e){ fin(false); } }
+
+/* ── WebMCP — 브라우저 에이전트에 도구 3종 노출 (지원 브라우저에서만) ── */
+let WEBMCP_ON = false;
+(function(){ const mc = navigator.modelContext || document.modelContext; const st = $('webmcpSt');
+  if(!mc || typeof mc.registerTool !== 'function'){ if(st) st.textContent = X().mcpOff; return; }
+  const txt = o => ({content:[{type:'text', text:JSON.stringify(o)}]});
+  try{
+    mc.registerTool({name:'search_item', description:'책 제목·지은이·한마디로 시연 모델의 도서(예시 5권)를 찾아 ISBN과 서지를 돌려줍니다. 시연 데이터입니다.',
+      inputSchema:{type:'object', properties:{query:{type:'string', description:'책 제목이나 지은이, 또는 한마디'}}, required:['query']},
+      annotations:{readOnlyHint:true},
+      async execute({query}){ const i = matchCase(query||''); if(i < 0) return txt({found:false}); const b = CASES[i].book; return txt({found:true, isbn:b.isbn, title:b.t, author:b.a, publisher:b.p, year:b.y}); }});
+    mc.registerTool({name:'check_availability', description:'ISBN으로 부천시립도서관 16개관의 소장·대출 상태(2026. 8. 18. 실측)와 다음 갈래(바로 이용·관내 상호대차·예약·책바다 안내)를 돌려줍니다.',
+      inputSchema:{type:'object', properties:{isbn:{type:'string'}}, required:['isbn']},
+      annotations:{readOnlyHint:true},
+      async execute({isbn}){ const c = CASES.find(c => c.book.isbn === isbn); if(!c) return txt({found:false}); const V = view(c);
+        return txt({found:true, isbn, home_library:내관, next_step:['visit','ill','chaekbada_guide','reserve'][eff(c)], libraries:V.libs.map(l => ({name:l.raw||l.n, status:l.s}))}); }});
+    mc.registerTool({name:'request_service', description:'관내 상호대차를 신청합니다(시연 — 실제로 접수되지 않음). 이용자가 내용을 확인했을 때만 confirmed=true로 호출하세요.',
+      inputSchema:{type:'object', properties:{isbn:{type:'string'}, pickup_library:{type:'string'}, confirmed:{type:'boolean'}}, required:['isbn','confirmed']},
+      annotations:{consequentialHint:true},
+      async execute(a){ if(!a.confirmed) return txt({accepted:false, reason:'user_confirmation_required'});
+        const c = CASES.find(c => c.book.isbn === a.isbn); if(!c) return txt({accepted:false, reason:'unknown_isbn'});
+        return txt({accepted:true, demo:true, receipt:'ILL-DEMO-' + String(Date.now()).slice(-6), pickup_library:a.pickup_library||내관, note:'시연 모델 — 실제 접수 없음'}); }});
+    WEBMCP_ON = true; if(st) st.textContent = X().mcpOn;
+  }catch(e){ if(st) st.textContent = X().mcpOff; }
+})();
+
+scanInit(); checkLocalSR();
 showDiag(); fitTools();
 $('stopbtn').onclick = () => { killRec(); show('s-idle'); };
 document.querySelectorAll('.chip').forEach(b => {
@@ -2635,8 +2884,8 @@ function phListen(kind){
   if(SR && d.ok){
     killRec(); phStopRec();
     try{
-      const r=new SR(); r.lang=L.rec; r.interimResults=false; r.maxAlternatives=1;
-      r.onresult=e=>phHandle(kind, e.results[0][0].transcript);
+      const r=new SR(); r.lang=L.rec; r.interimResults=false; r.maxAlternatives=3;
+      r.onresult=e=>phHandle(kind, kind==='book' ? pickAlt(e) : e.results[0][0].transcript);
       r.onerror=()=>{ if(PH.on && PH.kind===kind){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; } };
       r.onend=()=>{ if(PH.on && PH.kind===kind && PH.rec===r){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; } };
       PH.rec=r;
@@ -2644,11 +2893,7 @@ function phListen(kind){
     }catch(e){ $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; }
   } else { $('pcStatus').classList.remove('live'); $('pcStatus').textContent=phU().tapOr; }
 }
-function phMatch(text){
-  const t=text.replace(/[\s,.·'’“”"-]/g,'').toLowerCase(); let hit=-1, score=0;
-  CASES.forEach((c,i)=>{ const n=c.key.filter(k=>t.indexOf(k.toLowerCase())>=0).length; if(n>score){ score=n; hit=i; } });
-  return hit;
-}
+function phMatch(text){ return matchCase(text); }
 function phYN(text){
   const t=text.toLowerCase().replace(/\s/g,''), code=phCode();
   const N=PH_NO[code]||PH_NO.en, Y=PH_YES[code]||PH_YES.en, norm=w=>w.toLowerCase().replace(/\s/g,'');

@@ -72,6 +72,7 @@ pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:1
 pre .k{color:var(--code-key)} pre .s{color:var(--code-str)} pre .d{color:var(--code-dim)}
 pre .req{color:var(--code-key);font-weight:600} pre .res{color:var(--code-str);font-weight:600}
 table{border-collapse:collapse;width:100%;font-size:14px;margin:18px 0;line-height:1.6}
+table.std{table-layout:fixed}table.std td{word-break:keep-all;overflow-wrap:anywhere}table.std code{white-space:normal}table.std .chip{white-space:normal;display:inline-block;line-height:1.35}
 th{font-size:12.5px;letter-spacing:.05em;color:var(--ink3);text-align:left;font-weight:600;
   border-bottom:2px solid var(--line);padding:8px 10px}
 td{border-bottom:1px solid var(--line);padding:9px 10px;vertical-align:top}
@@ -95,7 +96,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
 .talk p{margin:11px 0}
 .talk .who{font:600 11.5px "IBM Plex Mono",monospace;color:var(--ink3);letter-spacing:.06em;margin-right:8px}
 .talk .ai .who{color:var(--accent)}
-@media (max-width:620px){ nav.toc ol{columns:1} .stats{grid-template-columns:1fr} h1{font-size:28px} }
+@media (max-width:620px){ nav.toc ol{columns:1} .stats{grid-template-columns:1fr} h1{font-size:28px} table.std{min-width:680px} }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
 
@@ -109,7 +110,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
   어떻게 돌아가며 어떻게 전국으로 번지는지를 끝까지 따라가는 문서.
   이용자의 말 한마디부터 다른 도시의 도입 체크리스트까지 — 챗봇은 답을 주고 실행은 이용자가 하지만,
   이 설계의 에이전트는 판정하고 신청까지 <b>대신 한다</b>.</p>
-  <div class="meta">2026. 9. 6. 개정(참조 서버 v0.3 기준 · 초판 2026. 8. 28.) · 부천시립도서관 상호대차 AI 에이전트 프로젝트 · 내부 검토용 시안</div>
+  <div class="meta">2026. 9. 14. 개정(참조 서버 v0.3 기준 · 08절 표준 접점 10행 · 초판 2026. 8. 28.) · 부천시립도서관 상호대차 AI 에이전트 프로젝트 · 내부 검토용 시안</div>
 </header>
 
 <nav class="toc" aria-label="차례">
@@ -122,7 +123,8 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
 <li><a href="#c5">어디서 돌고, 무엇이 지켜지나</a></li>
 <li><a href="#c6">다른 도시가 가져가는 날</a></li>
 <li><a href="#c7">4단계 확산 로드맵</a></li>
-<li><a href="#c8">자주 나오는 질문</a></li>
+<li><a href="#c8">표준과의 접점 — 이 설계가 올라탈 것들</a></li>
+<li><a href="#c9">자주 나오는 질문</a></li>
 </ol>
 </nav>
 
@@ -486,29 +488,30 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
 <tr><td>AI는 안내만, 실행은 규정 엔진이</td><td>언어모델은 신청을 직접 실행하지 못한다. 규정을 통과한 요청만 도구 계층이 실행한다</td><td><span class="chip done">구현</span></td></tr>
 <tr><td>AI는 회원 식별자를 모른다</td><td>언어모델에는 토큰만 전달되고, 회원번호와의 대응표는 금고 한 곳에만 둔다</td><td><span class="chip done">구현</span></td></tr>
 <tr><td>발화는 입구에서만</td><td>발화는 ISBN으로 정규화된 뒤 안쪽으로 들어가므로 문장이 명령이 될 수 없다</td><td><span class="chip done">구현</span></td></tr>
-<tr><td>목소리는 서버에 남지 않는다</td><td>기기 내장 음성 인식만 쓰고 녹음을 전송하지 않는다</td><td><span class="chip done">구현</span></td></tr>
+<tr><td>목소리는 서비스 서버에 남지 않는다</td><td>브라우저 내장 음성 인식을 쓰며, 서비스 서버로는 음성을 보내거나 저장하지 않는다 (지원 기기에서는 기기 내 처리)</td><td><span class="chip done">구현</span></td></tr>
 <tr><td>규정 한도가 곧 안전장치</td><td>1인 5권 한도가 대량 신청을 구조적으로 막는다</td><td><span class="chip done">구현</span></td></tr>
 <tr><td>취소할 수 있는 일만 대신한다</td><td>상호대차 신청은 취소 가능하다. 결제·회원정보 변경은 에이전트의 범위 밖이다</td><td><span class="chip part">설계</span></td></tr>
-<tr><td>위험한 일일수록 문을 세게 잠근다</td><td>행위의 위험도에 따라 인증 강도를 달리한다 (아래 표)</td><td><span class="chip part">설계</span></td></tr>
+<tr><td>위험한 일일수록 문을 세게 잠근다</td><td>행위의 위험도에 따라 인증 강도를 달리한다 (아래 표) — 시연 웹 v1.5에 「등록된 기기」(패스키) 흐름 구현: 첫 신청 때 기기 등록, 무료 신청은 바로, 위임 생성은 생체인증 한 번 더</td><td><span class="chip part">일부 구현(시연)</span></td></tr>
 <tr><td>모르는 실행은 없다</td><td>모든 대행 실행은 통지·즉시 취소·기록을 동반한다</td><td><span class="chip part">일부 구현</span></td></tr>
 <tr><td>필요한 숫자 두 개만 본다</td><td>대출 이력이 아니라 현재 권수와 연체 여부만 조회한다</td><td><span class="chip part">설계</span></td></tr>
 </table></div>
 
 <p>인증은 새로 만들지 않고 기존 회원 인증 위에 <b>「등록된 기기」</b>를 얹습니다. 비밀번호 대신 기기의 생체인증으로
 본인을 확인하는 패스키(passkey) 방식은 서버에 비밀번호가 남지 않아 유출될 것이 없고, 기기에 묶여 공용 PC에서는
-동작하지 않습니다. 등록된 기기라도 자동으로 열리는 것은 조회와 무료 신청까지이며, 실비가 드는 신청과 위임 생성은
+동작하지 않습니다. 등록된 기기라도 자동으로 열리는 것은 조회와 무료 신청까지이며, 위임 생성처럼 범위가 넓은 행위와 앞으로 대행 범위에 넣을 실비 신청은
 생체인증을 한 번 더 거칩니다. 전화는 등록된 번호 발신 확인 위에서 저위험 행위만 다룹니다.</p>
 
 <div class="tblwrap"><table>
 <tr><th>행위</th><th>전화</th><th>등록된 기기(앱)</th><th>창구</th></tr>
 <tr><td>소장·대출 가능 조회</td><td>가능</td><td>가능</td><td>가능</td></tr>
 <tr><td>관내 상호대차 신청(무료·취소 가능)</td><td>등록 번호 발신 시 가능</td><td>가능</td><td>가능</td></tr>
-<tr><td>책바다 신청 안내(실비)</td><td>불가 → 앱·창구 안내</td><td>재인증 후 가능</td><td>가능</td></tr>
+<tr><td>책바다 신청(실비 · 현 단계는 안내, 대행 시 기준)</td><td>불가 → 앱·창구 안내</td><td>재인증 후 가능</td><td>가능</td></tr>
 <tr><td>구독 위임 생성</td><td>불가</td><td>재인증 후 가능</td><td>가능</td></tr>
 <tr><td>구독 위임 해지</td><td>가능</td><td>가능</td><td>가능</td></tr>
 <tr><td>회원정보 변경·결제</td><td>불가</td><td>불가(범위 밖)</td><td>사람이 처리</td></tr>
 </table></div>
 
+<p>※ 책바다 신청은 현 단계에서 안내에 그치며, 표의 인증 강도는 대행 범위에 넣을 때의 기준입니다.</p>
 <p>해지만 전화로 열어 둔 이유 — <b>안전 쪽으로 가는 문은 항상 가장 쉽게</b>. 사고가 나더라도 피해는
 「책 한 권이 잘못 신청됨」에 그치고, 그마저 통지와 취소로 되돌릴 수 있게 하는 것이 이 원칙들의 목적입니다.
 그리고 사실(소장·규정)은 전부 도구가 답하므로 <b>LLM이 지어낼 자리가 구조적으로 없습니다</b> —
@@ -589,7 +592,28 @@ notify: [<span class="s">sms</span>, <span class="s">voice_call</span>]         
 <p>단계마다 앞 단계의 산출물이 다음 단계의 재료가 됩니다. 그리고 0단계는 이미 끝나
 있습니다 — 이 문서가 가정이 아니라 연장선인 이유입니다.</p>
 
-<h2 id="c8"><span class="no">08</span>자주 나오는 질문</h2>
+<h2 id="c8"><span class="no">08</span>표준과의 접점 — 이 설계가 올라탈 것들 (2026. 9. 10. 추가)</h2>
+
+<p>책이지는 독자 규격을 만들지 않습니다. 도구 계층은 MCP 위에, 그 밖의 층은 이미 있거나 지금 만들어지고 있는 표준 위에 올립니다.
+아래는 설계가 접하는 표준과 그 접점입니다 — 각 행의 상태는 2026년 9월 기준이며, 「설계」는 이 문서의 약속, 「시연」은 시연 웹에 넣은 것입니다.</p>
+
+<div class="tblwrap"><table class="std"><colgroup><col style="width:17%"><col style="width:25%"><col style="width:41%"><col style="width:17%"></colgroup>
+<tr><th>표준·기반</th><th>무엇인가 (쉽게)</th><th>책이지와의 접점</th><th>상태</th></tr>
+<tr><td><b>MCP</b></td><td>AI가 도구를 부르는 공통 규격</td><td>도구 10종 참조 서버 v0.3. 2026. 8. A2A와 함께 하나의 재단(Agentic AI Foundation) 아래로</td><td><span class="chip done">구현</span></td></tr>
+<tr><td><b>WebMCP</b> (navigator.modelContext)</td><td>웹페이지가 자기 기능을 브라우저 안의 AI에게 도구로 내놓는 규격 — 크롬 오리진 트라이얼(2026)</td><td>시연 웹이 지원 브라우저에서 <code>search_item</code>·<code>check_availability</code>·<code>request_service</code> 3종을 등록. 신청 도구는 <code>consequentialHint</code>로 표시하고 이용자 확인 없이는 거부. 도서관 누리집이 이 규격을 쓰면 <b>별도 앱 없이 브라우저 AI가 상호대차를 대신</b>할 수 있다</td><td><span class="chip part">시연(지원 브라우저)</span></td></tr>
+<tr><td><b>A2A</b> (Agent2Agent, v1.0)</td><td>기관이 다른 AI 에이전트끼리 대화하는 규격 — 150여 기관 참여</td><td>도서관 간 상호대차의 다음 형태: 부천의 에이전트가 타 도서관의 에이전트에게 「이 책, 며칠 안에 보내줄 수 있나」를 묻고 조건을 맞춘다. 3단계(규격 이관)에서 검토</td><td><span class="chip plan">설계</span></td></tr>
+<tr><td><b>ISO 18626:2021</b></td><td>도서관 간 상호대차 메시지의 국제 표준(요청·공급관 응답·요청관 응답, XML 웹서비스)</td><td><code>request_service</code>·<code>track_request</code>·<code>cancel_request</code>의 상태 전이를 ISO 18626 메시지에 대응시켜, 커넥터가 표준 메시지를 만들면 시스템 간 호환. 책바다(전국) 연계의 기준 규격 후보</td><td><span class="chip plan">설계</span></td></tr>
+<tr><td><b>패스키(WebAuthn)</b></td><td>비밀번호 대신 기기의 지문·얼굴로 확인 — 정부24·은행 앱 방식</td><td>「등록된 기기」 원칙의 구현체. 시연 웹 v1.5가 기기 안에서만 동작하는 체험을 포함(서버 없음) — 기본은 꺼져 있고 ⓘ 안내에서 켜면 첫 신청 때 등록, 위임 생성 때 재확인</td><td><span class="chip part">시연</span></td></tr>
+<tr><td><b>기기 내 음성 인식</b> (Web Speech <code>processLocally</code>)</td><td>브라우저가 음성을 기기 밖으로 보내지 않고 글자로 바꾸는 선택지 — 안드로이드 크롬 139+</td><td>지원 기기에서 자동 사용, 듣는 화면에 「기기 안에서 인식」 표시. 원칙 4(목소리는 서비스 서버에 남지 않는다)를 한 단계 더 밀어붙인다</td><td><span class="chip part">시연(지원 기기)</span></td></tr>
+<tr><td><b>브라우저 내장 AI</b> (Prompt API)</td><td>브라우저에 들어 있는 작은 언어모델 — 데스크톱 크롬 148 정식, 모바일·한국어는 예정</td><td>발화 해석을 기기 안에서 끝내 발화 자체가 서버로 가지 않게 하는 다음 단계. 지금은 규칙 기반 + 서버 언어모델, 지원이 오면 교체</td><td><span class="chip plan">설계</span></td></tr>
+<tr><td><b>범정부 AI 공통기반</b> (행정안전부, 2026 2단계)</td><td>중앙·지자체가 함께 쓰는 AI 모델·게이트웨이 — 챗봇에서 에이전트로, 기관 간 연결에 MCP 언급</td><td>운영 단계의 언어모델 계층을 지자체가 따로 사지 않고 공통기반의 AI 게이트웨이로 붙인다 — 도구 계층(MCP)은 그대로</td><td><span class="chip plan">설계</span></td></tr>
+<tr><td><b>번역 도구 — DeepL 공식 MCP 서버</b></td><td>DeepL이 공개한 번역 MCP 서버(MIT 라이선스, npx 한 줄로 실행, DeepL API 키 필요 — 무료 플랜 있음). 번역·문서 번역·다듬기·용어집 등 도구 8종, 지원 언어 256개(책이지의 10개 언어 전부 포함)</td><td>번역은 만들지 않는다 — 에이전트 옆에 이 서버를 나란히 붙이면 ① 외국어 발화를 한국어로 옮겨 <code>search_item</code>에 넘기고 ② 판정·안내문을 이용자 언어로 돌려주는 일이 도구 호출 두 번으로 끝난다. 시연 웹(정적 페이지)에는 넣지 않는다 — 인증키가 브라우저에 드러나기 때문. 데스크톱 클라이언트에서 참조 서버와 함께 띄우는 방식으로 시연 가능</td><td><span class="chip plan">검토(데스크톱 시연 가능)</span></td></tr>
+<tr><td><b>모바일 신분증 검증 API</b></td><td>앱에서 승인한 항목만 제공되는 신원 확인</td><td>비대면 회원 확인·책나래 자격(모바일 장애인등록증) 확인 후보 — 문의 중</td><td><span class="chip plan">검토</span></td></tr>
+</table></div>
+
+<p>요점은 하나입니다. <b>도구 계층을 표준(MCP)으로 떼어 두었기 때문에, 위 표의 어느 것이 먼저 오든 갈아 끼우면 된다</b>는 것. 브라우저 AI가 오면 WebMCP로, 도서관끼리 협상하는 날이 오면 A2A로, 국가가 모델을 주면 공통기반으로 — 규정 엔진과 도구 10종은 그대로입니다.</p>
+
+<h2 id="c9"><span class="no">09</span>자주 나오는 질문</h2>
 
 <dl class="faq">
 <dt>Q. MCP 서버를 도입하려면 서버(기계)를 새로 사야 하나?</dt>
@@ -616,7 +640,7 @@ notify: [<span class="s">sms</span>, <span class="s">voice_call</span>]         
 <dt>Q. 전화로도 되나?</dt>
 <dd>설계상 세 입구(앱·전화·창구) 중 하나이고, 시연 웹의 📞 단추에서 통화 흐름을 그대로 체험할 수 있습니다. 실제 전화망 연결은
 통신 사업자 연동이 필요한 본사업 과제입니다(5장). 전화는 등록된 번호 발신 확인 위에서 조회·무료 신청·예약·위임 해지만 다루고,
-실비가 드는 책바다 신청은 앱(재인증)이나 창구로 안내합니다.</dd>
+실비가 드는 책바다 신청은 대행하지 않고 앱이나 창구로 안내합니다.</dd>
 <dt>Q. 정보나루 데이터가 전일 기준이라던데?</dt>
 <dd>완성형에서는 관내 실시간을 알파스 커넥터가 맡고, 정보나루는 광역 조회와 폴백만
 담당합니다(4장). 시제품 단계의 한계가 완성형의 역할 분담으로 바뀝니다.</dd>

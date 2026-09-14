@@ -73,6 +73,7 @@ body{
 .scanov .sc-top button{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:9px;
   padding:6px 11px;font-family:inherit;font-size:13px;flex:none}
 .lbadge{display:inline-block;margin-top:8px;font-size:11.5px;color:var(--brand-d);background:var(--brand-l);border-radius:999px;padding:3px 10px}
+.lbadge[hidden]{display:none}   /* hidden 속성이 display 규칙에 눌리지 않게 — 지원 기기에서만 보인다 */
 .pknote{font-size:12px;color:var(--ink2);margin:8px 0 0;text-align:center;line-height:1.5}
 .pknote.busy{color:var(--brand-d);font-weight:700}
 .demo-tag{
@@ -181,6 +182,7 @@ body.bigmode .bqitems{font-size:15.5px}
   font-size:14.5px;font-family:inherit;outline:none;background:#fbfcfc;
 }
 .tin input:focus{border-color:var(--brand);background:#fff}
+@supports (-webkit-touch-callout:none){.tin input,.pc-tin input{font-size:16px}}   /* iOS: 16px 미만 입력창은 포커스 때 화면이 확대되는 것을 막는다 */
 .tin button{
   border:none;background:var(--brand);color:#fff;border-radius:11px;
   padding:0 17px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;
@@ -369,6 +371,7 @@ body.bigmode .bqitems{font-size:15.5px}
 .kv.i .k{width:64px;font-weight:700;color:var(--brand-d)}
 .kv.i .v{font-weight:400;color:var(--ink)}
 .kv.i .v small{display:block;color:var(--ink3);font-size:11.3px}
+.mini{display:inline-block;margin:4px 6px 0 0;padding:2px 10px;border-radius:999px;border:1.3px solid var(--brand);background:#fff;color:var(--brand-d);font:inherit;font-size:11.3px;font-weight:700;cursor:pointer;vertical-align:middle}.mini.on{background:var(--brand);color:#fff}
 #isheet .sheet-in{max-height:86%;overflow-y:auto}
 /* 화면이 낮은 기기(브라우저 툴바 포함) — 한 화면 유지용 압축 */
 @media (max-height:720px){
@@ -533,6 +536,7 @@ body.bigmode .bqitems{font-size:15.5px}
 .pc-hang.re{background:var(--brand)}
 @media (max-width:380px){.atools{gap:5px;left:14px;right:10px}.atools button{padding:5px 7px;font-size:11.5px}}
 .atools button{white-space:nowrap}.atools{flex-wrap:nowrap}
+.atools.tight{gap:4px}.atools.tight button{padding:5px 6px;font-size:11px}
 
 /* ── 접근 기능 ── */
 .atools{position:absolute;left:18px;right:13px;bottom:9px;display:flex;gap:6px;justify-content:flex-end}
@@ -565,6 +569,13 @@ body.bigmode .foot button{font-size:12.5px}
 }
 .langgrid button.on{border-color:var(--brand);background:var(--brand-l);color:var(--brand-d)}
 .langgrid button small{display:block;font-weight:400;font-size:10.5px;color:var(--ink3);margin-top:1px}
+/* ── 홈 화면에 설치한 판(standalone): 상태 표시줄·홈 표시선 자리를 비워 둔다 ── */
+.top{padding-top:calc(11px + env(safe-area-inset-top, 0px))}
+.demo-tag{top:calc(13px + env(safe-area-inset-top, 0px))}
+.foot button{padding-bottom:calc(9px + env(safe-area-inset-bottom, 0px))}
+.sheet-in{padding-bottom:calc(26px + env(safe-area-inset-bottom, 0px))}
+.pc-top{padding-top:calc(14px + env(safe-area-inset-top, 0px))}
+.scanov{padding-top:env(safe-area-inset-top, 0px)}
 </style>
 </head>
 <body>
@@ -785,6 +796,7 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="kv i"><span class="k">등록된 기기</span><span class="v">첫 신청 때 지문·얼굴로 이 기기를 등록(패스키) → 무료 신청은 그 뒤 바로<small>위임(책이지 패스) 생성은 생체인증을 한 번 더 · 회원번호는 어디에도 표시하지 않음 · 시연에서는 기기 안에만 저장</small></span></div>
       <div class="kv i"><span class="k">기기 내 인식</span><span class="v" id="lsrRow">지원 브라우저에서는 음성이 기기 안에서 글자로 바뀝니다<small id="lsrSt">이 기기: 확인 중</small></span></div>
       <div class="kv i"><span class="k">브라우저 에이전트</span><span class="v">WebMCP — 브라우저 AI가 책이지의 도구(검색·확인·신청)를 직접 호출<small id="webmcpSt">이 브라우저: 미지원 · 신청 도구는 이용자 확인 없이는 거부</small></span></div>
+      <div class="kv i"><span class="k">등록된 기기</span><span class="v">패스키 체험 — 켜면 첫 신청 때 지문·얼굴로 이 기기를 등록하고, 위임을 만들 때 한 번 더 확인합니다(기기 안에서만 · 서버 없음). 기본은 꺼짐<small><button type="button" class="mini" id="pkToggle">켜기</button> <span id="pkDemoSt">지금: 꺼짐 · 신청은 확인 한 번으로 끝납니다</span></small></span></div>
       <div class="kv i"><span class="k">전화 한 통</span><span class="v">대표번호로 같은 상담·신청, 화면 없이<small>헤더의 📞 단추에서 통화 흐름을 체험할 수 있습니다 (전화망 연결은 운영 단계 과제)</small></span></div>
       <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
       <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>2026. 8. 18. 조회 · 대출 상태는 전일 기준</small></span></div>
@@ -1687,10 +1699,16 @@ function fitTools(){
     $('libbtn').textContent = short ? '📍' : '📍 ' + 내관;
     try{ $('libbtn').setAttribute('aria-label', X().lib + ' — ' + 내관); }catch(e){}
   };
-  const overflow = () => { const bs = [...row.querySelectorAll('button')];
-    return new Set(bs.map(b => b.offsetTop)).size > 1 || row.scrollWidth > row.clientWidth + 1; };
-  set(false);
-  if(window.innerWidth <= 380 || overflow()) set(true);   /* 긴 이름이 한 줄에 안 들어오면 짧은 이름으로 */
+  const overflow = () => { const bs = [...row.querySelectorAll('button')].filter(b => !b.hidden);
+    const gap = parseFloat(getComputedStyle(row).columnGap || getComputedStyle(row).gap) || 6;
+    const need = bs.reduce((a, b) => a + b.getBoundingClientRect().width, 0) + gap * (bs.length - 1);
+    return need > row.clientWidth + 0.5 || new Set(bs.map(b => b.offsetTop)).size > 1; };
+  /* 4단계: 긴 이름 → 긴 이름+촘촘히 → 짧은 이름 → 짧은 이름+촘촘히. 항상 기본 상태에서 다시 잰다 */
+  const narrow = window.innerWidth <= 380;
+  row.classList.remove('tight'); set(false); if(!narrow && !overflow()) return;
+  row.classList.add('tight');                if(!narrow && !overflow()) return;
+  row.classList.remove('tight'); set(true);  if(!overflow()) return;
+  row.classList.add('tight');
 }
 window.addEventListener('resize', fitTools);
 function applyLang(code){
@@ -2113,12 +2131,13 @@ function openSheet(){
   else if(t === 2) say(`책바다는 별도 가입과 사서 승인이 필요합니다. 신청 방법 안내를 받으시려면 네, 안내 받을게요 단추를 눌러 주세요.`, _yn);
   else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, ${t === 0 ? '보관' : '대출'} 도서관 ${btName}, 수령 도서관 ${u.NM(내관)}, 예상 소요 ${T[5]}.${(t===1||t===3) ? ' 도착 후 3일 안에 찾아가 주세요. 기한 안에 찾아가지 않으면 열흘간 신청이 제한됩니다.' : ''} 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`, _yn);
 }
-function closeSheet(){ $('sheet').classList.remove('on'); ynStop(); }
+function closeSheet(){ $('sheet').classList.remove('on'); ynStop(); try{ document.activeElement && document.activeElement.blur(); }catch(e){} }
 
 $('confirm').onclick = async () => {
   ynStop();
   const x = X();
-  if(PK.avail && !PK.busy){
+  if(!PK.demo) PK.state = 'off';          /* 기본: 패스키 체험 꺼짐 — 확인 한 번으로 끝 */
+  else if(PK.avail && !PK.busy){
     if(!pkId()){
       PK.busy = true; pkNote(x.pkReg, true);
       try{ await pkRegister(); PK.state = 'new'; }catch(e){ PK.state = 'skip'; }
@@ -2141,7 +2160,7 @@ function finishRequest(){
   $('recap').innerHTML = `
     <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>
     <div class="kv"><div class="k">${u.kTo}</div><div class="v">${u.NM(내관)}</div></div>${tail}
-    <div class="kv"><div class="k">${x.kAuth}</div><div class="v">${PK.state==='new' ? x.pkNew : PK.state==='ok' ? x.pkOk : PK.state==='skip' ? x.pkSkip : x.pkNone}</div></div>
+    <div class="kv"><div class="k">${x.kAuth}</div><div class="v">${PK.state==='off' ? x.pkOff : PK.state==='new' ? x.pkNew : PK.state==='ok' ? x.pkOk : PK.state==='skip' ? x.pkSkip : x.pkNone}</div></div>
     <div class="did"><b>${u.didT}</b><span>${t===2 ? u.didV2 : u.didV}</span></div>`;
   show('s-done');
   if(L.m) say(L.m.dn());
@@ -2179,7 +2198,7 @@ function passOpen(){
   $('psStart').textContent=P.start; $('psNo').textContent=U().no;
   $('psNote1').textContent=U().bq.note;
   $('psStart').onclick=async ()=>{
-    if(PK.avail){ const x=X(); $('psNote1').textContent=x.pkStep;
+    if(PK.demo && PK.avail){ const x=X(); $('psNote1').textContent=x.pkStep;
       try{ await pkVerify(); }catch(e){ $('psNote1').textContent=x.pkCancel; return; } }
     savePref({pass:true}); passCardSync(); passRun(); };
   /* 위임 범위는 눈으로만이 아니라 귀로도 고지한다 (기존에는 안내가 없었다) */
@@ -2426,52 +2445,52 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 
 /* ═══════════ v1.5 ═══════════ */
 const X_ = {
- ko:{micPerm1:"마이크 <b>허용</b>을 눌렀다면 마이크 단추를 <b>한 번 더</b> 눌러 주세요. (처음 한 번은 허용 창 때문에 인식이 시작되지 않을 수 있어요)",micPerm2:"마이크 사용이 차단되어 있습니다. 아이폰: 주소창 <b>ㅏA → 웹사이트 설정 → 마이크 허용</b> / 안드로이드: 주소창 <b>자물쇠 → 권한 → 마이크</b> 허용 후 다시 눌러 주세요.",micNoSound:"소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.",micFail:"음성을 인식하지 못했습니다. 아래 예시 버튼을 눌러 보세요.",micStart:"마이크를 시작하지 못했어요. 한 번 더 눌러 주세요.",micLang:"이 기기의 브라우저는 {lang} 음성 인식을 지원하지 않아요. 아래에 글로 입력하거나 다른 언어를 골라 주세요.",lib:'자주 가는 도서관',libP:'수령 도서관이자 판정의 기준입니다 · 예시 결과도 이 도서관 기준으로 다시 계산됩니다',close:'닫기',
+ ko:{pkOff:"등록된 기기 (시연 · ⓘ 안내에서 패스키 체험을 켤 수 있어요)",micPerm1:"마이크 <b>허용</b>을 눌렀다면 마이크 단추를 <b>한 번 더</b> 눌러 주세요. (처음 한 번은 허용 창 때문에 인식이 시작되지 않을 수 있어요)",micPerm2:"마이크 사용이 차단되어 있습니다. 아이폰: 주소창 <b>ㅏA → 웹사이트 설정 → 마이크 허용</b> / 안드로이드: 주소창 <b>자물쇠 → 권한 → 마이크</b> 허용 후 다시 눌러 주세요.",micNoSound:"소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.",micFail:"음성을 인식하지 못했습니다. 아래 예시 버튼을 눌러 보세요.",micStart:"마이크를 시작하지 못했어요. 한 번 더 눌러 주세요.",micLang:"이 기기의 브라우저는 {lang} 음성 인식을 지원하지 않아요. 아래에 글로 입력하거나 다른 언어를 골라 주세요.",lib:'자주 가는 도서관',libP:'수령 도서관이자 판정의 기준입니다 · 예시 결과도 이 도서관 기준으로 다시 계산됩니다',close:'닫기',
      scanT:'책 뒤표지 바코드를 네모 안에 맞춰 주세요',scanErr:'카메라를 열 수 없어요. 아래 예시나 직접 입력을 이용해 주세요.',scanNone:'시연 모델에는 예시 5권만 실려 있어요. 아래 예시를 눌러 보세요.',
      kAuth:'본인 확인',pkReg:'이 기기를 등록할게요 — 지문이나 얼굴로 한 번만 확인해 주세요',pkNew:'등록된 기기 ✓ (방금 등록 · 다음부터 무료 신청은 바로)',pkOk:'등록된 기기 ✓ (무료 신청은 바로)',pkSkip:'기기 등록을 건너뜀 (시연 계속)',pkNone:'등록된 기기 (시연 · 이 브라우저는 생체인증 미지원)',
      pkStep:'위임을 만들기 전에 지문·얼굴로 한 번 더 확인합니다…',pkCancel:'생체인증이 취소되어 위임을 만들지 않았습니다. 안전 쪽이 기본값이에요.',
      voice:'🎙 「네」 또는 「아니오」로 답하셔도 됩니다',local:'🔒 기기 안에서 인식',lsrOn:'이 기기: 기기 내 인식 사용 중',lsrOff:'이 기기: 브라우저 제공사 인식(서비스 서버 미전송)',mcpOn:'이 브라우저: 연결됨 — 도구 3종 등록 · 신청 도구는 이용자 확인 없이는 거부',mcpOff:'이 브라우저: 미지원 · 신청 도구는 이용자 확인 없이는 거부'},
- en:{micPerm1:"If you tapped Allow, please tap the microphone once more (the first try can be interrupted by the permission prompt).",micPerm2:"Microphone access is blocked. iPhone: tap ᴬA in the address bar → Website Settings → Microphone: Allow. Android: tap the lock icon → Permissions → Microphone.",micNoSound:"I didn't hear anything. Tap the microphone and speak right away.",micFail:"I couldn't recognize the speech. Try the examples below.",micStart:"Couldn't start the microphone. Please tap once more.",micLang:"This browser doesn't support {lang} speech recognition on this device. Please type below or choose another language.",lib:'My library',libP:'Pickup library and the basis for rule checks · example results are recalculated for it',close:'Close',
+ en:{pkOff:"Registered device (demo · turn on the passkey demo under ⓘ)",micPerm1:"If you tapped Allow, please tap the microphone once more (the first try can be interrupted by the permission prompt).",micPerm2:"Microphone access is blocked. iPhone: tap ᴬA in the address bar → Website Settings → Microphone: Allow. Android: tap the lock icon → Permissions → Microphone.",micNoSound:"I didn't hear anything. Tap the microphone and speak right away.",micFail:"I couldn't recognize the speech. Try the examples below.",micStart:"Couldn't start the microphone. Please tap once more.",micLang:"This browser doesn't support {lang} speech recognition on this device. Please type below or choose another language.",lib:'My library',libP:'Pickup library and the basis for rule checks · example results are recalculated for it',close:'Close',
      scanT:'Fit the barcode on the back cover inside the box',scanErr:'Could not open the camera. Use the examples or type instead.',scanNone:'This demo carries only the 5 example titles. Try one below.',
      kAuth:'Identity',pkReg:'Registering this device — confirm once with fingerprint or face',pkNew:'Registered device ✓ (just registered · free requests go straight through next time)',pkOk:'Registered device ✓ (free requests go straight through)',pkSkip:'Device registration skipped (demo continues)',pkNone:'Registered device (demo · no biometrics in this browser)',
      pkStep:'Confirm once more with fingerprint or face before creating the mandate…',pkCancel:'Biometric check cancelled — no mandate was created. Safe side is the default.',
      voice:'🎙 You can also answer “yes” or “no”',local:'🔒 Recognised on device',lsrOn:'This device: on-device recognition',lsrOff:'This device: browser-vendor recognition (never sent to our server)',mcpOn:'This browser: connected — 3 tools registered · request tool refuses without user confirmation',mcpOff:'This browser: not supported · request tool refuses without user confirmation'},
- zh:{micPerm1:"如果已点击「允许」，请再点一次麦克风按钮（第一次可能因权限提示而未开始识别）。",micPerm2:"麦克风已被禁止。iPhone：地址栏 ᴬA → 网站设置 → 麦克风 允许；Android：地址栏锁形图标 → 权限 → 麦克风。",micNoSound:"没有听到声音。请点击麦克风后立即说话。",micFail:"无法识别语音。请试试下面的示例。",micStart:"无法启动麦克风，请再点一次。",micLang:"此设备的浏览器不支持{lang}语音识别。请在下方输入文字或选择其他语言。",lib:'常去的图书馆',libP:'取书馆，也是规则判定的基准 · 示例结果会按此馆重新计算',close:'关闭',
+ zh:{pkOff:"已登记设备（演示 · 可在 ⓘ 中开启通行密钥体验）",micPerm1:"如果已点击「允许」，请再点一次麦克风按钮（第一次可能因权限提示而未开始识别）。",micPerm2:"麦克风已被禁止。iPhone：地址栏 ᴬA → 网站设置 → 麦克风 允许；Android：地址栏锁形图标 → 权限 → 麦克风。",micNoSound:"没有听到声音。请点击麦克风后立即说话。",micFail:"无法识别语音。请试试下面的示例。",micStart:"无法启动麦克风，请再点一次。",micLang:"此设备的浏览器不支持{lang}语音识别。请在下方输入文字或选择其他语言。",lib:'常去的图书馆',libP:'取书馆，也是规则判定的基准 · 示例结果会按此馆重新计算',close:'关闭',
      scanT:'请把封底条形码对准方框',scanErr:'无法打开相机，请使用示例或直接输入。',scanNone:'演示模型只收录了 5 本示例书，请点下面的示例。',
      kAuth:'本人确认',pkReg:'正在登记此设备 — 请用指纹或人脸确认一次',pkNew:'已登记设备 ✓（刚登记 · 下次免费申请直接通过）',pkOk:'已登记设备 ✓（免费申请直接通过）',pkSkip:'已跳过设备登记（演示继续）',pkNone:'已登记设备（演示 · 此浏览器不支持生物识别）',
      pkStep:'创建委托前，请再用指纹或人脸确认一次…',pkCancel:'生物识别已取消，未创建委托。安全是默认值。',
      voice:'🎙 也可以说“是”或“否”',local:'🔒 在设备内识别',lsrOn:'此设备：使用设备内识别',lsrOff:'此设备：浏览器厂商识别（不发送到我们的服务器）',mcpOn:'此浏览器：已连接 — 已注册 3 个工具 · 申请工具无用户确认即拒绝',mcpOff:'此浏览器：不支持 · 申请工具无用户确认即拒绝'},
- ja:{micPerm1:"「許可」を押した場合は、もう一度マイクボタンを押してください（初回は許可画面のため認識が始まらないことがあります）。",micPerm2:"マイクがブロックされています。iPhone：アドレスバーの ᴬA → Webサイトの設定 → マイクを許可 / Android：鍵アイコン → 権限 → マイク。",micNoSound:"音声が聞き取れませんでした。マイクを押してすぐ話してください。",micFail:"音声を認識できませんでした。下の例をお試しください。",micStart:"マイクを開始できませんでした。もう一度押してください。",micLang:"この端末のブラウザは{lang}の音声認識に対応していません。下に入力するか、別の言語を選んでください。",lib:'いつもの図書館',libP:'受取館であり判定の基準です · 例の結果もこの館基準で再計算されます',close:'閉じる',
+ ja:{pkOff:"登録済み端末（デモ · ⓘ でパスキー体験をオンにできます）",micPerm1:"「許可」を押した場合は、もう一度マイクボタンを押してください（初回は許可画面のため認識が始まらないことがあります）。",micPerm2:"マイクがブロックされています。iPhone：アドレスバーの ᴬA → Webサイトの設定 → マイクを許可 / Android：鍵アイコン → 権限 → マイク。",micNoSound:"音声が聞き取れませんでした。マイクを押してすぐ話してください。",micFail:"音声を認識できませんでした。下の例をお試しください。",micStart:"マイクを開始できませんでした。もう一度押してください。",micLang:"この端末のブラウザは{lang}の音声認識に対応していません。下に入力するか、別の言語を選んでください。",lib:'いつもの図書館',libP:'受取館であり判定の基準です · 例の結果もこの館基準で再計算されます',close:'閉じる',
      scanT:'裏表紙のバーコードを枠に合わせてください',scanErr:'カメラを開けません。例や直接入力をご利用ください。',scanNone:'デモには例の5冊だけ入っています。下の例をお試しください。',
      kAuth:'本人確認',pkReg:'この端末を登録します — 指紋か顔で一度だけ確認してください',pkNew:'登録済み端末 ✓（登録完了 · 次回から無料申請はそのまま）',pkOk:'登録済み端末 ✓（無料申請はそのまま）',pkSkip:'端末登録をスキップ（デモ続行）',pkNone:'登録済み端末（デモ · このブラウザは生体認証非対応）',
      pkStep:'委任を作る前に指紋・顔でもう一度確認します…',pkCancel:'生体認証がキャンセルされ、委任は作成しませんでした。安全側が既定です。',
      voice:'🎙 「はい」「いいえ」と答えても構いません',local:'🔒 端末内で認識',lsrOn:'この端末：端末内認識を使用中',lsrOff:'この端末：ブラウザ提供元の認識（当方サーバーへは送信しません）',mcpOn:'このブラウザ：接続済み — ツール3種を登録 · 申請ツールは利用者確認なしでは拒否',mcpOff:'このブラウザ：非対応 · 申請ツールは利用者確認なしでは拒否'},
- vi:{micPerm1:"Nếu bạn đã bấm Cho phép, hãy bấm nút micro thêm một lần nữa (lần đầu có thể bị gián đoạn bởi hộp thoại quyền).",micPerm2:"Micro đang bị chặn. iPhone: ᴬA trên thanh địa chỉ → Cài đặt trang web → Micro: Cho phép. Android: biểu tượng ổ khóa → Quyền → Micro.",micNoSound:"Tôi không nghe thấy gì. Hãy bấm micro và nói ngay.",micFail:"Không nhận dạng được giọng nói. Hãy thử các ví dụ bên dưới.",micStart:"Không khởi động được micro. Hãy bấm lại một lần nữa.",micLang:"Trình duyệt trên thiết bị này không hỗ trợ nhận dạng giọng nói {lang}. Hãy nhập chữ bên dưới hoặc chọn ngôn ngữ khác.",lib:'Thư viện quen thuộc',libP:'Nơi nhận sách và cơ sở xét quy định · kết quả ví dụ được tính lại theo thư viện này',close:'Đóng',
+ vi:{pkOff:"Thiết bị đã đăng ký (trình diễn · bật trải nghiệm passkey trong ⓘ)",micPerm1:"Nếu bạn đã bấm Cho phép, hãy bấm nút micro thêm một lần nữa (lần đầu có thể bị gián đoạn bởi hộp thoại quyền).",micPerm2:"Micro đang bị chặn. iPhone: ᴬA trên thanh địa chỉ → Cài đặt trang web → Micro: Cho phép. Android: biểu tượng ổ khóa → Quyền → Micro.",micNoSound:"Tôi không nghe thấy gì. Hãy bấm micro và nói ngay.",micFail:"Không nhận dạng được giọng nói. Hãy thử các ví dụ bên dưới.",micStart:"Không khởi động được micro. Hãy bấm lại một lần nữa.",micLang:"Trình duyệt trên thiết bị này không hỗ trợ nhận dạng giọng nói {lang}. Hãy nhập chữ bên dưới hoặc chọn ngôn ngữ khác.",lib:'Thư viện quen thuộc',libP:'Nơi nhận sách và cơ sở xét quy định · kết quả ví dụ được tính lại theo thư viện này',close:'Đóng',
      scanT:'Đưa mã vạch ở bìa sau vào trong khung',scanErr:'Không mở được máy ảnh. Hãy dùng ví dụ hoặc nhập tay.',scanNone:'Bản trình diễn chỉ có 5 cuốn ví dụ. Hãy thử ví dụ bên dưới.',
      kAuth:'Xác minh',pkReg:'Đang đăng ký thiết bị này — xác nhận một lần bằng vân tay hoặc khuôn mặt',pkNew:'Thiết bị đã đăng ký ✓ (vừa đăng ký · lần sau yêu cầu miễn phí đi thẳng)',pkOk:'Thiết bị đã đăng ký ✓ (yêu cầu miễn phí đi thẳng)',pkSkip:'Bỏ qua đăng ký thiết bị (tiếp tục trình diễn)',pkNone:'Thiết bị đã đăng ký (trình diễn · trình duyệt này không hỗ trợ sinh trắc)',
      pkStep:'Xác nhận thêm một lần bằng vân tay/khuôn mặt trước khi tạo ủy quyền…',pkCancel:'Đã hủy sinh trắc — không tạo ủy quyền. An toàn là mặc định.',
      voice:'🎙 Bạn cũng có thể trả lời “có” hoặc “không”',local:'🔒 Nhận dạng trên thiết bị',lsrOn:'Thiết bị này: nhận dạng trên thiết bị',lsrOff:'Thiết bị này: nhận dạng của nhà cung cấp trình duyệt (không gửi tới máy chủ của chúng tôi)',mcpOn:'Trình duyệt này: đã kết nối — đăng ký 3 công cụ · công cụ yêu cầu từ chối nếu chưa được xác nhận',mcpOff:'Trình duyệt này: không hỗ trợ · công cụ yêu cầu từ chối nếu chưa được xác nhận'},
- th:{micPerm1:"ถ้ากด อนุญาต แล้ว โปรดกดปุ่มไมโครโฟนอีกครั้ง (ครั้งแรกอาจไม่เริ่มฟังเพราะหน้าต่างขออนุญาต)",micPerm2:"ไมโครโฟนถูกบล็อก iPhone: ᴬA ในแถบที่อยู่ → การตั้งค่าเว็บไซต์ → ไมโครโฟน อนุญาต / Android: ไอคอนกุญแจ → สิทธิ์ → ไมโครโฟน",micNoSound:"ไม่ได้ยินเสียง โปรดกดไมโครโฟนแล้วพูดทันที",micFail:"ไม่สามารถรู้จำเสียงได้ ลองแตะตัวอย่างด้านล่าง",micStart:"เริ่มไมโครโฟนไม่ได้ โปรดกดอีกครั้ง",micLang:"เบราว์เซอร์ของอุปกรณ์นี้ไม่รองรับการรู้จำเสียงภาษา{lang} โปรดพิมพ์ด้านล่างหรือเลือกภาษาอื่น",lib:'ห้องสมุดประจำ',libP:'เป็นที่รับหนังสือและเกณฑ์การตัดสิน · ผลตัวอย่างจะคำนวณใหม่ตามห้องสมุดนี้',close:'ปิด',
+ th:{pkOff:"อุปกรณ์ที่ลงทะเบียน (สาธิต · เปิดทดลอง passkey ได้ที่ ⓘ)",micPerm1:"ถ้ากด อนุญาต แล้ว โปรดกดปุ่มไมโครโฟนอีกครั้ง (ครั้งแรกอาจไม่เริ่มฟังเพราะหน้าต่างขออนุญาต)",micPerm2:"ไมโครโฟนถูกบล็อก iPhone: ᴬA ในแถบที่อยู่ → การตั้งค่าเว็บไซต์ → ไมโครโฟน อนุญาต / Android: ไอคอนกุญแจ → สิทธิ์ → ไมโครโฟน",micNoSound:"ไม่ได้ยินเสียง โปรดกดไมโครโฟนแล้วพูดทันที",micFail:"ไม่สามารถรู้จำเสียงได้ ลองแตะตัวอย่างด้านล่าง",micStart:"เริ่มไมโครโฟนไม่ได้ โปรดกดอีกครั้ง",micLang:"เบราว์เซอร์ของอุปกรณ์นี้ไม่รองรับการรู้จำเสียงภาษา{lang} โปรดพิมพ์ด้านล่างหรือเลือกภาษาอื่น",lib:'ห้องสมุดประจำ',libP:'เป็นที่รับหนังสือและเกณฑ์การตัดสิน · ผลตัวอย่างจะคำนวณใหม่ตามห้องสมุดนี้',close:'ปิด',
      scanT:'วางบาร์โค้ดปกหลังให้อยู่ในกรอบ',scanErr:'เปิดกล้องไม่ได้ กรุณาใช้ตัวอย่างหรือพิมพ์เอง',scanNone:'รุ่นสาธิตมีเพียง 5 เล่มตัวอย่าง ลองกดตัวอย่างด้านล่าง',
      kAuth:'ยืนยันตัวตน',pkReg:'กำลังลงทะเบียนอุปกรณ์นี้ — ยืนยันด้วยลายนิ้วมือหรือใบหน้าหนึ่งครั้ง',pkNew:'อุปกรณ์ที่ลงทะเบียน ✓ (เพิ่งลงทะเบียน · ครั้งต่อไปคำขอฟรีผ่านทันที)',pkOk:'อุปกรณ์ที่ลงทะเบียน ✓ (คำขอฟรีผ่านทันที)',pkSkip:'ข้ามการลงทะเบียนอุปกรณ์ (สาธิตต่อ)',pkNone:'อุปกรณ์ที่ลงทะเบียน (สาธิต · เบราว์เซอร์นี้ไม่รองรับไบโอเมตริก)',
      pkStep:'ยืนยันด้วยลายนิ้วมือ/ใบหน้าอีกครั้งก่อนสร้างการมอบหมาย…',pkCancel:'ยกเลิกไบโอเมตริก — ไม่ได้สร้างการมอบหมาย ค่าเริ่มต้นคือฝั่งปลอดภัย',
      voice:'🎙 ตอบว่า “ใช่” หรือ “ไม่” ก็ได้',local:'🔒 รู้จำในอุปกรณ์',lsrOn:'อุปกรณ์นี้: รู้จำเสียงในอุปกรณ์',lsrOff:'อุปกรณ์นี้: รู้จำโดยผู้ให้บริการเบราว์เซอร์ (ไม่ส่งไปเซิร์ฟเวอร์ของเรา)',mcpOn:'เบราว์เซอร์นี้: เชื่อมต่อแล้ว — ลงทะเบียน 3 เครื่องมือ · เครื่องมือยื่นคำขอปฏิเสธหากไม่มีการยืนยัน',mcpOff:'เบราว์เซอร์นี้: ไม่รองรับ · เครื่องมือยื่นคำขอปฏิเสธหากไม่มีการยืนยัน'},
- ru:{micPerm1:"Если вы нажали «Разрешить», нажмите кнопку микрофона ещё раз (в первый раз запрос разрешения может прервать распознавание).",micPerm2:"Доступ к микрофону заблокирован. iPhone: ᴬA в адресной строке → Настройки сайта → Микрофон: разрешить. Android: значок замка → Разрешения → Микрофон.",micNoSound:"Ничего не слышно. Нажмите микрофон и сразу говорите.",micFail:"Не удалось распознать речь. Попробуйте примеры ниже.",micStart:"Не удалось запустить микрофон. Нажмите ещё раз.",micLang:"Браузер на этом устройстве не поддерживает распознавание речи: {lang}. Введите текст ниже или выберите другой язык.",lib:'Моя библиотека',libP:'Место получения и основа проверки правил · примеры пересчитываются для неё',close:'Закрыть',
+ ru:{pkOff:"Зарегистрированное устройство (демо · включите пробу passkey в ⓘ)",micPerm1:"Если вы нажали «Разрешить», нажмите кнопку микрофона ещё раз (в первый раз запрос разрешения может прервать распознавание).",micPerm2:"Доступ к микрофону заблокирован. iPhone: ᴬA в адресной строке → Настройки сайта → Микрофон: разрешить. Android: значок замка → Разрешения → Микрофон.",micNoSound:"Ничего не слышно. Нажмите микрофон и сразу говорите.",micFail:"Не удалось распознать речь. Попробуйте примеры ниже.",micStart:"Не удалось запустить микрофон. Нажмите ещё раз.",micLang:"Браузер на этом устройстве не поддерживает распознавание речи: {lang}. Введите текст ниже или выберите другой язык.",lib:'Моя библиотека',libP:'Место получения и основа проверки правил · примеры пересчитываются для неё',close:'Закрыть',
      scanT:'Поместите штрихкод с задней обложки в рамку',scanErr:'Не удалось открыть камеру. Используйте примеры или ввод.',scanNone:'В демо только 5 примеров. Попробуйте пример ниже.',
      kAuth:'Проверка личности',pkReg:'Регистрируем это устройство — подтвердите один раз отпечатком или лицом',pkNew:'Зарегистрированное устройство ✓ (только что · бесплатные заявки далее без подтверждения)',pkOk:'Зарегистрированное устройство ✓ (бесплатные заявки без подтверждения)',pkSkip:'Регистрация пропущена (демо продолжается)',pkNone:'Зарегистрированное устройство (демо · биометрия в этом браузере недоступна)',
      pkStep:'Перед созданием поручения подтвердите ещё раз отпечатком или лицом…',pkCancel:'Биометрия отменена — поручение не создано. Безопасный вариант по умолчанию.',
      voice:'🎙 Можно ответить «да» или «нет»',local:'🔒 Распознано на устройстве',lsrOn:'Это устройство: распознавание на устройстве',lsrOff:'Это устройство: распознавание поставщика браузера (на наш сервер не передаётся)',mcpOn:'Этот браузер: подключён — 3 инструмента · заявка без подтверждения отклоняется',mcpOff:'Этот браузер: не поддерживается · заявка без подтверждения отклоняется'},
- mn:{micPerm1:"«Зөвшөөрөх» дарсан бол микрофоны товчийг дахин нэг удаа дарна уу (эхний удаад зөвшөөрлийн цонхны улмаас танилт эхлэхгүй байж болно).",micPerm2:"Микрофон хаалттай байна. iPhone: хаягийн мөрний ᴬA → Вэб сайтын тохиргоо → Микрофон зөвшөөрөх / Android: цоожны дүрс → Зөвшөөрөл → Микрофон.",micNoSound:"Дуу сонсогдсонгүй. Микрофоныг дараад шууд ярина уу.",micFail:"Яриаг таньж чадсангүй. Доорх жишээг туршиж үзнэ үү.",micStart:"Микрофоныг эхлүүлж чадсангүй. Дахин дарна уу.",micLang:"Энэ төхөөрөмжийн хөтөч {lang} хэлний ярианы танилтыг дэмждэггүй. Доор бичих эсвэл өөр хэл сонгоно уу.",lib:'Миний номын сан',libP:'Хүлээн авах газар, дүрмийн шалгалтын үндэс · жишээний үр дүн энэ сангаар дахин тооцно',close:'Хаах',
+ mn:{pkOff:"Бүртгэлтэй төхөөрөмж (үзүүлэн · ⓘ-д passkey туршилтыг асаана уу)",micPerm1:"«Зөвшөөрөх» дарсан бол микрофоны товчийг дахин нэг удаа дарна уу (эхний удаад зөвшөөрлийн цонхны улмаас танилт эхлэхгүй байж болно).",micPerm2:"Микрофон хаалттай байна. iPhone: хаягийн мөрний ᴬA → Вэб сайтын тохиргоо → Микрофон зөвшөөрөх / Android: цоожны дүрс → Зөвшөөрөл → Микрофон.",micNoSound:"Дуу сонсогдсонгүй. Микрофоныг дараад шууд ярина уу.",micFail:"Яриаг таньж чадсангүй. Доорх жишээг туршиж үзнэ үү.",micStart:"Микрофоныг эхлүүлж чадсангүй. Дахин дарна уу.",micLang:"Энэ төхөөрөмжийн хөтөч {lang} хэлний ярианы танилтыг дэмждэггүй. Доор бичих эсвэл өөр хэл сонгоно уу.",lib:'Миний номын сан',libP:'Хүлээн авах газар, дүрмийн шалгалтын үндэс · жишээний үр дүн энэ сангаар дахин тооцно',close:'Хаах',
      scanT:'Арын хавтасны зураасан кодыг хүрээнд тааруулна уу',scanErr:'Камер нээгдсэнгүй. Жишээ эсвэл гараар оруулна уу.',scanNone:'Үзүүлэнд зөвхөн 5 жишээ ном бий. Доорх жишээг үзнэ үү.',
      kAuth:'Баталгаажуулалт',pkReg:'Энэ төхөөрөмжийг бүртгэж байна — хурууны хээ эсвэл царайгаар нэг удаа батална уу',pkNew:'Бүртгэлтэй төхөөрөмж ✓ (дөнгөж бүртгэсэн · дараагийн үнэгүй захиалга шууд)',pkOk:'Бүртгэлтэй төхөөрөмж ✓ (үнэгүй захиалга шууд)',pkSkip:'Бүртгэлийг алгассан (үзүүлэн үргэлжилнэ)',pkNone:'Бүртгэлтэй төхөөрөмж (үзүүлэн · энэ хөтөч биометр дэмжихгүй)',
      pkStep:'Итгэмжлэл үүсгэхийн өмнө хурууны хээ/царайгаар дахин батална…',pkCancel:'Биометр цуцлагдсан — итгэмжлэл үүсгээгүй. Аюулгүй тал нь анхдагч.',
      voice:'🎙 «Тийм» эсвэл «үгүй» гэж хариулж болно',local:'🔒 Төхөөрөмж дотор танина',lsrOn:'Энэ төхөөрөмж: төхөөрөмж доторх таних',lsrOff:'Энэ төхөөрөмж: хөтөч нийлүүлэгчийн таних (манай сервер рүү илгээхгүй)',mcpOn:'Энэ хөтөч: холбогдсон — 3 хэрэгсэл · захиалгын хэрэгсэл баталгаагүй бол татгалзана',mcpOff:'Энэ хөтөч: дэмжихгүй · захиалгын хэрэгсэл баталгаагүй бол татгалзана'},
- uz:{micPerm1:"«Ruxsat berish»ni bosgan bo'lsangiz, mikrofon tugmasini yana bir marta bosing (birinchi safar ruxsat oynasi tufayli tanib olish boshlanmasligi mumkin).",micPerm2:"Mikrofon bloklangan. iPhone: manzil satridagi ᴬA → Veb-sayt sozlamalari → Mikrofon: ruxsat / Android: qulf belgisi → Ruxsatlar → Mikrofon.",micNoSound:"Ovoz eshitilmadi. Mikrofonni bosib, darhol gapiring.",micFail:"Nutq tanib olinmadi. Quyidagi namunalarni sinab ko'ring.",micStart:"Mikrofonni ishga tushirib bo'lmadi. Yana bir marta bosing.",micLang:"Bu qurilmadagi brauzer {lang} tilida nutqni tanib olishni qo'llab-quvvatlamaydi. Quyida yozing yoki boshqa tilni tanlang.",lib:'Doimiy kutubxonam',libP:'Olish joyi va qoida tekshiruvi asosi · misollar shu kutubxona bo‘yicha qayta hisoblanadi',close:'Yopish',
+ uz:{pkOff:"Ro‘yxatdan o‘tgan qurilma (namoyish · ⓘ da passkey sinovini yoqing)",micPerm1:"«Ruxsat berish»ni bosgan bo'lsangiz, mikrofon tugmasini yana bir marta bosing (birinchi safar ruxsat oynasi tufayli tanib olish boshlanmasligi mumkin).",micPerm2:"Mikrofon bloklangan. iPhone: manzil satridagi ᴬA → Veb-sayt sozlamalari → Mikrofon: ruxsat / Android: qulf belgisi → Ruxsatlar → Mikrofon.",micNoSound:"Ovoz eshitilmadi. Mikrofonni bosib, darhol gapiring.",micFail:"Nutq tanib olinmadi. Quyidagi namunalarni sinab ko'ring.",micStart:"Mikrofonni ishga tushirib bo'lmadi. Yana bir marta bosing.",micLang:"Bu qurilmadagi brauzer {lang} tilida nutqni tanib olishni qo'llab-quvvatlamaydi. Quyida yozing yoki boshqa tilni tanlang.",lib:'Doimiy kutubxonam',libP:'Olish joyi va qoida tekshiruvi asosi · misollar shu kutubxona bo‘yicha qayta hisoblanadi',close:'Yopish',
      scanT:'Orqa muqovadagi shtrix-kodni ramkaga joylang',scanErr:'Kamera ochilmadi. Misollar yoki qo‘lda kiritishdan foydalaning.',scanNone:'Namoyishda faqat 5 ta misol kitob bor. Quyidagi misolni sinang.',
      kAuth:'Shaxsni tasdiqlash',pkReg:'Bu qurilma ro‘yxatga olinmoqda — barmoq izi yoki yuz bilan bir marta tasdiqlang',pkNew:'Ro‘yxatdan o‘tgan qurilma ✓ (hozir · keyingi bepul buyurtmalar to‘g‘ridan-to‘g‘ri)',pkOk:'Ro‘yxatdan o‘tgan qurilma ✓ (bepul buyurtmalar to‘g‘ridan-to‘g‘ri)',pkSkip:'Ro‘yxat o‘tkazib yuborildi (namoyish davom etadi)',pkNone:'Ro‘yxatdan o‘tgan qurilma (namoyish · bu brauzerda biometriya yo‘q)',
      pkStep:'Vakolat yaratishdan oldin barmoq izi/yuz bilan yana bir bor tasdiqlang…',pkCancel:'Biometriya bekor qilindi — vakolat yaratilmadi. Xavfsiz tomon — standart.',
      voice:'🎙 «Ha» yoki «yo‘q» deb javob bersangiz ham bo‘ladi',local:'🔒 Qurilma ichida tanildi',lsrOn:'Bu qurilma: qurilma ichida tanish',lsrOff:'Bu qurilma: brauzer ta’minotchisi tanishi (bizning serverga yuborilmaydi)',mcpOn:'Bu brauzer: ulangan — 3 vosita · buyurtma vositasi tasdiqsiz rad etiladi',mcpOff:'Bu brauzer: qo‘llab-quvvatlanmaydi · buyurtma vositasi tasdiqsiz rad etiladi'},
- id:{micPerm1:"Jika sudah menekan Izinkan, ketuk tombol mikrofon sekali lagi (percobaan pertama bisa terputus oleh dialog izin).",micPerm2:"Mikrofon diblokir. iPhone: ᴬA di bilah alamat → Pengaturan Situs Web → Mikrofon: Izinkan. Android: ikon gembok → Izin → Mikrofon.",micNoSound:"Tidak terdengar suara. Ketuk mikrofon lalu langsung bicara.",micFail:"Suara tidak dikenali. Coba contoh di bawah.",micStart:"Mikrofon tidak bisa dimulai. Ketuk sekali lagi.",micLang:"Browser di perangkat ini tidak mendukung pengenalan suara {lang}. Ketik di bawah atau pilih bahasa lain.",lib:'Perpustakaan langganan',libP:'Tempat pengambilan dan dasar pemeriksaan aturan · hasil contoh dihitung ulang untuk perpustakaan ini',close:'Tutup',
+ id:{pkOff:"Perangkat terdaftar (demo · aktifkan uji passkey di ⓘ)",micPerm1:"Jika sudah menekan Izinkan, ketuk tombol mikrofon sekali lagi (percobaan pertama bisa terputus oleh dialog izin).",micPerm2:"Mikrofon diblokir. iPhone: ᴬA di bilah alamat → Pengaturan Situs Web → Mikrofon: Izinkan. Android: ikon gembok → Izin → Mikrofon.",micNoSound:"Tidak terdengar suara. Ketuk mikrofon lalu langsung bicara.",micFail:"Suara tidak dikenali. Coba contoh di bawah.",micStart:"Mikrofon tidak bisa dimulai. Ketuk sekali lagi.",micLang:"Browser di perangkat ini tidak mendukung pengenalan suara {lang}. Ketik di bawah atau pilih bahasa lain.",lib:'Perpustakaan langganan',libP:'Tempat pengambilan dan dasar pemeriksaan aturan · hasil contoh dihitung ulang untuk perpustakaan ini',close:'Tutup',
      scanT:'Posisikan barcode sampul belakang di dalam kotak',scanErr:'Kamera tidak bisa dibuka. Gunakan contoh atau ketik.',scanNone:'Demo hanya memuat 5 judul contoh. Coba contoh di bawah.',
      kAuth:'Verifikasi',pkReg:'Mendaftarkan perangkat ini — konfirmasi sekali dengan sidik jari atau wajah',pkNew:'Perangkat terdaftar ✓ (baru saja · permintaan gratis berikutnya langsung)',pkOk:'Perangkat terdaftar ✓ (permintaan gratis langsung)',pkSkip:'Pendaftaran perangkat dilewati (demo berlanjut)',pkNone:'Perangkat terdaftar (demo · browser ini tanpa biometrik)',
      pkStep:'Konfirmasi sekali lagi dengan sidik jari/wajah sebelum membuat mandat…',pkCancel:'Biometrik dibatalkan — mandat tidak dibuat. Sisi aman adalah bawaan.',
@@ -2545,7 +2564,12 @@ function scanHit(isbn){ const i = CASES.findIndex(c => c.book.isbn === isbn); if
 $('scanbtn').onclick = scanStart; $('scanClose').onclick = scanStop;
 
 /* ── 등록된 기기 (패스키 시연 — 기기 안에만 저장, 서버 없음) ── */
-const PK = {key:'chaekiji.pk', avail:false, busy:false, state:'none'};
+const PK = {key:'chaekiji.pk', avail:false, busy:false, state:'none', demo:false};
+try{ PK.demo = localStorage.getItem('chaekiji.pkdemo') === '1'; }catch(e){}
+function pkDemoRender(){ const b = $('pkToggle'), st = $('pkDemoSt'); if(!b) return; b.textContent = PK.demo ? '끄기' : '켜기'; b.classList.toggle('on', PK.demo);
+  st.textContent = PK.demo ? (PK.avail ? '지금: 켜짐 · 첫 신청 때 등록 창이 뜹니다' : '지금: 켜짐 · 이 브라우저는 생체인증을 지원하지 않아 표시만 됩니다') : '지금: 꺼짐 · 신청은 확인 한 번으로 끝납니다'; }
+function pkDemoSet(v){ PK.demo = !!v; try{ localStorage.setItem('chaekiji.pkdemo', PK.demo ? '1' : '0'); }catch(e){} pkDemoRender(); }
+$('pkToggle').onclick = () => pkDemoSet(!PK.demo);
 function pkId(){ try{ return localStorage.getItem(PK.key); }catch(e){ return null; } }
 function pkNote(t, busy){ const n = $('pknote'); n.textContent = t || ''; n.hidden = !t; n.classList.toggle('busy', !!busy); }
 function _b64(buf){ return btoa(String.fromCharCode.apply(null, new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
@@ -2559,7 +2583,7 @@ async function pkRegister(){ const ch = crypto.getRandomValues(new Uint8Array(32
 async function pkVerify(){ const id = pkId(); if(!id) return pkRegister(); const ch = crypto.getRandomValues(new Uint8Array(32));
   const o = {challenge:ch, allowCredentials:[{type:'public-key', id:_unb64(id)}], userVerification:'required', timeout:60000}; if(location.hostname) o.rpId = location.hostname;
   await navigator.credentials.get({publicKey:o}); return true; }
-(async function(){ try{ PK.avail = !!(window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); }catch(e){ PK.avail = false; } })();
+(async function(){ try{ PK.avail = !!(window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); }catch(e){ PK.avail = false; } pkDemoRender(); })();
 
 /* ── 확인 시트에서 「네/아니오」 듣기 (음성 안내가 켜져 있을 때) ── */
 const YN = {rec:null};
@@ -2614,7 +2638,7 @@ $('stopbtn').onclick = () => { killRec(); show('s-idle'); };
 document.querySelectorAll('.chip').forEach(b => {
   b.onclick = () => { cur = +b.dataset.case; run(null, false); };
 });
-$('tgo').onclick = () => { const v = $('tinput').value.trim(); if(v) run(v, true); };
+$('tgo').onclick = () => { const v = $('tinput').value.trim(); $('tinput').blur(); if(v) run(v, true); };
 $('tinput').addEventListener('keydown', e => { if(e.key === 'Enter') $('tgo').click(); });
 </script>
 <script>

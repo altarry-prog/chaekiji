@@ -110,7 +110,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
   어떻게 돌아가며 어떻게 전국으로 번지는지를 끝까지 따라가는 문서.
   이용자의 말 한마디부터 다른 도시의 도입 체크리스트까지 — 챗봇은 답을 주고 실행은 이용자가 하지만,
   이 설계의 에이전트는 판정하고 신청까지 <b>대신 한다</b>.</p>
-  <div class="meta">2026. 9. 14. 개정(참조 서버 v0.3 기준 · 08절 표준 접점 10행 · 초판 2026. 8. 28.) · 부천시립도서관 상호대차 AI 에이전트 프로젝트 · 내부 검토용 시안</div>
+  <div class="meta">2026. 9. 15. 개정(참조 서버 v0.3 기준 · 08절 표준 접점 10행 · 초판 2026. 8. 28.) · 부천시립도서관 상호대차 AI 에이전트 프로젝트 · 내부 검토용 시안</div>
 </header>
 
 <nav class="toc" aria-label="차례">
@@ -373,10 +373,10 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
 <tr><td><code>find_alternative</code></td><td>ISBN, 이용자 조건</td><td>대체자료 존재·유형</td><td>국가서지 대체자료목록 조회 (점자·오디오북) → 책나래 분기</td><td><span class="chip part">규격 검증*</span></td></tr>
 <tr><td><code>notify_user</code></td><td>사건(도착 등), 선호 채널</td><td>발송 결과</td><td>문자 또는 TTS 음성전화 — 김순자 씨는 전화</td><td><span class="chip part">규격 검증*</span></td></tr>
 <tr><td><code>suggest_items</code></td><td>이용자, 권수</td><td>이달의 추천 목록</td><td>[자동화 확장] AI 책큐·정보나루 추천 연계</td><td><span class="chip done">구현*</span></td></tr>
-<tr><td><code>manage_mandate</code></td><td>이용자, 동작(생성·조회·해지)</td><td>구독 위임장</td><td>[자동화 확장] 책이지 패스의 동의 장치 — 위임 실행·범위 밖 건너뜀·즉시 해지</td><td><span class="chip done">구현</span></td></tr>
+<tr><td><code>manage_mandate</code></td><td>이용자, 동작(생성·조회·해지)</td><td>사전 위임장(책이지 패스)</td><td>[자동화 확장] 한 번 등록하면 범위 안(관내 무료·월 권수·등록된 기기) 신청은 확인 없이 접수 — 범위 밖은 확인으로 되돌림·결과 통지·즉시 취소·언제든 해지</td><td><span class="chip done">구현</span></td></tr>
 </table></div>
 
-<p>표의 "상태" 열이 현재 위치입니다. 2026. 9. 기준, 핵심 8종과 자동화 확장 2종(구독형 「책이지 패스」용)
+<p>표의 "상태" 열이 현재 위치입니다. 2026. 9. 기준, 핵심 8종과 자동화 확장 2종(사전 위임 「책이지 패스」·AI 책큐 추천용)
 <b>열 도구 전부가 실제 MCP 전송(stdio JSON-RPC) 위의 참조 서버(v0.3)로 구현</b>되어 적합성 시험 33건을 통과했습니다.
 시험이 고정해 둔 것은 김순자 시나리오 전 단계, 무확인 실행 거부, 실행 후 한도 갱신, 전국 폴백과 전일 기준 명시,
 규정 설정 파일 교체만으로 판정이 달라지는 것, 사전 위임의 자동 실행과 범위 밖 건너뜀과 해지 즉시 거부, 그리고
@@ -506,8 +506,8 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
 <tr><td>소장·대출 가능 조회</td><td>가능</td><td>가능</td><td>가능</td></tr>
 <tr><td>관내 상호대차 신청(무료·취소 가능)</td><td>등록 번호 발신 시 가능</td><td>가능</td><td>가능</td></tr>
 <tr><td>책바다 신청(실비 · 현 단계는 안내, 대행 시 기준)</td><td>불가 → 앱·창구 안내</td><td>재인증 후 가능</td><td>가능</td></tr>
-<tr><td>구독 위임 생성</td><td>불가</td><td>재인증 후 가능</td><td>가능</td></tr>
-<tr><td>구독 위임 해지</td><td>가능</td><td>가능</td><td>가능</td></tr>
+<tr><td>책이지 패스(사전 위임) 등록</td><td>불가</td><td>재인증 후 가능</td><td>가능</td></tr>
+<tr><td>책이지 패스 해지</td><td>가능</td><td>가능</td><td>가능</td></tr>
 <tr><td>회원정보 변경·결제</td><td>불가</td><td>불가(범위 밖)</td><td>사람이 처리</td></tr>
 </table></div>
 

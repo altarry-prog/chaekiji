@@ -141,7 +141,7 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
   <button class="btn" data-step="6">＋ 대체자료 확인 <b>find_alternative</b><br><span style="color:var(--ink3);font-size:12px">『소년이 온다』 — 오디오북 → 책나래 분기</span></button>
   <button class="btn" data-step="7">＋ 관내에 없는 책 <b>전국 폴백</b><br><span style="color:var(--ink3);font-size:12px">『지구 끝의 온실』 — 정보나루 · 전일 기준 · 책바다는 안내로</span></button>
 
-  <button class="btn" id="passBtn" style="border-color:#a06e24">▶ 책이지 패스 — 월간 자동 실행 <b>mandate</b><br><span style="color:var(--ink3);font-size:12px">위임 생성 → 무확인 실행 → 범위 밖 건너뜀</span></button>
+  <button class="btn" id="passBtn" style="border-color:#a06e24">▶ 책이지 패스 — 사전 위임 <b>mandate</b><br><span style="color:var(--ink3);font-size:12px">등록 한 번 → 다음 요청은 확인 없이 접수 → 범위 밖은 확인으로</span></button>
 
   <div class="cfg">
     <h2>규정 설정 <small>CONFIG · 확산의 증명</small></h2>
@@ -290,11 +290,11 @@ TOOLS.manage_mandate=a=>{
 const _req=TOOLS.request_service;
 TOOLS.request_service=a=>{
   if(a.mandate_id){
-    if(!MANDATE||!MANDATE.active||MANDATE.mandate_id!==a.mandate_id) throw "유효한 위임(구독)이 없습니다";
+    if(!MANDATE||!MANDATE.active||MANDATE.mandate_id!==a.mandate_id) throw "유효한 위임(책이지 패스)이 없습니다";
     if(MANDATE.scope.free_routes_only&&a.route==="sea")
-      return {accepted:false,skipped:true,why:"실비 경로는 위임 범위 밖 — 자동 실행하지 않고 수동 확인으로 넘깁니다"};
+      return {accepted:false,skipped:true,why:"실비 경로는 위임 범위 밖 — 확인 단계로 넘깁니다"};
     if(MANDATE.used>=MANDATE.scope.max_per_cycle)
-      return {accepted:false,skipped:true,why:`이번 주기 한도(${MANDATE.scope.max_per_cycle}권) 소진`};
+      return {accepted:false,skipped:true,why:`이번 달 패스 한도(${MANDATE.scope.max_per_cycle}권) 소진 — 확인 단계로 넘깁니다`};
     const v=TOOLS.check_policy(a);
     if(!v.allowed) return {accepted:false,why:v.checks.filter(x=>!x.pass)};
     MANDATE.used++; const m=MEMBER[VAULT[a.user]]; m.ill+=1;
@@ -407,19 +407,16 @@ $("passBtn").onclick=async function(){
   this.disabled=true;
   const W=t=>new Promise(r=>setTimeout(r,t));
   callTool("manage_mandate",{user:"tok_kimsj",op:"create"},
-    o=>`구독 동의를 받았어요(확인은 이번 한 번). 위임 ${o.mandate_id} — 월 ${o.scope.max_per_cycle}권 · 무료 경로만 · 언제든 해지.`);
-  await W(1400);
-  callTool("suggest_items",{user:"tok_kimsj",count:3},
-    o=>`이달의 추천 ${o.items.length}권을 받았어요: ${o.items.map(i=>i.title).join(", ")}.`);
+    o=>`책이지 패스를 등록했어요(확인은 이번 한 번). 위임 ${o.mandate_id} — 월 ${o.scope.max_per_cycle}권 · 관내 무료 경로만 · 접수 상태에서 즉시 취소 · 언제든 해지.`);
   await W(1400);
   callTool("request_service",{user:"tok_kimsj",isbn13:"9791161571188",from_lib:"꿈빛",pickup:CFG[cfgKey].home,mandate_id:"mnd-0001",route:"ill"},
-    o=>o.accepted?`『불편한 편의점』 — 확인 없이 접수(${o.authorized_by}). ${o.receipt}.`:`접수하지 못했어요.`);
+    o=>o.accepted?`「불편한 편의점 빌려줘」 한마디 → 『불편한 편의점』 확인 없이 접수(${o.authorized_by}). ${o.receipt}.`:`접수하지 못했어요.`);
   await W(1400);
   callTool("request_service",{user:"tok_kimsj",isbn13:BOOK.onsil.isbn13,from_lib:"전국",pickup:CFG[cfgKey].home,mandate_id:"mnd-0001",route:"sea"},
-    o=>o.skipped?`『지구 끝의 온실』 — 실비 경로라 자동 실행하지 않고 건너뛰었어요(위임 범위 밖).`:``);
+    o=>o.skipped?`『지구 끝의 온실』 — 실비 경로(책바다)라 패스 범위 밖 → 확인 시트로 넘겼어요.`:``);
   await W(1400);
-  callTool("notify_user",{user:"tok_kimsj",event:"pass_cycle",message:"이달의 책 1권 접수·1권 제외 — 자세한 내용은 앱에서"},
-    o=>`실행 결과를 ${o.channel==="voice_call"?"음성전화":"문자"}로 알려드렸어요. 다음 달 1일에 다시 실행됩니다.`);
+  callTool("notify_user",{user:"tok_kimsj",event:"pass_request",message:"『불편한 편의점』 상호대차 접수 — 접수 상태에서는 즉시 취소 가능"},
+    o=>`접수 결과를 ${o.channel==="voice_call"?"음성전화":"문자"}로 알려드렸어요. 접수 상태에서는 즉시 취소할 수 있어요.`);
   this.disabled=false;
 };
 

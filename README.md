@@ -1,4 +1,14 @@
-# 책이지 — 말 한마디면 끝나는 도서 상호대차
+# 책이지 — 말 한마디로 내 손안에 책이
+
+**도서관 상호대차 절차를 대신하는 AI 에이전트 · 시연 모델**
+
+<p>
+  <a href="https://altarry-prog.github.io/chaekiji/"><img src="https://img.shields.io/badge/시연%20웹-바로%20열기-1b5a4b" alt="시연 웹 바로 열기"></a>
+  <img src="https://img.shields.io/badge/MCP-stdio%20JSON--RPC-555" alt="MCP stdio JSON-RPC">
+  <img src="https://img.shields.io/badge/python-3.9%2B-3776ab" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/tests-47%20passed-2ea44f" alt="시험 47건 통과">
+  <a href="server/LICENSE"><img src="https://img.shields.io/badge/server%2F-MIT-green" alt="server/ MIT"></a>
+</p>
 
 > 마이크를 누르고 책 이름을 말하면, 어느 도서관에 있는지 찾고, 규정에 맞는지 판정하고, 신청·추적·취소까지 **대신 하는** 도서관 AI 에이전트.
 > 이 저장소 하나에 **시민용 화면(시연 웹)** 과 **실행 계층(MCP 참조 서버, `server/`)** 이 함께 있습니다. "책이 이지(easy)"라는 뜻입니다.
@@ -9,6 +19,18 @@
   <img src="docs/img/confirm.png" width="31%" alt="신청 확인 — 수령 기한·미수령 제한·처리 경로까지 고지">
 </p>
 <p align="center"><sub>왼쪽부터: 첫 화면 → 「나미야 잡화점의 기적 빌리고 싶어요」의 판정 결과 → 신청 확인 시트 (2026. 10. 13. 화면)</sub></p>
+
+## 1분 시연 영상
+
+[![책이지 시연 — 영상 보기 (1분)](docs/img/video-demo.jpg)](docs/video-demo.mp4)
+
+<sub>▶ 클릭하면 저장소 안의 영상(mp4, 3MB)이 열립니다 · 자막만 있는 무음 영상 · 시연 웹을 실제로 조작해 녹화(2026. 10. 14.)</sub>
+
+<details><summary>움직이는 미리보기(GIF, 4.6MB)</summary>
+
+![책이지 시연 GIF](docs/img/demo.gif)
+
+</details>
 
 > ⚠️ **운영 중인 서비스가 아닙니다.** 부천시립도서관이 제공하는 서비스가 아니라, 담당자가 실현가능성을 확인하기 위해 직접 만든 시연·검증 모델입니다.
 > 신청 흐름은 화면 안에서 완결되며 **실제 상호대차 접수로 이어지지 않습니다.** 대출 상태는 조회일 **전일 기준**입니다.
@@ -35,7 +57,7 @@
 | 🔌 MCP 확산 모델 설계도 | https://altarry-prog.github.io/chaekiji/mcp.html |
 | 🕹️ MCP 도구 호출 콘솔 | https://altarry-prog.github.io/chaekiji/console.html |
 
-휴대폰 크롬·사파리에서 열고 마이크를 허용하면 됩니다. 첫 화면의 「눌러서 시작하기」를 누르면 음성 안내가 시작되고, 예시 세 개를 누르면 세 갈래(우리 관 소장 → 바로 이용 / 관내 다른 관 → 상호대차 / 관내에 없음 → 책바다 안내)를 바로 볼 수 있습니다.
+휴대폰 크롬·사파리에서 열고 마이크를 허용하면 됩니다(PC에서는 위 1분 영상이 같은 흐름입니다). 첫 화면의 「눌러서 시작하기」를 누르면 음성 안내가 시작되고, 예시 세 개를 누르면 세 갈래(우리 관 소장 → 바로 이용 / 관내 다른 관 → 상호대차 / 관내에 없음 → 책바다 안내)를 바로 볼 수 있습니다.
 
 ## 바로 돌려보기 — 참조 서버 (2분)
 
@@ -92,7 +114,8 @@ MCP 클라이언트(클로드 데스크톱 · Codex CLI · VS Code · 로컬 공
 | 9. 27. | 참조 서버 **v0.3.1** 실험실 키트 — 정보나루 관내 조회원·SQLite 저장·해시 사슬 감사·실측 스크립트 |
 | 10. 1.~2. | 시연 웹 **v1.8 → v1.9** — 언어별 음성 인식 지원 표시 · 음성 안내 시작 화면·낭독 안정화 |
 | 10. 12. | 참조 서버 **v0.3.2** — 원커맨드 실행·CHANGELOG·모델 2종 구동 절차·정보나루 중계 설계 |
-| **10. 13.** | 참조 서버 **v0.3.3** README 개정 · **저장소 통합** — `chaekiji-mcp`를 `server/`로, 한 저장소·한 README·한 이력 |
+| 10. 13. | 참조 서버 **v0.3.3** README 개정 · **저장소 통합** — `chaekiji-mcp`를 `server/`로, 한 저장소·한 README·한 이력 |
+| **10. 14.** | 1분 시연 영상·GIF 미리보기 · README 전면 손질(제목·배지·문서 지도) |
 
 상세: [CHANGELOG.md](CHANGELOG.md) · [docs/시연웹-기능-상세.md](docs/시연웹-기능-상세.md) · [server/CHANGELOG.md](server/CHANGELOG.md)
 
@@ -105,6 +128,19 @@ MCP 클라이언트(클로드 데스크톱 · Codex CLI · VS Code · 로컬 공
 - **실데이터 연결** — 정적 시연 웹이 인증키 없이 실데이터를 쓰도록 얇은 중계(`relay/`)를 두고, 중계가 멈추면 지금처럼 모의 데이터로 자동 복귀. 설계는 [server/docs/정보나루-중계-설계.md](server/docs/정보나루-중계-설계.md)
 - **모델 2종 구동 입증** — 클로드 데스크톱 + 로컬 공개 모델(Ollama·젬마)에서 같은 서버를 돌려 기록. 절차는 [server/docs/모델2종-구동.md](server/docs/모델2종-구동.md)
 - **참조 서버 v0.4** — 예약 분기·책바다는 안내·미수령 제재·취소 시점·예상 수령일 계산 + **위임 범위 안 자동 재경로**, **기억의 경계**(설정과 위임장은 기억하되 무엇을 읽었는지는 기억하지 않음). 계획은 [server/docs/ROADMAP-v0.4.md](server/docs/ROADMAP-v0.4.md)
+
+## 문서 지도 — 무엇을 보려면 어디로
+
+| 알고 싶은 것 | 문서 |
+|---|---|
+| 화면이 실제로 어떻게 움직이나 | 위 1분 영상 · [시연 웹](https://altarry-prog.github.io/chaekiji/) |
+| 시연 웹의 기능 하나하나와 판별 이력 | [docs/시연웹-기능-상세.md](docs/시연웹-기능-상세.md) |
+| 참조 서버 설치·연결·도구 10종 계약 | [server/README.md](server/README.md) |
+| 규정 엔진이 보는 규정 7종과 도시별 설정 | [server/config/](server/config/) · [server/docs/](server/docs/) |
+| 다른 모델(클로드·공개 모델)에서 같은 서버 돌리기 | [server/docs/모델2종-구동.md](server/docs/모델2종-구동.md) |
+| 실데이터를 붙이는 설계 | [server/docs/정보나루-중계-설계.md](server/docs/정보나루-중계-설계.md) |
+| 다음 판 계획 | [server/docs/ROADMAP-v0.4.md](server/docs/ROADMAP-v0.4.md) |
+| 무엇이 언제 바뀌었나 | [CHANGELOG.md](CHANGELOG.md) · [server/CHANGELOG.md](server/CHANGELOG.md) |
 
 ## 함께 보기
 

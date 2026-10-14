@@ -1,0 +1,47 @@
+# 책이지 MCP — 부천시립도서관 설정 v0.4 초안 (2026. 9. 6.)
+# ※ v0.3 서버는 이 파일을 읽지 않습니다. 【확인】 값은 부천 규정·알파스 설정값으로 교체해야 합니다.
+#    조사 근거: 강남·청주·부산·용인·광진 통합도서관 공개 규정, 책바다 이용 안내 (2026. 9. 4.)
+city: 부천
+region_code: "31050"
+home_library: 상동
+rules:
+  ill_limit: 5                      # 【확인】 상호대차 1인 한도
+  total_limit: 20                   # 시 통합 대출 한도
+  per_lib_limit: 5                  # 도서관별 한도(직접+상호대차 합산)
+  per_lib_limit_scope: pickup       # pickup | provider | both
+  block_if_pickup_on_shelf: true    # 수령관 동일도서 비치 시 신청 불가
+  block_if_overdue: true            # 연체·정지 회원 신청 불가
+  min_grade: 정회원                  # 【확인】 신청 가능 회원 등급
+  excluded_types: [참고, 행정, 향토, 비도서, 큰활자, 점자, 부록]   # 조사 목록 — 【확인】
+  exclude_new_arrival: true         # 신착 제외 — 【확인】 기간
+  cancellable_states: [접수]        # [v0.4] 이용자 취소 가능 상태 — 이송 시작 후엔 도서관 문의
+  no_pickup_penalty:                # [v0.4] 미수령 제재 (규정 판정 8종째)
+    block_days: 10                  # 【확인】 조사 범위 10~30일
+    count_threshold: 1              # 누적 기준이면 4 (청주식)
+  recheck_member_on_arrival: true   # 도착 시 연체 재판정
+  fail_reasons: [방문자우선대출, 소재불명, 파손, 건수초과, 적재함불일치, 대형판형]   # 도서관측 취소 사유 코드
+  auto_requery_next_library: true   # 실패 시 다음 소장관 자동 재요청 (위임 범위 내)
+  when_all_on_loan: reserve         # [v0.4] reserve | national — 관내 전부 대출 중이면 예약으로
+  return_anywhere: true             # 【확인】 반납 장소
+hold:
+  days: 3                           # 【확인】 도착 후 보관기한
+  exclude_closed_days: true
+  remind_before_days: 1             # 보관 마감 하루 전 재알림
+eta_rules:                          # [v0.4] 예상 수령일 계산
+  cutoff: "13:00"                   # 【확인】 당일 처리 기준 시각
+  transit_days: 1
+  arrival_after: "16:00"
+  weekend_rollover: true
+libraries:
+  상동: { code: "141321", kind: public, closed: 월 }
+  # 【확인】 16개관 — kind: public | small | smart, small은 delivery_days: [금]
+national:                           # [v0.4] 3단계(책바다) — 대행 불가
+  mode: guide_only                  # 안내 + 사서 승인 요청 전달
+  fee: 5800
+  free_for_disabled: true
+pass:
+  max_per_cycle: 3
+  free_routes_only: true
+  pause_on_no_pickup: true          # [v0.4] 미수령 1회 시 자동 일시정지
+sso: sso.bucheon.go.kr
+notify_channels: [sms, voice_call]

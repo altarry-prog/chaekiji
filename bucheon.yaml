@@ -1,0 +1,37 @@
+# 책이지 MCP — 부천시립도서관 설정
+# 지역 고유값은 전부 이 파일에 산다. 코드에는 한 글자도 없다.
+city: 부천
+region_code: "31050"          # 정보나루 세부지역 코드 (행정표준코드 아님)
+home_library: 상동
+libraries:
+  꿈빛: "141065"
+  꿈여울: "141248"
+  도당: "141583"
+  동화: "141315"
+  별빛마루: "141652"
+  북부: "141056"
+  상동: "141321"
+  송내: "141559"
+  수주: "141651"
+  심곡: "141043"
+  역곡: "141603"
+  역곡밝은: "141660"
+  오정: "141584"
+  원미: "141535"
+  책마루: "141115"
+  한울빛: "141151"
+rules:
+  ill_limit: 5                # 상호대차 1인 한도
+  total_limit: 20             # 시 통합 대출 한도
+  per_lib_limit: 5            # 도서관별 한도(직접+상호대차 합산)
+  block_if_pickup_on_shelf: true   # 수령관 동일도서 비치 시 신청 불가
+  block_if_overdue: true      # [v0.3] 연체·정지 회원 신청 불가
+  excluded_types: [DVD, 참고자료]   # [v0.3] 상호대차 제외 자료 유형 — 예시값, 기관 확정 규정으로 교체
+  exclude_new_arrival: true   # [v0.3] 신착 자료 제외 — 예시값, 기관 확정 규정으로 교체
+ill_eta_days: "2~3"
+hold_days: 3                  # [v0.3] 도착 후 미수령 자동취소 기한(일) — 예시값
+pass:                          # 책이지 패스(구독 자동화) 위임 기본 범위
+  max_per_cycle: 3            # 월 최대 권수
+  free_routes_only: true      # 무료 경로(관내)만 자동 실행
+sso: sso.bucheon.go.kr
+notify_channels: [sms, voice_call]

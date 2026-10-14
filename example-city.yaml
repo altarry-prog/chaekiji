@@ -1,0 +1,23 @@
+# 가상 도시(예시) — 확산 검증용. 다른 도시 도입 = 이 파일을 새로 쓰는 일.
+city: 가상시(예시)
+region_code: "31999"
+home_library: 중앙
+libraries:
+  중앙: "999001"
+  동부: "999002"
+  서부: "999003"
+rules:
+  ill_limit: 2                # 부천(5)과 다른 규정 — 같은 코드, 다른 판정을 증명
+  total_limit: 10
+  per_lib_limit: 3
+  block_if_pickup_on_shelf: true
+  block_if_overdue: true
+  excluded_types: []          # 이 도시는 유형 제외 없음 — 규정 차이도 설정으로 표현
+  exclude_new_arrival: false
+ill_eta_days: "3~4"
+hold_days: 4                  # 부천(3일)과 다른 보관기한 — 같은 코드, 다른 값
+pass:
+  max_per_cycle: 2
+  free_routes_only: true
+sso: sso.example-city.go.kr
+notify_channels: [sms]

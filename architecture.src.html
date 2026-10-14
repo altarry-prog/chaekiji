@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<style>
+  body{margin:0;background:#fff;font-family:"Noto Sans CJK KR","Noto Sans KR",sans-serif;color:#1f2a2a}
+  #wrap{width:960px;padding:28px 28px 22px;box-sizing:border-box;background:#fff}
+  .layer{border-radius:14px;padding:14px 18px;margin:0 0 10px;position:relative}
+  .layer h3{margin:0 0 8px;font-size:15px;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
+  .tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.06)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .box{background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:10px;padding:8px 12px;font-size:13px;line-height:1.45;flex:1 1 0;min-width:150px}
+  .box b{display:block;font-size:13.5px;margin-bottom:2px}
+  .box small{color:#5c6b6b;font-size:11.5px}
+  .l1{background:#eef4f3}.l2{background:#f3f0e8}.l3{background:#e3efea;border:2px solid #1f6f5a}.l4{background:#f0f0f0}
+  .arrow{text-align:center;color:#6b7b7b;font-size:13px;margin:-4px 0 6px;letter-spacing:.5px}
+  .this{position:absolute;right:14px;top:12px;background:#1f6f5a;color:#fff;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px}
+  .side{display:flex;gap:10px;margin-top:8px}
+  .side .box{background:#f7fbf9}
+  .foot{font-size:11.5px;color:#5c6b6b;margin-top:10px;line-height:1.5}
+  .mono{font-family:ui-monospace,Menlo,Consolas,"Noto Sans Mono CJK KR",monospace;font-size:12px}
+</style></head><body><div id="wrap">
+
+<div class="layer l1"><h3>① 입구 — 이용자가 말하는 곳 <span class="tag">바꿔 끼울 수 있음</span></h3>
+  <div class="row">
+    <div class="box"><b>시연 웹 (chaekiji)</b><small>마이크 · 10개 언어 · 큰글자 · 설치형 웹</small></div>
+    <div class="box"><b>전화 한 통 모드</b><small>통화 흐름 시연 · 전화망 연결은 운영 단계</small></div>
+    <div class="box"><b>다른 입구</b><small>도서관 홈페이지 · 키오스크 · 메신저 등 — 같은 도구를 부르면 된다</small></div>
+  </div>
+</div>
+<div class="arrow">▼ 발화 한 문장</div>
+
+<div class="layer l2"><h3>② 에이전트 — 말을 알아듣고 도구를 고르는 모델 <span class="tag">모델 비종속 · MCP 표준</span></h3>
+  <div class="row">
+    <div class="box"><b>클로드 데스크톱</b><small>claude_desktop_config.example.json</small></div>
+    <div class="box"><b>Codex CLI · VS Code</b><small>lab/codex_config.example.toml · lab/vscode_mcp.example.json</small></div>
+    <div class="box"><b>로컬 공개 모델</b><small>Ollama + 젬마·라마 등 (행안부 AI 공통기반 지원 계열)</small></div>
+  </div>
+</div>
+<div class="arrow">▼ tools/call (JSON-RPC, stdio)</div>
+
+<div class="layer l3"><span class="this">이 저장소</span><h3>③ 표준 도구 10종 — chaekiji-mcp <span class="tag">규정은 코드가 아니라 설정에</span></h3>
+  <div class="row">
+    <div class="box"><b>조회 3</b><small class="mono">search_item · check_availability · find_alternative</small></div>
+    <div class="box" style="flex:2 1 0"><b>판정·실행 7</b><small class="mono">check_policy · request_service · track_request · cancel_request · notify_user · suggest_items · manage_mandate</small></div>
+  </div>
+  <div class="side">
+    <div class="box"><b>규정 엔진 policy.py</b><small>7종 판정 · 실행 직전 재판정</small></div>
+    <div class="box"><b>설정 config/*.yaml</b><small>도서관 코드 · 한도 · 제외 자료 — 도시마다 파일 하나</small></div>
+    <div class="box"><b>금고 vault.py</b><small>회원 식별자는 밖으로 나가지 않는다</small></div>
+    <div class="box"><b>저장·감사 store.py · audit.py</b><small>위임·신청 이력(SQLite) · 해시 사슬 기록 [v0.3.1]</small></div>
+  </div>
+</div>
+<div class="arrow">▼ 커넥터 함수</div>
+
+<div class="layer l4"><h3>④ 데이터·시스템 — 커넥터 <span class="tag">진짜와 모의를 구분</span></h3>
+  <div class="row">
+    <div class="box"><b>정보나루 (국립중앙도서관 Open API)</b><small>connectors/naru.py — demo: 2026. 8. 18. 실측 픽스처 · live: 실제 호출(인증키는 환경변수) · 대출 상태는 전일 기준</small></div>
+    <div class="box"><b>도서관리시스템 (알파스 등)</b><small>connectors/alpas_stub.py — <b style="display:inline">모의</b>. 함수 7개가 곧 벤더 연동 명세 · 운영에서 상태를 바꾸는 주체는 이 시스템뿐</small></div>
+  </div>
+</div>
+
+<div class="foot">확산의 산수: 다른 도시 = ②③은 그대로, 설정 파일 하나 + (도서관리시스템 종류 수만큼의) 커넥터 하나. 모델을 바꿔도 ③④는 그대로.</div>
+</div></body></html>

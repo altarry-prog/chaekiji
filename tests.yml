@@ -1,0 +1,28 @@
+# GitHub Actions — 커밋할 때마다 참조 서버(server/)의 적합성 시험 33건과 실험실 점검 14건을 자동 실행(공개 저장소는 무료).
+# 결과는 저장소 Actions 탭과 README 배지로 보인다:
+#   ![tests](https://github.com/altarry-prog/chaekiji/actions/workflows/tests.yml/badge.svg)
+name: tests
+on:
+  push:
+    branches: [main]
+    paths: ["server/**", ".github/workflows/tests.yml"]
+  pull_request:
+    paths: ["server/**"]
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: 적합성 시험 33건 (demo 모드 · 네트워크 없음)
+        run: python3 tests/run_scenarios.py
+      - name: 실험실 점검 14건 (저장·감사·관내 출처)
+        run: python3 lab/check_store.py
+      - name: 측정 스크립트 연습 실행 (픽스처)
+        run: python3 lab/measure.py --demo

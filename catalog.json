@@ -1,0 +1,104 @@
+{
+ "_note": "정보나루 srchBooks 모의 픽스처 — 2026. 8. 18. 실측 서지(앞 5건). v0.3: type·new_arrival 필드 추가, 끝 2건은 제외 규정 검증용 가상 예시. live 모드에서는 실제 API를 호출한다.",
+ "books": [
+  {
+   "isbn13": "9788936434120",
+   "title": "소년이 온다",
+   "author": "한강",
+   "publisher": "창비",
+   "year": "2014",
+   "keys": [
+    "소년이 온다",
+    "소년이온다",
+    "소년",
+    "한강 소년",
+    "humanacts"
+   ],
+   "type": "일반",
+   "new_arrival": false
+  },
+  {
+   "isbn13": "9788972756194",
+   "title": "나미야 잡화점의 기적",
+   "author": "히가시노 게이고",
+   "publisher": "현대문학",
+   "year": "2012",
+   "keys": [
+    "나미야",
+    "잡화점",
+    "나미야 잡화점",
+    "기적 나오는",
+    "namiya"
+   ],
+   "type": "일반",
+   "new_arrival": false
+  },
+  {
+   "isbn13": "9791161571188",
+   "title": "불편한 편의점",
+   "author": "김호연",
+   "publisher": "나무옆의자",
+   "year": "2021",
+   "keys": [
+    "불편한 편의점",
+    "불편한편의점",
+    "편의점"
+   ],
+   "type": "일반",
+   "new_arrival": false
+  },
+  {
+   "isbn13": "9791195794799",
+   "title": "설민석의 한국사 대모험",
+   "author": "설민석·스토리박스",
+   "publisher": "휴먼큐브",
+   "year": "2017",
+   "keys": [
+    "설민석",
+    "한국사 대모험",
+    "설민석 한국사"
+   ],
+   "type": "일반",
+   "new_arrival": false
+  },
+  {
+   "isbn13": "9791191824001",
+   "title": "지구 끝의 온실",
+   "author": "김초엽",
+   "publisher": "자이언트북스",
+   "year": "2021",
+   "keys": [
+    "지구 끝의 온실",
+    "지구끝의온실",
+    "김초엽 온실",
+    "온실"
+   ],
+   "type": "일반",
+   "new_arrival": false
+  },
+  {
+   "isbn13": "9790000000012",
+   "title": "신착 도서(예시·모의)",
+   "author": "예시",
+   "publisher": "예시",
+   "year": "2026",
+   "type": "일반",
+   "new_arrival": true,
+   "keys": [
+    "신착 예시 도서"
+   ]
+  },
+  {
+   "isbn13": "9790000000029",
+   "title": "DVD 자료(예시·모의)",
+   "author": "예시",
+   "publisher": "예시",
+   "year": "2024",
+   "type": "DVD",
+   "new_arrival": false,
+   "keys": [
+    "디브이디 예시"
+   ]
+  }
+ ]
+}

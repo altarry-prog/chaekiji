@@ -1,0 +1,27 @@
+{
+ "_note": "알파스 회원 모의 데이터 — 전원 가상 인물. v0.3: 연체·정지·진행중신청 필드 추가",
+ "members": {
+  "m-1004": {
+   "display": "김○자(가상)",
+   "ill_count": 2,
+   "total_loans": 7,
+   "loans_at": { "상동": 3 },
+   "overdue_count": 0,
+   "suspended": false,
+   "active_isbns": [],
+   "notify_pref": "voice_call",
+   "alt_flag": false
+  },
+  "m-2002": {
+   "display": "박○수(가상 · 연체 시나리오용)",
+   "ill_count": 1,
+   "total_loans": 5,
+   "loans_at": {},
+   "overdue_count": 2,
+   "suspended": false,
+   "active_isbns": [],
+   "notify_pref": "sms",
+   "alt_flag": false
+  }
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "_note": "국가서지 대체자료 모의 픽스처(예시 데이터) — live 모드에서 실제 목록 조회로 대체",
+ "alternatives": {
+  "9788972756194": {
+   "audiobook": true,
+   "braille": false
+  },
+  "9788936434120": {
+   "audiobook": true,
+   "braille": true
+  },
+  "9791191824001": {
+   "audiobook": false,
+   "braille": false
+  }
+ }
+}

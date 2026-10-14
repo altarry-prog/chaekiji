@@ -1,0 +1,50 @@
+chaekiji-mcp v0.3.1 실험실 키트 — 2026. 9. 27. (기준: 깃허브 main 커밋 36820ba, v0.3)
+
+이 압축을 chaekiji-mcp 저장소 폴더에 그대로 풀면(덮어쓰기 허용) 됩니다.
+
+[교체되는 기존 파일 — 4개]
+  README.md
+  connectors/naru.py
+  server.py
+  tools.py
+
+[새로 생기는 파일]
+  .github/workflows/tests.yml
+  .gitignore
+  AGENTS.md
+  audit.py
+  docs/알림-발송-경로-설계.md
+  docs/이력저장-감사기록-설계.md
+  docs/이용데이터명세.md
+  lab/README.md
+  lab/check_store.py
+  lab/codex_config.example.toml
+  lab/gitlab-ci.example.yml
+  lab/make_city_config.py
+  lab/make_titles.py
+  lab/measure.py
+  lab/naru_probe.py
+  lab/out/.gitkeep
+  lab/vscode_mcp.example.json
+  lab/기록지/기록지_B_C_제3자시험.md
+  lab/기록지/기록지_D_실기기음성.csv
+  lab/기록지/기록지_E_공식MCP대조.csv
+  lab/기록지/자가점검_G.md
+  prompts/2026-09-27-실험실-키트.md
+  prompts/README.md
+  prompts/템플릿.md
+  store.py
+
+[직접 지울 파일 — 6개]  (깃허브 웹: 파일 열기 → 휴지통 → Commit / VM: git rm 파일명…)
+  .gitinore                 오타 파일 — .gitignore가 새로 들어가므로 지운다
+  mcp.html                  루트 중복 — 설계도는 chaekiji 저장소의 것 (README에 그렇게 적혀 있음)
+  console.html              루트 중복 — 콘솔도 chaekiji 저장소의 것
+  bucheon.yaml              루트 중복 — config/bucheon.yaml 이 원본
+  bucheon.v0.4-draft.yaml   루트 중복 — config/bucheon.v0.4-draft.yaml 이 원본
+  ROADMAP-v0.4.md           루트 중복 — docs/ROADMAP-v0.4.md 가 원본
+  (검증기록_20260828.txt 는 두어도 됨 — 초판 기록)
+
+[확인 명령]
+  python3 tests/run_scenarios.py   → 전체 33건 통과
+  python3 lab/check_store.py       → 실험실 점검 14건 통과
+  python3 lab/measure.py --demo    → 픽스처로 연습 실행

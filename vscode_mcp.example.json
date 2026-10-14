@@ -1,0 +1,11 @@
+{
+  "_설명": "VS Code(Copilot 에이전트 모드 등 MCP 클라이언트)용 설정 예시 — 저장소 안 .vscode/mcp.json 으로 복사. 경로는 실제 경로로.",
+  "servers": {
+    "chaekiji": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["${workspaceFolder}/server.py"],
+      "env": { "CHAEKIJI_MODE": "demo", "CHAEKIJI_LOCAL_SOURCE": "alpas" }
+    }
+  }
+}

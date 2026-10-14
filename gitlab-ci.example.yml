@@ -1,0 +1,15 @@
+# 공공 GitLab용 CI 예시 — 공유 러너(Runner)가 있을 때만 동작한다(NIA에 확인).
+# 쓰려면 이 파일을 저장소 루트에 .gitlab-ci.yml 이름으로 복사한다.
+image: python:3.12-slim
+stages: [test]
+conformance:
+  stage: test
+  before_script:
+    - pip install pyyaml
+  script:
+    - python3 tests/run_scenarios.py
+    - python3 lab/check_store.py
+    - python3 lab/measure.py --demo
+  artifacts:
+    paths: [lab/out/]
+    expire_in: 1 week

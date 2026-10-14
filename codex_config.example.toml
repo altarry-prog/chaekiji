@@ -1,0 +1,20 @@
+# Codex CLI에 책이지 참조 서버(와 정보나루 공식 MCP)를 연결하는 설정 예시
+# 위치: ~/.codex/config.toml  (이 저장소만 적용하려면 저장소 안 .codex/config.toml)
+# 경로는 VM의 실제 경로로 바꾼다. 인증키는 이 파일에 쓰지 않는다 — env_vars로 환경변수 이름만 넘긴다.
+
+[mcp_servers.chaekiji]
+command = "python3"
+args = ["/home/【VM계정】/projects/chaekiji/server/server.py"]
+startup_timeout_sec = 20
+
+[mcp_servers.chaekiji.env]
+CHAEKIJI_MODE = "demo"            # live로 바꾸면 정보나루 실호출(NARU_KEY 필요)
+CHAEKIJI_LOCAL_SOURCE = "alpas"   # naru로 바꾸면 관내 조회도 정보나루(전일 기준)
+# CHAEKIJI_STORE = "/home/【VM계정】/chaekiji-state.sqlite3"
+# CHAEKIJI_AUDIT = "/home/【VM계정】/chaekiji-audit.jsonl"
+
+# (선택) 국립중앙도서관 정보나루 공식 MCP — 원격 서버, 인증키는 X-Auth-Key 머리글.
+# 키를 파일에 쓰지 않으려면 셸에서 export NARU_KEY=… 한 뒤 http_headers 대신 아래처럼 환경변수 이름을 넘긴다(지원 여부는 codex --version 기준 문서 확인).
+# [mcp_servers.biglib]
+# url = "https://www.data4library.kr/mcp"
+# http_headers = { "X-Auth-Key" = "【키를 여기 쓰지 말 것 — 지원되면 env 참조 방식 사용】" }

@@ -27,6 +27,7 @@ const mem = { hits: new Map(), cache: new Map() };
 
 export default {
   async fetch(req, env) {
+    env = { ...env, NARU_KEY: env.NARU_KEY || env.NARUKEY };   // 비밀 이름은 NARU_KEY(권장)·NARUKEY 둘 다 받는다
     const url = new URL(req.url);
     const origin = req.headers.get("Origin") || "";
     const cors = corsHeaders(origin);

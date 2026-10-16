@@ -1,11 +1,47 @@
 {
- "time": "2026-10-16 17:34 KST",
+ "time": "2026-10-16 17:49 KST",
  "result": "ok",
  "url": "https://chaekiji-relay.altarry2.workers.dev",
  "health": {
-  "error": "HTTPError"
+  "status": 200,
+  "ms": 89,
+  "ok": true,
+  "keyed": true,
+  "region": "31050"
+ },
+ "probe_python_default_name": {
+  "status": 403,
+  "ms": 35,
+  "text": "error code: 1010"
+ },
+ "cors_web": {
+  "status": 200,
+  "allow_origin": "https://altarry-prog.github.io"
  },
  "holdings_sample": {
-  "error": "HTTPError: 403"
- }
+  "status": 200,
+  "ms": 8858,
+  "asof": "2026-10-16",
+  "calls": 16,
+  "via": "http",
+  "cached": false,
+  "isbn": "9788972756194",
+  "ok": 7,
+  "busy": 6,
+  "none": 3
+ },
+ "search_sample": {
+  "status": 200,
+  "ms": 1508,
+  "via": "https",
+  "docs": 5,
+  "first": "나미야 잡화점의 기적 :히가시노 게이고 장편소설 "
+ },
+ "nation_sample": {
+  "status": 200,
+  "ms": 3797,
+  "found_count": 200,
+  "via": "http"
+ },
+ "check": "ok"
 }

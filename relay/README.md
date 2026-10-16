@@ -21,7 +21,7 @@
 - `GET /nation?isbn=9788972756194` → `{"found_count":12,"asof"}` (경기 광역 소장관 수 — 전국 예시)
 - `GET /health` → `{"ok":true,"keyed":true}` (키 **값**은 어디에도 내보내지 않음)
 
-**깃허브가 대신 올리기(10/16~)** — 행정망에서 Cloudflare 화면이 막혀 있어, 배포를 깃허브 액션 `.github/workflows/deploy-relay.yml`에 맡겼다. 저장소 비밀값 `CLOUDFLARE_API_TOKEN`(Cloudflare 「Edit Cloudflare Workers」 템플릿 토큰)·`CLOUDFLARE_ACCOUNT_ID`가 있으면 `worker.js`·`wrangler.toml`이 바뀔 때마다 배포하고, 이미 있는 정보나루 키(`NARU_KEY`/`NARUKEY`)를 Cloudflare 비밀값으로 넘긴 뒤 `/health`·`/holdings` 1건을 확인해 `relay/last_deploy.json`(주소·결과·실패 까닭, 키·토큰 없음)에 남긴다.
+**깃허브가 대신 올리기(10/16~)** — 행정망에서 Cloudflare 화면이 막혀 있어, 배포를 깃허브 액션 `.github/workflows/deploy-relay.yml`에 맡겼다. 저장소 비밀값 `CLOUDFLARE_API_TOKEN`(Cloudflare 「Edit Cloudflare Workers」 템플릿 토큰) 하나만 있으면(계정 ID는 선택 — 없으면 토큰으로 찾고, workers.dev 주소 이름이 없으면 만든다) `worker.js`·`wrangler.toml`이 바뀔 때마다 배포하고, 이미 있는 정보나루 키(`NARU_KEY`/`NARUKEY`)를 Cloudflare 비밀값으로 넘긴 뒤 `/health`·`/holdings` 1건을 확인해 `relay/last_deploy.json`(주소·결과·실패 까닭, 키·토큰 없음)에 남긴다.
 
 점검: `node relay/test_worker.mjs` — 정보나루를 흉내 낸 fetch로 네 경로·거절 규칙·https→http 넘어가기 15건(네트워크·키 불필요).
 

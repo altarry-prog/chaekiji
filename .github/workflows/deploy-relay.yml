@@ -1,7 +1,7 @@
 # 정보나루 중계(relay/)를 Cloudflare Workers에 올린다 — 행정망에서 Cloudflare 화면이 막혀 있어 배포는 깃허브가 대신 한다.
 # 저장소 비밀값(Settings → Secrets and variables → Actions):
-#   CLOUDFLARE_API_TOKEN  — Cloudflare 「My Profile → API Tokens → Edit Cloudflare Workers」 템플릿으로 만든 토큰
-#   CLOUDFLARE_ACCOUNT_ID — Cloudflare 계정 ID(Workers & Pages 화면 오른쪽 「Account ID」)
+#   CLOUDFLARE_API_TOKEN  — Cloudflare 「My Profile → API Tokens → Edit Cloudflare Workers」 템플릿으로 만든 토큰(이것만 있으면 된다)
+#   CLOUDFLARE_ACCOUNT_ID — (선택) 계정 ID. 없으면 토큰으로 계정을 찾고, workers.dev 주소 이름이 없으면 만들어 준다
 #   NARU_KEY(또는 NARUKEY) — 이미 있는 정보나루 키. 배포할 때 Cloudflare 비밀값으로 그대로 넘긴다(출력·기록 없음)
 # 결과(주소·확인 결과·실패 까닭)는 relay/last_deploy.json 에 남긴다 — 키·토큰은 없다.
 name: deploy-relay
@@ -32,14 +32,46 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}
         run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "Cloudflare 비밀값(CLOUDFLARE_API_TOKEN · CLOUDFLARE_ACCOUNT_ID)이 없어 건너뜁니다"; echo "skipped=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Cloudflare 비밀값(CLOUDFLARE_API_TOKEN)이 없어 건너뜁니다"; echo "skipped=true" >> "$GITHUB_OUTPUT"; exit 0; fi
           set +e
+          # 계정 ID가 없으면 토큰으로 찾고, workers.dev 주소 이름이 없으면 만든다(휴대폰에서 찾기 어려운 값을 깃허브가 대신 챙김)
+          python3 - <<'PY' > prep.out 2> deploy_err.txt
+          import json, os, urllib.request, urllib.error
+          tok = os.environ["CLOUDFLARE_API_TOKEN"]; acc = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+          def api(method, path, body=None):
+              req = urllib.request.Request("https://api.cloudflare.com/client/v4" + path, method=method,
+                                           data=None if body is None else json.dumps(body).encode(),
+                                           headers={"Authorization": "Bearer " + tok, "Content-Type": "application/json"})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r: return json.load(r)
+              except urllib.error.HTTPError as e:
+                  try: return json.load(e)
+                  except Exception: return {"success": False, "errors": [{"message": f"HTTP {e.code}"}]}
+          if not acc:
+              r = api("GET", "/accounts?per_page=5")
+              accs = r.get("result") or []
+              if len(accs) != 1:
+                  raise SystemExit(f"계정을 하나로 정하지 못함(찾은 수 {len(accs)}) — CLOUDFLARE_ACCOUNT_ID 비밀값을 넣어 주세요. {[(e.get('message')) for e in r.get('errors', [])]}")
+              acc = accs[0]["id"]
+          sub = api("GET", f"/accounts/{acc}/workers/subdomain")
+          name = (sub.get("result") or {}).get("subdomain")
+          if not name:
+              for cand in ["altarry", "chaekiji-altarry", "chaekiji-bucheon", "chaekiji-sangdong"]:
+                  r = api("PUT", f"/accounts/{acc}/workers/subdomain", {"subdomain": cand})
+                  if r.get("success"): name = cand; break
+              if not name:
+                  raise SystemExit(f"workers.dev 주소 이름을 만들지 못함: {[(e.get('message')) for e in r.get('errors', [])]}")
+          print(acc); print(name)
+          PY
+          if [ $? -ne 0 ]; then echo "준비 실패"; exit 1; fi
+          export CLOUDFLARE_ACCOUNT_ID=$(sed -n 1p prep.out)
+          echo "::add-mask::$CLOUDFLARE_ACCOUNT_ID"
           npx --yes wrangler@4.151.0 deploy > deploy.log 2>&1; rc=$?
           url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
           echo "url=$url" >> "$GITHUB_OUTPUT"
           # 실패 까닭 몇 줄만(계정 ID는 가림) — 로그 전체는 남기지 않는다
-          grep -E 'ERROR|✘|error' deploy.log | head -5 | sed "s/$CLOUDFLARE_ACCOUNT_ID/***/g" > deploy_err.txt || true
+          grep -E 'ERROR|✘|error' deploy.log | head -5 | sed "s/$CLOUDFLARE_ACCOUNT_ID/***/g" >> deploy_err.txt || true
           if [ $rc -ne 0 ]; then echo "배포 실패"; exit 1; fi
           if [ -n "$NARU_KEY" ]; then
             printf '%s' "$NARU_KEY" | npx --yes wrangler@4.151.0 secret put NARU_KEY > secret.log 2>&1 || { echo "키 넣기 실패" >> deploy_err.txt; exit 1; }

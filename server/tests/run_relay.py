@@ -12,7 +12,8 @@
 import subprocess, json, sys, os, threading, http.server, socketserver, datetime, urllib.parse, time, tempfile
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
-TODAY = datetime.date.today().isoformat()
+KST = datetime.timezone(datetime.timedelta(hours=9))   # 서버·갱신 스크립트와 같은 한국 날짜
+TODAY = datetime.datetime.now(KST).date().isoformat()
 FAKE_KEY = "FAKE-KEY-NEVER-LEAKS"
 LIBS = ["141321","141065","141248","141583","141315","141652","141056","141559",
         "141651","141043","141603","141660","141584","141535","141115","141151"]
@@ -111,7 +112,7 @@ ok(r5["mode"] == "demo", "① auto → 중계 죽어 있으면 demo 선택")
 c3.banner()
 print("── 매일 갱신 스냅샷(refresh_today.py 결과) ──")
 tmp = Path(tempfile.mkdtemp())
-r0 = subprocess.run([sys.executable, str(ROOT/"lab"/"refresh_today.py"), "--demo", "--out", str(tmp/"snap.json"),
+r0 = subprocess.run([sys.executable, str(ROOT/"lab"/"refresh_today.py"), "--demo", "--out", str(tmp/"snap.json"), "--status-out", str(tmp/"status.json"),
                      "--web-out", str(tmp/"web.json")], capture_output=True, text=True, encoding="utf-8", timeout=60)
 snap = json.load(open(tmp/"snap.json", encoding="utf-8"))
 ok(r0.returncode == 0 and snap["asof"] == TODAY and len(snap["holdings"]) == 5 and "9790000000012" not in snap["holdings"] and (tmp/"web.json").exists(),
@@ -123,7 +124,7 @@ r6 = c4.call("consult_request", utterance="나미야 잡화점의 기적", picku
 ok(r6["mode"] == "snapshot" and r6["route"] == "visit" and "매일 갱신" in r6["availability"]["basis"] and r6["availability"]["asof"] == TODAY,
    "   중계 없음 + 신선한 스냅샷 → auto가 snapshot 선택 · 어제 반납분이 「바로 이용」으로 반영")
 c4.banner()
-snap["asof"] = (datetime.date.today() - datetime.timedelta(days=10)).isoformat()
+snap["asof"] = (datetime.datetime.now(KST).date() - datetime.timedelta(days=10)).isoformat()
 json.dump(snap, open(tmp/"snap.json", "w", encoding="utf-8"), ensure_ascii=False)
 c5 = Client(CHAEKIJI_MODE="auto", CHAEKIJI_RELAY=RELAY, CHAEKIJI_SNAPSHOT=str(tmp/"snap.json"))
 r7 = c5.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동")

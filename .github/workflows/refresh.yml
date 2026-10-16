@@ -25,22 +25,32 @@ jobs:
           python-version: "3.12"
       - run: pip install -r server/requirements.txt
       - name: 정보나루 조회 (키는 Secrets에만 · 하루 한도 안에서 300회까지)
+        id: fetch
+        continue-on-error: true          # 실패해도 아래에서 실행 기록(까닭)을 남기고, 마지막에 빨간 X로 알린다
         env:
           NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}   # 비밀 이름은 NARU_KEY(권장)·NARUKEY 둘 다 받는다
         run: |
           if [ -z "$NARU_KEY" ]; then echo "인증키 비밀값(NARU_KEY 또는 NARUKEY)이 없어 건너뜁니다(Settings → Secrets and variables → Actions)"; exit 0; fi
           python server/lab/refresh_today.py --max-calls 300
-      - name: 바뀐 것이 있으면 커밋
+      - name: 결과와 실행 기록 커밋(실패해도 기록은 남긴다)
         id: commit
+        if: always()
         run: |
           git config user.name "chaekiji-refresh"
           git config user.email "refresh@users.noreply.github.com"
-          git add server/fixtures/holdings-today.json data/holdings-today.json || true
+          git add server/fixtures/holdings-today.json data/holdings-today.json server/lab/out/refresh_status.json 2>/dev/null || true
+          day=$(date -u -d '+9 hours' +%Y-%m-%d)
+          if [ "${{ steps.fetch.outcome }}" = "success" ]; then msg="매일 갱신: 정보나루 조회분 $day"; else msg="매일 갱신 실패 기록: $day (까닭은 server/lab/out/refresh_status.json)"; fi
           if git diff --cached --quiet; then echo "변경 없음"; echo "changed=false" >> "$GITHUB_OUTPUT"
-          else git commit -m "매일 갱신: 정보나루 조회분 $(date -u -d '+9 hours' +%Y-%m-%d)" && git push && echo "changed=true" >> "$GITHUB_OUTPUT"; fi
+          else git commit -m "$msg" && git push && echo "changed=true" >> "$GITHUB_OUTPUT"; fi
       - name: 시연 웹 다시 게시 요청(이 작업의 커밋은 게시를 저절로 부르지 않을 수 있어 직접 부른다)
-        if: steps.commit.outputs.changed == 'true'
+        if: steps.commit.outputs.changed == 'true' && steps.fetch.outcome == 'success'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api -X POST "repos/${{ github.repository }}/pages/builds" --silent && echo "게시 요청 완료" || echo "게시 요청 실패 — 다음 커밋 때 함께 반영됩니다"
+      - name: 조회가 실패했으면 빨간 X로 알리기
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          echo "정보나루 조회 실패 — server/lab/out/refresh_status.json 에 까닭이 있습니다"
+          exit 1

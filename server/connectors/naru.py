@@ -18,14 +18,19 @@ v0.3.4 (상담 비서 판, 2026. 10.)
 - LAST_META.asof: 어느 모드든 「몇 월 며칠 조회분」인지 날짜를 함께 돌려준다(안내문의 전일 기준 표시용).
 - snapshot: lab/refresh_today.py가 매일 써 두는 fixtures/holdings-today.json(어제 기준 조회분)을 읽는다.
   auto 모드는 중계 → 신선한 스냅샷(2일 이내) → 8/18 픽스처 순으로 고른다. relay 모드도 스냅샷에 있는 책은 중계를 부르지 않는다(한도 절약)."""
-import json, os, time, datetime, urllib.parse, urllib.request
+import json, os, time, datetime, socket, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 
 FIX = Path(__file__).resolve().parent.parent / "fixtures"
 _cat = json.load(open(FIX/"catalog.json", encoding="utf-8"))
 _hold = json.load(open(FIX/"holdings.json", encoding="utf-8"))
 
-BASE = "https://data4library.kr/api/"
+# 매뉴얼(v20260210)의 호출 주소는 http://data4library.kr/api/ 다. https를 먼저 시도하고, 연결이 안 되면 http로 넘어가
+# 처음 통한 주소를 기억한다(키가 실리는 주소라 https를 앞에 둔다). NARU_BASE 환경변수로 하나만 지정할 수도 있다.
+BASES = [os.environ["NARU_BASE"]] if os.environ.get("NARU_BASE") else ["https://data4library.kr/api/", "http://data4library.kr/api/"]
+BASE = BASES[0]
+_BASE_OK = None                                       # 처음 통한 주소(https/http)
+KST = datetime.timezone(datetime.timedelta(hours=9))   # 조회일은 한국 날짜로(깃허브 서버는 UTC)
 EXACT = os.environ.get("NARU_EXACT", "true")          # 매뉴얼: true/false. 8월 실측 코드는 Y — probe로 확인
 CALLS = []                                            # 호출 계측 [{"api","ms","at"}] — live 호출만 기록
 LAST_META = {}                                        # 마지막 holdings_local의 부가 정보(소장관 수·호출 수)
@@ -47,7 +52,7 @@ def snapshot_fresh() -> bool:
         d = datetime.date.fromisoformat(_snap["asof"])
     except Exception:
         return False
-    return 0 <= (datetime.date.today() - d).days <= SNAPSHOT_MAX_DAYS
+    return 0 <= (datetime.datetime.now(KST).date() - d).days <= SNAPSHOT_MAX_DAYS
 
 def _snapshot_holdings(isbn13, libraries):
     if not snapshot_fresh(): return None
@@ -76,7 +81,7 @@ def clean_title(utterance: str) -> str:
         if len(t) > 3 and t.endswith(suf) and not t.endswith(" " + suf):
             t = t[: -len(suf)].rstrip(); break
     return t or str(utterance)
-def _today(): return datetime.date.today().isoformat()
+def _today(): return datetime.datetime.now(KST).date().isoformat()
 
 # ── 중계(relay/) 호출 — 키 없이 오늘 데이터 ─────────────────────────
 def relay_ok(timeout=3):
@@ -109,6 +114,10 @@ def _relay_search(utterance=None, isbn13=None):
 
 # ── 계측 ──────────────────────────────────────────────────────────
 def calls_reset(): CALLS.clear()
+
+def base_used():
+    """지금까지 통한 정보나루 주소 종류(https/http) — 없으면 None."""
+    return None if not _BASE_OK else ("https" if _BASE_OK.startswith("https") else "http")
 def calls_summary():
     by = {}
     for c in CALLS: by[c["api"]] = by.get(c["api"], 0) + 1
@@ -180,7 +189,7 @@ def _bib_from_doc(d):
             "basis": "정보나루 srchBooks(live) — 자료유형·신착은 미제공(판정 보류)"}
 
 def availability_nation(isbn13: str, mode="demo"):
-    yday = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
+    yday = (datetime.datetime.now(KST).date() - datetime.timedelta(days=1)).isoformat()
     if mode == "live":
         return _live_nation(isbn13)
     if mode == "snapshot" or (mode == "relay" and snapshot_fresh() and isbn13 in (_snap.get("nation") or {})):
@@ -277,15 +286,30 @@ def _key():
     return k
 
 def _get(api, **params):
-    """정보나루 Open API 1회 호출. 키는 URL에만 실리고 어디에도 기록되지 않는다."""
+    """정보나루 Open API 1회 호출. 키는 URL에만 실리고 어디에도 기록되지 않는다.
+    https가 연결되지 않으면 http(매뉴얼 주소)로 한 번 더 — 처음 통한 주소를 기억해 다음부터는 그것만 쓴다."""
+    global _BASE_OK
     params["authKey"] = _key()
     params["format"] = "json"
-    url = BASE + api + "?" + urllib.parse.urlencode(params)
-    t0 = time.perf_counter()
-    with urllib.request.urlopen(url, timeout=20) as r:
-        data = json.load(r)
+    q = urllib.parse.urlencode(params)
+    bases = [_BASE_OK] if _BASE_OK else BASES
+    last = None
+    for i, base in enumerate(bases):
+        t0 = time.perf_counter()
+        try:
+            with urllib.request.urlopen(base + api + "?" + q, timeout=20 if i == len(bases) - 1 else 8) as r:
+                data = json.load(r)
+        except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError) as e:
+            last = e
+            continue
+        _BASE_OK = base
+        break
+    else:
+        why = getattr(last, "reason", None) or getattr(last, "code", None) or last
+        raise RuntimeError(f"정보나루 연결 실패({api}): {type(last).__name__}: {why}")
     CALLS.append({"api": api, "ms": round((time.perf_counter() - t0) * 1000),
-                  "at": datetime.datetime.now().strftime("%H:%M:%S")})
+                  "at": datetime.datetime.now(KST).strftime("%H:%M:%S"),
+                  "via": "https" if _BASE_OK.startswith("https") else "http"})
     resp = data.get("response", data)
     if isinstance(resp, dict) and resp.get("error"):
         raise RuntimeError(f"정보나루 응답 오류({api}): {resp['error']}")

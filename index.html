@@ -214,8 +214,10 @@ body.bigmode .bqitems{font-size:15.5px}
   border-radius:11px;padding:8px 12px;font-size:13.5px;font-family:inherit;color:var(--ink);
   margin-bottom:6px;cursor:pointer;line-height:1.45;
 }
-.quick{margin-top:4px}
-.quick .bqcard.slim{margin-top:6px}
+.quick{margin-top:12px;border-top:1px solid #e8ecea}
+.quick .bqcard.slim{margin-top:0;background:transparent !important;border:0 !important;border-bottom:1px solid #eef1f0 !important;border-radius:0;box-shadow:none;padding:11px 6px}
+.quick .bqcard.slim b{color:#4b5563 !important;font-weight:600;font-size:13px}
+.quick .bqcard.slim .go{color:#9ca3af}
 .chip:active{background:var(--brand-l);border-color:var(--brand)}
 .chip b{color:var(--brand);font-weight:700}
 .chip .m{display:block;font-size:11.2px;color:var(--ink3);margin-top:1px}
@@ -601,6 +603,8 @@ body.bigmode .foot button{font-size:12.5px}
 .demo-tag{top:calc(13px + env(safe-area-inset-top, 0px))}
 .foot button{padding-bottom:calc(9px + env(safe-area-inset-bottom, 0px))}
 .sheet-in{padding-bottom:calc(26px + env(safe-area-inset-bottom, 0px))}
+.lib .r2:empty{display:none}
+.olink{display:block;text-align:center;margin:8px 0 2px;font-size:14px;color:#0f5c4c;text-decoration:underline;text-underline-offset:3px}
 .pc-top{padding-top:calc(14px + env(safe-area-inset-top, 0px))}
 .scanov{padding-top:env(safe-area-inset-top, 0px)}
 </style>
@@ -681,8 +685,8 @@ body.bigmode .foot button{font-size:12.5px}
           <b id="bqE1">AI 책큐 추천, 한 번에 처리</b>
           <span id="bqE2">추천 도서를 자주 가는 도서관으로 모아드립니다 · 시연</span><span class="go" aria-hidden="true">›</span>
         </button>
-        <button class="bqcard slim" id="passcard" onclick="passOpen()" style="background:linear-gradient(135deg,#fdf6ea,#f7ecd8);border-color:#e2cfa8">
-          <b id="psE1" style="color:#7c5514">책이지 패스 — 한 번 등록하면, 말 한마디로 끝</b>
+        <button class="bqcard slim" id="passcard" onclick="passOpen()">
+          <b id="psE1">책이지 패스 — 한 번 등록하면, 말 한마디로 끝</b>
           <span id="psE2"></span><span class="go" aria-hidden="true">›</span>
         </button>
       </div>
@@ -930,6 +934,15 @@ body.bigmode .foot button{font-size:12.5px}
 const 기준일 = "2026. 8. 18.";
 /* v1.10: 정보나루 중계(relay/) — 주소를 넣으면 실데이터, 비우면 매일 갱신 파일 → 픽스처 순. 중계가 3초 안에 답하지 않으면 다음 출처로 자동 복귀 */
 const RELAY = "";
+/* v1.12: 화면 정리 — 첫 화면의 책큐·패스 카드를 글자 줄로, 도서관코드 숨김, 확인 시트에서 기술 용어 행 제거,
+   결과 화면에 「공식 누리집에서 이 책 보기·신청」 링크(접수는 이용자가 누리집에 로그인해 직접 — 이 화면의 접수는 시연). */
+const OFFICIAL_SEARCH = 'https://alpasq.bcl.go.kr/search/keyword/{title}';   /* v1.12 공식 자료검색 주소 틀 — 비우면 링크 생략 */
+const OLINK = {ko:'공식 누리집에서 이 책 보기 · 신청 ›', en:'Open this book on the official library site ›', zh:'在图书馆官网查看本书 · 申请 ›',
+  ja:'図書館公式サイトでこの本を見る · 申込 ›', vi:'Xem sách này trên trang web chính thức của thư viện ›', th:'ดูหนังสือเล่มนี้ที่เว็บไซต์ห้องสมุด ›',
+  ru:'Открыть эту книгу на сайте библиотеки ›', mn:'Номын сангийн албан ёсны сайтаас энэ номыг үзэх ›', uz:'Bu kitobni kutubxona rasmiy saytida ko‘rish ›',
+  id:'Lihat buku ini di situs resmi perpustakaan ›'};
+function officialLink(title){ if(!OFFICIAL_SEARCH || !title) return ''; const k = Object.keys(LANGS).find(x=>LANGS[x]===L) || 'ko';
+  return `<a class="olink" href="${OFFICIAL_SEARCH.replace('{title}', encodeURIComponent(title))}" target="_blank" rel="noopener">${OLINK[k] || OLINK.ko}</a>`; }
 /* v1.11: 중계가 없거나 답이 없으면, 같은 출처의 「매일 갱신」 파일(data/holdings-today.json · 깃허브 액션이 새벽에 씀)을 본다. 2일 넘게 묵으면 무시 */
 function asofText(a){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(a || ''); return m ? `${m[1]}. ${+m[2]}. ${+m[3]}.` : a; }
 function todayHoldings(c){
@@ -2276,19 +2289,19 @@ function result(){
   h += `<div class="lib best">
       <span class="pick">${tag}</span>
       <div class="r1"><div class="nm">${btName}</div><span class="badge b-ok">${u.bOk}</span></div>
-      <div class="r2">${bt.code ? `${u.code} <code>${bt.code}</code>` : ''}${bt.loc ? (bt.code?' · ':'')+bt.loc : ''}${bt.note ? '<br>'+bt.note : ''}</div>
+      <div class="r2">${bt.loc ? bt.loc : ''}${bt.note ? (bt.loc?'<br>':'')+bt.note : ''}</div>
     </div>
 
     <button class="cta" id="apply">${(t !== 0 && passReady(t)) ? P_().btn : T[3]}</button>
 
-    <div class="src">${c.real ? u.srcR(c.asof || 기준일) : u.srcD}</div>`;
+    <div class="src">${c.real ? u.srcR(c.asof || 기준일) : u.srcD}</div>${t !== 2 ? officialLink(c.book.t) : ''}`;
 
   if(t === 0) h += `<div class="rule">${u.rule(내관)}</div>`;
 
   if(alt.length){
     h += `<div class="sec-t">${u.also}</div>`;
     alt.forEach(l => {
-      let d = l.code ? `${u.code} <code>${l.code}</code>` : '';
+      let d = '';
       if(l.loc)  d += (d?' · ':'') + l.loc;
       if(l.note) d += (d?'<br>':'') + l.note;
       h += `<div class="lib"><div class="r1"><div class="nm">${dispName(u,l)}</div>
@@ -2370,10 +2383,7 @@ function openSheet(){
     <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>${midRows}
     <div class="kv"><div class="k">${u.kTo}</div><div class="v">${u.NM(내관)}</div></div>
     <div class="kv"><div class="k">${u.kTime}</div><div class="v">${T[4]} · ${T[5]}</div></div>${holdRow}
-    <div class="kv"><div class="k">${u.kRecv}</div><div class="v">${u.recvV(내관)}
-      <span class="vs">${u.recvS}</span></div></div>
-    <div class="kv"><div class="k">${u.kPath}</div><div class="v">${u.pathV}
-      <span class="vs">${u.pathS}</span></div></div>
+    <div class="kv"><div class="k">${u.kRecv}</div><div class="v">${u.recvV(내관)}</div></div>
     <div class="kv"><div class="k">${u.kUser}</div><div class="v">${u.user}</div></div>`;
   $('sheet').classList.add('on');
   ynPrep();

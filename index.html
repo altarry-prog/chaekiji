@@ -928,6 +928,32 @@ body.bigmode .foot button{font-size:12.5px}
    · 예시     : 관외(책바다) 구간 — 실데이터 수집 예정
    ══════════════════════════════════════════════════════════════ */
 const 기준일 = "2026. 8. 18.";
+/* v1.10: 정보나루 중계(relay/) — 주소를 넣으면 실데이터, 비우면 매일 갱신 파일 → 픽스처 순. 중계가 3초 안에 답하지 않으면 다음 출처로 자동 복귀 */
+const RELAY = "";
+/* v1.11: 중계가 없거나 답이 없으면, 같은 출처의 「매일 갱신」 파일(data/holdings-today.json · 깃허브 액션이 새벽에 씀)을 본다. 2일 넘게 묵으면 무시 */
+function asofText(a){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(a || ''); return m ? `${m[1]}. ${+m[2]}. ${+m[3]}.` : a; }
+function todayHoldings(c){
+  if(!c.real || !window.fetch) return Promise.resolve(false);
+  return fetch('data/holdings-today.json', {cache:'no-store'})
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { if(!j || !j.holdings || !j.holdings[c.book.isbn] || !j.asof) return false;
+      const age = (Date.now() - new Date(j.asof + 'T00:00:00')) / 864e5; if(!(age >= 0 && age <= 2.5)) return false;
+      const bx = {}; Object.keys(LIB).forEach(n => { bx[n] = j.holdings[c.book.isbn][n] || 'none'; });
+      c.bx = bx; c.asof = asofText(j.asof); return true; })
+    .catch(() => false);
+}
+function relayHoldings(c){
+  if(!c.real || !window.fetch) return Promise.resolve(false);
+  if(!RELAY) return todayHoldings(c);
+  const ctl = ('AbortController' in window) ? new AbortController() : null;
+  const tm = setTimeout(()=>{ try{ ctl && ctl.abort(); }catch(e){} }, 3000);
+  return fetch(RELAY.replace(/\/$/,'') + '/holdings?isbn=' + encodeURIComponent(c.book.isbn), ctl ? {signal: ctl.signal} : {})
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { clearTimeout(tm); if(!j || !j.libs) return todayHoldings(c);
+      const bx = {}; Object.keys(LIB).forEach(n => { bx[n] = j.libs[LIB[n]] || 'none'; });
+      c.bx = bx; c.asof = asofText(j.asof) || null; return true; })
+    .catch(() => { clearTimeout(tm); return todayHoldings(c); });
+}
 let 내관   = "상동";   /* v1.5: 「자주 가는 도서관」 선택으로 바뀐다 — 판정·수령·문구가 전부 따라온다 */
 
 /* 부천시립도서관 16곳 — 정보나루 도서관코드
@@ -2155,8 +2181,8 @@ function run(text, live){
   ['w1','w2','w3'].forEach(i => $(i).className = 'stp');
   $('heard').textContent = ''; $('fixed').innerHTML = '';
 
-  const V = view(c);
-  const rows = V.scanK.map(([k, arg])=>{
+  const relayP = relayHoldings(c);          /* v1.10: 중계가 켜져 있으면 지금 조회를 시작해 두고, 탐색 장면 전에 결과를 기다린다 */
+  const buildRows = () => view(c).scanK.map(([k, arg])=>{
     switch(k){
       case 'mineHave':    return [u.usual(내관), u.mineHave, true];
       case 'mineBusy':    return [u.usual(내관), u.mineBusy, false];
@@ -2175,8 +2201,9 @@ function run(text, live){
   const midTx = L.m ? L.m.mid(c.book.t)
                     : `${c.book.t}로 이해했습니다. 가까운 곳부터 확인하고 있습니다.`;
 
-  const stepScan = () => {
+  const stepScan = () => relayP.then(() => {
     if(scene !== SCENE) return;
+    const rows = buildRows();
     $('w2').className='stp done'; $('w3').className='stp on';
     $('scan').innerHTML='';
     rows.forEach((r,i)=>{
@@ -2192,7 +2219,7 @@ function run(text, live){
       if(scene !== SCENE) return;
       $('w3').className='stp done'; result();
     }, 260 + rows.length*ROW + 600);
-  };
+  });
 
   setTimeout(()=>{
     if(scene !== SCENE) return;
@@ -2254,7 +2281,7 @@ function result(){
 
     <button class="cta" id="apply">${(t !== 0 && passReady(t)) ? P_().btn : T[3]}</button>
 
-    <div class="src">${c.real ? u.srcR(기준일) : u.srcD}</div>`;
+    <div class="src">${c.real ? u.srcR(c.asof || 기준일) : u.srcD}</div>`;
 
   if(t === 0) h += `<div class="rule">${u.rule(내관)}</div>`;
 
@@ -2407,7 +2434,7 @@ function finishGuide(){
   $('recap').innerHTML = `
     <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>
     <div class="kv"><div class="k">${g.kAt}</div><div class="v">${btName}</div></div>
-    <div class="kv"><div class="k">${g.kSt}</div><div class="v">${g.st}<span class="vs">${g.asOf(기준일)}</span></div></div>
+    <div class="kv"><div class="k">${g.kSt}</div><div class="v">${g.st}<span class="vs">${g.asOf(c.asof || 기준일)}</span></div></div>
     <a class="maplink" href="https://map.kakao.com/link/search/${q}" target="_blank" rel="noopener">📍 ${g.map}</a>
     <div class="did"><b>${u.didT}</b><span>${g.did}</span></div>`;
   show('s-done');

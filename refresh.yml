@@ -1,0 +1,34 @@
+# 매일 1회 정보나루 조회분 갱신 — 인증키는 저장소 Settings → Secrets → NARU_KEY 에만 둔다(코드·파일에 없음).
+# 결과 파일 2벌(server/fixtures/holdings-today.json · data/holdings-today.json)만 커밋한다.
+# 대출 상태는 어차피 「조회일 전일 기준」이라 하루 한 번이면 실시간 호출과 신선도가 같다.
+name: refresh-today
+on:
+  schedule:
+    - cron: "30 20 * * *"        # 매일 05:30 KST
+  workflow_dispatch:             # Actions 탭에서 손으로도 실행 가능
+permissions:
+  contents: write
+concurrency:
+  group: refresh-today
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r server/requirements.txt
+      - name: 정보나루 조회 (키는 Secrets에만 · 하루 한도 안에서 300회까지)
+        env:
+          NARU_KEY: ${{ secrets.NARU_KEY }}
+        run: |
+          if [ -z "$NARU_KEY" ]; then echo "NARU_KEY 비밀값이 없어 건너뜁니다(Settings → Secrets and variables → Actions)"; exit 0; fi
+          python server/lab/refresh_today.py --max-calls 300
+      - name: 바뀐 것이 있으면 커밋
+        run: |
+          git config user.name "chaekiji-refresh"
+          git config user.email "refresh@users.noreply.github.com"
+          git add server/fixtures/holdings-today.json data/holdings-today.json || true
+          if git diff --cached --quiet; then echo "변경 없음"; else git commit -m "매일 갱신: 정보나루 조회분 $(date -u -d '+9 hours' +%Y-%m-%d)" && git push; fi

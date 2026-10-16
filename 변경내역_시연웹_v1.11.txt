@@ -1,0 +1,12 @@
+책이지 시연 웹 v1.11 (2026. 10. 15.) — 매일 갱신 파일 읽기 · 캐시 v25
+
+[index.html]
+- todayHoldings(c): 같은 출처의 data/holdings-today.json(깃허브 액션 refresh.yml이 새벽마다 커밋)을 읽어 해당 ISBN의 16개관 상태를 쓴다. asof가 2일 넘게 묵었으면 무시.
+- relayHoldings(c): RELAY가 비어 있으면 바로 todayHoldings, 중계가 실패·시간 초과면 todayHoldings로 넘어간다. 순서 = 중계 → 매일 갱신 파일 → 2026. 8. 18. 픽스처.
+- asofText(): 조회일을 「2026. 10. 15.」 꼴로 통일(중계·파일 모두 YYYY-MM-DD를 준다).
+[sw.js] 캐시 이름 chaekiji-v24 → v25.
+
+검증(2026. 10. 15., Playwright·크로미움)
+- RELAY 비움 + 오늘 날짜 파일(상동 ok) → 출처 「2026. 10. 15. 조회」, 「바로 이용」. 오류 0.
+- 9일 묵은 파일 → 무시 → 「2026. 8. 18. 조회」, 「관내 상호대차」. 오류 0.
+- 중계 켬·끔·응답 없음 3경우(v1.10 시험)는 그대로 통과.

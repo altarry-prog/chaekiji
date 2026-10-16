@@ -117,7 +117,8 @@ jobs:
               try:
                   with urllib.request.urlopen(urllib.request.Request(url + path, headers=h), timeout=timeout) as r:
                       out = {"status": r.status, "json": json.loads(r.read() or b"null"),
-                             "acao": r.headers.get("Access-Control-Allow-Origin")}
+                             "acao": r.headers.get("Access-Control-Allow-Origin"),
+                             "placement": r.headers.get("cf-placement"), "ray": (r.headers.get("cf-ray") or "")[-3:]}
               except urllib.error.HTTPError as e:
                   text = e.read()[:400].decode("utf-8", "replace")
                   try: out = {"status": e.code, "json": json.loads(text)}
@@ -140,13 +141,14 @@ jobs:
                   h = get("/health", 20)
                   if h.get("status") == 200: break
                   time.sleep(10)
-              rec["health"] = brief(h, ("ok", "keyed", "region"))
+              rec["health"] = brief(h, ("ok", "keyed", "region", "colo"))
               rec["probe_python_default_name"] = brief(get("/health", 20, ua=None))
               c = get("/health", 20, headers={"Origin": "https://altarry-prog.github.io"})
               rec["cors_web"] = {"status": c.get("status"), "allow_origin": c.get("acao")}
               if h.get("status") == 200:
                   o = get("/holdings?isbn=9788972756194", 90)
-                  rec["holdings_sample"] = brief(o, ("asof", "calls", "via", "cached"))
+                  rec["holdings_sample"] = brief(o, ("asof", "calls", "via", "cached", "upstream_ms", "call_ms_median", "call_ms_max"))
+                  rec["holdings_sample"].update({"placement": o.get("placement"), "edge": o.get("ray")})
                   libs = (o.get("json") or {}).get("libs") if o.get("status") == 200 else None
                   if isinstance(libs, dict):
                       rec["holdings_sample"].update({"isbn": "9788972756194", "ok": sum(v == "ok" for v in libs.values()),

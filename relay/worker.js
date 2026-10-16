@@ -58,7 +58,7 @@ export default {
     if (!env.NARU_KEY) return json({ error: "relay-not-configured" }, 503, cors);   // 키 미설정 시 기동 거부
     if (origin && !ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, cors);
 
-    if (url.pathname === "/health") return json({ ok: true, keyed: true, region: DTL_REGION }, 200, cors);
+    if (url.pathname === "/health") return json({ ok: true, keyed: true, region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
     if (!["/holdings", "/search", "/nation"].includes(url.pathname)) return json({ error: "not-found" }, 404, cors);
 
     const ip = req.headers.get("CF-Connecting-IP") || "0";
@@ -79,7 +79,7 @@ export default {
 };
 
 // 요청 1건의 상류 호출 기록 — 횟수(상한 확인)·실패 종류·통한 주소. wait는 점검용(기다리는 한도 ms, 비우면 기본값)
-function newCtx(env) { return { n: 0, fails: [], via: null, wait: Number(env.NARU_WAIT_MS) || 0 }; }
+function newCtx(env) { return { n: 0, fails: [], via: null, wait: Number(env.NARU_WAIT_MS) || 0, times: [] }; }
 
 // 세 경로의 공통 처리 — 10분 캐시 → 정보나루. 중계 경로와 원격 상담 비서(mcp.js)가 같이 쓴다(캐시도 같이).
 async function relayCall(path, isbn, q, env, ctx) {
@@ -140,6 +140,7 @@ async function naru(api, params, key, ctx) {
       ctx.n++;
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), ctx.wait || WAIT_MS[tag]);
+      const s0 = Date.now();
       let d;
       try {
         const r = await fetch(`${base}${api}?${q}`, { cf: { cacheTtl: 0 }, signal: ctl.signal });
@@ -154,6 +155,7 @@ async function naru(api, params, key, ctx) {
         throw upstreamError(ctx);
       }
       BASE_OK = base; ctx.via = tag;
+      if (ctx.times) ctx.times.push(Date.now() - s0);      // 호출 한 번의 시간(ms) — 느린 곳을 찾으려고(키·주소 없음)
       return resp;
     }
   }
@@ -180,7 +182,9 @@ async function holdings(isbn, key, ctx) {
     const r = (await naru("bookExist", { libCode: c, isbn13: isbn }, key, ctx)).result || {};
     if (r.hasBook === "Y") libs[c] = r.loanAvailable === "Y" ? "ok" : "busy";
   }));
-  return { isbn, asof: kstDate(), basis: "정보나루 bookExist · 대출 상태는 조회일 전일 기준", libs, calls: LIBS.length, ms: Date.now() - t0 };
+  const ts = [...(ctx.times || [])].sort((a, b) => a - b);
+  return { isbn, asof: kstDate(), basis: "정보나루 bookExist · 대출 상태는 조회일 전일 기준", libs, calls: LIBS.length,
+           upstream_ms: Date.now() - t0, call_ms_median: ts.length ? ts[Math.floor(ts.length / 2)] : null, call_ms_max: ts.length ? ts[ts.length - 1] : null };
 }
 
 function allow(ip) {

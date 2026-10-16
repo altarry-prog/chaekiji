@@ -38,7 +38,8 @@ jobs:
         run: |
           git config user.name "chaekiji-refresh"
           git config user.email "refresh@users.noreply.github.com"
-          git add server/fixtures/holdings-today.json data/holdings-today.json server/lab/out/refresh_status.json 2>/dev/null || true
+          # 있는 파일만 하나씩 더한다(한 번에 넘기면 없는 파일 하나 때문에 전부 빠진다)
+          for f in server/fixtures/holdings-today.json data/holdings-today.json server/lab/out/refresh_status.json; do [ -f "$f" ] && git add "$f"; done
           day=$(date -u -d '+9 hours' +%Y-%m-%d)
           if [ "${{ steps.fetch.outcome }}" = "success" ]; then msg="매일 갱신: 정보나루 조회분 $day"; else msg="매일 갱신 실패 기록: $day (까닭은 server/lab/out/refresh_status.json)"; fi
           if git diff --cached --quiet; then echo "변경 없음"; echo "changed=false" >> "$GITHUB_OUTPUT"

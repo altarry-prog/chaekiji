@@ -41,7 +41,7 @@ class Relay(BaseHTTPRequestHandler):
         if u.path == "/holdings":
             held = SC["libs"].get(isbn, {})
             return self.send(200, {"isbn": isbn, "asof": TODAY, "basis": "정보나루 bookExist · 대출 상태는 조회일 전일 기준",
-                                   "libs": {c: held.get(c, "none") for c in CODES}, "calls": 1 + len(held), "cached": False})
+                                   "libs": {c: held.get(c, "none") for c in CODES}, "calls": len(CODES), "cached": False})
         if u.path == "/nation":
             return self.send(200, {"isbn": isbn, "found_count": SC.get("nation", {}).get(isbn, 0), "asof": TODAY, "cached": False})
         return self.send(404, {"error": "not-found"})

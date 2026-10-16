@@ -123,7 +123,9 @@ async function nation(isbn, key, ctx) {
 //   ② 한 번 통한 주소를 기억해 다음 호출부터 먼저 쓴다(같은 실행 공간 안에서). ③ 요청 1건의 외부 호출을 45회 안으로
 //   (Cloudflare 무료 요금제 상한 50). ④ 정보나루가 오류 문구(호출 한도 초과·키 오류 등)를 주면 「없음」으로 바꾸지 않고
 //   오류로 낸다 — 16관이 모두 미소장처럼 보이는 일을 막는다. ⑤ 실패하면 실패 종류만 남긴다(키·주소 없이).
-const NARU_BASES = ["https://data4library.kr/api/", "http://data4library.kr/api/"];
+// [10/16 바꿈] 매뉴얼의 http 주소를 먼저 부른다. Cloudflare에서 https는 대부분 연결되지 않아(첫 배포 기록: /holdings·/nation via http),
+//   처음 부를 때마다 https를 2.5초 기다리고 http로 넘어가곤 했다. 키는 어차피 http로 갔으므로 노출 정도는 같고 기다림만 준다.
+const NARU_BASES = ["http://data4library.kr/api/", "https://data4library.kr/api/"];
 const WAIT_MS = { https: 2500, http: 12000 };
 const SUBREQ_CAP = 45;
 let BASE_OK = null;
@@ -167,17 +169,18 @@ function hide(s, key) { return key ? s.split(key).join("***") : s; }
 function upstreamError(ctx) { const e = new Error("upstream"); e.detail = ctx.fails.slice(-8); return e; }
 
 async function holdings(isbn, key, ctx) {
-  // 1) 부천 지역 소장관 목록 1회 → 2) 소장관마다 bookExist 1회 (server/connectors/naru.py holdings_local과 같은 절차)
-  const r1 = await naru("libSrchByBook", { isbn, region: REGION, dtl_region: DTL_REGION, pageSize: 300 }, key, ctx);
-  const have = new Set();
-  for (const l of r1.libs || []) { const lib = l.lib || l; const c = String(lib.libCode || ""); if (LIBS.includes(c)) have.add(c); }
+  // 16관 bookExist를 한꺼번에 부른다 — 왕복 한 번.
+  // [10/16 바꿈] 처음에는 「부천 지역 소장관 목록(libSrchByBook) 1회 → 소장관마다 bookExist」였다(파이썬 판·매일 갱신과 같은 절차).
+  //   실측(문의 15건)에서 목록 밖 책이 가운데값 14.9초였고, 소장관 목록 조회가 그중 가장 느렸다.
+  //   많이 찾는 책은 소장관이 13~16곳이라 호출 수는 거의 같고(16회), 기다림은 한 번으로 준다.
+  const t0 = Date.now();
   const libs = {};
   for (const c of LIBS) libs[c] = "none";
-  await Promise.all([...have].map(async c => {
+  await Promise.all(LIBS.map(async c => {
     const r = (await naru("bookExist", { libCode: c, isbn13: isbn }, key, ctx)).result || {};
     if (r.hasBook === "Y") libs[c] = r.loanAvailable === "Y" ? "ok" : "busy";
   }));
-  return { isbn, asof: kstDate(), basis: "정보나루 bookExist · 대출 상태는 조회일 전일 기준", libs, calls: 1 + have.size };
+  return { isbn, asof: kstDate(), basis: "정보나루 bookExist · 대출 상태는 조회일 전일 기준", libs, calls: LIBS.length, ms: Date.now() - t0 };
 }
 
 function allow(ip) {

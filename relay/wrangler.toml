@@ -6,4 +6,9 @@ compatibility_date = "2025-01-01"
 workers_dev = true
 # Cloudflare 계정 ID — 비밀값이 아니다(Cloudflare 안내: 저장소에 두어도 됨). 비밀은 배포용 토큰과 정보나루 키뿐이며 둘 다 깃허브 비밀값에만 있다.
 account_id = "8db84be8b5d875a8112a51bb3ca939c8"
+
+# [10/16] 똑똑한 배치(Smart Placement): Cloudflare가 정보나루(한국) 가까운 곳에서 이 중계를 돌리도록 스스로 고른다.
+#   부르는 쪽(claude.ai 커넥터는 미국 쪽 서버)과 멀어져도, 정보나루와 여러 번 오가는 시간이 줄어 전체가 빨라진다.
+[placement]
+mode = "smart"
 # 2026-10-16 첫 배포(깃허브 액션 deploy-relay.yml) — 토큰 다시 만든 뒤 재실행

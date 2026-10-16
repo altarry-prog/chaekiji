@@ -14,7 +14,8 @@ globalThis.fetch = async (url) => {
     body = { response: { libs } };
   } else if (api === "bookExist") {
     const code = u.searchParams.get("libCode");
-    body = { response: { result: { hasBook: "Y", loanAvailable: code === "141065" ? "Y" : "N" } } };
+    const held = ["141321", "141065"].includes(code);          // 소장관 둘: 상동(대출 중)·꿈빛(대출 가능)
+    body = { response: { result: { hasBook: held ? "Y" : "N", loanAvailable: code === "141065" ? "Y" : "N" } } };
   } else if (api === "srchBooks") {
     body = { response: { docs: u.searchParams.get("title")?.includes("채식")
       ? [{ doc: { isbn13: "9788936433598", bookname: "채식주의자", authors: "한강 지음", publisher: "창비", publication_year: "2007" } }] : [] } };
@@ -31,8 +32,9 @@ let n = 0; const ok = (c, m) => { if (!c) { console.error("  ✗ " + m); process
 let r = await get("/health");
 ok(r.status === 200 && r.body.ok === true && !JSON.stringify(r.body).includes("FAKE"), "/health — ok, 키 값 없음");
 r = await get("/holdings?isbn=9788972756194");
-ok(r.status === 200 && r.body.libs["141065"] === "ok" && r.body.libs["141321"] === "busy" && r.body.libs["141248"] === "none" && r.body.calls === 3,
-   "/holdings — 소장관만 bookExist(1+2회) · ok/busy/none 매핑");
+ok(r.status === 200 && r.body.libs["141065"] === "ok" && r.body.libs["141321"] === "busy" && r.body.libs["141248"] === "none" && r.body.calls === 16
+   && !calls.some(u => u.includes("libSrchByBook") && u.includes("dtl_region")),
+   "/holdings — 16관 bookExist를 한꺼번에(소장관 목록 조회 없이) · ok/busy/none 매핑");
 ok(/^\d{4}-\d{2}-\d{2}$/.test(r.body.asof), "   asof 날짜(YYYY-MM-DD)");
 r = await get("/search?q=채식주의자 있나요");
 ok(r.status === 200 && r.body.docs.length === 1 && r.body.docs[0].isbn13 === "9788936433598", "/search?q= — 서지 1건(제목 부분일치)");
@@ -62,7 +64,7 @@ const before = calls.length;
 r = await get("/holdings?isbn=9791161571188");
 globalThis.fetch = realFetch;
 ok(r.status === 200 && r.body.libs["141065"] === "ok" && calls.slice(before).length > 0 && calls.slice(before).every(u => u.startsWith("http://data4library.kr/api/")),
-   "https가 막히면 http(매뉴얼 주소)로 넘어가 같은 결과");
+   "매뉴얼의 http 주소로 부른다 — https가 막혀 있어도 같은 결과");
 ok(r.body.via === "http", "   통한 주소 종류를 응답에 남김(via: http)");
 // 10/16 첫 배포 뒤 보강 ① 기억해 둔 주소(지금은 http)가 답 없이 멈추면, 기다리는 한도 뒤 다른 주소로 넘어간다
 globalThis.fetch = (url, init) => String(url).startsWith("http://data4library.kr")

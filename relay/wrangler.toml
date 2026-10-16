@@ -4,3 +4,4 @@ name = "chaekiji-relay"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 workers_dev = true
+# 2026-10-16 첫 배포(깃허브 액션 deploy-relay.yml)

@@ -26,9 +26,9 @@ jobs:
       - run: pip install -r server/requirements.txt
       - name: 정보나루 조회 (키는 Secrets에만 · 하루 한도 안에서 300회까지)
         env:
-          NARU_KEY: ${{ secrets.NARU_KEY }}
+          NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}   # 비밀 이름은 NARU_KEY(권장)·NARUKEY 둘 다 받는다
         run: |
-          if [ -z "$NARU_KEY" ]; then echo "NARU_KEY 비밀값이 없어 건너뜁니다(Settings → Secrets and variables → Actions)"; exit 0; fi
+          if [ -z "$NARU_KEY" ]; then echo "인증키 비밀값(NARU_KEY 또는 NARUKEY)이 없어 건너뜁니다(Settings → Secrets and variables → Actions)"; exit 0; fi
           python server/lab/refresh_today.py --max-calls 300
       - name: 바뀐 것이 있으면 커밋
         id: commit

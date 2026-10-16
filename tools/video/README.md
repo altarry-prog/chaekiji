@@ -1,0 +1,47 @@
+# 시연영상 만들기 (tools/video)
+
+챌린지 제출용 시연영상(약 5분 이내 mp4, 자막 설명)을 **명령 두 줄로 다시 만드는** 도구입니다. 영상 편집 프로그램을 쓰지 않고, 장면을 브라우저에 차례로 띄워 그 화면을 그대로 받아 적습니다.
+
+```sh
+sh tools/video/fetch_fonts.sh          # 처음 한 번 — 글꼴(Pretendard·D2Coding, 둘 다 OFL)
+python3 tools/video/record.py          # 녹화(약 4분 15초) → tools/video/rec/
+python3 tools/video/build_video.py     # → tools/video/out/[시연영상]_부천시_책이지_초안.mp4 · .srt · _구성표.md
+```
+
+필요한 것: Python 3.9+, `pip install playwright`(Chromium), ffmpeg. 인증키·네트워크는 필요 없습니다(글꼴 받을 때만 인터넷).
+
+## 화면에 나오는 것은 모두 실제입니다
+
+| 장면 | 어디서 오나 |
+|---|---|
+| 명령 창 4개 | 실제로 돌린 명령의 출력 `t1.txt`~`t4.txt`를 그대로 다시 보임(화면에 「실제 실행 결과(기록 재생)」 표시). t1~t3은 `server/lab/consult_cli.py`, t4는 `sh server/run.sh`. 다시 받으려면 `sh tools/video/capture.sh` |
+| 시민 음성 화면 | 저장소의 `index.html`을 별도 브라우저 창(390×790)에 실제로 띄워 조작하고, 그 화면을 휴대폰 틀에 그대로 비춤. 중계 주소는 막아 둠(저장소 자료로 동작) |
+| claude.ai 화면 · 코랩 화면 | 담당자가 녹화한 파일(`clips/`)이 있으면 그 자리에서 재생, 없으면 「자리 표시(초안)」 카드 |
+
+※ 시연 웹을 화면 속 화면(iframe)에 넣으면 「미리보기 화면 안에서는 마이크가 막혀 있습니다」가 떠서, 따로 띄워 비추는 방식을 씁니다.
+
+## 자리 표시 두 곳 채우기
+
+1. 녹화(Windows): 브라우저 창을 1280×720 안팎(화면 절반쯤)으로 줄이고 **Win+Alt+R**(게임 바)로 녹화 시작·끝 — 파일은 `동영상\캡처` 폴더에 mp4로 생깁니다. 게임 바가 막힌 PC는 캡처 도구(Snipping Tool)의 「녹화」를 씁니다.
+   - claude.ai(30초 안팎): 새 대화 → 「+」 → 커넥터에서 「책이지 상담 비서」 켜기 → 「나미야 잡화점의 기적 빌리고 싶어요, 상동에서 받을게요」 입력 → 도구 허용 → 답이 나올 때까지.
+   - 코랩(30초 안팎): 노트북의 마지막 칸(기록표)이 보이는 화면. 「모두 실행」 전체를 찍을 필요는 없고 결과 표가 보이면 됩니다.
+2. 바꾸기(소리 없이 VP9로):
+   ```sh
+   ffmpeg -i claude.mp4 -an -c:v libvpx-vp9 -b:v 0 -crf 32 -vf "scale='min(1920,iw)':-2" tools/video/clips/claude.webm
+   ffmpeg -i colab.mp4  -an -c:v libvpx-vp9 -b:v 0 -crf 32 -vf "scale='min(1920,iw)':-2" tools/video/clips/colab.webm
+   ```
+3. 자막(선택) `clips/claude.json` — 클립 시작부터 몇 초에 어떤 글을 띄울지:
+   ```json
+   {"title": "claude.ai · 커스텀 커넥터 「책이지 상담 비서」",
+    "tag": "실제 화면 녹화(2026. 10. 19.)",
+    "caps": [[0, "claude.ai에 같은 문의를 넣습니다", "커넥터를 켜고 이용자의 말을 그대로"],
+             [9, "Claude가 consult_request를 부릅니다", "판정은 책이지 도구가 합니다"],
+             [20, "판정·안내문·접수 메모", "명령 창에서 본 것과 같은 결과"]]}
+   ```
+4. 다시 `record.py --final` → `build_video.py`. 「초안」 표시가 빠지고 파일 이름도 `[시연영상]_부천시_책이지.mp4`가 됩니다. 5분을 넘으면 `build_video.py`가 알려 줍니다.
+
+## 고칠 곳
+
+- 장면 순서·시간·글: `record.py`(장면마다 `# ── n.` 표시). 화면 모양: `composer.html`.
+- 명령 창 출력을 다시 받으면(`capture.sh`) 매일 갱신 자료가 바뀌어 관 수·조회일이 달라질 수 있습니다. `record.py`의 해당 자막(「꿈여울 등 7곳」, 「2026. 10. 16. 조회」)도 함께 고칩니다.
+- 화면 글은 `text-wrap: balance/pretty`로 한두 글자만 남는 줄을 막습니다. 자막(SRT)은 한 줄 40자 안팎, 한 번에 3줄까지.

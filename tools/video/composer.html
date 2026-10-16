@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>책이지 시연영상 구성기</title>
+<style>
+@font-face{font-family:'Pretendard';font-weight:400;src:url('fonts/Pretendard-Regular.otf')}
+@font-face{font-family:'Pretendard';font-weight:500;src:url('fonts/Pretendard-Medium.otf')}
+@font-face{font-family:'Pretendard';font-weight:600;src:url('fonts/Pretendard-SemiBold.otf')}
+@font-face{font-family:'Pretendard';font-weight:700;src:url('fonts/Pretendard-Bold.otf')}
+@font-face{font-family:'D2Coding';font-weight:400;src:url('fonts/D2Coding-Regular.ttf')}
+@font-face{font-family:'D2Coding';font-weight:700;src:url('fonts/D2Coding-Bold.ttf')}
+html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;font-family:'Pretendard','Noto Sans CJK KR',sans-serif;color:#fff;word-break:keep-all}
+#stage{position:relative;width:1280px;height:720px;background:radial-gradient(1200px 700px at 30% 40%,#1b5a4b 0%,#0f3d33 60%,#0a2b24 100%)}
+.fade{transition:opacity .55s ease}
+.hide{opacity:0;pointer-events:none}
+/* 상단 표시 */
+#crumb{position:absolute;left:44px;top:26px;font-size:17px;color:#9fd8c6;font-weight:600;letter-spacing:.2px}
+#crumb b{color:#fff;font-weight:700}
+#draft{position:absolute;right:40px;top:24px;font-size:15px;color:#ffd98a;border:1px solid rgba(255,217,138,.55);border-radius:20px;padding:4px 12px}
+/* 큰 카드(제목·설명) */
+#card{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 110px}
+#card .k{font-size:24px;color:#9fd8c6;font-weight:600;letter-spacing:.5px;margin-bottom:16px}
+#card .t{font-size:58px;font-weight:700;line-height:1.22;letter-spacing:-.5px;white-space:pre-line;text-wrap:balance}
+#card .s{font-size:27px;color:#dbeee7;margin-top:18px;line-height:1.5;white-space:pre-line;text-wrap:pretty}
+#card ul{list-style:none;margin:30px 0 0;padding:0}
+#card li{font-size:29px;line-height:1.45;text-wrap:pretty;margin:0 0 18px;padding-left:38px;position:relative;opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s;color:#f1f7f4}
+#card li.on{opacity:1;transform:none}
+#card li::before{content:'';position:absolute;left:4px;top:.55em;width:14px;height:14px;border-radius:50%;background:#9fd8c6}
+#card li b{color:#ffe3a3;font-weight:700}
+/* 흐름도 */
+#fh{position:absolute;left:110px;right:110px;top:112px}
+#fh .k{font-size:24px;color:#9fd8c6;font-weight:600;letter-spacing:.5px;margin-bottom:12px}
+#fh .t{font-size:48px;font-weight:700;line-height:1.25;letter-spacing:-.4px;text-wrap:balance}
+#flow{position:absolute;left:70px;right:70px;top:292px;display:flex;align-items:stretch;gap:18px}
+#flow .b{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:20px 20px;opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s}
+#flow .b.on{opacity:1;transform:none}
+#flow .b .h{font-size:25px;font-weight:700;margin-bottom:10px}
+#flow .b .d{font-size:20px;line-height:1.45;color:#dbeee7;text-wrap:pretty}
+#flow .b.tool{background:rgba(159,216,198,.16);border-color:#9fd8c6}
+#flow .ar{align-self:center;font-size:34px;color:#9fd8c6;opacity:0;transition:opacity .5s}
+#flow .ar.on{opacity:1}
+/* 터미널 */
+#term{position:absolute;left:60px;top:68px;width:1160px;height:518px;background:#0b1512;border:1px solid #2e4a41;border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.5);overflow:hidden}
+#term .tb{height:40px;background:#16241f;display:flex;align-items:center;padding:0 16px;gap:8px;border-bottom:1px solid #2e4a41}
+#term .tb i{width:12px;height:12px;border-radius:50%;display:block}
+#term .tb .tt{margin-left:12px;font-size:16px;color:#b9d4ca}
+#term .tb .tag{margin-left:auto;font-size:14px;color:#ffd98a;border:1px solid rgba(255,217,138,.5);border-radius:14px;padding:2px 10px}
+#tbody{position:absolute;top:41px;left:0;right:0;bottom:0;padding:14px 24px;overflow:hidden;font-family:'D2Coding',monospace;font-size:19.5px;line-height:1.52;color:#d7e5de;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16px,#000 calc(100% - 12px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 16px,#000 calc(100% - 12px),transparent 100%)}
+#tbody>div{padding-left:2ch;text-indent:-2ch;border-radius:4px}
+#tbody>div.m{padding-left:5ch;text-indent:-5ch}
+#tbody .p{color:#8fd4c2}
+#tbody .c{color:#7d948a}
+#tbody .hl{background:rgba(255,217,138,.16);box-shadow:-6px 0 0 #ffd98a;color:#fff}
+#tbody .ok{color:#7fdc9c}
+#tbody .cur{display:inline-block;width:9px;height:19px;background:#8fd4c2;vertical-align:-3px;animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+/* 담당자가 녹화한 실제 화면(클립) — 창 모양 틀 안에 원본 비율 그대로 */
+#clip{position:absolute;left:60px;top:68px;width:1160px;height:518px;background:#000;border:1px solid #2e4a41;border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.5);overflow:hidden}
+#clip .tb{height:40px;background:#16241f;display:flex;align-items:center;padding:0 16px;gap:8px;border-bottom:1px solid #2e4a41}
+#clip .tb i{width:12px;height:12px;border-radius:50%;display:block}
+#clip .tb .tt{margin-left:12px;font-size:16px;color:#b9d4ca}
+#clip .tb .tag{margin-left:auto;font-size:14px;color:#ffd98a;border:1px solid rgba(255,217,138,.5);border-radius:14px;padding:2px 10px}
+#clip video{position:absolute;top:41px;left:0;width:100%;height:calc(100% - 41px);object-fit:contain;background:#000}
+/* 아래 자막 띠 */
+#bar{position:absolute;left:60px;right:60px;bottom:26px;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;text-wrap:balance;background:rgba(0,0,0,.55);border-radius:14px;padding:12px 26px;font-size:27px;line-height:1.4;font-weight:600;box-sizing:border-box}
+#bar small{display:block;font-size:19.5px;font-weight:500;color:#cfe3db;margin-top:4px;text-wrap:balance}
+/* 자리 표시 */
+#slot{position:absolute;left:150px;right:150px;top:150px;height:330px;border:3px dashed rgba(255,217,138,.75);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(0,0,0,.18)}
+#slot .k{font-size:22px;color:#ffd98a;font-weight:700;letter-spacing:1px}
+#slot .t{font-size:34px;font-weight:700;margin-top:14px;line-height:1.35;white-space:pre-line}
+#slot .s{font-size:22px;color:#dbeee7;margin-top:16px;line-height:1.5;white-space:pre-line;text-wrap:balance}
+/* 휴대폰(시연 웹) */
+#phone{position:absolute;right:196px;top:40px;width:330px;height:648px;border-radius:40px;background:#111;box-shadow:0 30px 80px rgba(0,0,0,.55);padding:10px;box-sizing:border-box}
+#phone .screen{width:310px;height:628px;border-radius:32px;overflow:hidden;background:#fff;position:relative}
+#phone #appimg{width:310px;height:628px;display:block;background:#fff}
+#phone .cover{position:absolute;inset:0;background:#fff;opacity:0;transition:opacity .5s;pointer-events:none}
+#tap{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,196,80,.55);border:3px solid rgba(255,255,255,.9);transform:translate(-50%,-50%) scale(.3);opacity:0;pointer-events:none;box-shadow:0 0 0 6px rgba(255,196,80,.25)}
+#tap.go{animation:tap .7s ease-out both}
+@keyframes tap{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}25%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}}
+#side{position:absolute;left:80px;top:0;width:640px;height:720px;display:flex;flex-direction:column;justify-content:center}
+#side .k{font-size:22px;color:#9fd8c6;margin-bottom:14px;font-weight:600}
+#side .h{font-size:44px;line-height:1.25;font-weight:700;letter-spacing:-.4px;white-space:pre-line}
+#side .s{font-size:25px;line-height:1.5;color:#dbeee7;margin-top:20px;white-space:pre-line;text-wrap:pretty}
+#side .n{font-size:19px;color:#ffd98a;margin-top:26px;line-height:1.5;text-wrap:pretty}
+</style></head><body>
+<div id="stage">
+  <div id="crumb" class="fade"></div>
+  <div id="draft" class="fade hide">초안 · 2026. 10. 16.</div>
+  <div id="card" class="fade hide"><div class="k" id="ck"></div><div class="t" id="ct"></div><div class="s" id="cs"></div><ul id="cl"></ul></div>
+  <div id="fh" class="fade hide"><div class="k" id="fk"></div><div class="t" id="ft"></div></div>
+  <div id="flow" class="fade hide"></div>
+  <div id="term" class="fade hide"><div class="tb"><i style="background:#ff6b5e"></i><i style="background:#ffbd2e"></i><i style="background:#28c840"></i><span class="tt" id="tt"></span><span class="tag" id="ttag">실제 실행 결과(기록 재생)</span></div><div id="tbody"></div></div>
+  <div id="clip" class="fade hide"><div class="tb"><i style="background:#ff6b5e"></i><i style="background:#ffbd2e"></i><i style="background:#28c840"></i><span class="tt" id="clt"></span><span class="tag" id="cltag">실제 화면 녹화</span></div><video id="cv" muted playsinline preload="auto"></video></div>
+  <div id="slot" class="fade hide"><div class="k" id="sk">자리 표시(초안)</div><div class="t" id="st"></div><div class="s" id="ss"></div></div>
+  <div id="side" class="fade hide"><div class="k" id="dk"></div><div class="h" id="dh"></div><div class="s" id="ds"></div><div class="n" id="dn"></div></div>
+  <div id="phone" class="fade hide"><div class="screen"><img id="appimg" alt=""><div class="cover" id="cover"></div></div></div>
+  <div id="tap"></div>
+  <div id="bar" class="fade hide"></div>
+</div>
+<script>
+/* ?s=1.5 — 1280x720으로 짠 화면을 1.5배(1920x1080)로 그린다(화면 전송 녹화가 CSS 크기로만 받기 때문) */
+const SC=parseFloat(new URLSearchParams(location.search).get('s')||'1');
+if(SC!==1){for(const el of [document.documentElement,document.body]){el.style.width=(1280*SC)+'px';el.style.height=(720*SC)+'px';}
+  const st=document.getElementById('stage');st.style.transform=`scale(${SC})`;st.style.transformOrigin='0 0';}
+window.SC=SC;
+const $=id=>document.getElementById(id);
+const vis=(id,on)=>$(id).classList.toggle('hide',!on);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+window.crumb=html=>{$('crumb').innerHTML=html||'';};
+window.draft=(on,text)=>{if(text)$('draft').textContent=text;vis('draft',on);};
+window.only=(...ids)=>{for(const id of ['card','fh','flow','term','clip','slot','side','phone','bar']){ $(id).style.opacity=''; vis(id, ids.includes(id)); }};
+window.card=(k,t,s,lines)=>{$('ck').textContent=k||'';$('ct').textContent=t||'';$('cs').textContent=s||'';
+  $('cl').innerHTML=(lines||[]).map(x=>`<li>${x}</li>`).join('');};
+window.cardLine=i=>{const li=$('cl').children[i]; if(li) li.classList.add('on');};
+window.fhead=(k,t)=>{$('fk').textContent=k||'';$('ft').textContent=t||'';};
+window.flow=items=>{$('flow').innerHTML=items.map((b,i)=>(i?'<div class="ar">→</div>':'')+`<div class="b ${b.cls||''}"><div class="h">${b.h}</div><div class="d">${b.d}</div></div>`).join('');};
+window.flowStep=i=>{const bs=[...$('flow').querySelectorAll('.b')], ars=[...$('flow').querySelectorAll('.ar')]; if(bs[i]) bs[i].classList.add('on'); if(i>0&&ars[i-1]) ars[i-1].classList.add('on');};
+window.bar=(t,s)=>{$('bar').innerHTML=esc(t)+(s?`<small>${esc(s)}</small>`:'');};
+window.slot=(t,s,k)=>{$('sk').textContent=k||'자리 표시(초안)';$('st').textContent=t||'';$('ss').textContent=s||'';};
+window.term=(title,tag)=>{$('tt').textContent=title||'';$('ttag').textContent=tag||'실제 실행 결과(기록 재생)';$('tbody').innerHTML='';};
+const tb=()=>$('tbody');
+const scrollEnd=()=>{const b=tb(); b.scrollTop=b.scrollHeight;};
+window.termType=(text,ms)=>new Promise(r=>{const line=document.createElement('div');line.innerHTML='<span class="p">$ </span><span class="x"></span><span class="cur"></span>';tb().appendChild(line);
+  const x=line.querySelector('.x');let i=0;const tick=()=>{x.textContent=text.slice(0,++i);scrollEnd();if(i<text.length)setTimeout(tick,ms||28);else{line.querySelector('.cur').remove();r();}};tick();});
+window.termComment=t=>{const d=document.createElement('div');d.className='c';d.textContent='# '+t;tb().appendChild(d);scrollEnd();};
+window.termOut=(lines,ms,cls)=>new Promise(r=>{let i=0;const tick=()=>{if(i>=lines.length){r();return;}const d=document.createElement('div');d.textContent=lines[i]===''?' ':lines[i];
+  let c=(cls&&cls(lines[i]))||''; if(lines[i].startsWith('   ')) c+=' m'; if(c.trim()) d.className=c.trim();
+  tb().appendChild(d);scrollEnd();i++;setTimeout(tick,ms||90);};tick();});
+/* 강조할 줄을 고르고, 그 첫 줄이 창 위쪽에 오도록 부드럽게 굴림 */
+window.termFocus=(subs,pad)=>{let first=null;for(const d of tb().children){const on=subs.some(s=>d.textContent.includes(s));d.classList.toggle('hl',on);if(on&&!first)first=d;}
+  if(first){const b=tb();const top=Math.max(0,Math.min(first.offsetTop-(pad==null?14:pad),b.scrollHeight-b.clientHeight));b.scrollTo({top,behavior:'smooth'});}};
+window.termHL=sub=>{for(const d of tb().children){d.classList.toggle('hl', !!sub && d.textContent.includes(sub));}};
+window.termHLMany=subs=>{for(const d of tb().children){d.classList.toggle('hl', subs.some(s=>d.textContent.includes(s)));}};
+window.termTop=()=>{tb().scrollTop=0;};
+window.side=(k,h,s,n)=>{$('dk').textContent=k||'';$('dh').textContent=h||'';$('ds').textContent=s||'';$('dn').textContent=n||'';};
+window.sideFade=(k,h,s,n)=>new Promise(r=>{const c=$('side');c.style.opacity=0;setTimeout(()=>{side(k,h,s,n);c.style.opacity=1;setTimeout(r,550);},560);});
+window.cover=on=>{$('cover').style.opacity=on?1:0;};
+/* 시연 웹은 따로 띄운 실제 브라우저 화면(390x790)을 그대로 받아 이 휴대폰 틀에 비춘다 — 화면 속 화면(iframe)에서만 뜨는 마이크 안내를 피하려고 */
+window.appFrame=d=>{$('appimg').src='data:image/jpeg;base64,'+d;};
+/* 클립: 불러 두고(첫 장면에서 멈춤) → 재생해 끝날 때까지 기다림. 길이(초)를 돌려준다 */
+window.clipLoad=(src,title,tag)=>new Promise((r,j)=>{const v=$('cv');$('clt').textContent=title||'';$('cltag').textContent=tag||'실제 화면 녹화';
+  v.onloadeddata=()=>r(v.duration);v.onerror=()=>j('clip load error');v.src=src;v.load();});
+window.clipPlay=()=>new Promise(r=>{const v=$('cv');v.onended=()=>r(v.currentTime);v.currentTime=0;v.play();});
+window.tap=(x,y)=>{const t=$('tap');t.style.left=x+'px';t.style.top=y+'px';t.classList.remove('go');void t.offsetWidth;t.classList.add('go');};
+</script>
+</body></html>

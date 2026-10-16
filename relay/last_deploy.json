@@ -1,17 +1,17 @@
 {
- "time": "2026-10-16 18:38 KST",
+ "time": "2026-10-16 19:09 KST",
  "result": "ok",
  "url": "https://chaekiji-relay.altarry2.workers.dev",
  "health": {
   "status": 200,
-  "ms": 98,
+  "ms": 177,
   "ok": true,
   "keyed": true,
   "region": "31050"
  },
  "probe_python_default_name": {
   "status": 403,
-  "ms": 29,
+  "ms": 75,
   "text": "error code: 1010"
  },
  "cors_web": {
@@ -20,7 +20,7 @@
  },
  "holdings_sample": {
   "status": 200,
-  "ms": 11766,
+  "ms": 26077,
   "asof": "2026-10-16",
   "calls": 16,
   "via": "http",
@@ -32,21 +32,21 @@
  },
  "search_sample": {
   "status": 200,
-  "ms": 2042,
-  "via": "https",
+  "ms": 941,
+  "via": "http",
   "docs": 5,
   "first": "나미야 잡화점의 기적 :히가시노 게이고 장편소설 "
  },
  "nation_sample": {
   "status": 200,
-  "ms": 2454,
+  "ms": 3477,
   "found_count": 200,
-  "via": "https"
+  "via": "http"
  },
  "mcp": {
   "initialize": {
    "status": 200,
-   "ms": 27,
+   "ms": 105,
    "protocol": "2025-06-18",
    "server": "0.3.4-remote"
   },
@@ -60,7 +60,7 @@
   ],
   "consult": {
    "status": 200,
-   "ms": 121,
+   "ms": 229,
    "route": "ill",
    "asof": "2026-10-16",
    "basis": "관내: 정보나루 bookExist(매일 갱신 · 2026-10-16 조회 · 전일 기준)",

@@ -17,12 +17,12 @@
 
 둘 다 같은 경로·같은 응답(날짜는 `YYYY-MM-DD`):
 
-- `GET /holdings?isbn=9788972756194` → `{"isbn","asof":"2026-10-15","libs":{"141321":"busy",…16관},"calls":9,"cached":false}`
+- `GET /holdings?isbn=9788972756194` → `{"isbn","asof":"2026-10-16","libs":{"141321":"busy",…16관},"calls":16,"upstream_ms":12811,"via":"http","cached":false}`
 - `GET /search?q=채식주의자` → `{"docs":[{"isbn13","title","author","publisher","year"},…최대 5건],"asof"}` (제목 부분일치) · `GET /search?isbn=…` → 서지 1건
 - `GET /nation?isbn=9788972756194` → `{"found_count":12,"asof"}` (경기 광역 소장관 수 — 전국 예시)
 - `GET /health` → `{"ok":true,"keyed":true}` (키 **값**은 어디에도 내보내지 않음)
 
-**배포 주소(2026. 10. 16.~)** — `https://chaekiji-relay.altarry2.workers.dev` (Cloudflare Workers 무료). 첫 확인 기록(`relay/last_deploy.json`, 17:49): `/health`·`/holdings`·`/search`·`/nation` 모두 200, 시연 웹 출처의 CORS 허용 확인. 나미야 잡화점의 기적 16관 조회는 같은 날 새벽 매일 갱신 자료와 개수가 같았다(대출 가능 7·대출 중 6·미소장 3). 미국 쪽 확인에서 `/holdings`는 약 9초(소장관 목록 1회 + 소장관별 15회) — 그래서 서버의 중계 대기는 20초, 시연 웹은 3초만 기다리고 새벽 자료로 돌아간다.
+**배포 주소(2026. 10. 16.~)** — `https://chaekiji-relay.altarry2.workers.dev` (Cloudflare Workers 무료). 첫 확인 기록(`relay/last_deploy.json`, 17:49): `/health`·`/holdings`·`/search`·`/nation` 모두 200, 시연 웹 출처의 CORS 허용 확인. 나미야 잡화점의 기적 16관 조회는 같은 날 새벽 매일 갱신 자료와 개수가 같았다(대출 가능 7·대출 중 6·미소장 3). **걸리는 시간(실측 10/16)** — 문의 15건(`server/lab/out/consult_timing_2026-10-16.md`): 새벽 자료에 있는 책 5건은 가운데값 0.1초, 그 자리에서 조회한 10건은 가운데값 14.9초. 정보나루 호출 한 번은 가운데값 1.7초(최대 5.8초, 19:11 기록)인데, Cloudflare Workers는 요청 1건에서 동시에 연결을 6개까지만 열 수 있어 16관 조회가 세 번에 나뉜다. 10/16부터 16관 bookExist를 한꺼번에 부르고(소장관 목록 조회 생략), 매뉴얼의 http 주소를 먼저 쓰며, 정보나루 가까이 돌도록 똑똑한 배치(Smart Placement)를 켰다. 그래서 서버의 중계 대기는 20초, 시연 웹은 3초만 기다리고 새벽 자료로 돌아간다. 자주 찾는 책은 매일 갱신 목록에 넣으면 0.1초로 답한다.
 
 **브라우저가 아닌 프로그램은 이름을 밝혀야 한다** — 파이썬 기본 이름(`Python-urllib/…`)으로 부르면 Cloudflare가 `403 error code: 1010`으로 막는다(중계 코드가 아니라 Cloudflare의 검사, 첫 배포 실측). 참조 서버는 `User-Agent: chaekiji-mcp/0.3.4 (+저장소 주소)`로 부르고, 배포 확인도 이름을 밝혀 묻는다. 직접 점검할 때(확인된 이름): `curl -A "chaekiji-relay-check/1.0 (+https://github.com/altarry-prog/chaekiji)" https://chaekiji-relay.altarry2.workers.dev/health`
 

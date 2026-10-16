@@ -112,8 +112,8 @@ async function searchItem(utterance, deps, ctx) {
                evidence: "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)" };
     }
     return { found: false, reason: `정보나루 서지 검색 결과 없음(검색어 「${title}」) — 제목·저자를 더 알려 주세요`, candidates: [], query: title };
-  } catch (e) {
-    return { found: false, reason: `중계 응답 없음 — 픽스처 5종에도 없는 도서(검색어 「${title}」)`, candidates: [] };
+  } catch (e) {                                                // [v0.3.5] 「책이 없다」가 아니라 「찾지 못했다(연결 안 됨)」
+    return { found: false, reason: `중계 응답 없음 — 픽스처 5종에도 없는 도서(검색어 「${title}」)`, candidates: [], unavailable: true };
   }
 }
 async function bibinfo(isbn13, deps, ctx) {                    // naru.bibinfo relay 모드
@@ -143,7 +143,7 @@ async function holdingsLocal(isbn13, deps, ctx) {
     return { out, meta: { basis: `관내: 정보나루 bookExist(중계 · ${asof} 조회 · 전일 기준)`, asof,
                           holding_count: countHeld(out), calls: nn(r.calls), cached: !!r.cached } };
   } catch (e) {                                              // 정보나루가 안 되면 8/18 실측 픽스처로 — 근거 문구에 그대로 적는다
-    if (!Object.prototype.hasOwnProperty.call(HOLD.holdings || {}, isbn13)) {   // [v0.3.5] 픽스처에도 없는 책 — 「미소장」이 아니라 「확인 불가」(naru._unknown)
+    if (!Object.prototype.hasOwnProperty.call(HOLD.holdings || {}, isbn13) || (HOLD._examples || []).includes(isbn13)) {   // [v0.3.5] 실측 픽스처가 없으면 「확인 불가」(naru._unknown)
       const out = Object.fromEntries(Object.keys(LIBS).map(n => [n, "unknown"]));
       return { out, meta: { basis: "관내: 정보나루 조회 실패(중계 응답 없음) — 소장·대출 상태 확인 불가", asof: kstDay(),
                             holding_count: null, calls: 0, cached: false, unavailable: true } };
@@ -244,6 +244,11 @@ export async function consultRequest(args, deps, ctx) {
   const found = await searchItem(utterance, deps, ctx);
   const base = { utterance, pickup, lang, mode: "relay",
                  disclaimer: "대출 가능 여부는 정보나루 조회일 전일 기준이며, 최종 확인과 접수는 창구에서 합니다." };
+  if (!found.found && found.unavailable) {                    // [v0.3.5] 정보나루에 닿지 못해 찾지 못함 — 되묻지 말고 창구 조회
+    return { ...base, found: false, route: "check", route_label: ROUTE_LABEL.check, book: null, reason: nn(found.reason), candidates: [],
+             notice: "지금 정보나루에 연결되지 않아 책을 찾지 못했습니다. 창구에서 도서관리시스템으로 찾아 드리겠습니다.",
+             desk_memo: `[조회 불가] 문의 「${utterance}」 — 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회` };
+  }
   if (!found.found) {
     return { ...base, found: false, route: "unknown", route_label: ROUTE_LABEL.unknown, book: null, reason: nn(found.reason),
              candidates: found.candidates || [],
@@ -262,11 +267,20 @@ export async function consultRequest(args, deps, ctx) {
   else if (othersOk.length) [route, fromLib] = ["ill", othersOk[0]];
   else if (avail.loaned_at.length || atPickup === "busy") [route, fromLib] = ["reserve", null];
   else [route, fromLib] = ["sea", null];
-  const pol = guestPolicy(rt[pickup] === "ok", pickup, await bibinfo(isbn, deps, ctx), isbn);
+  const item = await bibinfo(isbn, deps, ctx);
+  const pol = guestPolicy(rt[pickup] === "ok", pickup, item, isbn);
   if (unknown) {                                              // 수령관 비치 여부도 모르므로 비치 규정까지 창구 확인으로
     for (const c of pol.checks) {
       if (c.rule.includes("비치") && c.pass !== null) {
         c.pass = null; c.detail = "소장·대출 상태 확인 불가 — 창구에서 도서관리시스템으로 확인"; pol.pending.push(c.rule);
+      }
+    }
+    pol.allowed_so_far = pol.checks.filter(c => c.pass !== null).every(c => c.pass);
+  }
+  if (!pyTruthy(item) || String(item.basis || "").includes("미제공")) {   // 자료 유형·신착을 모르면 제외 자료 규정도 창구 확인(tools._unverified_item)
+    for (const c of pol.checks) {
+      if (c.rule === "상호대차 제외 자료 아님" && c.pass !== null) {
+        c.pass = null; c.detail = "자료 유형·신착 여부는 정보나루에 없어 창구에서 확인"; pol.pending.push(c.rule);
       }
     }
     pol.allowed_so_far = pol.checks.filter(c => c.pass !== null).every(c => c.pass);

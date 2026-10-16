@@ -64,13 +64,18 @@ ok(c.out.official_link === "https://alpasq.bcl.go.kr/search/keyword/" + encodeUR
    "   공식 누리집 링크 · 접수 메모(접수는 창구)");
 c = await call(worker, env, "consult_request", { utterance: "작별하지 않는다 빌리고 싶어요" });
 ok(!c.isError && c.out.pickup === "상동" && c.out.route === "ill" && c.out.book.isbn13 === "9788954682152" &&
-   c.out.availability.available_at.join() === "꿈빛,원미" && c.out.policy.pending.length === 5,
-   "목록 밖 책 — 정보나루 서지 검색 → 그 자리 조회 → 관내 상호대차 · 회원 규정 5건은 창구 확인");
+   c.out.availability.available_at.join() === "꿈빛,원미" && c.out.policy.pending.length === 6 &&
+   c.out.policy.pending.includes("상호대차 제외 자료 아님"),
+   "목록 밖 책 — 정보나루 서지 검색 → 그 자리 조회 → 관내 상호대차 · 회원 규정 5건 + 자료 유형·신착(정보나루에 없음)은 창구 확인");
 c = await call(worker, env, "consult_request", { utterance: "희랍어 시간 있나요?", pickup: "상동" });
 ok(!c.isError && c.out.route === "check" && c.out.notice.includes("확인하지 못했습니다") && !c.out.notice.includes("소장되어 있지 않습니다") &&
    c.out.availability.nation === null && c.out.policy.pending.some(x => x.includes("비치")) && c.out.desk_memo.includes("확인 불가") &&
    c.out.official_link !== null,
    "목록 밖 책인데 소장 조회 실패 — 「미소장」이 아니라 「소장 확인 불가 → 창구 조회」 · 비치 규정도 창구 확인 · 누리집 링크");
+c = await call(worker, env, "consult_request", { utterance: "흐르는 강물처럼", pickup: "상동" });
+ok(!c.isError && c.out.found === false && c.out.route === "check" && c.out.notice.includes("연결되지 않아") &&
+   c.out.desk_memo.startsWith("[조회 불가]"),
+   "서지 검색부터 연결 끊김 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」");
 c = await call(worker, env, "consult_request", { utterance: "나미야", user: "tok_demo" });
 ok(c.isError && c.text.includes("회원 토큰을 받지 않습니다"), "회원 토큰을 넘기면 거절(개인정보를 받지 않음)");
 c = await call(worker, env, "consult_request", { utterance: "나미야", pickup: "없는관" });

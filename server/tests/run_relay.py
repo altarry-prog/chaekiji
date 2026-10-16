@@ -40,6 +40,7 @@ class MockRelay(http.server.BaseHTTPRequestHandler):
             docs = []
             if "채식주의자" in q or isbn == "9788936433598":
                 docs = [{"isbn13": "9788936433598", "title": "채식주의자", "author": "한강 지음", "publisher": "창비", "year": "2007"}]
+            if q == "흐르는 강물처럼": return self._send({"error": "upstream", "detail": ["http:TypeError"]}, 502)   # 서지 검색부터 실패
             if q == "희랍어 시간":
                 docs = [{"isbn13": "9788954616515", "title": "희랍어 시간", "author": "한강", "publisher": "문학동네", "year": "2011"}]
             return self._send({"query": q or isbn, "docs": docs, "asof": TODAY})
@@ -101,7 +102,12 @@ r10 = c.call("consult_request", utterance="희랍어 시간 있나요?", pickup=
 ok(r10["found"] and r10["route"] == "check" and "확인하지 못했습니다" in r10["notice"] and "소장되어 있지 않습니다" not in r10["notice"]
    and r10["availability"]["nation"] is None and any("비치" in x for x in r10["policy"]["pending"]) and "확인 불가" in r10["desk_memo"],
    "④′ 그 책 조회만 실패 + 픽스처에도 없는 책 — 「미소장 → 책바다」가 아니라 「소장 확인 불가 → 창구 조회」(비치 규정도 창구 확인)")
-allj = json.dumps([r, r2, r3, r10], ensure_ascii=False)
+r11 = c.call("consult_request", utterance="흐르는 강물처럼", pickup="상동")
+ok(r11["found"] is False and r11["route"] == "check" and "연결되지 않아" in r11["notice"] and r11["desk_memo"].startswith("[조회 불가]"),
+   "④″ 서지 검색부터 실패 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」")
+ok("상호대차 제외 자료 아님" in r2["policy"]["pending"] and "상호대차 제외 자료 아님" not in r["policy"]["pending"],
+   "   자료 유형·신착을 모르는 책(정보나루 서지)은 제외 자료 규정도 창구 확인 — 픽스처 도서는 그대로 판정")
+allj = json.dumps([r, r2, r3, r10, r11], ensure_ascii=False)
 ok(FAKE_KEY not in allj and "authKey" not in allj, "⑤ 응답에 인증키 흔적 없음")
 banner = c.banner()
 ok("relay 모드" in banner and "관내 출처 naru" in banner, "   기동 배너 — relay 모드 · 관내 출처 naru")

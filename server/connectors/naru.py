@@ -155,8 +155,9 @@ def search(utterance: str, mode="demo"):
                         "confidence": 0.85, "evidence": "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)"}
             return {"found": False, "reason": f"정보나루 서지 검색 결과 없음(검색어 「{title}」) — 제목·저자를 더 알려 주세요",
                     "candidates": [], "query": title}
-        except Exception:
-            return {"found": False, "reason": f"중계 응답 없음 — 픽스처 5종에도 없는 도서(검색어 「{title}」)", "candidates": []}
+        except Exception:                               # [v0.3.5] 「책이 없다」가 아니라 「찾지 못했다(연결 안 됨)」 — unavailable로 구별
+            return {"found": False, "reason": f"중계 응답 없음 — 픽스처 5종에도 없는 도서(검색어 「{title}」)", "candidates": [],
+                    "unavailable": True}
     q = _norm(utterance)
     best = None
     for b in _cat["books"]:
@@ -245,7 +246,7 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
                          "holding_count": sum(1 for v in sh.values() if v != "none"), "calls": 0, "cached": True}
             return sh
         if mode == "snapshot":
-            if isbn13 not in _hold.get("holdings", {}):      # 8/18 픽스처에도 없는 책 — 「미소장」이 아니라 「확인 불가」
+            if isbn13 not in _hold.get("holdings", {}) or isbn13 in _hold.get("_examples", []):   # 실측 픽스처가 없으면 「확인 불가」
                 return _unknown(libraries, "오늘 조회분에 없는 도서(snapshot 모드는 정보나루를 부르지 않음)")
             out = holdings_local(isbn13, libraries, region_code, mode="demo")
             LAST_META["basis"] += " · 오늘 조회분에 없는 도서"
@@ -267,7 +268,8 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
             _HOLD_CACHE[key] = (time.time(), dict(out), dict(LAST_META))
             return out
         except Exception:
-            if isbn13 not in _hold.get("holdings", {}):      # 8/18 픽스처에도 없는 책 — 「미소장」으로 답하면 틀린 안내가 된다
+            if isbn13 not in _hold.get("holdings", {}) or isbn13 in _hold.get("_examples", []):
+                # 8/18 실측 픽스처가 없는 책(예시 장면 값만 있는 책 포함) — 「미소장」으로 답하면 틀린 안내가 된다
                 return _unknown(libraries, "정보나루 조회 실패(중계 응답 없음)")
             out = holdings_local(isbn13, libraries, region_code, mode="demo")
             LAST_META["basis"] += " · 중계 응답 없음 → 픽스처로 복귀"

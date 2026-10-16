@@ -35,6 +35,7 @@ class Relay(BaseHTTPRequestHandler):
         isbn = q.get("isbn", "")
         if u.path == "/health": return self.send(200, {"ok": True, "keyed": True})
         if isbn and isbn in SC.get("fail", []): return self.send(502, {"error": "upstream", "detail": ["http:TypeError"]})
+        if u.path == "/search" and q.get("q", "") in SC.get("fail_q", []): return self.send(502, {"error": "upstream", "detail": ["http:TypeError"]})
         if u.path == "/search":
             docs = SC["books"].get(q.get("q", ""), []) if not isbn else [b for b in BOOKS if b["isbn13"] == isbn][:1]
             return self.send(200, {"query": isbn or q.get("q"), "docs": docs, "asof": TODAY, "basis": "정보나루 srchBooks", "cached": False})

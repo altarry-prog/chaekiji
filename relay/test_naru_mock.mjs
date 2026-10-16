@@ -4,6 +4,7 @@
 //   scenario.libs    {ISBN: {도서관코드: "ok"|"busy"}}                  — 소장관 목록과 대출 가능 여부(없으면 미소장)
 //   scenario.nation  {ISBN: 경기 광역 소장관 수}
 //   scenario.fail    [ISBN…]                                           — 이 ISBN이 실린 호출은 연결이 끊긴다
+//   scenario.fail_q  [검색어…]                                         — 이 제목의 서지 검색은 연결이 끊긴다
 //   snapshot         매일 갱신 파일 내용(없으면 404)
 import { SNAPSHOT_URL } from "./mcp.js";
 
@@ -24,6 +25,7 @@ export function mockFetch(scenario, snapshot, log = []) {
     if (isbn && (scenario.fail || []).includes(isbn)) throw new TypeError("Network connection lost.");
     if (api === "srchBooks") {
       const t = u.searchParams.get("title");
+      if (t && (scenario.fail_q || []).includes(t)) throw new TypeError("Network connection lost.");
       const docs = t ? (scenario.books || {})[t] || [] : allBooks.filter(b => b.isbn13 === isbn).slice(0, 1);
       return reply({ docs: docs.map(b => ({ doc: { isbn13: b.isbn13, bookname: b.title, authors: b.author,
                                                      publisher: b.publisher, publication_year: b.year } })) });

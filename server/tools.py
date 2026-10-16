@@ -149,6 +149,10 @@ def _guest_policy(isbn13: str, pickup: str):
     return {"allowed_so_far": all(c["pass"] for c in decided), "checks": v["checks"], "pending": pending,
             "basis": "회원 토큰 없이 판정 — 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인"}
 
+def _unverified_item(item) -> bool:
+    """[v0.3.5] 정보나루 서지만으로는 자료 유형(비도서 등)·신착 여부를 알 수 없다 — 픽스처에 없는 책의 서지."""
+    return (not item) or "미제공" in str(item.get("basis", ""))
+
 def _official_link(title: str, isbn13: str):
     """[v0.3.4] 공식 누리집(자료검색) 링크 — 설정 official_search_url의 {title}/{isbn13}을 채운다.
     「그 책 화면까지」만 — 접수는 이용자가 누리집에 로그인해 직접 한다(이 도구는 접수하지 않는다)."""
@@ -169,6 +173,11 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     found = search_item(utterance, lang)
     base = {"utterance": utterance, "pickup": pickup, "lang": lang, "mode": MODE,
             "disclaimer": "대출 가능 여부는 정보나루 조회일 전일 기준이며, 최종 확인과 접수는 창구에서 합니다."}
+    if not found.get("found") and found.get("unavailable"):   # [v0.3.5] 정보나루에 닿지 못해 찾지 못함 — 되묻지 말고 창구 조회
+        return {**base, "found": False, "route": "check", "route_label": _ROUTE_LABEL["check"],
+                "book": None, "reason": found.get("reason"), "candidates": [],
+                "notice": "지금 정보나루에 연결되지 않아 책을 찾지 못했습니다. 창구에서 도서관리시스템으로 찾아 드리겠습니다.",
+                "desk_memo": f"[조회 불가] 문의 「{utterance}」 — 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회"}
     if not found.get("found"):
         return {**base, "found": False, "route": "unknown", "route_label": _ROUTE_LABEL["unknown"],
                 "book": None, "reason": found.get("reason"), "candidates": found.get("candidates", []),
@@ -199,6 +208,12 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         for c in pol["checks"]:
             if "비치" in c["rule"] and c["pass"] is not None:
                 c["pass"] = None; c["detail"] = "소장·대출 상태 확인 불가 — 창구에서 도서관리시스템으로 확인"
+                pol["pending"].append(c["rule"])
+        pol["allowed_so_far"] = all(c["pass"] for c in pol["checks"] if c["pass"] is not None)
+    if _unverified_item(naru.bibinfo(isbn, mode=MODE)):   # 자료 유형·신착을 모르면 제외 자료 규정도 창구 확인(「통과」로 두지 않는다)
+        for c in pol["checks"]:
+            if c["rule"] == "상호대차 제외 자료 아님" and c["pass"] is not None:
+                c["pass"] = None; c["detail"] = "자료 유형·신착 여부는 정보나루에 없어 창구에서 확인"
                 pol["pending"].append(c["rule"])
         pol["allowed_so_far"] = all(c["pass"] for c in pol["checks"] if c["pass"] is not None)
     asof = naru.LAST_META.get("asof") or naru.FIX_ASOF

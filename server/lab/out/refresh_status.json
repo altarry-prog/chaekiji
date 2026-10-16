@@ -1,0 +1,36 @@
+{
+ "asof": "2026-10-16",
+ "mode": "live",
+ "books": [
+  {
+   "isbn": "9788936434120",
+   "ok": false,
+   "error": "RuntimeError: 정보나루 연결 실패(bookExist): URLError: [Errno 111] Connection refused"
+  },
+  {
+   "isbn": "9788972756194",
+   "ok": false,
+   "error": "RuntimeError: 정보나루 연결 실패(libSrchByBook): URLError: timed out"
+  },
+  {
+   "isbn": "9791161571188",
+   "ok": false,
+   "error": "RuntimeError: 정보나루 연결 실패(bookExist): URLError: [Errno 111] Connection refused"
+  },
+  {
+   "isbn": "9791195794799",
+   "ok": false,
+   "error": "RuntimeError: 정보나루 연결 실패(libSrchByBook): URLError: timed out"
+  },
+  {
+   "isbn": "9791191824001",
+   "ok": true,
+   "owned": 16,
+   "available": 16
+  }
+ ],
+ "calls": 31,
+ "via": "https",
+ "result": "일부",
+ "generated": "2026-10-16 16:21 KST"
+}

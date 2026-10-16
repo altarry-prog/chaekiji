@@ -8,6 +8,8 @@
  *   GET /search?isbn=9788972756194      → 서지 1건
  *   GET /nation?isbn=9788972756194      → 경기 광역 소장관 수(전국 예시)       [v0.3.4]
  *   GET /health                         → {ok:true}  (키 유무만 알려주고 값은 절대 내보내지 않음)
+ *   POST /mcp                           → 원격 상담 비서(MCP Streamable HTTP) — relay/mcp.js      [10/16]
+ *                                          claude.ai 커스텀 커넥터에 이 주소를 넣으면 설치 없이 상담 비서를 쓴다
  * 그 밖의 경로는 404.
  * 시연 웹(브라우저)은 Origin 검사, MCP 서버(relay 모드)는 Origin이 없어 통과 — 호출 상한으로 남용을 막는다. */
 
@@ -15,6 +17,8 @@ const ALLOW_ORIGINS = [
   "https://altarry-prog.github.io",   // 시연 웹(깃허브 페이지스)
   "http://localhost:8080", "http://127.0.0.1:8080",  // 로컬 점검용
 ];
+// 원격 상담 비서(/mcp)는 claude.ai 쪽 출처도 받는다 — 커넥터는 보통 서버끼리 부르지만(출처 없음), 브라우저에서 부를 때를 대비
+const MCP_ORIGINS = [...ALLOW_ORIGINS, "https://claude.ai", "https://www.claude.ai", "https://claude.com"];
 // 부천시립도서관 16관 정보나루 코드 (시연 웹 index.html의 LIB 표와 같다)
 const LIBS = ["141321","141065","141248","141583","141315","141652","141056","141559",
               "141651","141043","141603","141660","141584","141535","141115","141151"];
@@ -24,6 +28,7 @@ const RATE_LIMIT = 60;        // 한 IP가 10분 안에 부를 수 있는 횟수
 const CACHE_SEC = 600;        // 같은 ISBN 재조회 캐시(초)
 
 const mem = { hits: new Map(), cache: new Map() };
+import { handleMcp } from "./mcp.js";
 
 export default {
   async fetch(req, env) {
@@ -31,6 +36,23 @@ export default {
     const url = new URL(req.url);
     const origin = req.headers.get("Origin") || "";
     const cors = corsHeaders(origin);
+    if (url.pathname === "/mcp") {                              // [10/16] 원격 상담 비서 — POST만(그 밖은 mcp.js가 405)
+      const mc = MCP_ORIGINS.includes(origin) ? { "Access-Control-Allow-Origin": origin, "Vary": "Origin",
+        "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Expose-Headers": "Mcp-Session-Id",
+        "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, Mcp-Session-Id, MCP-Protocol-Version",
+        "Access-Control-Max-Age": "600" } : {};
+      if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: mc });
+      if (!env.NARU_KEY) return json({ error: "relay-not-configured" }, 503, mc);
+      if (origin && !MCP_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, {});
+      const ip = req.headers.get("CF-Connecting-IP") || "0";
+      const resp = await handleMcp(req, {
+        relayCall: (path, p, ctx) => relayCall(path, p.isbn || "", p.q || "", env, ctx),
+        allow: () => allow(ip),
+        newCtx: () => newCtx(env),
+      });
+      for (const [k, v] of Object.entries(mc)) resp.headers.set(k, v);
+      return resp;
+    }
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (req.method !== "GET") return json({ error: "method" }, 405, cors);
     if (!env.NARU_KEY) return json({ error: "relay-not-configured" }, 503, cors);   // 키 미설정 시 기동 거부
@@ -44,33 +66,37 @@ export default {
 
     const isbn = (url.searchParams.get("isbn") || "").replace(/\D/g, "");
     const q = (url.searchParams.get("q") || "").trim().slice(0, 80);
-    let key;
     if (url.pathname === "/search") {
       if (!isbn && q.length < 2) return json({ error: "query" }, 400, cors);
-      key = isbn ? `s:${isbn}` : `q:${q}`;
-    } else {
-      if (!/^97[89]\d{10}$/.test(isbn)) return json({ error: "isbn" }, 400, cors);
-      key = `${url.pathname}:${isbn}`;
-    }
-    const hit = mem.cache.get(key);
-    if (hit && Date.now() - hit.t < CACHE_SEC * 1000) return json({ ...hit.v, cached: true }, 200, cors);
-
-    // 요청 1건의 상류 호출 기록 — 횟수(상한 확인)·실패 종류·통한 주소. wait는 점검용(기다리는 한도 ms, 비우면 기본값)
-    const ctx = { n: 0, fails: [], via: null, wait: Number(env.NARU_WAIT_MS) || 0 };
+    } else if (!/^97[89]\d{10}$/.test(isbn)) return json({ error: "isbn" }, 400, cors);
     try {
-      let v;
-      if (url.pathname === "/holdings") v = await holdings(isbn, env.NARU_KEY, ctx);
-      else if (url.pathname === "/search") v = await search(q, isbn, env.NARU_KEY, ctx);
-      else v = await nation(isbn, env.NARU_KEY, ctx);
-      v = { ...v, via: ctx.via };
-      mem.cache.set(key, { t: Date.now(), v });
-      return json({ ...v, cached: false }, 200, cors);
+      return json(await relayCall(url.pathname, isbn, q, env, newCtx(env)), 200, cors);
     } catch (e) {
       // 실패 종류만 알린다(예: "https:AbortError", "http:503", "naru:…") — 키·주소는 싣지 않는다
       return json({ error: "upstream", detail: (e && e.detail) || [] }, 502, cors);
     }
   },
 };
+
+// 요청 1건의 상류 호출 기록 — 횟수(상한 확인)·실패 종류·통한 주소. wait는 점검용(기다리는 한도 ms, 비우면 기본값)
+function newCtx(env) { return { n: 0, fails: [], via: null, wait: Number(env.NARU_WAIT_MS) || 0 }; }
+
+// 세 경로의 공통 처리 — 10분 캐시 → 정보나루. 중계 경로와 원격 상담 비서(mcp.js)가 같이 쓴다(캐시도 같이).
+async function relayCall(path, isbn, q, env, ctx) {
+  q = String(q || "").trim().slice(0, 80);
+  if (path === "/search" ? (!isbn && q.length < 2) : !/^97[89]\d{10}$/.test(isbn)) throw new Error("input");
+  const key = path === "/search" ? (isbn ? `s:${isbn}` : `q:${q}`) : `${path}:${isbn}`;
+  const hit = mem.cache.get(key);
+  if (hit && Date.now() - hit.t < CACHE_SEC * 1000) return { ...hit.v, cached: true };
+  let v;
+  if (path === "/holdings") v = await holdings(isbn, env.NARU_KEY, ctx);
+  else if (path === "/search") v = await search(q, isbn, env.NARU_KEY, ctx);
+  else if (path === "/nation") v = await nation(isbn, env.NARU_KEY, ctx);
+  else throw new Error("path");
+  v = { ...v, via: ctx.via };
+  mem.cache.set(key, { t: Date.now(), v });
+  return { ...v, cached: false };
+}
 
 function kstDate() {
   const now = new Date(Date.now() + 9 * 3600 * 1000);

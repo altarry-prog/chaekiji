@@ -1,0 +1,212 @@
+{
+ "_note": "원격 상담 비서(relay/mcp.js)와 파이썬 참조 서버(server/, relay 모드)를 같은 입력으로 돌려 맞춰 보는 시나리오. 서지·소장 값은 시험용 모의 값이다(실측 아님). snapshot.asof는 시험 때 오늘 날짜로 바뀐다.",
+ "books": {
+  "작별하지 않는다": [
+   {
+    "isbn13": "9788954682152",
+    "title": "작별하지 않는다",
+    "author": "한강 지음",
+    "publisher": "문학동네",
+    "year": "2021"
+   }
+  ],
+  "채식주의자": [
+   {
+    "isbn13": "9788936433598",
+    "title": "채식주의자",
+    "author": "한강 지음",
+    "publisher": "창비",
+    "year": "2007"
+   },
+   {
+    "isbn13": "9788936434595",
+    "title": "채식주의자(개정판)",
+    "author": "한강 지음",
+    "publisher": "창비",
+    "year": "2022"
+   }
+  ],
+  "백년의 고독": [
+   {
+    "isbn13": "9788937460883",
+    "title": "백년의 고독 1",
+    "author": "가브리엘 가르시아 마르케스",
+    "publisher": "민음사",
+    "year": "2000"
+   }
+  ],
+  "파친코": [
+   {
+    "isbn13": "9791168340022",
+    "title": "파친코 1",
+    "author": "이민진",
+    "publisher": "인플루엔셜",
+    "year": "2022"
+   }
+  ]
+ },
+ "libs": {
+  "9788954682152": {
+   "141321": "busy",
+   "141065": "ok",
+   "141535": "ok",
+   "141151": "busy"
+  },
+  "9788936433598": {
+   "141321": "ok",
+   "141559": "busy"
+  },
+  "9791168340022": {
+   "141321": "busy",
+   "141248": "busy",
+   "141043": "busy"
+  },
+  "9788936434120": {
+   "141065": "ok",
+   "141321": "busy"
+  },
+  "9790000000029": {}
+ },
+ "nation": {
+  "9788937460883": 12
+ },
+ "fail": [
+  "9791191824001"
+ ],
+ "snapshot": {
+  "asof": "TODAY",
+  "source": "시험용 모의 매일 갱신 자료",
+  "holdings": {
+   "9788972756194": {
+    "꿈빛": "busy",
+    "꿈여울": "ok",
+    "도당": "ok",
+    "동화": "none",
+    "별빛마루": "busy",
+    "북부": "busy",
+    "상동": "busy",
+    "송내": "ok",
+    "수주": "busy",
+    "심곡": "ok",
+    "역곡": "busy",
+    "역곡밝은": "none",
+    "오정": "ok",
+    "원미": "ok",
+    "책마루": "none",
+    "한울빛": "ok"
+   }
+  },
+  "nation": {}
+ },
+ "cases": [
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "나미야 잡화점의 기적 빌리고 싶어요",
+    "pickup": "상동"
+   },
+   "why": "실측 서지 픽스처 + 오늘 새벽 자료 → 관내 상호대차"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "작별하지 않는다 빌리고 싶어요"
+   },
+   "why": "전국 서지 검색 + 그 자리 조회 → 관내 상호대차(상동 대출 중)"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "채식주의자 있나요?",
+    "pickup": "상동"
+   },
+   "why": "수령관 서가에 있음 → 바로 이용, 후보 2건"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "소년이 온다",
+    "pickup": "꿈빛"
+   },
+   "why": "픽스처 서지 + 새벽 자료에 없음 → 그 자리 조회 → 바로 이용"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "파친코 대출되나요",
+    "pickup": "상동"
+   },
+   "why": "소장관 모두 대출 중 → 예약 권장"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "백년의 고독 찾아주세요",
+    "pickup": "상동"
+   },
+   "why": "관내 미소장 → 책바다, 다른 지역 12곳"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "아무도 모르는 제목 부탁해요"
+   },
+   "why": "서지 없음 → 미확정"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "디브이디 예시",
+    "pickup": "상동"
+   },
+   "why": "제외 자료 유형(DVD, 예시)"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "신착 예시 도서",
+    "pickup": "상동"
+   },
+   "why": "신착 제외(예시)"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "지구 끝의 온실",
+    "pickup": "상동"
+   },
+   "why": "정보나루 연결 끊김 → 8/18 픽스처(예시 값)로 복귀를 밝힘"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "작별하지 않는다",
+    "pickup": "원미",
+    "lang": "vi"
+   },
+   "why": "다른 언어 → translate_to"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "나미야",
+    "pickup": "없는관"
+   },
+   "why": "설정에 없는 수령관 → 오류"
+  },
+  {
+   "tool": "search_item",
+   "args": {
+    "utterance": "채식주의자라는 책 있어요?"
+   },
+   "why": "찾기만 — 말투를 걷어 제목만으로 검색, 후보 2건"
+  },
+  {
+   "tool": "check_availability",
+   "args": {
+    "isbn13": "9788937460883"
+   },
+   "why": "소장·대출만(관내 없음 → 전국)"
+  }
+ ]
+}

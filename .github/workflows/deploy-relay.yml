@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["relay/worker.js", "relay/wrangler.toml", ".github/workflows/deploy-relay.yml"]
+    paths: ["relay/worker.js", "relay/mcp.js", "relay/mcp_data.js", "relay/wrangler.toml", ".github/workflows/deploy-relay.yml"]
 permissions:
   contents: write
 concurrency:
@@ -91,7 +91,7 @@ jobs:
           if [ -n "$NARU_KEY" ]; then
             printf '%s' "$NARU_KEY" | npx --yes wrangler@4.151.0 secret put NARU_KEY > secret.log 2>&1 || { echo "키 넣기 실패" >> deploy_err.txt; exit 1; }
           else echo "정보나루 키 비밀값이 없어 중계가 503을 냅니다" >> deploy_err.txt; fi
-      - name: 확인(/health · /holdings · /search · /nation)과 기록
+      - name: 확인(/health · /holdings · /search · /nation · 원격 상담 비서 /mcp)과 기록
         if: steps.deploy.outputs.skipped != 'true'
         env:
           URL: ${{ steps.deploy.outputs.url }}
@@ -158,7 +158,46 @@ jobs:
                       docs = (o.get("json") or {}).get("docs") or []
                       rec["search_sample"].update({"docs": len(docs), "first": (docs[0].get("title") if docs else None)})
                   rec["nation_sample"] = brief(get("/nation?isbn=9788972756194", 60), ("found_count", "via"))
-              good = all((rec.get(k) or {}).get("status") == 200 for k in ("health", "holdings_sample", "search_sample", "nation_sample"))
+                  # 원격 상담 비서(/mcp) — 초기화 → 도구 목록 → 상담 1건(나미야: 오늘 새벽 자료에 있으면 정보나루 호출 0회)
+                  def mcp(body, timeout=60):
+                      t0 = time.time()
+                      req = urllib.request.Request(url + "/mcp", data=json.dumps(body, ensure_ascii=False).encode(), method="POST",
+                            headers={"User-Agent": UA, "Content-Type": "application/json", "Accept": "application/json, text/event-stream"})
+                      try:
+                          with urllib.request.urlopen(req, timeout=timeout) as r:
+                              raw = r.read(); return r.status, (json.loads(raw) if raw else None), round((time.time() - t0) * 1000)
+                      except urllib.error.HTTPError as e:
+                          return e.code, " ".join(e.read()[:200].decode("utf-8", "replace").split()), round((time.time() - t0) * 1000)
+                      except Exception as e:
+                          return None, f"{type(e).__name__}: {str(e)[:100]}", round((time.time() - t0) * 1000)
+                  m = {}
+                  st, b, ms = mcp({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18",
+                                   "capabilities": {}, "clientInfo": {"name": "deploy-check", "version": "1"}}})
+                  res = (b or {}).get("result", {}) if isinstance(b, dict) else {}
+                  m["initialize"] = {"status": st, "ms": ms, "protocol": res.get("protocolVersion"), "server": (res.get("serverInfo") or {}).get("version")}
+                  st, b, ms = mcp({"jsonrpc": "2.0", "method": "notifications/initialized"})
+                  m["initialized"] = {"status": st}
+                  st, b, ms = mcp({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
+                  m["tools"] = [t["name"] for t in b["result"]["tools"]] if st == 200 and isinstance(b, dict) else {"status": st, "text": b}
+                  st, b, ms = mcp({"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+                                   "params": {"name": "consult_request", "arguments": {"utterance": "나미야 잡화점의 기적", "pickup": "상동"}}}, 90)
+                  if st == 200 and isinstance(b, dict) and "result" in b:
+                      txt = b["result"]["content"][0]["text"]
+                      if b["result"].get("isError"):
+                          m["consult"] = {"status": st, "ms": ms, "error": txt[:200]}
+                      else:
+                          o = json.loads(txt); av = o.get("availability") or {}
+                          m["consult"] = {"status": st, "ms": ms, "route": o.get("route"), "asof": av.get("asof"),
+                                          "basis": av.get("basis"), "notice_head": (o.get("notice") or "")[:70]}
+                  else:
+                      m["consult"] = {"status": st, "ms": ms, "text": b if not isinstance(b, dict) else b.get("error")}
+                  rec["mcp"] = m
+              # Cloudflare가 막는 프로그램 이름 확인(/health만 — 정보나루 호출 없음). 원격 상담 비서를 부르는 쪽의 이름이 막히면 연결이 안 된다
+              rec["client_name_probe"] = {name: get("/health", 15, ua=name).get("status") for name in
+                  ["python-httpx/0.28.1", "python-requests/2.32.3", "node", "undici", "Go-http-client/1.1", "axios/1.7.7",
+                   "curl/8.5.0", "Claude-User", "Mozilla/5.0 (compatible; Claude-User/1.0; +Claude-User@anthropic.com)"]}
+              good = all((rec.get(k) or {}).get("status") == 200 for k in ("health", "holdings_sample", "search_sample", "nation_sample")) \
+                     and ((rec.get("mcp") or {}).get("consult") or {}).get("route") is not None
               rec["check"] = "ok" if good else "fail"
           pathlib.Path("relay/last_deploy.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
           print(json.dumps(rec, ensure_ascii=False))

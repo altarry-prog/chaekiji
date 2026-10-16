@@ -18,7 +18,7 @@
 | 누가 | 창구·전화 상담 사서 | 시민(어르신·외국인 주민·시각이 불편한 분 포함) |
 | 무엇을 | 말 한마디 → 책 특정 → 소장·대출 상태 → 상호대차 가능 여부·갈래 판정 → 안내문·접수 메모 | 같은 도구를 음성·10개 언어·큰글자·전화 모드로, 신청 확인까지 |
 | 어디까지 진짜인가 | **판정·안내문까지 진짜**(정보나루 데이터). 접수는 사서가 현행 시스템에서 | 화면·음성·판정 흐름은 진짜. **접수는 시연**(실제로 들어가지 않음) |
-| 어떻게 돌리나 | `server\run.bat` → 클로드 데스크톱 또는 로컬 공개 모델(Ollama)에 연결 → 프롬프트 `consult` | https://altarry-prog.github.io/chaekiji/ 를 휴대폰으로 |
+| 어떻게 돌리나 | **설치 없이:** claude.ai 커스텀 커넥터에 주소 한 줄(원격 상담 비서) · **설치형:** `server\run.bat` → 클로드 데스크톱 또는 로컬 공개 모델(Ollama) → 프롬프트 `consult` | https://altarry-prog.github.io/chaekiji/ 를 휴대폰으로 |
 
 <p align="center">
   <img src="docs/img/home.png" width="31%" alt="첫 화면 — 무슨 책 찾으세요?">
@@ -64,10 +64,17 @@
 | 📱 시연 웹 | https://altarry-prog.github.io/chaekiji/ |
 | 🔌 MCP 확산 모델 설계도 | https://altarry-prog.github.io/chaekiji/mcp.html |
 | 🕹️ MCP 도구 호출 콘솔 | https://altarry-prog.github.io/chaekiji/console.html |
+| 🧑‍💼 상담 비서(원격 · claude.ai 커넥터) | `https://chaekiji-relay.altarry2.workers.dev/mcp` — 아래 「설치 없이」 |
 
 휴대폰 크롬·사파리에서 열고 마이크를 허용하면 됩니다(PC에서는 위 1분 영상이 같은 흐름입니다). 첫 화면의 「눌러서 시작하기」를 누르면 음성 안내가 시작되고, 예시 세 개를 누르면 세 갈래(우리 관 소장 → 바로 이용 / 관내 다른 관 → 상호대차 / 관내에 없음 → 책바다 안내)를 바로 볼 수 있습니다.
 
 ## 바로 돌려보기 — 상담 비서 (10분)
+
+0. **설치 없이(1분) — 인터넷 창의 claude.ai에서.** 「사용자 지정 → 커넥터 → 커스텀 커넥터 추가」에 아래 주소를 넣습니다(로그인 없음 · 무료 요금제는 1개까지). 새 대화의 「+ → 커넥터」에서 켜고 이용자의 말을 그대로 적으면 됩니다.
+
+       https://chaekiji-relay.altarry2.workers.dev/mcp
+
+   원격 판은 **읽기·판정만**(도구 3종: `consult_request` · `search_item` · `check_availability`) — 접수·회원 토큰은 받지 않습니다. 파이썬 판과 같은 입력에 같은 판정·안내문을 내는지 자동 대조합니다(14건). 정보나루 데이터는 오늘 새벽 매일 갱신 자료, 없으면 그 자리 조회(전일 기준). 자세히: [relay/README.md](relay/README.md#원격-상담-비서-mcp--claudeai-커넥터)
 
 1. **준비·시험(2분)** — 처음 받은 PC에서 이것 하나면 됩니다(네트워크·인증키·Ollama 불필요):
 

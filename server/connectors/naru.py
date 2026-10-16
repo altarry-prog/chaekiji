@@ -63,7 +63,7 @@ def _snapshot_holdings(isbn13, libraries):
     if h is None: return None
     return {name: h.get(name, "none") for name in libraries}
 RELAY = ""                                            # 중계 주소 — tools.py가 환경변수·설정에서 넣어 준다
-RELAY_TIMEOUT = 8
+RELAY_TIMEOUT = 20                                    # [10. 16.] 첫 배포 실측: 미국 쪽 확인에서 /holdings 8.9초(소장관 목록 1회 + 소장관별 15회) — 8초면 끊겨 20초로
 # [10. 16.] 중계를 부를 때 이름을 밝힌다 — 파이썬 기본 이름(Python-urllib)은 Cloudflare가 403으로 막는 일이 있다(첫 배포 실측)
 RELAY_UA = {"User-Agent": "chaekiji-mcp/0.3.4 (+https://github.com/altarry-prog/chaekiji)"}
 

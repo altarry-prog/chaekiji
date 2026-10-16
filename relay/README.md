@@ -21,6 +21,10 @@
 - `GET /nation?isbn=9788972756194` → `{"found_count":12,"asof"}` (경기 광역 소장관 수 — 전국 예시)
 - `GET /health` → `{"ok":true,"keyed":true}` (키 **값**은 어디에도 내보내지 않음)
 
+**배포 주소(2026. 10. 16.~)** — `https://chaekiji-relay.altarry2.workers.dev` (Cloudflare Workers 무료). 첫 확인 기록(`relay/last_deploy.json`, 17:49): `/health`·`/holdings`·`/search`·`/nation` 모두 200, 시연 웹 출처의 CORS 허용 확인. 나미야 잡화점의 기적 16관 조회는 같은 날 새벽 매일 갱신 자료와 개수가 같았다(대출 가능 7·대출 중 6·미소장 3). 미국 쪽 확인에서 `/holdings`는 약 9초(소장관 목록 1회 + 소장관별 15회) — 그래서 서버의 중계 대기는 20초, 시연 웹은 3초만 기다리고 새벽 자료로 돌아간다.
+
+**브라우저가 아닌 프로그램은 이름을 밝혀야 한다** — 파이썬 기본 이름(`Python-urllib/…`)으로 부르면 Cloudflare가 `403 error code: 1010`으로 막는다(중계 코드가 아니라 Cloudflare의 검사, 첫 배포 실측). 참조 서버는 `User-Agent: chaekiji-mcp/0.3.4 (+저장소 주소)`로 부르고, 배포 확인도 이름을 밝혀 묻는다. 직접 점검할 때(확인된 이름): `curl -A "chaekiji-relay-check/1.0 (+https://github.com/altarry-prog/chaekiji)" https://chaekiji-relay.altarry2.workers.dev/health`
+
 **깃허브가 대신 올리기(10/16~)** — 행정망에서 Cloudflare 화면이 막혀 있어, 배포를 깃허브 액션 `.github/workflows/deploy-relay.yml`에 맡겼다. 저장소 비밀값 `CLOUDFLARE_API_TOKEN`(Cloudflare 「Edit Cloudflare Workers」 템플릿 토큰) 하나만 있으면(계정 ID는 선택 — 없으면 토큰으로 찾고, workers.dev 주소 이름이 없으면 만든다) `worker.js`·`wrangler.toml`이 바뀔 때마다 배포하고, 이미 있는 정보나루 키(`NARU_KEY`/`NARUKEY`)를 Cloudflare 비밀값으로 넘긴 뒤 `/health`·`/holdings` 1건을 확인해 `relay/last_deploy.json`(주소·결과·실패 까닭, 키·토큰 없음)에 남긴다.
 
 점검: `node relay/test_worker.mjs` — 정보나루를 흉내 낸 fetch로 네 경로·거절 규칙·https→http 넘어가기·멈춘 주소 끊기·정보나루 오류 문구·상류 장애 19건(네트워크·키 불필요).
@@ -37,15 +41,15 @@
 
 ## 참조 서버 쪽 연결 (상담 비서)
 
-`server/config/bucheon.yaml`의 `relay_url`(또는 환경변수 `CHAEKIJI_RELAY`)에 중계 주소를 넣고 `CHAEKIJI_MODE=auto`(심사 기본값)로 띄우면, 중계가 살아 있을 때 키 없이 오늘 데이터로 판정한다. 시험: `python server/tests/run_relay.py`(모의 중계).
+`server/config/bucheon.yaml`의 `relay_url`(또는 환경변수 `CHAEKIJI_RELAY`)에 중계 주소를 넣고 `CHAEKIJI_MODE=auto`(심사 기본값)로 띄우면, 중계가 살아 있을 때 키 없이 오늘 데이터로 판정한다. 매일 갱신 스냅샷에 있는 책은 중계를 부르지 않는다. 10/16부터 부천 설정에 배포 주소가 들어 있다. 시험: `python server/tests/run_relay.py`(모의 중계).
 
 ## 시연 웹 쪽 연결
 
-`index.html` 맨 위 상수 `RELAY`에 중계 주소를 넣으면 켜진다(빈 문자열이면 지금처럼 픽스처만).
+`index.html`의 상수 `RELAY`에 중계 주소를 넣으면 켜진다(v1.12.2부터 배포 주소가 들어 있음. 빈 문자열이면 매일 갱신 파일 → 픽스처만).
 
-    const RELAY = "https://chaekiji-relay.<계정>.workers.dev";
+    const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
 
-실데이터로 답하면 결과 화면 출처 줄이 「정보나루 실데이터 · **오늘 날짜** 조회」로 바뀌고, 중계가 답하지 않으면 「2026. 8. 18. 조회」 그대로다 — 어느 쪽인지 화면에 늘 보인다.
+v1.12.2의 순서: 오늘(한국 날짜) 새벽 매일 갱신 파일에 그 책이 있으면 그 파일 → 아니면 중계(3초) → 2일 이내 파일 → 2026. 8. 18. 실측. 정보나루 대출 상태는 어차피 전일 기준이라, 낮에 중계로 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않아 하루 호출 한도(키 하나를 매일 갱신과 함께 씀)를 아낀다. 어느 쪽이든 결과 화면 출처 줄에 조회일이 찍힌다(「정보나루 실데이터 · 2026. 10. 16. 조회」처럼).
 
 ## 점검 항목 (설계 문서의 4개)
 

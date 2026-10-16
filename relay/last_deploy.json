@@ -1,0 +1,6 @@
+{
+ "time": "2026-10-16 17:21 KST",
+ "result": "fail",
+ "url": null,
+ "error": "계정을 하나로 정하지 못함(찾은 수 0) — CLOUDFLARE_ACCOUNT_ID 비밀값을 넣어 주세요. []"
+}

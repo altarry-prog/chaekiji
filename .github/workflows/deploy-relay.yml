@@ -37,8 +37,11 @@ jobs:
           set +e
           # 계정 ID가 없으면 토큰으로 찾고, workers.dev 주소 이름이 없으면 만든다(휴대폰에서 찾기 어려운 값을 깃허브가 대신 챙김)
           python3 - <<'PY' > prep.out 2> deploy_err.txt
-          import json, os, urllib.request, urllib.error
-          tok = os.environ["CLOUDFLARE_API_TOKEN"]; acc = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+          import json, os, re, urllib.request, urllib.error
+          tok = os.environ["CLOUDFLARE_API_TOKEN"].strip()
+          raw = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
+          m = re.search(r"[0-9a-f]{32}", raw)              # 계정 ID 칸에 대시보드 주소 전체를 붙여 넣어도 32자리만 골라 쓴다
+          acc = m.group(0) if m else ""
           def api(method, path, body=None):
               req = urllib.request.Request("https://api.cloudflare.com/client/v4" + path, method=method,
                                            data=None if body is None else json.dumps(body).encode(),
@@ -48,20 +51,30 @@ jobs:
               except urllib.error.HTTPError as e:
                   try: return json.load(e)
                   except Exception: return {"success": False, "errors": [{"message": f"HTTP {e.code}"}]}
+          def errs(r): return [e.get("message") for e in r.get("errors", [])]
+          v = api("GET", "/user/tokens/verify")
+          diag = f"토큰 상태 {(v.get('result') or {}).get('status')} {errs(v)}"
           if not acc:
-              r = api("GET", "/accounts?per_page=5")
-              accs = r.get("result") or []
-              if len(accs) != 1:
-                  raise SystemExit(f"계정을 하나로 정하지 못함(찾은 수 {len(accs)}) — CLOUDFLARE_ACCOUNT_ID 비밀값을 넣어 주세요. {[(e.get('message')) for e in r.get('errors', [])]}")
-              acc = accs[0]["id"]
+              ids = [a["id"] for a in (api("GET", "/accounts?per_page=5").get("result") or [])]
+              if not ids:
+                  ms = api("GET", "/memberships?per_page=5")
+                  ids = [m_["account"]["id"] for m_ in (ms.get("result") or []) if m_.get("account")]
+                  diag += f" · 멤버십 {len(ids)}건 {errs(ms)}"
+              if len(ids) != 1:
+                  raise SystemExit(f"계정을 하나로 정하지 못함(찾은 수 {len(ids)}) — {diag}. 계정 ID를 CLOUDFLARE_ACCOUNT_ID 비밀값으로 넣거나(대시보드 주소 전체를 붙여 넣어도 됨), 토큰을 다시 만들 때 「계정 리소스」에서 계정을 고르세요")
+              acc = ids[0]
+          a = api("GET", f"/accounts/{acc}")
+          if not a.get("success"):
+              raise SystemExit(f"토큰으로 이 계정에 들어갈 수 없음 — {diag} · {errs(a)}. 토큰을 다시 만들 때 「계정 리소스」에서 계정을 고르세요")
           sub = api("GET", f"/accounts/{acc}/workers/subdomain")
           name = (sub.get("result") or {}).get("subdomain")
           if not name:
+              r = {}
               for cand in ["altarry", "chaekiji-altarry", "chaekiji-bucheon", "chaekiji-sangdong"]:
                   r = api("PUT", f"/accounts/{acc}/workers/subdomain", {"subdomain": cand})
                   if r.get("success"): name = cand; break
               if not name:
-                  raise SystemExit(f"workers.dev 주소 이름을 만들지 못함: {[(e.get('message')) for e in r.get('errors', [])]}")
+                  raise SystemExit(f"workers.dev 주소 이름을 만들지 못함: {errs(r)} · {diag}")
           print(acc); print(name)
           PY
           if [ $? -ne 0 ]; then echo "준비 실패"; exit 1; fi

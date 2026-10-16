@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: "30 20 * * *"        # 매일 05:30 KST
   workflow_dispatch:             # Actions 탭에서 손으로도 실행 가능
+  push:                         # 도서 목록(lab/refresh_list.txt)을 고쳐 올리면 그 자리에서 한 번 더 받는다
+    branches: [main]
+    paths: ["server/lab/refresh_list.txt"]
 permissions:
   contents: write
   pages: write                   # 커밋 뒤 시연 웹 다시 게시 요청용

@@ -92,7 +92,7 @@
 
        python server/hosts/ollama_host.py --model exaone3.5:2.4b --ask "나미야 잡화점의 기적 빌리고 싶어요, 상동에서 받을게요"
 
-   같은 도구가 호출되고 같은 판정이 나옵니다 — 모델 비종속. 절차·기록표는 [server/docs/모델2종-구동.md](server/docs/모델2종-구동.md).
+   같은 도구가 호출되고 같은 판정이 나옵니다 — 모델 비종속. 설치 없이 하려면 **코랩 노트북**([열기](https://colab.research.google.com/github/altarry-prog/chaekiji/blob/main/server/lab/colab_model2.ipynb))에서 「모두 실행」 한 번 — 엑사원·라마 2종으로 같은 문의 5건을 처리하고 기록표를 만듭니다. 절차·기록표는 [server/docs/모델2종-구동.md](server/docs/모델2종-구동.md).
 
 4. **시민 음성 화면(2분)** — 휴대폰으로 위 시연 웹 주소를 열어 같은 책을 말해 봅니다.
 

@@ -9,7 +9,8 @@
 준비: Ollama 설치(https://ollama.com) → 모델 받기 예) ollama pull exaone3.5:2.4b  또는  ollama pull llama3.2:3b
 실행: python hosts/ollama_host.py --model exaone3.5:2.4b --ask "나미야 잡화점의 기적 빌리고 싶어요"
       python hosts/ollama_host.py --model llama3.2:3b          (대화형)
-기록: --log lab/out/host_log.ndjson 에 호출된 도구·인자·소요 시간이 한 줄씩 남는다(구동안내서·2종 실측 기록 재료).
+기록: --log lab/out/host_log.ndjson 에 호출된 도구·인자·소요 시간·판정 갈래가 한 줄씩 남는다(구동안내서·2종 실측 기록 재료).
+      --answers lab/out/host_answers.ndjson 에는 질문마다 모델의 최종 답이 남는다(10/16 — 코랩 2종 구동 노트북이 기록표를 만든다).
 
 도구 호출 방식은 둘 다 지원한다.
   native — Ollama의 도구 호출(tool_calls) 기능을 쓴다(라마 3.1/3.2 등 지원 모델).
@@ -157,6 +158,7 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
                 try: args = json.loads(args)
                 except json.JSONDecodeError: args = {"utterance": args}
             print(f"▶ 도구 호출 {step}: {name} {json.dumps(args, ensure_ascii=False)}  (모델 {resp['_ms']} ms)")
+            ms, o = 0, None
             if name not in tool_names:
                 result, err = json.dumps({"error": f"없는 도구: {name}", "available": sorted(tool_names)}, ensure_ascii=False), True
             else:
@@ -169,9 +171,13 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
                     pass
                 print(f"◀ 결과 {'(오류) ' if err else ''}{ms} ms {brief}")
             if logf:
-                logf.write(json.dumps({"ts": datetime.datetime.now().isoformat(timespec="seconds"), "model": a.model,
-                                       "protocol": protocol, "step": step, "tool": name, "arguments": args,
-                                       "error": err, "result_chars": len(result), "model_ms": resp["_ms"]}, ensure_ascii=False) + "\n")
+                row = {"ts": datetime.datetime.now().isoformat(timespec="seconds"), "model": a.model,
+                       "protocol": protocol, "step": step, "tool": name, "arguments": args,
+                       "error": err, "result_chars": len(result), "model_ms": resp["_ms"], "tool_ms": ms, "ask": user_text}
+                if isinstance(o, dict):                   # 판정 결과의 요점(갈래·데이터 출처·조회일) — 기록표용
+                    row.update({k: o[k] for k in ("found", "route", "route_label", "mode") if k in o})
+                    if isinstance(o.get("availability"), dict): row["asof"] = o["availability"].get("asof")
+                logf.write(json.dumps(row, ensure_ascii=False) + "\n")
                 logf.flush()
             if protocol == "native":
                 messages.append({"role": "tool", "content": result})
@@ -193,6 +199,7 @@ def main():
     ap.add_argument("--ask", default="", help="한 문장만 묻고 끝낸다(없으면 대화형)")
     ap.add_argument("--protocol", default="auto", choices=["auto", "native", "json"])
     ap.add_argument("--log", default="", help="호출 기록 JSONL 경로(예: lab/out/host_log.ndjson)")
+    ap.add_argument("--answers", default="", help="최종 답 기록 JSONL 경로(예: lab/out/host_answers.ndjson)")
     ap.add_argument("--num-ctx", type=int, default=4096)
     ap.add_argument("--timeout", type=int, default=600, help="모델 응답 대기(초) — CPU에서는 길게")
     a = ap.parse_args()
@@ -207,8 +214,15 @@ def main():
     print(f"[책이지 호스트] 모델 {a.model} · Ollama {a.ollama} · 서버 {a.mode} 모드 · 도구 {len(tools)}종 · 지시문 {len(system)}자")
     try:
         if a.ask:
+            t0 = time.perf_counter()
             answer, ms = run_turn(a, mcp, tools, system, a.ask, state, logf)
             print("\n" + answer + f"\n\n(방식 {state['protocol']} · 마지막 응답 {ms} ms)")
+            if a.answers:                                 # [10/16] 질문마다 최종 답 — 코랩 2종 구동 노트북이 기록표를 만든다
+                with open(a.answers, "a", encoding="utf-8") as f:
+                    f.write(json.dumps({"ts": datetime.datetime.now().isoformat(timespec="seconds"), "model": a.model,
+                                        "protocol": state["protocol"], "ask": a.ask, "pickup": a.pickup, "lang": a.lang,
+                                        "answer": answer, "last_model_ms": ms,
+                                        "total_ms": round((time.perf_counter() - t0) * 1000)}, ensure_ascii=False) + "\n")
         else:
             print("이용자의 말을 적고 Enter. 빈 줄이면 끝.")
             while True:

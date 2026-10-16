@@ -63,9 +63,9 @@ jobs:
               if len(ids) != 1:
                   raise SystemExit(f"계정을 하나로 정하지 못함(찾은 수 {len(ids)}) — {diag}. 계정 ID를 CLOUDFLARE_ACCOUNT_ID 비밀값으로 넣거나(대시보드 주소 전체를 붙여 넣어도 됨), 토큰을 다시 만들 때 「계정 리소스」에서 계정을 고르세요")
               acc = ids[0]
-          a = api("GET", f"/accounts/{acc}")
+          a = api("GET", f"/accounts/{acc}")                # 계정 설정 읽기 권한이 없는 토큰도 배포는 될 수 있어, 막지 않고 기록만
           if not a.get("success"):
-              raise SystemExit(f"토큰으로 이 계정에 들어갈 수 없음 — {diag} · {errs(a)}. 토큰을 다시 만들 때 「계정 리소스」에서 계정을 고르세요")
+              diag += f" · 계정 정보 읽기 안 됨 {errs(a)}"
           sub = api("GET", f"/accounts/{acc}/workers/subdomain")
           name = (sub.get("result") or {}).get("subdomain")
           if not name:
@@ -74,7 +74,7 @@ jobs:
                   r = api("PUT", f"/accounts/{acc}/workers/subdomain", {"subdomain": cand})
                   if r.get("success"): name = cand; break
               if not name:
-                  raise SystemExit(f"workers.dev 주소 이름을 만들지 못함: {errs(r)} · {diag}")
+                  raise SystemExit(f"workers.dev 주소 이름을 만들지 못함: {errs(r)} · {diag}. 토큰을 다시 만들 때 「계정 리소스」에서 계정을 고르세요")
           print(acc); print(name)
           PY
           if [ $? -ne 0 ]; then echo "준비 실패"; exit 1; fi

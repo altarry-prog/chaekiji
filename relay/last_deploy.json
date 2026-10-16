@@ -1,18 +1,18 @@
 {
- "time": "2026-10-16 20:05 KST",
+ "time": "2026-10-16 20:30 KST",
  "result": "ok",
  "url": "https://chaekiji-relay.altarry2.workers.dev",
  "health": {
   "status": 200,
-  "ms": 158,
+  "ms": 113,
   "ok": true,
   "keyed": true,
   "region": "31050",
-  "colo": "DFW"
+  "colo": "SEA"
  },
  "probe_python_default_name": {
   "status": 403,
-  "ms": 73,
+  "ms": 31,
   "text": "error code: 1010"
  },
  "cors_web": {
@@ -21,16 +21,16 @@
  },
  "holdings_sample": {
   "status": 200,
-  "ms": 2855,
+  "ms": 4981,
   "asof": "2026-10-16",
   "calls": 16,
   "via": "http",
   "cached": false,
-  "upstream_ms": 2761,
-  "call_ms_median": 1928,
-  "call_ms_max": 2761,
-  "placement": "local-DFW",
-  "edge": "DFW",
+  "upstream_ms": 4929,
+  "call_ms_median": 2016,
+  "call_ms_max": 4929,
+  "placement": "local-SEA",
+  "edge": "SEA",
   "isbn": "9788972756194",
   "ok": 7,
   "busy": 6,
@@ -38,21 +38,21 @@
  },
  "search_sample": {
   "status": 200,
-  "ms": 487,
+  "ms": 762,
   "via": "http",
   "docs": 5,
   "first": "나미야 잡화점의 기적 :히가시노 게이고 장편소설 "
  },
  "nation_sample": {
   "status": 200,
-  "ms": 2083,
+  "ms": 1696,
   "found_count": 200,
   "via": "http"
  },
  "mcp": {
   "initialize": {
    "status": 200,
-   "ms": 94,
+   "ms": 66,
    "protocol": "2025-06-18",
    "server": "0.3.5-remote"
   },
@@ -66,7 +66,7 @@
   ],
   "consult": {
    "status": 200,
-   "ms": 164,
+   "ms": 198,
    "route": "ill",
    "asof": "2026-10-16",
    "basis": "관내: 정보나루 bookExist(매일 갱신 · 2026-10-16 조회 · 전일 기준)",

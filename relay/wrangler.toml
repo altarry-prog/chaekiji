@@ -1,0 +1,6 @@
+# 책이지 정보나루 중계 — Cloudflare Workers 배포 설정 (깃허브 액션 deploy-relay.yml이 씀)
+# 인증키(NARU_KEY)는 여기에 없다 — 배포할 때 깃허브 비밀값에서 Cloudflare 비밀값으로 바로 넘긴다.
+name = "chaekiji-relay"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+workers_dev = true

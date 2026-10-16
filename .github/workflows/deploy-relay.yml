@@ -1,0 +1,91 @@
+# 정보나루 중계(relay/)를 Cloudflare Workers에 올린다 — 행정망에서 Cloudflare 화면이 막혀 있어 배포는 깃허브가 대신 한다.
+# 저장소 비밀값(Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN  — Cloudflare 「My Profile → API Tokens → Edit Cloudflare Workers」 템플릿으로 만든 토큰
+#   CLOUDFLARE_ACCOUNT_ID — Cloudflare 계정 ID(Workers & Pages 화면 오른쪽 「Account ID」)
+#   NARU_KEY(또는 NARUKEY) — 이미 있는 정보나루 키. 배포할 때 Cloudflare 비밀값으로 그대로 넘긴다(출력·기록 없음)
+# 결과(주소·확인 결과·실패 까닭)는 relay/last_deploy.json 에 남긴다 — 키·토큰은 없다.
+name: deploy-relay
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["relay/worker.js", "relay/wrangler.toml", ".github/workflows/deploy-relay.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: deploy-relay
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Cloudflare에 배포하고 정보나루 키 넘기기
+        id: deploy
+        continue-on-error: true
+        working-directory: relay
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "Cloudflare 비밀값(CLOUDFLARE_API_TOKEN · CLOUDFLARE_ACCOUNT_ID)이 없어 건너뜁니다"; echo "skipped=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          set +e
+          npx --yes wrangler@4.151.0 deploy > deploy.log 2>&1; rc=$?
+          url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          # 실패 까닭 몇 줄만(계정 ID는 가림) — 로그 전체는 남기지 않는다
+          grep -E 'ERROR|✘|error' deploy.log | head -5 | sed "s/$CLOUDFLARE_ACCOUNT_ID/***/g" > deploy_err.txt || true
+          if [ $rc -ne 0 ]; then echo "배포 실패"; exit 1; fi
+          if [ -n "$NARU_KEY" ]; then
+            printf '%s' "$NARU_KEY" | npx --yes wrangler@4.151.0 secret put NARU_KEY > secret.log 2>&1 || { echo "키 넣기 실패" >> deploy_err.txt; exit 1; }
+          else echo "정보나루 키 비밀값이 없어 중계가 503을 냅니다" >> deploy_err.txt; fi
+      - name: 확인(/health · /holdings 1건)과 기록
+        if: steps.deploy.outputs.skipped != 'true'
+        env:
+          URL: ${{ steps.deploy.outputs.url }}
+          OUTCOME: ${{ steps.deploy.outcome }}
+        run: |
+          python3 - <<'PY'
+          import json, os, time, urllib.request, datetime, pathlib
+          KST = datetime.timezone(datetime.timedelta(hours=9))
+          url = os.environ.get("URL") or ""
+          rec = {"time": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M KST"),
+                 "result": "ok" if os.environ.get("OUTCOME") == "success" else "fail", "url": url or None}
+          err = pathlib.Path("relay/deploy_err.txt")
+          if err.exists() and err.read_text().strip():
+              rec["error"] = err.read_text().strip()[:600]
+          def get(path, timeout):
+              t0 = time.time()
+              with urllib.request.urlopen(url + path, timeout=timeout) as r:
+                  return json.load(r), round((time.time() - t0) * 1000)
+          if url:
+              for i in range(6):                       # 새 주소가 퍼질 때까지 잠깐 기다린다
+                  try:
+                      rec["health"], _ = get("/health", 20); break
+                  except Exception as e:
+                      rec["health"] = {"error": type(e).__name__}; time.sleep(10)
+              try:
+                  j, ms = get("/holdings?isbn=9788972756194", 90)
+                  libs = j.get("libs", {})
+                  rec["holdings_sample"] = {"isbn": "9788972756194", "ok": sum(v == "ok" for v in libs.values()),
+                                            "busy": sum(v == "busy" for v in libs.values()), "none": sum(v == "none" for v in libs.values()),
+                                            "calls": j.get("calls"), "asof": j.get("asof"), "ms": ms}
+              except Exception as e:
+                  rec["holdings_sample"] = {"error": f"{type(e).__name__}: {getattr(e, 'code', '')}"}
+          pathlib.Path("relay/last_deploy.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+          print(json.dumps(rec, ensure_ascii=False))
+          PY
+          git config user.name "chaekiji-relay-deploy"
+          git config user.email "relay@users.noreply.github.com"
+          git add relay/last_deploy.json
+          if ! git diff --cached --quiet; then git commit -m "중계 배포 기록 $(date -u -d '+9 hours' '+%Y-%m-%d %H:%M')" && git pull --rebase -q origin main && git push; fi
+      - name: 배포가 실패했으면 빨간 X로 알리기
+        if: steps.deploy.outcome == 'failure'
+        run: |
+          echo "중계 배포 실패 — relay/last_deploy.json 에 까닭이 있습니다"
+          exit 1

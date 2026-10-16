@@ -43,7 +43,7 @@ jobs:
           day=$(date -u -d '+9 hours' +%Y-%m-%d)
           if [ "${{ steps.fetch.outcome }}" = "success" ]; then msg="매일 갱신: 정보나루 조회분 $day"; else msg="매일 갱신 실패 기록: $day (까닭은 server/lab/out/refresh_status.json)"; fi
           if git diff --cached --quiet; then echo "변경 없음"; echo "changed=false" >> "$GITHUB_OUTPUT"
-          else git commit -m "$msg" && git push && echo "changed=true" >> "$GITHUB_OUTPUT"; fi
+          else git commit -m "$msg" && git pull --rebase -q origin main && git push && echo "changed=true" >> "$GITHUB_OUTPUT"; fi
       - name: 시연 웹 다시 게시 요청(이 작업의 커밋은 게시를 저절로 부르지 않을 수 있어 직접 부른다)
         if: steps.commit.outputs.changed == 'true' && steps.fetch.outcome == 'success'
         continue-on-error: true

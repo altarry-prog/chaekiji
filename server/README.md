@@ -89,6 +89,7 @@ MCP 클라이언트에 연결하려면 호스트의 설정 파일에 서버 한 
 | `hosts/ollama_host.py` | [v0.3.4] 로컬 공개 모델(Ollama) 호스트 — 표준 라이브러리만, 도구 호출 native/json 두 방식 |
 | `lab/refresh_today.py` · `lab/refresh_list.txt` | [v0.3.4] 매일 1회 정보나루 조회분 갱신(키는 실행하는 쪽의 환경변수·Secrets에만) → `fixtures/holdings-today.json` · `../data/holdings-today.json` |
 | `prompts/상담비서-지시문.md` | [v0.3.4] 사서 모드 지시문 — MCP 프롬프트 `consult`의 본문 |
+| `lab/consult_cli.py` | [v0.3.5] 상담 비서를 명령 창에서 한 번 부르기 — 판정·안내문·접수 메모를 읽기 쉽게(모델·인증키 없음, 접수 없음) |
 
 ## 표준 도구 10종 (조회 3 + 판정·실행 7) + 상담 묶음 1
 

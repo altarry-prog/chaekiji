@@ -58,7 +58,10 @@ class Client:
     def __init__(self, **env):
         e = dict(os.environ, CHAEKIJI_CONFIG=str(ROOT/"config"/"bucheon.yaml"), **env)
         e.pop("CHAEKIJI_STORE", None); e.pop("CHAEKIJI_AUDIT", None)
-        e.setdefault("CHAEKIJI_SNAPSHOT", "/nonexistent/holdings-today.json")   # 기본은 스냅샷 없음
+        if "CHAEKIJI_SNAPSHOT" not in env:                                      # 기본은 스냅샷 없음 — 밖의 환경변수가 새어 들지 않게
+            e["CHAEKIJI_SNAPSHOT"] = "/nonexistent/holdings-today.json"
+        if "CHAEKIJI_LOCAL_SOURCE" not in env:
+            e.pop("CHAEKIJI_LOCAL_SOURCE", None)
         self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")], stdin=subprocess.PIPE,
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", env=e)
         self.n = 0

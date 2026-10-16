@@ -21,7 +21,7 @@
 - `GET /nation?isbn=9788972756194` → `{"found_count":12,"asof"}` (경기 광역 소장관 수 — 전국 예시)
 - `GET /health` → `{"ok":true,"keyed":true}` (키 **값**은 어디에도 내보내지 않음)
 
-점검: `node relay/test_worker.mjs` — 정보나루를 흉내 낸 fetch로 네 경로·거절 규칙 14건(네트워크·키 불필요).
+점검: `node relay/test_worker.mjs` — 정보나루를 흉내 낸 fetch로 네 경로·거절 규칙·https→http 넘어가기 15건(네트워크·키 불필요).
 
 ## 지키는 것 (설계 원칙 그대로)
 

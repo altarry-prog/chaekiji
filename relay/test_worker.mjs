@@ -55,4 +55,12 @@ ok(noKey.status === 503, "키 미설정 503");
 r = await get("/holdings?isbn=9788972756194");
 ok(r.body.cached === true, "같은 ISBN 재조회 — 캐시");
 ok(!calls.some(u => !u.includes("authKey=FAKE")), "모든 상류 호출에 키가 실림(URL에만)");
+// 10/16 실측 반영: https가 막히면 매뉴얼의 http 주소로 넘어간다(다른 ISBN이라 캐시 없이 새로 조회)
+const realFetch = globalThis.fetch;
+globalThis.fetch = async (url, init) => { if (String(url).startsWith("https://data4library.kr")) throw new TypeError("connection refused"); return realFetch(url, init); };
+const before = calls.length;
+r = await get("/holdings?isbn=9791161571188");
+globalThis.fetch = realFetch;
+ok(r.status === 200 && r.body.libs["141065"] === "ok" && calls.slice(before).length > 0 && calls.slice(before).every(u => u.startsWith("http://data4library.kr/api/")),
+   "https가 막히면 http(매뉴얼 주소)로 넘어가 같은 결과");
 console.log(`\n중계 점검 ${n}건 통과`);

@@ -86,12 +86,24 @@ async function nation(isbn, key) {
   return { isbn, found_count: (r.libs || []).length, asof: kstDate(), basis: "정보나루 libSrchByBook(경기 광역 예시) · 전일 기준" };
 }
 
+// 정보나루 매뉴얼(v20260210)의 호출 주소는 http다. https를 먼저 시도하고, 안 되면 http로 넘어간다.
+// 2026. 10. 16. 깃허브 서버 실측: https는 연결 거절·지연이 잦았고 http로 81회 모두 성공. 일시 장애는 잠깐 쉬고 한 번 더.
+const NARU_BASES = ["https://data4library.kr/api/", "http://data4library.kr/api/"];
 async function naru(api, params, key) {
   const q = new URLSearchParams({ ...params, authKey: key, format: "json" });
-  const r = await fetch(`https://data4library.kr/api/${api}?${q}`, { cf: { cacheTtl: 0 } });
-  if (!r.ok) throw new Error("http");
-  const d = await r.json();
-  return d.response || d;
+  let last;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt) await new Promise(res => setTimeout(res, 1500));
+    for (const base of NARU_BASES) {
+      try {
+        const r = await fetch(`${base}${api}?${q}`, { cf: { cacheTtl: 0 } });
+        if (!r.ok) { last = new Error("http " + r.status); continue; }
+        const d = await r.json();
+        return d.response || d;
+      } catch (e) { last = e; }
+    }
+  }
+  throw last || new Error("naru");
 }
 
 async function holdings(isbn, key) {

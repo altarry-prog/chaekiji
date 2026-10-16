@@ -18,11 +18,24 @@ REGION, DTL_REGION = "31", "31050"
 RATE_LIMIT, CACHE_SEC, PORT = 60, 600, int(os.environ.get("PORT", "8787"))
 _hits, _cache = {}, {}
 
+# 정보나루 매뉴얼(v20260210)의 호출 주소는 http다. https를 먼저 시도하고, 안 되면 http로 넘어간다(10/16 실측 반영).
+NARU_BASES = ["https://data4library.kr/api/", "http://data4library.kr/api/"]
+
 def naru(api, key, **p):
     p.update(authKey=key, format="json")
-    with urllib.request.urlopen("https://data4library.kr/api/%s?%s" % (api, urllib.parse.urlencode(p)), timeout=20) as r:
-        d = json.load(r)
-    return d.get("response", d)
+    q = urllib.parse.urlencode(p)
+    last = None
+    for attempt in range(2):                      # 일시 장애는 잠깐 쉬고 한 번 더
+        if attempt:
+            time.sleep(1.5)
+        for i, base in enumerate(NARU_BASES):
+            try:
+                with urllib.request.urlopen(base + api + "?" + q, timeout=8 if i == 0 else 20) as r:
+                    d = json.load(r)
+                return d.get("response", d)
+            except Exception as e:                # 연결 거절·시간 초과·HTTP 오류
+                last = e
+    raise RuntimeError("정보나루 연결 실패(%s): %s" % (api, type(last).__name__))
 
 def search(q, isbn, key):
     params = {"isbn13": isbn, "pageSize": 1} if isbn else {"title": q, "exactMatch": "false", "pageSize": 5}

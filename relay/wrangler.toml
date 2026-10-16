@@ -4,4 +4,6 @@ name = "chaekiji-relay"
 main = "worker.js"
 compatibility_date = "2025-01-01"
 workers_dev = true
+# Cloudflare 계정 ID — 비밀값이 아니다(Cloudflare 안내: 저장소에 두어도 됨). 비밀은 배포용 토큰과 정보나루 키뿐이며 둘 다 깃허브 비밀값에만 있다.
+account_id = "8db84be8b5d875a8112a51bb3ca939c8"
 # 2026-10-16 첫 배포(깃허브 액션 deploy-relay.yml)

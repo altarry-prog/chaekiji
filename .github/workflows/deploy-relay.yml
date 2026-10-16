@@ -41,7 +41,9 @@ jobs:
           tok = os.environ["CLOUDFLARE_API_TOKEN"].strip()
           raw = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "")
           m = re.search(r"[0-9a-f]{32}", raw)              # 계정 ID 칸에 대시보드 주소 전체를 붙여 넣어도 32자리만 골라 쓴다
-          acc = m.group(0) if m else ""
+          if not m:                                         # 비밀값이 없으면 wrangler.toml의 account_id(비밀 아님)
+              m = re.search(r'account_id\s*=\s*"([0-9a-f]{32})"', open("wrangler.toml", encoding="utf-8").read())
+          acc = (m.group(1) if m and m.groups() else m.group(0)) if m else ""
           def api(method, path, body=None):
               req = urllib.request.Request("https://api.cloudflare.com/client/v4" + path, method=method,
                                            data=None if body is None else json.dumps(body).encode(),

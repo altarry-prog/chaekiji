@@ -8,7 +8,7 @@ worker.js와 같은 경로·같은 응답 모양. 인증키는 환경변수 NARU
 점검:  curl http://127.0.0.1:8787/health
 경로:  /holdings?isbn=  /search?q=|isbn=  /nation?isbn=  /health   (worker.js와 같다)
 """
-import os, sys, json, time, re, urllib.request, urllib.parse, datetime
+import os, sys, json, time, re, urllib.request, urllib.parse, urllib.error, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ALLOW_ORIGINS = {"https://altarry-prog.github.io", "http://localhost:8080", "http://127.0.0.1:8080"}
@@ -21,21 +21,33 @@ _hits, _cache = {}, {}
 # 정보나루 매뉴얼(v20260210)의 호출 주소는 http다. https를 먼저 시도하고, 안 되면 http로 넘어간다(10/16 실측 반영).
 NARU_BASES = ["https://data4library.kr/api/", "http://data4library.kr/api/"]
 
+class Upstream(RuntimeError):
+    """상류 실패 — 실패 종류만 담는다(예: "https:URLError", "http:503", "naru:…"). 키·주소는 담지 않는다."""
+    def __init__(self, detail):
+        super().__init__("upstream"); self.detail = detail[-8:]
+
 def naru(api, key, **p):
     p.update(authKey=key, format="json")
     q = urllib.parse.urlencode(p)
-    last = None
+    fails = []
     for attempt in range(2):                      # 일시 장애는 잠깐 쉬고 한 번 더
         if attempt:
             time.sleep(1.5)
         for i, base in enumerate(NARU_BASES):
+            tag = "https" if base.startswith("https") else "http"
             try:
                 with urllib.request.urlopen(base + api + "?" + q, timeout=8 if i == 0 else 20) as r:
                     d = json.load(r)
-                return d.get("response", d)
-            except Exception as e:                # 연결 거절·시간 초과·HTTP 오류
-                last = e
-    raise RuntimeError("정보나루 연결 실패(%s): %s" % (api, type(last).__name__))
+            except urllib.error.HTTPError as e:   # HTTP 오류
+                fails.append(f"{tag}:{e.code}"); continue
+            except Exception as e:                # 연결 거절·시간 초과·JSON 아님
+                fails.append(f"{tag}:{type(e).__name__}"); continue
+            resp = d.get("response", d) if isinstance(d, dict) else {}
+            # 10/16: 정보나루가 오류 문구(호출 한도 초과·키 오류 등)를 주면 「없음」으로 바꾸지 않고 오류로 — 다시 해도 같으니 바로 멈춘다
+            if isinstance(resp, dict) and resp.get("error"):
+                fails.append("naru:" + str(resp["error"]).replace(key, "***")[:60]); raise Upstream(fails)
+            return resp
+    raise Upstream(fails)
 
 def search(q, isbn, key):
     params = {"isbn13": isbn, "pageSize": 1} if isbn else {"title": q, "exactMatch": "false", "pageSize": 5}
@@ -105,8 +117,8 @@ class H(BaseHTTPRequestHandler):
         try:
             v = holdings(isbn, key) if u.path == "/holdings" else search(q, isbn, key) if u.path == "/search" else nation(isbn, key)
             _cache[key_] = (now, v); self._send(dict(v, cached=False))
-        except Exception:
-            self._send({"error": "upstream"}, 502)
+        except Exception as e:                   # 실패 종류만 알린다 — 키·주소는 싣지 않는다
+            self._send({"error": "upstream", "detail": getattr(e, "detail", [])}, 502)
 
 if __name__ == "__main__":
     if not os.environ.get("NARU_KEY"):

@@ -55,15 +55,19 @@ export default {
     const hit = mem.cache.get(key);
     if (hit && Date.now() - hit.t < CACHE_SEC * 1000) return json({ ...hit.v, cached: true }, 200, cors);
 
+    // 요청 1건의 상류 호출 기록 — 횟수(상한 확인)·실패 종류·통한 주소. wait는 점검용(기다리는 한도 ms, 비우면 기본값)
+    const ctx = { n: 0, fails: [], via: null, wait: Number(env.NARU_WAIT_MS) || 0 };
     try {
       let v;
-      if (url.pathname === "/holdings") v = await holdings(isbn, env.NARU_KEY);
-      else if (url.pathname === "/search") v = await search(q, isbn, env.NARU_KEY);
-      else v = await nation(isbn, env.NARU_KEY);
+      if (url.pathname === "/holdings") v = await holdings(isbn, env.NARU_KEY, ctx);
+      else if (url.pathname === "/search") v = await search(q, isbn, env.NARU_KEY, ctx);
+      else v = await nation(isbn, env.NARU_KEY, ctx);
+      v = { ...v, via: ctx.via };
       mem.cache.set(key, { t: Date.now(), v });
       return json({ ...v, cached: false }, 200, cors);
     } catch (e) {
-      return json({ error: "upstream" }, 502, cors);   // 오류 문구에 키·주소를 싣지 않는다
+      // 실패 종류만 알린다(예: "https:AbortError", "http:503", "naru:…") — 키·주소는 싣지 않는다
+      return json({ error: "upstream", detail: (e && e.detail) || [] }, 502, cors);
     }
   },
 };
@@ -73,49 +77,78 @@ function kstDate() {
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
 }
 
-async function search(q, isbn, key) {
+async function search(q, isbn, key, ctx) {
   // 서지 검색 — 제목 부분일치 상위 5건(대출 많은 순). 자료유형·신착 여부는 정보나루가 주지 않는다.
   const params = isbn ? { isbn13: isbn, pageSize: 1 } : { title: q, exactMatch: "false", pageSize: 5 };
-  const r = await naru("srchBooks", params, key);
+  const r = await naru("srchBooks", params, key, ctx);
   const docs = (r.docs || []).map(x => x.doc || x).filter(d => d.isbn13).map(d => ({
     isbn13: String(d.isbn13), title: d.bookname, author: d.authors, publisher: d.publisher, year: d.publication_year }));
   return { query: isbn || q, docs, asof: kstDate(), basis: "정보나루 srchBooks" };
 }
 
-async function nation(isbn, key) {
-  const r = await naru("libSrchByBook", { isbn, region: REGION, pageSize: 200 }, key);
+async function nation(isbn, key, ctx) {
+  const r = await naru("libSrchByBook", { isbn, region: REGION, pageSize: 200 }, key, ctx);
   return { isbn, found_count: (r.libs || []).length, asof: kstDate(), basis: "정보나루 libSrchByBook(경기 광역 예시) · 전일 기준" };
 }
 
 // 정보나루 매뉴얼(v20260210)의 호출 주소는 http다. https를 먼저 시도하고, 안 되면 http로 넘어간다.
 // 2026. 10. 16. 깃허브 서버 실측: https는 연결 거절·지연이 잦았고 http로 81회 모두 성공. 일시 장애는 잠깐 쉬고 한 번 더.
+// 2026. 10. 16. 첫 배포 뒤 보강 — ① 주소마다 기다리는 한도(https 2.5초 · http 12초): 답 없이 멈춘 주소에 붙잡히지 않는다.
+//   ② 한 번 통한 주소를 기억해 다음 호출부터 먼저 쓴다(같은 실행 공간 안에서). ③ 요청 1건의 외부 호출을 45회 안으로
+//   (Cloudflare 무료 요금제 상한 50). ④ 정보나루가 오류 문구(호출 한도 초과·키 오류 등)를 주면 「없음」으로 바꾸지 않고
+//   오류로 낸다 — 16관이 모두 미소장처럼 보이는 일을 막는다. ⑤ 실패하면 실패 종류만 남긴다(키·주소 없이).
 const NARU_BASES = ["https://data4library.kr/api/", "http://data4library.kr/api/"];
-async function naru(api, params, key) {
+const WAIT_MS = { https: 2500, http: 12000 };
+const SUBREQ_CAP = 45;
+let BASE_OK = null;
+async function naru(api, params, key, ctx) {
   const q = new URLSearchParams({ ...params, authKey: key, format: "json" });
-  let last;
+  const bases = BASE_OK ? [BASE_OK, ...NARU_BASES.filter(b => b !== BASE_OK)] : NARU_BASES;
   for (let attempt = 0; attempt < 2; attempt++) {
     if (attempt) await new Promise(res => setTimeout(res, 1500));
-    for (const base of NARU_BASES) {
+    for (const base of bases) {
+      const tag = base.startsWith("https:") ? "https" : "http";
+      if (ctx.n >= SUBREQ_CAP) { ctx.fails.push("budget"); throw upstreamError(ctx); }
+      ctx.n++;
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), ctx.wait || WAIT_MS[tag]);
+      let d;
       try {
-        const r = await fetch(`${base}${api}?${q}`, { cf: { cacheTtl: 0 } });
-        if (!r.ok) { last = new Error("http " + r.status); continue; }
-        const d = await r.json();
-        return d.response || d;
-      } catch (e) { last = e; }
+        const r = await fetch(`${base}${api}?${q}`, { cf: { cacheTtl: 0 }, signal: ctl.signal });
+        if (!r.ok) { ctx.fails.push(`${tag}:${r.status}`); continue; }
+        try { d = await r.json(); }
+        catch (e) { ctx.fails.push(`${tag}:${e && e.name === "SyntaxError" ? "not-json" : clean(e, key)}`); continue; }
+      } catch (e) { ctx.fails.push(`${tag}:${clean(e, key)}`); continue; }
+      finally { clearTimeout(timer); }
+      const resp = (d && d.response) || d || {};
+      if (resp.error) {                       // 키·한도 오류는 주소를 바꿔 다시 해도 같다 — 바로 멈춘다
+        ctx.fails.push(`naru:${hide(String(resp.error), key).slice(0, 60)}`);
+        throw upstreamError(ctx);
+      }
+      BASE_OK = base; ctx.via = tag;
+      return resp;
     }
   }
-  throw last || new Error("naru");
+  throw upstreamError(ctx);
 }
+function clean(e, key) {   // 실패 종류 — 이름과 짧은 설명만. 키가 실린 주소·키 값은 지운다
+  const name = (e && e.name) || "Error";
+  const msg = hide(String((e && e.message) || ""), key)
+    .replace(/https?:\/\/\S+/g, "").replace(/authKey=\S*/gi, "").trim().slice(0, 50);
+  return msg ? `${name}(${msg})` : name;
+}
+function hide(s, key) { return key ? s.split(key).join("***") : s; }
+function upstreamError(ctx) { const e = new Error("upstream"); e.detail = ctx.fails.slice(-8); return e; }
 
-async function holdings(isbn, key) {
+async function holdings(isbn, key, ctx) {
   // 1) 부천 지역 소장관 목록 1회 → 2) 소장관마다 bookExist 1회 (server/connectors/naru.py holdings_local과 같은 절차)
-  const r1 = await naru("libSrchByBook", { isbn, region: REGION, dtl_region: DTL_REGION, pageSize: 300 }, key);
+  const r1 = await naru("libSrchByBook", { isbn, region: REGION, dtl_region: DTL_REGION, pageSize: 300 }, key, ctx);
   const have = new Set();
   for (const l of r1.libs || []) { const lib = l.lib || l; const c = String(lib.libCode || ""); if (LIBS.includes(c)) have.add(c); }
   const libs = {};
   for (const c of LIBS) libs[c] = "none";
   await Promise.all([...have].map(async c => {
-    const r = (await naru("bookExist", { libCode: c, isbn13: isbn }, key)).result || {};
+    const r = (await naru("bookExist", { libCode: c, isbn13: isbn }, key, ctx)).result || {};
     if (r.hasBook === "Y") libs[c] = r.loanAvailable === "Y" ? "ok" : "busy";
   }));
   return { isbn, asof: kstDate(), basis: "정보나루 bookExist · 대출 상태는 조회일 전일 기준", libs, calls: 1 + have.size };

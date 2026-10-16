@@ -22,8 +22,8 @@ globalThis.fetch = async (url) => {
   return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
 };
 const env = { NARU_KEY: "FAKE" };
-const get = async (path, headers = {}) => {
-  const r = await worker.fetch(new Request("https://relay.test" + path, { headers }), env);
+const get = async (path, headers = {}, e = env) => {
+  const r = await worker.fetch(new Request("https://relay.test" + path, { headers }), e);
   return { status: r.status, body: await r.json(), h: Object.fromEntries(r.headers) };
 };
 let n = 0; const ok = (c, m) => { if (!c) { console.error("  ✗ " + m); process.exit(1); } n++; console.log("  ✓ " + m); };
@@ -63,4 +63,27 @@ r = await get("/holdings?isbn=9791161571188");
 globalThis.fetch = realFetch;
 ok(r.status === 200 && r.body.libs["141065"] === "ok" && calls.slice(before).length > 0 && calls.slice(before).every(u => u.startsWith("http://data4library.kr/api/")),
    "https가 막히면 http(매뉴얼 주소)로 넘어가 같은 결과");
+ok(r.body.via === "http", "   통한 주소 종류를 응답에 남김(via: http)");
+// 10/16 첫 배포 뒤 보강 ① 기억해 둔 주소(지금은 http)가 답 없이 멈추면, 기다리는 한도 뒤 다른 주소로 넘어간다
+globalThis.fetch = (url, init) => String(url).startsWith("http://data4library.kr")
+  ? new Promise((_, rej) => init.signal.addEventListener("abort", () => rej(new DOMException("The operation was aborted", "AbortError"))))
+  : realFetch(url, init);
+let t0 = Date.now();
+r = await get("/holdings?isbn=9791190090032", {}, { ...env, NARU_WAIT_MS: "60" });
+globalThis.fetch = realFetch;
+ok(r.status === 200 && r.body.via === "https" && r.body.libs["141065"] === "ok" && Date.now() - t0 < 3000,
+   "멈춘 주소는 한도(점검 60ms) 뒤 끊고 다른 주소로 — 같은 결과");
+// ② 정보나루가 오류 문구(호출 한도 초과 등)를 주면 16관 「없음」으로 바꾸지 않고 502 — 키는 싣지 않는다
+globalThis.fetch = async (url) => { calls.push(url); return new Response(JSON.stringify({ response: { error: "일일 호출 한도 초과 FAKE" } }), { status: 200 }); };
+r = await get("/holdings?isbn=9791190090018");
+ok(r.status === 502 && r.body.error === "upstream" && !r.body.libs && r.body.detail.some(x => x.startsWith("naru:")) && !JSON.stringify(r.body).includes("FAKE"),
+   "정보나루 오류 문구 → 502(「없음」으로 바꾸지 않음) · 실패 종류만 · 키 없음");
+// ③ 상류가 계속 막히면 외부 호출을 45회 안에서 멈추고, 실패 종류만 알린다(키·주소 없음)
+let tries = 0;
+globalThis.fetch = async () => { tries++; throw new TypeError("Network connection lost. https://data4library.kr/api/x?authKey=FAKE"); };
+r = await get("/holdings?isbn=9791190090025");
+globalThis.fetch = realFetch;
+ok(r.status === 502 && tries > 0 && tries <= 45 && r.body.detail.length > 0
+   && !JSON.stringify(r.body).includes("FAKE") && !JSON.stringify(r.body).includes("data4library"),
+   `상류 장애 → 502 · 외부 호출 ${tries}회(45회 이하) · 키·주소 없음`);
 console.log(`\n중계 점검 ${n}건 통과`);

@@ -64,6 +64,8 @@ def _snapshot_holdings(isbn13, libraries):
     return {name: h.get(name, "none") for name in libraries}
 RELAY = ""                                            # 중계 주소 — tools.py가 환경변수·설정에서 넣어 준다
 RELAY_TIMEOUT = 8
+# [10. 16.] 중계를 부를 때 이름을 밝힌다 — 파이썬 기본 이름(Python-urllib)은 Cloudflare가 403으로 막는 일이 있다(첫 배포 실측)
+RELAY_UA = {"User-Agent": "chaekiji-mcp/0.3.4 (+https://github.com/altarry-prog/chaekiji)"}
 
 def _norm(s): return "".join(s.split()).lower()
 
@@ -91,7 +93,7 @@ def relay_ok(timeout=3):
     """중계가 살아 있고 키를 갖고 있는지만 본다(키 값은 오가지 않는다)."""
     if not RELAY: return False
     try:
-        with urllib.request.urlopen(RELAY.rstrip("/") + "/health", timeout=timeout) as r:
+        with urllib.request.urlopen(urllib.request.Request(RELAY.rstrip("/") + "/health", headers=RELAY_UA), timeout=timeout) as r:
             return json.load(r).get("ok") is True
     except Exception:
         return False
@@ -99,8 +101,15 @@ def relay_ok(timeout=3):
 def _relay(path, **params):
     url = RELAY.rstrip("/") + path + ("?" + urllib.parse.urlencode(params) if params else "")
     t0 = time.perf_counter()
-    with urllib.request.urlopen(url, timeout=RELAY_TIMEOUT) as r:
-        data = json.load(r)
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=RELAY_UA), timeout=RELAY_TIMEOUT) as r:
+            data = json.load(r)
+    except urllib.error.HTTPError as e:                  # 중계가 준 실패 종류(detail)를 그대로 올린다 — 키·주소는 원래 없다
+        try: data = json.loads(e.read()[:2000].decode("utf-8", "replace"))
+        except Exception: data = {}
+        why = data.get("error") if isinstance(data, dict) else None
+        detail = data.get("detail") if isinstance(data, dict) else None
+        raise RuntimeError(f"중계 응답 오류({path}): HTTP {e.code}" + (f" {why}" if why else "") + (f" {detail}" if detail else "")) from None
     CALLS.append({"api": "relay" + path, "ms": round((time.perf_counter() - t0) * 1000),
                   "at": datetime.datetime.now().strftime("%H:%M:%S")})
     if isinstance(data, dict) and data.get("error"):

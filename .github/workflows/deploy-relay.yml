@@ -91,14 +91,17 @@ jobs:
           if [ -n "$NARU_KEY" ]; then
             printf '%s' "$NARU_KEY" | npx --yes wrangler@4.151.0 secret put NARU_KEY > secret.log 2>&1 || { echo "키 넣기 실패" >> deploy_err.txt; exit 1; }
           else echo "정보나루 키 비밀값이 없어 중계가 503을 냅니다" >> deploy_err.txt; fi
-      - name: 확인(/health · /holdings 1건)과 기록
+      - name: 확인(/health · /holdings · /search · /nation)과 기록
         if: steps.deploy.outputs.skipped != 'true'
         env:
           URL: ${{ steps.deploy.outputs.url }}
           OUTCOME: ${{ steps.deploy.outcome }}
         run: |
           python3 - <<'PY'
-          import json, os, time, urllib.request, datetime, pathlib
+          # 배포한 중계에 실제로 물어보고 결과를 relay/last_deploy.json에 남긴다(키·토큰은 오가지도 남지도 않는다).
+          # 10/16: 파이썬 기본 이름(Python-urllib)으로 부르면 Cloudflare가 403으로 막는 일이 있어, 이름을 밝혀 부르고
+          #        기본 이름 결과는 따로 적는다. 실패하면 상태 번호와 중계가 준 실패 종류(detail)를 남긴다.
+          import json, os, time, urllib.request, urllib.error, urllib.parse, datetime, pathlib
           KST = datetime.timezone(datetime.timedelta(hours=9))
           url = os.environ.get("URL") or ""
           rec = {"time": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M KST"),
@@ -106,24 +109,57 @@ jobs:
           err = pathlib.Path("relay/deploy_err.txt")
           if err.exists() and err.read_text().strip():
               rec["error"] = err.read_text().strip()[:600]
-          def get(path, timeout):
-              t0 = time.time()
-              with urllib.request.urlopen(url + path, timeout=timeout) as r:
-                  return json.load(r), round((time.time() - t0) * 1000)
-          if url:
-              for i in range(6):                       # 새 주소가 퍼질 때까지 잠깐 기다린다
-                  try:
-                      rec["health"], _ = get("/health", 20); break
-                  except Exception as e:
-                      rec["health"] = {"error": type(e).__name__}; time.sleep(10)
+          UA = "chaekiji-relay-check/1.0 (+https://github.com/altarry-prog/chaekiji)"
+          def get(path, timeout=30, headers=None, ua=UA):
+              h = dict(headers or {})
+              if ua: h["User-Agent"] = ua
+              t0 = time.time(); out = {}
               try:
-                  j, ms = get("/holdings?isbn=9788972756194", 90)
-                  libs = j.get("libs", {})
-                  rec["holdings_sample"] = {"isbn": "9788972756194", "ok": sum(v == "ok" for v in libs.values()),
-                                            "busy": sum(v == "busy" for v in libs.values()), "none": sum(v == "none" for v in libs.values()),
-                                            "calls": j.get("calls"), "asof": j.get("asof"), "ms": ms}
+                  with urllib.request.urlopen(urllib.request.Request(url + path, headers=h), timeout=timeout) as r:
+                      out = {"status": r.status, "json": json.loads(r.read() or b"null"),
+                             "acao": r.headers.get("Access-Control-Allow-Origin")}
+              except urllib.error.HTTPError as e:
+                  text = e.read()[:400].decode("utf-8", "replace")
+                  try: out = {"status": e.code, "json": json.loads(text)}
+                  except Exception: out = {"status": e.code, "text": " ".join(text.split())[:160]}
               except Exception as e:
-                  rec["holdings_sample"] = {"error": f"{type(e).__name__}: {getattr(e, 'code', '')}"}
+                  out = {"status": None, "text": f"{type(e).__name__}: {str(e)[:120]}"}
+              out["ms"] = round((time.time() - t0) * 1000)
+              return out
+          def brief(o, keep=()):
+              b = {"status": o.get("status"), "ms": o.get("ms")}
+              j = o.get("json") if isinstance(o.get("json"), dict) else {}
+              if o.get("status") != 200:
+                  b.update({k: j[k] for k in ("error", "detail") if k in j})
+                  if "text" in o: b["text"] = o["text"]
+              for k in keep:
+                  if k in j: b[k] = j[k]
+              return b
+          if url:
+              for i in range(8):                       # 새 주소가 퍼질 때까지 잠깐 기다린다
+                  h = get("/health", 20)
+                  if h.get("status") == 200: break
+                  time.sleep(10)
+              rec["health"] = brief(h, ("ok", "keyed", "region"))
+              rec["probe_python_default_name"] = brief(get("/health", 20, ua=None))
+              c = get("/health", 20, headers={"Origin": "https://altarry-prog.github.io"})
+              rec["cors_web"] = {"status": c.get("status"), "allow_origin": c.get("acao")}
+              if h.get("status") == 200:
+                  o = get("/holdings?isbn=9788972756194", 90)
+                  rec["holdings_sample"] = brief(o, ("asof", "calls", "via", "cached"))
+                  libs = (o.get("json") or {}).get("libs") if o.get("status") == 200 else None
+                  if isinstance(libs, dict):
+                      rec["holdings_sample"].update({"isbn": "9788972756194", "ok": sum(v == "ok" for v in libs.values()),
+                                                     "busy": sum(v == "busy" for v in libs.values()),
+                                                     "none": sum(v == "none" for v in libs.values())})
+                  o = get("/search?" + urllib.parse.urlencode({"q": "나미야 잡화점의 기적"}), 60)
+                  rec["search_sample"] = brief(o, ("via",))
+                  if o.get("status") == 200:
+                      docs = (o.get("json") or {}).get("docs") or []
+                      rec["search_sample"].update({"docs": len(docs), "first": (docs[0].get("title") if docs else None)})
+                  rec["nation_sample"] = brief(get("/nation?isbn=9788972756194", 60), ("found_count", "via"))
+              good = all((rec.get(k) or {}).get("status") == 200 for k in ("health", "holdings_sample", "search_sample", "nation_sample"))
+              rec["check"] = "ok" if good else "fail"
           pathlib.Path("relay/last_deploy.json").write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
           print(json.dumps(rec, ensure_ascii=False))
           PY

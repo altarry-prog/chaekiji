@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "chaekiji": {
-      "command": "python",
-      "args": ["C:\\절대경로\\chaekiji\\server\\server.py"],
-      "env": { "CHAEKIJI_MODE": "auto", "PYTHONUTF8": "1" }
-    }
-  }
-}

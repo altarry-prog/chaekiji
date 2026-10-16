@@ -1,11 +1,11 @@
-# GitHub Actions — 커밋할 때마다 참조 서버(server/)의 적합성 시험 33건과 실험실 점검 14건을 자동 실행(공개 저장소는 무료).
+# GitHub Actions — 커밋할 때마다 참조 서버(server/)의 시험 82건(적합성 48·실험실 14·중계 14·호스트 6)을 자동 실행(공개 저장소는 무료).
 # 결과는 저장소 Actions 탭과 README 배지로 보인다:
 #   ![tests](https://github.com/altarry-prog/chaekiji/actions/workflows/tests.yml/badge.svg)
 name: tests
 on:
   push:
     branches: [main]
-    paths: ["server/**", ".github/workflows/tests.yml"]
+    paths: ["server/**", "!server/fixtures/holdings-today.json", ".github/workflows/tests.yml"]
   pull_request:
     paths: ["server/**"]
 jobs:
@@ -20,9 +20,15 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: 적합성 시험 33건 (demo 모드 · 네트워크 없음)
+      - name: 적합성 시험 48건 (demo 모드 · 네트워크 없음)
         run: python3 tests/run_scenarios.py
       - name: 실험실 점검 14건 (저장·감사·관내 출처)
         run: python3 lab/check_store.py
+      - name: 중계 모드 시험 9건 (모의 중계)
+        run: python3 tests/run_relay.py
+      - name: 공개 모델 호스트 시험 6건 (모의 Ollama)
+        run: python3 tests/run_host.py
+      - name: 중계 코드(worker.js) 점검 14건 (모의 정보나루)
+        run: node ../relay/test_worker.mjs
       - name: 측정 스크립트 연습 실행 (픽스처)
         run: python3 lab/measure.py --demo

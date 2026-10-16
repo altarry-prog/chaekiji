@@ -10,6 +10,7 @@
 | 2 | `measure.py` | 도서 1종당 호출 수·소요 시간 실측, 요약표, 실측 A 기록지 표본 생성 (`--demo`로 연습) | 도서당 2~18회 |
 | 3 | `make_city_config.py` | 다른 도시 도서관 코드표로 `config/<도시>.yaml` 초안 | 1회 |
 | 3 | `check_store.py` | 저장 계층·감사 기록·관내 출처 전환 점검 시험 14건(네트워크 없음) | 0 |
+| — | `refresh_today.py` · `refresh_list.txt` | [v0.3.4] 매일 1회 조회분 갱신 — 픽스처 5종 + 목록의 ISBN, `--max-calls` 상한, `--demo` 연습 | 권당 1+소장관 수 |
 | — | `기록지/` | 실측 B·C·D·E 기록지, 자가점검 G | — |
 | — | `codex_config.example.toml` · `vscode_mcp.example.json` · `gitlab-ci.example.yml` | AI 도구·CI 연결 예시 | — |
 
@@ -19,7 +20,9 @@
 
 | 변수 | 값 | 뜻 |
 |---|---|---|
-| `CHAEKIJI_MODE` | `demo`(기본) / `live` | 정보나루 픽스처 / 실호출 |
+| `CHAEKIJI_MODE` | `demo`(기본) / `snapshot` / `relay` / `live` / `auto` | 8/18 픽스처 / 매일 갱신 조회분 / 중계(키 없이 오늘) / 실호출 / 중계→스냅샷→픽스처 자동 |
+| `CHAEKIJI_RELAY` | 중계 주소 | 비우면 설정 `relay_url` |
+| `CHAEKIJI_SNAPSHOT` | 파일 경로 | 매일 갱신 조회분(기본 `fixtures/holdings-today.json`, 2일 넘으면 무시) |
 | `CHAEKIJI_LOCAL_SOURCE` | `alpas`(기본) / `naru` | 관내 소장·대출 출처 — 도서관리시스템 모의(실시간) / 정보나루(전일 기준) |
 | `CHAEKIJI_CONFIG` | `config/bucheon.yaml`(기본) | 도시 설정 |
 | `CHAEKIJI_STORE` | 파일 경로 | 신청·위임 이력 SQLite 저장(없으면 메모리) |

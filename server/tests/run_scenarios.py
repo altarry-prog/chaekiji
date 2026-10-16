@@ -12,7 +12,7 @@ class Client:
         env = dict(os.environ, CHAEKIJI_CONFIG=str(ROOT/"config"/config), CHAEKIJI_MODE="demo")
         self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")],
                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                  text=True, env=env)
+                                  text=True, encoding="utf-8", env=env)
         self.n = 0
     def rpc(self, method, params=None):
         self.n += 1
@@ -38,7 +38,13 @@ init = c.rpc("initialize", {"protocolVersion":"2024-11-05","capabilities":{},
                             "clientInfo":{"name":"conformance-kit","version":"0"}})
 ok(init["serverInfo"]["name"] == "chaekiji-mcp", "initialize — 서버 식별")
 tl = c.rpc("tools/list")
-ok(len(tl["tools"]) == 10, "tools/list — 핵심 8종 + 확장 2종 노출 (v0.3)")
+ok(len(tl["tools"]) == 11, "tools/list — 핵심 8종 + 확장 2종 + 상담 묶음 1종 노출 (v0.3.4)")
+pl = c.rpc("prompts/list")
+ok(len(pl["prompts"]) == 1 and pl["prompts"][0]["name"] == "consult", "prompts/list — 사서 모드 지시문 「consult」 노출 (v0.3.4)")
+pg = c.rpc("prompts/get", {"name": "consult", "arguments": {"pickup": "꿈빛", "lang": "vi"}})
+ptxt = pg["messages"][0]["content"]["text"]
+ok("「꿈빛」" in ptxt and "「vi」" in ptxt and "개인정보" in ptxt and "접수는 사서가" in ptxt,
+   "prompts/get — 수령관·언어가 채워지고 개인정보 금지·접수는 사서가 명시")
 
 b = c.call("search_item", utterance="그 왜 나미야 잡화점인가 하는 책")
 ok(b["isbn13"] == "9788972756194", f"① search_item — 『{b['title']}』 ISBN 확정")
@@ -170,6 +176,36 @@ vd = c.call("check_policy", user="tok_kimsj", isbn13="9790000000029", pickup="�
 fd = [x for x in vd["checks"] if not x["pass"]]
 ok((not vd["allowed"]) and any("제외" in x["rule"] for x in fd),
    "㉓ 비도서(DVD) 제외 — 설정(excluded_types)으로 차단")
+print("── v0.3.4 · 상담 묶음(consult_request) — 창구·전화에서 지금 쓰는 판정 ──")
+k1 = c.call("consult_request", utterance="나미야 잡화점의 기적 빌리고 싶어요", pickup="상동")
+ok(k1["found"] and k1["route"] == "ill" and k1["from_lib"] in k1["availability"]["available_at"] and k1["from_lib"] != "상동",
+   f"㉔ 말 한마디 → 찾기·소장·규정 한 번에 — 갈래 「{k1['route_label']}」 · 소장관 {k1['from_lib']}")
+ok(len(k1["policy"]["pending"]) == 5 and k1["policy"]["allowed_so_far"] and "창구에서 확인" in k1["notice"],
+   "    회원 토큰 없음 — 비치·제외자료만 확정, 한도 3종·연체·중복은 창구 확인으로 보류")
+ok("전일 기준" in k1["notice"] and "2026. 8. 18." in k1["notice"] and "접수하지 않음" in k1["desk_memo"],
+   "    안내문에 조회일·전일 기준 명시 · 접수 메모에 「이 도구는 접수하지 않음」")
+ok((k1.get("official_link") or "").startswith("https://alpasq.bcl.go.kr/search/keyword/%EB%82%98%EB%AF%B8%EC%95%BC")
+   and k1["official_link"] in k1["notice"] and "접수는 이용자가 직접" in k1["notice"],
+   "    안내문 끝에 공식 누리집 링크(설정 official_search_url, 제목을 주소에 넣음) — 그 책 화면까지, 접수는 이용자가 직접")
+k2 = c.call("consult_request", utterance="한강 소년이 온다 찾아주세요", pickup="상동")
+ok(k2["route"] == "visit" and "바로 대출" in k2["notice"] and "다만" not in k2["notice"],
+   "㉕ 수령관 서가에 있는 책 — 「바로 이용」, 상호대차 아님(비치 규정을 되풀이하지 않음)")
+k3 = c.call("consult_request", utterance="지구 끝의 온실", pickup="상동")
+ok(k3["route"] == "sea" and k3["availability"]["nation"]["found_count"] == 6 and "책바다" in k3["notice"]
+   and k3["official_link"] is None and "누리집" not in k3["notice"],
+   "㉖ 관내 전무 — 「책바다 안내」 + 전국 소장 수(전일 기준) · 누리집 링크 없음(관내에 없는 책)")
+k4 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", user="tok_kimsj")
+ok(k4["policy"]["pending"] == [] and k4["policy"]["allowed_so_far"] and k4["next_tool"]["tool"] == "request_service",
+   "㉗ 회원 토큰 있음 — 규정 7종 전부 판정, 다음 도구(request_service) 제안(이용자 확인 뒤에만)")
+k5 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", user="tok_parkys")
+ok(not k5["policy"]["allowed_so_far"] and "연체" in k5["notice"], "㉘ 연체 회원 — 안내문에 「연체」 조건이 먼저 확인할 것으로 붙음")
+k6 = c.call("consult_request", utterance="아무도 모르는 책", pickup="상동")
+ok(k6["found"] is False and k6["route"] == "unknown" and "알려 주시겠어요" in k6["notice"],
+   "㉙ 못 찾은 책 — 지어내지 않고 되묻기 안내")
+k7 = c.call("consult_request", utterance="불편한 편의점", pickup="역곡", lang="vi")
+ok(k7["translate_to"] == "vi" and k7["route"] == "ill", "㉚ 이용자 언어 vi — translate_to로 호스트 모델이 옮기게 넘김")
+k8 = c.call("consult_request", utterance="불편한 편의점", pickup="없는관")
+ok("_error" in k8 and "설정에 없는" in k8["_error"], "㉛ 설정에 없는 수령관 — 오류로 거부")
 c.close()
 
 print("── 설정 교체 검증 · 가상시(ill_limit 5→2) ──")
@@ -180,6 +216,11 @@ v3 = c2.call("check_policy", user="tok_kimsj", isbn13="9788972756194", pickup="�
 failed = [x for x in v3["checks"] if not x["pass"]]
 ok(not v3["allowed"] and any("2권" in x["rule"] for x in failed),
    f"같은 코드·같은 회원 — 규정 YAML만 바꿔 차단됨: {failed[0]['rule']} ({failed[0]['detail']})")
+k9 = c2.call("consult_request", utterance="나미야 잡화점의 기적", pickup="중앙")
+ok(k9["found"] and k9["pickup"] == "중앙" and "가상시(예시)시립도서관" in k9["notice"],
+   "상담 묶음도 설정 교체만으로 다른 도시(가상시) 수령관·도시 이름으로 동작")
+ok(k9["official_link"] is None and "누리집" not in k9["notice"],
+   "official_search_url을 비운 도시 — 안내문에 링크 없음(설정으로만 켜고 끔)")
 c2.close()
 
 print(f"\n전체 {PASS}건 통과 — 표준 도구 계층과 설정 분리 구조가 실증되었습니다.")

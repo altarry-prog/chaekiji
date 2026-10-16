@@ -19,5 +19,7 @@ hold_days: 4                  # 부천(3일)과 다른 보관기한 — 같은 �
 pass:
   max_per_cycle: 2
   free_routes_only: true
+relay_url: ""                 # 중계 주소(선택) — 그 도시의 중계를 올리면 여기에
+official_search_url: ""       # 그 도시 누리집의 자료검색 주소 틀(선택) — 예: "https://…/search/keyword/{title}". 비우면 안내문에 링크 없음
 sso: sso.example-city.go.kr
 notify_channels: [sms]

@@ -19,7 +19,7 @@ class Client:
     def __init__(self, **env):
         e = dict(os.environ, CHAEKIJI_CONFIG=str(ROOT/"config"/"bucheon.yaml"), CHAEKIJI_MODE="demo", **env)
         self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")], stdin=subprocess.PIPE,
-                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=e)
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", env=e)
         self.n = 0
         self.rpc("initialize", {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "lab", "version": "0"}})
     def rpc(self, method, params=None):

@@ -30,6 +30,9 @@ _hold = json.load(open(FIX/"holdings.json", encoding="utf-8"))
 BASES = [os.environ["NARU_BASE"]] if os.environ.get("NARU_BASE") else ["https://data4library.kr/api/", "http://data4library.kr/api/"]
 BASE = BASES[0]
 _BASE_OK = None                                       # 처음 통한 주소(https/http)
+RETRIES = int(os.environ.get("NARU_RETRIES", "1"))     # 끊김·지연·거절 때 다시 시도하는 횟수(일괄 갱신은 3)
+PACE = float(os.environ.get("NARU_PACE", "0"))         # 호출 사이 최소 간격(초) — 일괄 갱신에서 상대 서버 부담을 줄인다
+_LAST_AT = [0.0]
 KST = datetime.timezone(datetime.timedelta(hours=9))   # 조회일은 한국 날짜로(깃허브 서버는 UTC)
 EXACT = os.environ.get("NARU_EXACT", "true")          # 매뉴얼: true/false. 8월 실측 코드는 Y — probe로 확인
 CALLS = []                                            # 호출 계측 [{"api","ms","at"}] — live 호출만 기록
@@ -250,8 +253,10 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
     if mode != "live":
         h = _hold.get("holdings", {}).get(isbn13, {})
         out = {name: h.get(name, "none") for name in libraries}
-        LAST_META = {"basis": "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 전일 기준)", "asof": FIX_ASOF,
-                     "holding_count": sum(1 for v in out.values() if v != "none"), "calls": 0, "cached": False}
+        ex = isbn13 in _hold.get("_examples", [])          # 실측이 아닌 예시 장면용 값
+        LAST_META = {"basis": ("관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면 — 이 책의 실제 소장과 다를 수 있음)" if ex
+                               else "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 전일 기준)"), "asof": FIX_ASOF,
+                     "holding_count": sum(1 for v in out.values() if v != "none"), "calls": 0, "cached": False, "example": ex}
         return out
     key = (isbn13, region_code)
     hit = _HOLD_CACHE.get(key)
@@ -287,26 +292,39 @@ def _key():
 
 def _get(api, **params):
     """정보나루 Open API 1회 호출. 키는 URL에만 실리고 어디에도 기록되지 않는다.
-    https가 연결되지 않으면 http(매뉴얼 주소)로 한 번 더 — 처음 통한 주소를 기억해 다음부터는 그것만 쓴다."""
+    https가 연결되지 않으면 http(매뉴얼 주소)로 한 번 더 — 처음 통한 주소를 기억해 다음부터는 그것을 먼저 쓴다.
+    연결 거절·시간 초과 같은 일시 장애는 잠깐 쉬었다가 RETRIES번까지 다시 시도한다(2026. 10. 16. 깃허브 서버에서 실측된 장애)."""
     global _BASE_OK
     params["authKey"] = _key()
     params["format"] = "json"
     q = urllib.parse.urlencode(params)
-    bases = [_BASE_OK] if _BASE_OK else BASES
     last = None
-    for i, base in enumerate(bases):
-        t0 = time.perf_counter()
-        try:
-            with urllib.request.urlopen(base + api + "?" + q, timeout=20 if i == len(bases) - 1 else 8) as r:
-                data = json.load(r)
-        except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError) as e:
-            last = e
+    for attempt in range(RETRIES + 1):
+        if attempt:
+            time.sleep(3 * attempt)                        # 3초, 6초, 9초 … 쉬었다가
+        bases = ([_BASE_OK] + [b for b in BASES if b != _BASE_OK]) if _BASE_OK else list(BASES)
+        for i, base in enumerate(bases):
+            if PACE:
+                gap = PACE - (time.perf_counter() - _LAST_AT[0])
+                if gap > 0:
+                    time.sleep(gap)
+            t0 = time.perf_counter()
+            try:
+                with urllib.request.urlopen(base + api + "?" + q, timeout=20 if i == len(bases) - 1 else 8) as r:
+                    data = json.load(r)
+            except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError) as e:
+                _LAST_AT[0] = time.perf_counter()
+                last = e
+                continue
+            _LAST_AT[0] = time.perf_counter()
+            _BASE_OK = base
+            break
+        else:
             continue
-        _BASE_OK = base
         break
     else:
         why = getattr(last, "reason", None) or getattr(last, "code", None) or last
-        raise RuntimeError(f"정보나루 연결 실패({api}): {type(last).__name__}: {why}")
+        raise RuntimeError(f"정보나루 연결 실패({api}, {RETRIES + 1}번 시도): {type(last).__name__}: {why}")
     CALLS.append({"api": api, "ms": round((time.perf_counter() - t0) * 1000),
                   "at": datetime.datetime.now(KST).strftime("%H:%M:%S"),
                   "via": "https" if _BASE_OK.startswith("https") else "http"})

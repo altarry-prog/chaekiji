@@ -13,7 +13,7 @@
       lab/out/refresh_status.json  (실행 기록 — 성공·실패와 까닭, 키는 가려서. 실패해도 쓴다)
       {"asof":"YYYY-MM-DD","source":"정보나루 bookExist","holdings":{isbn:{관:ok|busy|none}},"nation":{isbn:{"count":n}},"calls":n,"partial":false}
 목록: lab/refresh_list.txt — 한 줄에 ISBN13 하나(# 뒤는 메모). 없으면 픽스처 5종만."""
-import os, sys, json, argparse, datetime
+import os, sys, json, argparse, datetime, time
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -37,6 +37,8 @@ if not a.demo and not os.environ.get("NARU_KEY"):
 
 import tools
 from connectors import naru
+if not a.demo:
+    naru.RETRIES, naru.PACE = 3, 0.4          # 일괄 갱신: 일시 장애는 3번까지 다시, 호출 사이 0.4초 쉼
 
 def load_list():
     isbns = [b["isbn13"] for b in naru._cat["books"] if not b["isbn13"].startswith("9790000")]   # 시험용 가짜 ISBN 제외
@@ -65,11 +67,8 @@ isbns = load_list()
 out = {"asof": today, "source": "정보나루 bookExist(관내) · libSrchByBook(전국) · 대출 상태는 조회일 전일 기준",
        "generated": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M"), "holdings": {}, "nation": {}, "calls": 0, "partial": False}
 naru.calls_reset()
-for i, isbn in enumerate(isbns, 1):
-    if not a.demo and len(naru.CALLS) + 17 > a.max_calls:          # 다음 도서가 상한을 넘길 수 있으면 여기서 멈춘다
-        out["partial"] = True
-        print(f"호출 상한({a.max_calls}) 근접 — {i-1}/{len(isbns)}종에서 멈춤")
-        break
+def fetch_one(i, isbn):
+    """한 권 조회 — 성공하면 True. 실패 까닭은 실행 기록에 남긴다(키는 가림)."""
     try:
         h = naru.holdings_local(isbn, tools.CFG["libraries"], tools.CFG["region_code"], mode=tools.MODE)
         out["holdings"][isbn] = h
@@ -77,13 +76,37 @@ for i, isbn in enumerate(isbns, 1):
             n = naru.availability_nation(isbn, mode=tools.MODE)
             out["nation"][isbn] = {"count": n.get("found_count", 0)}
         print(f"  {i:3d}. {isbn}  소장 {sum(1 for v in h.values() if v != 'none'):2d}관 · 대출가능 {sum(1 for v in h.values() if v == 'ok'):2d}관")
+        status["books"] = [b for b in status["books"] if b["isbn"] != isbn]
         status["books"].append({"isbn": isbn, "ok": True, "owned": sum(1 for v in h.values() if v != "none"),
                                 "available": sum(1 for v in h.values() if v == "ok")})
+        return True
     except Exception as e:
         err = redact(f"{type(e).__name__}: {e}")
         print(f"  {i:3d}. {isbn}  실패: {err}")
+        status["books"] = [b for b in status["books"] if b["isbn"] != isbn]
         status["books"].append({"isbn": isbn, "ok": False, "error": err})
+        return False
+
+failed = []
+for i, isbn in enumerate(isbns, 1):
+    if not a.demo and len(naru.CALLS) + 17 > a.max_calls:          # 다음 도서가 상한을 넘길 수 있으면 여기서 멈춘다
         out["partial"] = True
+        print(f"호출 상한({a.max_calls}) 근접 — {i-1}/{len(isbns)}종에서 멈춤")
+        break
+    if not fetch_one(i, isbn):
+        failed.append((i, isbn))
+if failed and not a.demo:                                           # 실패한 책은 한 바퀴 더(잠깐 쉬었다가)
+    print(f"실패 {len(failed)}종 다시 시도")
+    time.sleep(10)
+    again = []
+    for i, isbn in failed:
+        if len(naru.CALLS) + 17 > a.max_calls:
+            again.append((i, isbn)); continue
+        if not fetch_one(i, isbn):
+            again.append((i, isbn))
+    failed = again
+if failed:
+    out["partial"] = True
 out["calls"] = len(naru.CALLS)
 if not out["holdings"]:
     write_status("실패 — 받은 데이터 없음(키·한도·네트워크 확인)")

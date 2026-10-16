@@ -41,6 +41,8 @@ def _local_holdings(isbn13: str):
     if LOCAL_SOURCE == "naru":
         rt = naru.holdings_local(isbn13, CFG["libraries"], CFG["region_code"], mode=MODE)
         return rt, naru.LAST_META.get("basis", "관내: 정보나루(전일 기준)")
+    if isbn13 in naru._hold.get("_examples", []):        # 실측이 아닌 예시 장면용 값
+        return alpas.holdings_realtime(isbn13), "관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면 — 이 책의 실제 소장과 다를 수 있음)"
     return alpas.holdings_realtime(isbn13), "관내: 도서관리시스템 실시간(모의)"
 
 def search_item(utterance: str, lang: str = "ko"):
@@ -206,7 +208,11 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         cnt = (nation or {}).get("found_count")
         notice = (f"{t_} {CFG['city']}시립도서관 {len(CFG['libraries'])}곳에 소장되어 있지 않습니다. 전국 상호대차(책바다)로 신청하실 수 있으며 "
                   f"왕복 택배비가 듭니다." + (f" 정보나루 기준 다른 지역 {cnt}곳 소장입니다." if cnt else ""))
-    notice += f" (대출 상태는 정보나루 {asof_k} 조회, 전일 기준)"
+    example = isbn in naru._hold.get("_examples", []) and (LOCAL_SOURCE != "naru" or naru.LAST_META.get("example"))
+    if example:                                       # 실측이 아닌 예시 장면 — 날짜 대신 그렇게 밝힌다
+        notice += " (예시 데이터 — 이 책의 실제 소장·대출과 다를 수 있습니다)"
+    else:
+        notice += f" (대출 상태는 정보나루 {asof_k} 조회, 전일 기준)"
     if pol["pending"]:
         notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다."
     bad = [c for c in pol["checks"] if c["pass"] is False and not (route == "visit" and "비치" in c["rule"])]

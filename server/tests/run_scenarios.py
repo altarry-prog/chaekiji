@@ -192,8 +192,8 @@ ok(k2["route"] == "visit" and "바로 대출" in k2["notice"] and "다만" not i
    "㉕ 수령관 서가에 있는 책 — 「바로 이용」, 상호대차 아님(비치 규정을 되풀이하지 않음)")
 k3 = c.call("consult_request", utterance="지구 끝의 온실", pickup="상동")
 ok(k3["route"] == "sea" and k3["availability"]["nation"]["found_count"] == 6 and "책바다" in k3["notice"]
-   and k3["official_link"] is None and "누리집" not in k3["notice"],
-   "㉖ 관내 전무 — 「책바다 안내」 + 전국 소장 수(전일 기준) · 누리집 링크 없음(관내에 없는 책)")
+   and k3["official_link"] is None and "누리집" not in k3["notice"] and "예시 데이터" in k3["notice"] and "조회, 전일 기준" not in k3["notice"],
+   "㉖ 관내 전무(예시 장면) — 「책바다 안내」 + 전국 소장 수 · 누리집 링크 없음 · 안내문이 「예시 데이터」라고 밝힘")
 k4 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", user="tok_kimsj")
 ok(k4["policy"]["pending"] == [] and k4["policy"]["allowed_so_far"] and k4["next_tool"]["tool"] == "request_service",
    "㉗ 회원 토큰 있음 — 규정 7종 전부 판정, 다음 도구(request_service) 제안(이용자 확인 뒤에만)")

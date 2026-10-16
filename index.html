@@ -490,6 +490,7 @@ body.bigmode .bqitems{font-size:15.5px}
   display:inline-block;background:var(--ok-bg);color:var(--ok);font-style:normal;
   font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:5px;
 }
+.chip .lv.ex{background:#eef1f4;color:#5b6472}   /* v1.12.1: 예시 장면 표시 */
 
 /* ── 모바일 1화면 최적화 ── */
 .bookcard{padding:12px 13px;gap:11px;margin-bottom:11px}
@@ -677,7 +678,7 @@ body.bigmode .foot button{font-size:12.5px}
         </button>
         <button class="chip" data-case="2">
           “<b>지구 끝의 온실</b> 찾아주세요”
-          <span class="m">③ 관내에 없음 → 책바다(전국)</span>
+          <span class="m">③ 관내에 없음 → 책바다(전국)<em class="lv ex">예시</em></span>
         </button>
       </div>
       <div class="quick">
@@ -845,8 +846,8 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="kv i"><span class="k">등록된 기기</span><span class="v">패스키 체험 — 켜면 첫 신청 때 지문·얼굴로 이 기기를 등록하고, 위임을 만들 때 한 번 더 확인합니다(기기 안에서만 · 서버 없음). 기본은 꺼짐<small><button type="button" class="mini" id="pkToggle">켜기</button> <span id="pkDemoSt">지금: 꺼짐 · 신청은 확인 한 번으로 끝납니다</span></small></span></div>
       <div class="kv i"><span class="k">전화 한 통</span><span class="v">대표번호로 같은 상담·신청, 화면 없이<small>헤더의 📞 단추에서 통화 흐름을 체험할 수 있습니다 (전화망 연결은 운영 단계 과제)</small></span></div>
       <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
-      <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>2026. 8. 18. 조회 · 대출 상태는 전일 기준</small></span></div>
-      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">‘불편한 편의점’, ‘설민석 한국사 대모험’도 실데이터로 검색됩니다</span></div>
+      <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>예시 장면은 2026. 8. 18. 조회 · 직접 찾으면 매일 갱신 자료(어제 기준) · 대출 상태는 전일 기준</small></span></div>
+      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">예시 단추는 8. 18. 실측 장면 그대로 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 어제 기준 자료로 판정해요</span></div>
       <div class="kv i"><span class="k">성격</span><span class="v">실현가능성 검증용 시연 모델<small>실제 신청이 접수되지 않습니다 · 2026. 8. 부천시립도서관 상동도서관</small></span></div>
       <button class="cta ghost" onclick="document.getElementById('isheet').classList.remove('on')">닫기</button>
     </div>
@@ -934,6 +935,7 @@ body.bigmode .foot button{font-size:12.5px}
 const 기준일 = "2026. 8. 18.";
 /* v1.10: 정보나루 중계(relay/) — 주소를 넣으면 실데이터, 비우면 매일 갱신 파일 → 픽스처 순. 중계가 3초 안에 답하지 않으면 다음 출처로 자동 복귀 */
 const RELAY = "";
+/* v1.12.1: 예시 단추 = 8/18 장면 고정, 말·입력 검색 = 오늘 자료. ③ 예시 배지·출처 줄 정정(관내에 없음은 예시였고, 10/16 실제 조회에서는 16개관 소장).
 /* v1.12: 화면 정리 — 첫 화면의 책큐·패스 카드를 글자 줄로, 도서관코드 숨김, 확인 시트에서 기술 용어 행 제거,
    결과 화면에 「공식 누리집에서 이 책 보기·신청」 링크(접수는 이용자가 누리집에 로그인해 직접 — 이 화면의 접수는 시연). */
 const OFFICIAL_SEARCH = 'https://alpasq.bcl.go.kr/search/keyword/{title}';   /* v1.12 공식 자료검색 주소 틀 — 비우면 링크 생략 */
@@ -1131,57 +1133,59 @@ const LANGS = {
          res:(t,l)=>`Hasil: ${t}. Perpustakaan yang disarankan: ${l}. Tekan tombol hijau untuk meminjam.`,
          sh:(t,l)=>`Mohon konfirmasi: ${t}, dari ${l}.`, dn:()=>`Permintaan diterima.`}},
 };
+/* v1.12.1: ③은 관내에 없는 책의 흐름을 보이는 예시 장면 — 실측이 아님을 단추에 적는다 */
+const EXTAG = {ko:'예시', en:'sample', zh:'示例', ja:'例', vi:'mẫu', th:'ตัวอย่าง', ru:'пример', mn:'жишээ', uz:'namuna', id:'contoh'};
 const CHIPS_L = {
   ko:{c:[
     ['“<b>한강 소년이 온다</b> 찾아주세요”','① 상동도서관에 있음 → 바로 이용','실데이터'],
     ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','② 상동은 대출 중 → 관내 상호대차','실데이터'],
     ['“<b>지구 끝의 온실</b> 찾아주세요”','③ 관내에 없음 → 책바다(전국)',null]],
-    note:'‘불편한 편의점’, ‘설민석 한국사 대모험’도 실데이터로 검색됩니다'},
+    note:'예시 단추는 8. 18. 실측 장면 그대로 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 어제 기준 자료로 판정해요'},
   en:{c:[
     ['“Find <b>Human Acts</b> by Han Kang”','① At Sangdong Library → use right away','real data'],
     ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','② Checked out at Sangdong → loan within Bucheon','real data'],
     ['“Find <b>The Greenhouse at the End of the Earth</b>”','③ Not in Bucheon → nationwide (Chaekbada)',null]],
-    note:'Other titles also work with real data'},
+    note:'Example buttons replay fixed scenes (Aug 18 data) · speak or type a title to check with yesterday\'s Data4Library data'},
   zh:{c:[
     ['“帮我找韩江的<b>《少年来了》</b>”','① 上洞图书馆有藏 → 直接借阅','实测数据'],
     ['“我想借<b>《解忧杂货店》</b>”','② 上洞馆已借出 → 市内馆际互借','实测数据'],
     ['“帮我找<b>《地球尽头的温室》</b>”','③ 富川市内没有 → 全国服务',null]],
-    note:'其他图书也支持实测数据检索'},
+    note:'示例按钮为固定场景（8月18日实测）· 直接说出或输入书名，将按前一天的图书馆数据判定'},
   ja:{c:[
     ['「ハン・ガンの<b>『少年が来る』</b>を探して」','① 上洞図書館に所蔵 → すぐ利用','実データ'],
     ['「<b>『ナミヤ雑貨店の奇蹟』</b>を借りたい」','② 上洞館は貸出中 → 市内の相互貸借','実データ'],
     ['「<b>『地球の果ての温室』</b>を探して」','③ 富川市内に無し → 全国サービス',null]],
-    note:'ほかの本も実データで検索できます'},
+    note:'例のボタンは固定の場面（8/18実測）· 話すか入力すると前日基準のデータで判定します'},
   vi:{c:[
     ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','① Có tại TV Sangdong → dùng ngay','dữ liệu thực'],
     ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','② Sangdong đã cho mượn → mượn trong Bucheon','dữ liệu thực'],
     ['“Tìm giúp tôi <b>Nhà kính ở tận cùng Trái Đất</b>”','③ Không có ở Bucheon → toàn quốc',null]],
-    note:'Các sách khác cũng tìm được bằng dữ liệu thực'},
+    note:'Nút ví dụ là cảnh cố định (dữ liệu 18/8) · nói hoặc nhập tên sách để kiểm tra theo dữ liệu hôm qua'},
   th:{c:[
     ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','① มีที่ห้องสมุดซังดง → ใช้ได้เลย','ข้อมูลจริง'],
     ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','② ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน','ข้อมูลจริง'],
     ['“ช่วยหา <b>เรือนกระจกที่สุดขอบโลก</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null]],
-    note:'เล่มอื่น ๆ ก็ค้นหาด้วยข้อมูลจริงได้'},
+    note:'ปุ่มตัวอย่างเป็นฉากคงที่ (ข้อมูล 18 ส.ค.) · พูดหรือพิมพ์ชื่อหนังสือเพื่อตรวจด้วยข้อมูลของเมื่อวาน'},
   ru:{c:[
     ['«Найди <b>Человеческие поступки</b> Хан Ган»','① Есть в библиотеке Сандон → сразу читать','реальные данные'],
     ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','② В Сандоне выдана → обмен внутри Пучхона','реальные данные'],
     ['«Найди <b>Теплицу на краю Земли</b>»','③ Нет в Пучхоне → по всей стране',null]],
-    note:'Другие книги тоже ищутся по реальным данным'},
+    note:'Кнопки-примеры — фиксированные сцены (данные 18 авг.) · скажите или введите название — проверим по вчерашним данным'},
   mn:{c:[
     ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','① Сандон номын санд байгаа → шууд ашиглах','бодит өгөгдөл'],
     ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','② Сандонд зээлэгдсэн → Бүчон доторх солилцоо','бодит өгөгдөл'],
     ['“<b>Дэлхийн захын хүлэмж</b>-ийг олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null]],
-    note:'Бусад номыг ч бодит өгөгдлөөр хайж болно'},
+    note:'Жишээ товч нь тогтмол үзэгдэл (8/18-ны өгөгдөл) · номын нэрийг хэлж эсвэл бичвэл өчигдрийн өгөгдлөөр шалгана'},
   uz:{c:[
     ['“Han Kangning <b>Human Acts</b> kitobini toping”','① Sangdon kutubxonasida bor → darhol foydalaning','haqiqiy ma\'lumot'],
     ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','② Sangdonda band → Bucheon ichida almashish','haqiqiy ma\'lumot'],
     ['“<b>Yer chekkasidagi issiqxona</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null]],
-    note:'Boshqa kitoblar ham haqiqiy ma\'lumot bilan topiladi'},
+    note:'Misol tugmalari qat\'iy sahnalar (18-avgust ma\'lumoti) · kitob nomini ayting yoki yozing — kechagi ma\'lumot bilan tekshiramiz'},
   id:{c:[
     ['“Carikan <b>Mata Malam</b> karya Han Kang”','① Ada di Perpustakaan Sangdong → langsung pakai','data nyata'],
     ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','② Dipinjam di Sangdong → pinjam antar-cabang Bucheon','data nyata'],
     ['“Carikan <b>Rumah Kaca di Ujung Bumi</b>”','③ Tidak ada di Bucheon → seluruh negeri',null]],
-    note:'Buku lain juga bisa dicari dengan data nyata'},
+    note:'Tombol contoh adalah adegan tetap (data 18 Agu) · ucapkan atau ketik judul untuk cek dengan data kemarin'},
 };
 
 /* 전 화면 언어팩 — 도서명·도서관명은 원어 유지 */
@@ -1513,7 +1517,7 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  my:'자주 가는 곳',code:'도서관코드',others:n=>`그 밖 ${n}개 분관`,again:'다시 검색',
  caution:'시연 화면입니다. 실제 신청은 이루어지지 않습니다.',
  srcR:d=>`정보나루 실데이터 · ${d} 조회 · 16개 분관 전수 확인<br><span class="s2">대출 상태는 조회일 <b>전일</b> 기준입니다 (Open API 사양)</span>`,
- srcD:'관외 구간은 예시 데이터 · 관내 16개 분관은 실데이터로 동작',
+ srcD:'예시 장면 · 관내에 없는 책일 때의 안내 흐름입니다(이 책의 실제 소장과는 다를 수 있어요)',
  rule:m=>`규정상 <b>${m}도서관에 자료가 있으면 상호대차 신청이 되지 않습니다.</b> 불필요한 신청을 만들지 않도록 미리 걸러냈습니다.`,
  ax:['이용자 조건에 따른 입구 · 확장 설계','🎧 대체자료 함께 찾기 — 오디오북·점자·큰활자 (국가서지 대체자료목록 연계)','🚚 책나래 우편 수령 — 거동불편·장애 이용자는 자택 배송으로 분기','📞 전화 한 통 모드 — 대표번호로 같은 상담·신청 (화면 불필요)','🌏 다국어 음성 — 10개 언어 인식·안내 <b>(동작 — 헤더 🌏 단추)</b>'],
  shT:'상호대차를 신청할까요?',shP:'아래 내용으로 접수됩니다',
@@ -1546,7 +1550,7 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  my:'your usual',code:'Library code',others:n=>`${n} other branches`,again:'Search again',
  caution:'Demo screen. No real request is made.',
  srcR:d=>`Real data from Data4Library · queried ${d} · all 16 branches<br><span class="s2">Availability is as of the <b>previous day</b> (API spec)</span>`,
- srcD:'Out-of-city section uses sample data · 16 Bucheon branches run on real data',
+ srcD:'Sample scene · how a book not held in Bucheon is handled (may differ from this title\'s actual holdings)',
  rule:m=>`By policy, <b>interlibrary loan cannot be requested when ${m} Library holds the item.</b> We filtered that out for you.`,
  ax:['Doors that fit each user · extended design','🎧 Alternative formats — audiobook·braille·large print (national bibliography)','🚚 Chaeknarae home delivery — for users with mobility limits','📞 Phone-call mode — same service by voice call, no screen','🌏 Multilingual voice — 10 languages <b>(working — 🌏 button)</b>'],
  shT:'Request this interlibrary loan?',shP:'It will be submitted as below',
@@ -1579,7 +1583,7 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  my:'常去',code:'图书馆代码',others:n=>`其余${n}个分馆`,again:'重新搜索',
  caution:'演示页面，不会产生真实申请。',
  srcR:d=>`Data4Library 实测数据 · ${d} 查询 · 16个分馆全部确认<br><span class="s2">借阅状态为查询日<b>前一天</b>的数据（API规范）</span>`,
- srcD:'市外部分为示例数据 · 市内16个分馆为实测数据',
+ srcD:'示例场景 · 市内无馆藏时的指引流程（可能与本书实际馆藏不同）',
  rule:m=>`按规定，<b>${m}图书馆有馆藏时不能申请馆际互借。</b>系统已提前为您过滤。`,
  ax:['按用户条件提供的入口 · 扩展设计','🎧 替代资料查找 — 有声书·盲文·大字本','🚚 Chaeknarae 邮寄到家 — 行动不便·残障用户','📞 电话模式 — 打电话即可办理，无需屏幕','🌏 多语言语音 — 10种语言 <b>(已实现)</b>'],
  shT:'要申请馆际互借吗？',shP:'将按以下内容受理',
@@ -1612,7 +1616,7 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  my:'いつもの',code:'図書館コード',others:n=>`その他${n}分館`,again:'再検索',
  caution:'デモ画面です。実際の申請は行われません。',
  srcR:d=>`情報ナル実データ · ${d} 照会 · 16分館すべて確認<br><span class="s2">貸出状態は照会日の<b>前日</b>基準です（API仕様）</span>`,
- srcD:'市外区間はサンプル · 市内16分館は実データで動作',
+ srcD:'例の場面 · 市内に所蔵がない本の案内の流れです（この本の実際の所蔵とは異なる場合があります）',
  rule:m=>`規定により、<b>${m}図書館に資料がある場合は相互貸借を申請できません。</b>不要な申請を事前に除外しました。`,
  ax:['利用者に合わせた入口 · 拡張設計','🎧 代替資料も検索 — オーディオブック·点字·大活字','🚚 チェクナレ郵送 — 来館が難しい方へ自宅配送','📞 電話モード — 電話一本で同じ手続き','🌏 多言語音声 — 10言語 <b>(実装済み)</b>'],
  shT:'相互貸借を申請しますか？',shP:'以下の内容で受け付けます',
@@ -1645,7 +1649,7 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  my:'quen thuộc',code:'Mã thư viện',others:n=>`${n} chi nhánh khác`,again:'Tìm lại',
  caution:'Màn hình demo. Không có yêu cầu thật nào được gửi.',
  srcR:d=>`Dữ liệu thực Data4Library · tra cứu ${d} · đủ 16 chi nhánh<br><span class="s2">Tình trạng mượn tính đến <b>ngày hôm trước</b> (theo API)</span>`,
- srcD:'Phần ngoài thành phố là dữ liệu mẫu · 16 chi nhánh Bucheon chạy dữ liệu thực',
+ srcD:'Cảnh minh họa · cách hướng dẫn khi thư viện Bucheon không có sách (có thể khác tình trạng thực của sách này)',
  rule:m=>`Theo quy định, <b>không thể đăng ký khi Thư viện ${m} đang có sách.</b> Hệ thống đã lọc giúp bạn.`,
  ax:['Cửa vào phù hợp từng người · thiết kế mở rộng','🎧 Tìm cả bản thay thế — sách nói·chữ nổi·chữ to','🚚 Giao tận nhà Chaeknarae — cho người khó di chuyển','📞 Chế độ gọi điện — làm mọi thứ qua một cuộc gọi','🌏 Giọng nói đa ngôn ngữ — 10 thứ tiếng <b>(đang hoạt động)</b>'],
  shT:'Đăng ký mượn liên thư viện?',shP:'Sẽ được tiếp nhận như dưới đây',
@@ -1678,7 +1682,7 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  my:'ประจำ',code:'รหัสห้องสมุด',others:n=>`อีก ${n} สาขา`,again:'ค้นหาใหม่',
  caution:'หน้าจอสาธิต ไม่มีการส่งคำขอจริง',
  srcR:d=>`ข้อมูลจริง Data4Library · สืบค้น ${d} · ครบ 16 สาขา<br><span class="s2">สถานะการยืมเป็นของ<b>วันก่อนหน้า</b> (ตามสเปค API)</span>`,
- srcD:'ส่วนนอกเมืองเป็นข้อมูลตัวอย่าง · 16 สาขาบูชอนใช้ข้อมูลจริง',
+ srcD:'ฉากตัวอย่าง · ขั้นตอนเมื่อห้องสมุดบูชอนไม่มีหนังสือ (อาจต่างจากการถือครองจริงของเล่มนี้)',
  rule:m=>`ตามระเบียบ <b>ขอยืมข้ามสาขาไม่ได้เมื่อห้องสมุด${m}มีเล่มอยู่</b> ระบบกรองให้แล้ว`,
  ax:['ทางเข้าที่เหมาะกับแต่ละคน · ส่วนขยาย','🎧 ค้นสื่อทางเลือก — หนังสือเสียง·อักษรเบรลล์·ตัวใหญ่','🚚 ส่งถึงบ้าน Chaeknarae — สำหรับผู้เดินทางลำบาก','📞 โหมดโทรศัพท์ — จัดการได้ด้วยสายเดียว','🌏 เสียงหลายภาษา — 10 ภาษา <b>(ใช้งานได้)</b>'],
  shT:'ยืนยันการขอยืมข้ามสาขา?',shP:'จะรับเรื่องตามนี้',
@@ -1711,7 +1715,7 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  my:'обычная',code:'Код библиотеки',others:n=>`ещё ${n} филиалов`,again:'Искать снова',
  caution:'Демо-экран. Реальный заказ не отправляется.',
  srcR:d=>`Реальные данные Data4Library · запрос ${d} · все 16 филиалов<br><span class="s2">Статус выдачи — на <b>предыдущий день</b> (по API)</span>`,
- srcD:'Загородная часть — образец · 16 филиалов Пучхона на реальных данных',
+ srcD:'Пример · что делаем, если книги нет в Пучхоне (может отличаться от реального наличия этой книги)',
  rule:m=>`По правилам <b>заказ невозможен, если книга есть в библиотеке ${m}.</b> Мы отфильтровали это заранее.`,
  ax:['Вход, подходящий каждому · расширение','🎧 Альтернативные форматы — аудио·Брайль·крупный шрифт','🚚 Доставка на дом Chaeknarae — для маломобильных','📞 Режим звонка — всё по одному звонку','🌏 Голос на 10 языках <b>(работает)</b>'],
  shT:'Оформить заказ?',shP:'Будет принято в следующем виде',
@@ -1744,7 +1748,7 @@ mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үнд
  my:'байнгын',code:'Номын сангийн код',others:n=>`бусад ${n} салбар`,again:'Дахин хайх',
  caution:'Жишээ дэлгэц. Бодит хүсэлт илгээгдэхгүй.',
  srcR:d=>`Data4Library бодит өгөгдөл · ${d} шалгасан · 16 салбар бүрэн<br><span class="s2">Зээлийн байдал <b>өмнөх өдрийн</b> мэдээлэл (API)</span>`,
- srcD:'Хотоос гадуурх хэсэг жишээ · Бүчоны 16 салбар бодит өгөгдөлтэй',
+ srcD:'Жишээ үзэгдэл · Бүчонд байхгүй номын заавар (энэ номын бодит байдлаас ялгаатай байж болно)',
  rule:m=>`Журмаар <b>${m} номын санд ном байгаа үед солилцоо хүсэх боломжгүй.</b> Урьдчилан шүүлээ.`,
  ax:['Хүн бүрд тохирсон хаалга · өргөтгөл','🎧 Орлуулах хувилбар — аудио·брайл·том үсэг','🚚 Гэрт хүргэх Chaeknarae — хөдөлгөөн хязгаарлагдмал хүмүүст','📞 Утасны горим — нэг дуудлагаар бүгд','🌏 10 хэлний дуу хоолой <b>(ажиллаж байна)</b>'],
  shT:'Солилцоо хүсэх үү?',shP:'Дараах байдлаар хүлээн авна',
@@ -1777,7 +1781,7 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
  my:'doimiy',code:'Kutubxona kodi',others:n=>`yana ${n} filial`,again:'Qayta qidirish',
  caution:"Namoyish ekrani. Haqiqiy so'rov yuborilmaydi.",
  srcR:d=>`Data4Library haqiqiy ma'lumot · ${d} so'ralgan · 16 filial to'liq<br><span class="s2">Holat <b>oldingi kun</b> bo'yicha (API)</span>`,
- srcD:"Shahar tashqarisi namuna · Bucheonning 16 filiali haqiqiy ma'lumotda",
+ srcD:"Namuna sahna · kitob Bucheonda bo'lmaganda yo'l-yo'riq (bu kitobning haqiqiy holatidan farq qilishi mumkin)",
  rule:m=>`Qoidaga ko'ra <b>${m} kutubxonasida kitob bo'lsa, almashish so'rab bo'lmaydi.</b> Oldindan filtrladik.`,
  ax:["Har kimga mos eshik · kengaytma","🎧 Muqobil formatlar — audio·brayl·yirik shrift","🚚 Chaeknarae uyga yetkazish — harakati cheklanganlarga","📞 Telefon rejimi — bitta qo'ng'iroq bilan","🌏 10 tilda ovoz <b>(ishlaydi)</b>"],
  shT:"Almashishga buyurtma berilsinmi?",shP:'Quyidagicha qabul qilinadi',
@@ -1810,7 +1814,7 @@ id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama 
  my:'langganan',code:'Kode perpustakaan',others:n=>`${n} cabang lain`,again:'Cari lagi',
  caution:'Layar demo. Tidak ada permintaan sungguhan.',
  srcR:d=>`Data nyata Data4Library · ditanya ${d} · lengkap 16 cabang<br><span class="s2">Status pinjam per <b>hari sebelumnya</b> (spek API)</span>`,
- srcD:'Bagian luar kota memakai data contoh · 16 cabang Bucheon data nyata',
+ srcD:'Adegan contoh · alur panduan bila buku tidak ada di Bucheon (bisa berbeda dari koleksi nyata buku ini)',
  rule:m=>`Sesuai aturan, <b>tidak bisa mengajukan bila Perpustakaan ${m} memiliki bukunya.</b> Sudah kami saring.`,
  ax:['Pintu sesuai kondisi pengguna · rancangan lanjutan','🎧 Format alternatif — buku audio·braille·huruf besar','🚚 Antar ke rumah Chaeknarae — bagi yang sulit bepergian','📞 Mode telepon — semua lewat satu panggilan','🌏 Suara 10 bahasa <b>(berfungsi)</b>'],
  shT:'Ajukan pinjam antar-cabang?',shP:'Akan diterima sebagai berikut',
@@ -1887,8 +1891,10 @@ function applyLang(code){
   const CL = CHIPS_L[code] || CHIPS_L.ko;
   document.querySelectorAll('.chip').forEach((b, i) => {
     let [q, m, lv] = CL.c[i] || CL.c[0];
+    const ex = (CASES[+b.dataset.case] && CASES[+b.dataset.case].real === false);
     if(내관 !== '상동'){ const ci = +b.dataset.case; const tt = U().tier[eff(CASES[ci])]; m = '→ ' + (tt ? tt[1] : ''); }
-    b.innerHTML = q + `<span class="m">${m}${lv ? `<em class="lv">${lv}</em>` : ''}</span>`;
+    if(ex && !lv) lv = EXTAG[code] || EXTAG.ko;
+    b.innerHTML = q + `<span class="m">${m}${lv ? `<em class="lv${ex ? ' ex' : ''}">${lv}</em>` : ''}</span>`;
   });
   try{ renderMyLib(); checkLocalSR(); }catch(e){}
   $('chipnote').textContent = CL.note;
@@ -2194,7 +2200,10 @@ function run(text, live){
   ['w1','w2','w3'].forEach(i => $(i).className = 'stp');
   $('heard').textContent = ''; $('fixed').innerHTML = '';
 
-  const relayP = relayHoldings(c);          /* v1.10: 중계가 켜져 있으면 지금 조회를 시작해 두고, 탐색 장면 전에 결과를 기다린다 */
+  /* v1.12.1: 예시 단추(장면)는 늘 8/18 실측 그대로 — 세 갈래가 날마다 바뀌지 않게. 말하거나 입력해 찾을 때만 오늘 자료(중계 → 매일 갱신 파일) */
+  if(!c.bx0) c.bx0 = Object.assign({}, c.bx);
+  c.bx = Object.assign({}, c.bx0); c.asof = null;
+  const relayP = live ? relayHoldings(c) : Promise.resolve(false);   /* v1.10: 중계가 켜져 있으면 지금 조회를 시작해 두고, 탐색 장면 전에 결과를 기다린다 */
   const buildRows = () => view(c).scanK.map(([k, arg])=>{
     switch(k){
       case 'mineHave':    return [u.usual(내관), u.mineHave, true];

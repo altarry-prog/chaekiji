@@ -1,6 +1,11 @@
 {
- "time": "2026-10-16 17:26 KST",
- "result": "fail",
- "url": null,
- "error": "workers.dev 주소 이름을 만들지 못함: ['Authentication error'] · 토큰 상태 active [] · 계정 정보 읽기 안 됨 ['Unauthorized to access requested resource']. 토큰을 다시 만들 때 「계정 리소스」에서 계정을 고르세요"
+ "time": "2026-10-16 17:34 KST",
+ "result": "ok",
+ "url": "https://chaekiji-relay.altarry2.workers.dev",
+ "health": {
+  "error": "HTTPError"
+ },
+ "holdings_sample": {
+  "error": "HTTPError: 403"
+ }
 }

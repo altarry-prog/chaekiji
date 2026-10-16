@@ -1,6 +1,6 @@
 # Codex CLI에 책이지 참조 서버(와 정보나루 공식 MCP)를 연결하는 설정 예시
 # 위치: ~/.codex/config.toml  (이 저장소만 적용하려면 저장소 안 .codex/config.toml)
-# 경로는 VM의 실제 경로로 바꾼다. 인증키는 이 파일에 쓰지 않는다 — env_vars로 환경변수 이름만 넘긴다.
+# 경로는 내 PC(또는 VM)의 실제 경로로 바꾼다. 인증키는 이 파일에 쓰지 않는다 — env_vars로 환경변수 이름만 넘긴다.
 
 [mcp_servers.chaekiji]
 command = "python3"
@@ -8,8 +8,8 @@ args = ["/home/【VM계정】/projects/chaekiji/server/server.py"]
 startup_timeout_sec = 20
 
 [mcp_servers.chaekiji.env]
-CHAEKIJI_MODE = "demo"            # live로 바꾸면 정보나루 실호출(NARU_KEY 필요)
-CHAEKIJI_LOCAL_SOURCE = "alpas"   # naru로 바꾸면 관내 조회도 정보나루(전일 기준)
+CHAEKIJI_MODE = "auto"            # 클로드 데스크톱 예시와 같다 — 중계 → 2일 이내 매일 갱신 파일 → 8/18 픽스처. 고정 자료만 보려면 "demo"
+PYTHONUTF8 = "1"
 # CHAEKIJI_STORE = "/home/【VM계정】/chaekiji-state.sqlite3"
 # CHAEKIJI_AUDIT = "/home/【VM계정】/chaekiji-audit.jsonl"
 

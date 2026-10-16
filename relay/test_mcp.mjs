@@ -66,6 +66,11 @@ c = await call(worker, env, "consult_request", { utterance: "작별하지 않는
 ok(!c.isError && c.out.pickup === "상동" && c.out.route === "ill" && c.out.book.isbn13 === "9788954682152" &&
    c.out.availability.available_at.join() === "꿈빛,원미" && c.out.policy.pending.length === 5,
    "목록 밖 책 — 정보나루 서지 검색 → 그 자리 조회 → 관내 상호대차 · 회원 규정 5건은 창구 확인");
+c = await call(worker, env, "consult_request", { utterance: "희랍어 시간 있나요?", pickup: "상동" });
+ok(!c.isError && c.out.route === "check" && c.out.notice.includes("확인하지 못했습니다") && !c.out.notice.includes("소장되어 있지 않습니다") &&
+   c.out.availability.nation === null && c.out.policy.pending.some(x => x.includes("비치")) && c.out.desk_memo.includes("확인 불가") &&
+   c.out.official_link !== null,
+   "목록 밖 책인데 소장 조회 실패 — 「미소장」이 아니라 「소장 확인 불가 → 창구 조회」 · 비치 규정도 창구 확인 · 누리집 링크");
 c = await call(worker, env, "consult_request", { utterance: "나미야", user: "tok_demo" });
 ok(c.isError && c.text.includes("회원 토큰을 받지 않습니다"), "회원 토큰을 넘기면 거절(개인정보를 받지 않음)");
 c = await call(worker, env, "consult_request", { utterance: "나미야", pickup: "없는관" });

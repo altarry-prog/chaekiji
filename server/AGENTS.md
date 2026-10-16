@@ -9,7 +9,7 @@
 운영 서비스가 아니다 — 시연·검증용이며 실제 접수는 일어나지 않는다.
 
 ## 실행·시험
-- 한 번에: `run.bat`(윈도우) · `sh run.sh` — 시험 82건(적합성 48 · 실험실 14 · 중계 모드 14 · 공개 모델 호스트 6)
+- 한 번에: `run.bat`(윈도우) · `sh run.sh` — 시험 83건(적합성 48 · 실험실 14 · 중계 모드 15 · 공개 모델 호스트 6)
 - 적합성 시험(48건 전부 통과 유지): `python3 tests/run_scenarios.py`
 - 실험실 점검 시험: `python3 lab/check_store.py`
 - 중계·원격 상담 비서(저장소 루트에서): `node relay/test_worker.mjs` · `node relay/test_mcp.mjs` · `python3 relay/test_mcp_parity.py` · `python3 relay/build_mcp_data.py --check`
@@ -43,6 +43,6 @@ policy.py      규정 판정 7종(숫자 없음)          vault.py      토큰 �
 store.py       영속 저장(SQLite, 환경변수로 켬)  audit.py      감사 기록(해시 사슬 JSONL)
 connectors/    naru.py(정보나루) · alpas_stub.py(도서관리시스템 모의 = 벤더 명세)
 config/        도시별 설정                        fixtures/     실측·모의 데이터
-tests/         적합성 48 · 중계 모드 14 · 호스트 6  lab/          실험실 스크립트·점검 시험·결과·코랩 노트북
+tests/         적합성 48 · 중계 모드 15 · 호스트 6  lab/          실험실 스크립트·점검 시험·결과·코랩 노트북
 docs/          로드맵·명세·설계                   prompts/      지시문 기록
 ```

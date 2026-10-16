@@ -5,7 +5,7 @@
   ① auto 모드: 중계가 살아 있으면 relay, 죽어 있으면 demo로 스스로 고른다
   ② relay 모드의 상담 묶음: 소장·대출 상태가 중계(오늘 날짜)에서 오고, 안내문에 그 날짜가 찍힌다
   ③ 픽스처에 없는 책은 중계의 서지 검색으로 찾는다(요청 말투를 걷어낸 제목으로)
-  ④ 중계가 도중에 죽으면 그 호출만 픽스처로 떨어지고 근거 문구에 남는다
+  ④ 중계가 도중에 죽으면 그 호출만 픽스처로 떨어지고 근거 문구에 남는다 — 픽스처에도 없는 책은 「미소장」이 아니라 「소장 확인 불가」(v0.3.5)
   ⑤ 응답 어디에도 인증키 문자열이 없다
   ⑥ 매일 갱신 스냅샷(lab/refresh_today.py 결과): 신선하면 auto가 snapshot을 고르고, 오래되면 무시하며, relay 모드에서도 스냅샷에 있는 책은 중계를 부르지 않는다
 실행: python3 tests/run_relay.py"""
@@ -33,12 +33,15 @@ class MockRelay(http.server.BaseHTTPRequestHandler):
             libs = {c: "none" for c in LIBS}
             if isbn == "9788972756194": libs["141321"] = "ok"
             if isbn == "9788936433598": libs["141065"] = "ok"; libs["141535"] = "ok"; libs["141321"] = "busy"
+            if isbn == "9788954616515": return self._send({"error": "upstream", "detail": ["http:TypeError"]}, 502)   # 그 책 조회만 실패
             return self._send({"isbn": isbn, "asof": TODAY, "libs": libs, "calls": 3, "cached": False})
         if u.path == "/search":
             q = qs.get("q", [""])[0]; isbn = qs.get("isbn", [""])[0]
             docs = []
             if "채식주의자" in q or isbn == "9788936433598":
                 docs = [{"isbn13": "9788936433598", "title": "채식주의자", "author": "한강 지음", "publisher": "창비", "year": "2007"}]
+            if q == "희랍어 시간":
+                docs = [{"isbn13": "9788954616515", "title": "희랍어 시간", "author": "한강", "publisher": "문학동네", "year": "2011"}]
             return self._send({"query": q or isbn, "docs": docs, "asof": TODAY})
         if u.path == "/nation":
             return self._send({"isbn": qs.get("isbn", [""])[0], "found_count": 12, "asof": TODAY})
@@ -94,7 +97,11 @@ ok(r2["found"] and r2["book"]["isbn13"] == "9788936433598" and r2["route"] == "i
    f"③ 픽스처에 없는 책 — 중계 서지 검색으로 찾음(『{r2['book']['title']}』) → {r2['route_label']} · 소장관 {r2['from_lib']}")
 r3 = c.call("search_item", utterance="데미안이라는 책 있을까요")
 ok(r3["found"] is False and r3.get("query") == "데미안", "   요청 말투를 걷어낸 검색어로 중계에 묻는다(「데미안」) · 없으면 못 찾음으로 정직하게")
-allj = json.dumps([r, r2, r3], ensure_ascii=False)
+r10 = c.call("consult_request", utterance="희랍어 시간 있나요?", pickup="상동")
+ok(r10["found"] and r10["route"] == "check" and "확인하지 못했습니다" in r10["notice"] and "소장되어 있지 않습니다" not in r10["notice"]
+   and r10["availability"]["nation"] is None and any("비치" in x for x in r10["policy"]["pending"]) and "확인 불가" in r10["desk_memo"],
+   "④′ 그 책 조회만 실패 + 픽스처에도 없는 책 — 「미소장 → 책바다」가 아니라 「소장 확인 불가 → 창구 조회」(비치 규정도 창구 확인)")
+allj = json.dumps([r, r2, r3, r10], ensure_ascii=False)
 ok(FAKE_KEY not in allj and "authKey" not in allj, "⑤ 응답에 인증키 흔적 없음")
 banner = c.banner()
 ok("relay 모드" in banner and "관내 출처 naru" in banner, "   기동 배너 — relay 모드 · 관내 출처 naru")

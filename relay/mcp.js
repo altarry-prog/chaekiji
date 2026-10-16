@@ -17,7 +17,7 @@ const FIX_ASOF = "2026-08-18";
 const SNAPSHOT_MAX_DAYS = 2;
 const SNAP_CACHE_MS = 10 * 60 * 1000;
 const ROUTE_LABEL = { visit: "바로 이용(수령관 서가에 있음)", ill: "관내 상호대차", reserve: "예약 권장(관내 소장분 전부 대출 중)",
-                      sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정" };
+                      sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정", check: "소장 확인 불가(창구에서 조회)" };
 const MEMBER_RULE_KEYS = ["권", "연체", "중복"];                 // 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
 
 const state = { snap: null, snapAt: 0, bib: new Map() };       // 같은 실행 공간 안에서만 쓰는 기억(10분)
@@ -143,6 +143,11 @@ async function holdingsLocal(isbn13, deps, ctx) {
     return { out, meta: { basis: `관내: 정보나루 bookExist(중계 · ${asof} 조회 · 전일 기준)`, asof,
                           holding_count: countHeld(out), calls: nn(r.calls), cached: !!r.cached } };
   } catch (e) {                                              // 정보나루가 안 되면 8/18 실측 픽스처로 — 근거 문구에 그대로 적는다
+    if (!Object.prototype.hasOwnProperty.call(HOLD.holdings || {}, isbn13)) {   // [v0.3.5] 픽스처에도 없는 책 — 「미소장」이 아니라 「확인 불가」(naru._unknown)
+      const out = Object.fromEntries(Object.keys(LIBS).map(n => [n, "unknown"]));
+      return { out, meta: { basis: "관내: 정보나루 조회 실패(중계 응답 없음) — 소장·대출 상태 확인 불가", asof: kstDay(),
+                            holding_count: null, calls: 0, cached: false, unavailable: true } };
+    }
     const h = (HOLD.holdings || {})[isbn13] || {};
     const out = Object.fromEntries(Object.keys(LIBS).map(n => [n, h[n] || "none"]));
     const ex = (HOLD._examples || []).includes(isbn13);
@@ -176,6 +181,7 @@ async function checkAvailability(isbn13, deps, ctx) {          // tools.check_av
   const busy = Object.keys(rt).filter(l => rt[l] === "busy").sort();
   const res = { city: CFG.city, home_library: home, home_status: rt[home] || "none", available_at: ok, loaned_at: busy,
                 basis: meta.basis || "관내: 정보나루(전일 기준)", holding_count: nn(meta.holding_count), naru_calls: nn(meta.calls) };
+  if (meta.unavailable) { res.status_unknown = true; return { res, rt, meta }; }   // [v0.3.5] 관내를 모르면 전국으로 넘기지 않는다
   if (!ok.length) res.nation = await nationRemote(isbn13, deps, ctx);
   return { res, rt, meta };
 }
@@ -246,15 +252,25 @@ export async function consultRequest(args, deps, ctx) {
   }
   const isbn = found.isbn13, title = found.title || isbn;
   const { res: avail, rt, meta } = await checkAvailability(isbn, deps, ctx);
-  const atPickup = avail.available_at.includes(pickup) ? "ok" : avail.loaned_at.includes(pickup) ? "busy" : "none";
+  const unknown = !!avail.status_unknown;                     // [v0.3.5] 정보나루 조회 실패 + 픽스처에도 없는 책
+  const atPickup = unknown ? "unknown" : avail.available_at.includes(pickup) ? "ok" : avail.loaned_at.includes(pickup) ? "busy" : "none";
   const othersOk = avail.available_at.filter(l => l !== pickup);
   const nation = nn(avail.nation);
   let route, fromLib;
-  if (atPickup === "ok") [route, fromLib] = ["visit", pickup];
+  if (unknown) [route, fromLib] = ["check", null];
+  else if (atPickup === "ok") [route, fromLib] = ["visit", pickup];
   else if (othersOk.length) [route, fromLib] = ["ill", othersOk[0]];
   else if (avail.loaned_at.length || atPickup === "busy") [route, fromLib] = ["reserve", null];
   else [route, fromLib] = ["sea", null];
   const pol = guestPolicy(rt[pickup] === "ok", pickup, await bibinfo(isbn, deps, ctx), isbn);
+  if (unknown) {                                              // 수령관 비치 여부도 모르므로 비치 규정까지 창구 확인으로
+    for (const c of pol.checks) {
+      if (c.rule.includes("비치") && c.pass !== null) {
+        c.pass = null; c.detail = "소장·대출 상태 확인 불가 — 창구에서 도서관리시스템으로 확인"; pol.pending.push(c.rule);
+      }
+    }
+    pol.allowed_so_far = pol.checks.filter(c => c.pass !== null).every(c => c.pass);
+  }
   const asof = meta.asof || FIX_ASOF;
   const [y, m, d] = asof.split("-"); const asofK = `${y}. ${parseInt(m, 10)}. ${parseInt(d, 10)}.`;
   const nOk = avail.available_at.length, nBusy = avail.loaned_at.length;
@@ -271,27 +287,32 @@ export async function consultRequest(args, deps, ctx) {
   } else if (route === "reserve") {
     notice = `${t_} ${CFG.city}시립도서관 ${nBusy}곳이 소장하고 있지만 ` +
              `지금은 모두 대출 중입니다. 상호대차 대신 예약을 권해 드립니다(책바다는 관내에 없는 자료가 대상입니다).`;
+  } else if (route === "check") {
+    notice = `${t_} 지금 ${CFG.city}시립도서관의 소장·대출 상태를 확인하지 못했습니다(정보나루 조회가 되지 않았습니다). ` +
+             `창구에서 도서관리시스템으로 확인해 드리겠습니다.`;
   } else {
     const cnt = (nation || {}).found_count;
     notice = `${t_} ${CFG.city}시립도서관 ${Object.keys(LIBS).length}곳에 소장되어 있지 않습니다. 전국 상호대차(책바다)로 신청하실 수 있으며 ` +
              `왕복 택배비가 듭니다.` + (cnt ? ` 정보나루 기준 다른 지역 ${cnt}곳 소장입니다.` : "");
   }
   const example = (HOLD._examples || []).includes(isbn) && !!meta.example;
-  notice += example ? " (예시 데이터 — 이 책의 실제 소장·대출과 다를 수 있습니다)" : ` (대출 상태는 정보나루 ${asofK} 조회, 전일 기준)`;
+  if (route !== "check")                                      // 조회한 자료가 없으면 날짜를 찍지 않는다
+    notice += example ? " (예시 데이터 — 이 책의 실제 소장·대출과 다를 수 있습니다)" : ` (대출 상태는 정보나루 ${asofK} 조회, 전일 기준)`;
   if (pol.pending.length) notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다.";
   const bad = pol.checks.filter(c => c.pass === false && !(route === "visit" && c.rule.includes("비치")));
   if (bad.length) notice += " 다만 " + bad.map(c => `${c.rule}(${c.detail})`).join("; ") + " — 이 조건을 먼저 확인해야 합니다.";
-  const link = ["visit", "ill", "reserve"].includes(route) ? officialLink(title, isbn) : null;
+  const link = ["visit", "ill", "reserve", "check"].includes(route) ? officialLink(title, isbn) : null;
   if (link) {
     const tail = { visit: "이 책 보기", ill: "이 책 보기·신청(로그인 뒤 「상호대차 신청」 — 접수는 이용자가 직접)",
-                   reserve: "이 책 보기·예약(로그인 뒤 「예약」)" }[route];
+                   reserve: "이 책 보기·예약(로그인 뒤 「예약」)", check: "이 책의 소장·대출 상태 보기" }[route];
     notice += ` 공식 누리집에서 ${tail}: ${link}`;
   }
   const memo = [
     `도서: ${title} (${found.author || ""}) ISBN ${isbn}`,
     `갈래: ${ROUTE_LABEL[route]}` + (fromLib ? ` · 소장관 ${fromLib}` : ""),
-    `수령관: ${pickup} (현재 ${atPickup === "ok" ? "서가 비치" : atPickup === "busy" ? "대출 중" : "미소장"})`,
-    `대출 가능 관: ${avail.available_at.join(", ") || "없음"} / 대출 중: ${avail.loaned_at.join(", ") || "없음"}`,
+    `수령관: ${pickup} (현재 ${atPickup === "ok" ? "서가 비치" : atPickup === "busy" ? "대출 중" : unknown ? "확인 불가" : "미소장"})`,
+    unknown ? "대출 가능 관: 확인 불가 / 대출 중: 확인 불가"
+            : `대출 가능 관: ${avail.available_at.join(", ") || "없음"} / 대출 중: ${avail.loaned_at.join(", ") || "없음"}`,
     `근거: ${avail.basis}`,
     `규정: ${pol.checks.filter(c => c.pass === true).length}건 통과 · ${pol.checks.filter(c => c.pass === false).length}건 불가 · ${pol.pending.length}건 창구 확인`,
     "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)",

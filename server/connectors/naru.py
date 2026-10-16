@@ -65,7 +65,7 @@ def _snapshot_holdings(isbn13, libraries):
 RELAY = ""                                            # 중계 주소 — tools.py가 환경변수·설정에서 넣어 준다
 RELAY_TIMEOUT = 20                                    # [10. 16.] 첫 배포 실측: 미국 쪽 확인에서 /holdings 8.9초(소장관 목록 1회 + 소장관별 15회) — 8초면 끊겨 20초로
 # [10. 16.] 중계를 부를 때 이름을 밝힌다 — 파이썬 기본 이름(Python-urllib)은 Cloudflare가 403으로 막는 일이 있다(첫 배포 실측)
-RELAY_UA = {"User-Agent": "chaekiji-mcp/0.3.4 (+https://github.com/altarry-prog/chaekiji)"}
+RELAY_UA = {"User-Agent": "chaekiji-mcp/0.3.5 (+https://github.com/altarry-prog/chaekiji)"}
 
 def _norm(s): return "".join(s.split()).lower()
 
@@ -223,6 +223,15 @@ def availability_nation(isbn13: str, mode="demo"):
     return {"basis": f"전일({yday}) 기준 · 정보나루", "found_count": (n or {}).get("count", 0),
             "note": (n or {}).get("note", "전국 조회(모의)")}
 
+def _unknown(libraries: dict, why: str) -> dict:
+    """[v0.3.5] 소장·대출 상태를 알 수 없을 때 — 모든 관을 unknown으로 돌려주고 LAST_META에 unavailable을 남긴다.
+    정보나루가 안 되는데 그 책이 픽스처에도 없으면, 예전처럼 「미소장」(none)으로 채우면 「16곳에 없음 → 책바다」라는
+    틀린 안내가 나간다(2026. 10. 16. 독립 검토에서 발견). 모르면 모른다고 하고 창구 조회로 넘긴다."""
+    global LAST_META
+    LAST_META = {"basis": f"관내: {why} — 소장·대출 상태 확인 불가", "asof": _today(),
+                 "holding_count": None, "calls": 0, "cached": False, "unavailable": True}
+    return {name: "unknown" for name in libraries}
+
 def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") -> dict:
     """[v0.3.1] 관내 소장·대출 상태 {관이름: ok|busy|none}.
     demo: 8/18 실측 픽스처 / live: libSrchByBook(세부지역) 1회 → 소장관마다 bookExist 1회.
@@ -236,6 +245,8 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
                          "holding_count": sum(1 for v in sh.values() if v != "none"), "calls": 0, "cached": True}
             return sh
         if mode == "snapshot":
+            if isbn13 not in _hold.get("holdings", {}):      # 8/18 픽스처에도 없는 책 — 「미소장」이 아니라 「확인 불가」
+                return _unknown(libraries, "오늘 조회분에 없는 도서(snapshot 모드는 정보나루를 부르지 않음)")
             out = holdings_local(isbn13, libraries, region_code, mode="demo")
             LAST_META["basis"] += " · 오늘 조회분에 없는 도서"
             return out
@@ -256,6 +267,8 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
             _HOLD_CACHE[key] = (time.time(), dict(out), dict(LAST_META))
             return out
         except Exception:
+            if isbn13 not in _hold.get("holdings", {}):      # 8/18 픽스처에도 없는 책 — 「미소장」으로 답하면 틀린 안내가 된다
+                return _unknown(libraries, "정보나루 조회 실패(중계 응답 없음)")
             out = holdings_local(isbn13, libraries, region_code, mode="demo")
             LAST_META["basis"] += " · 중계 응답 없음 → 픽스처로 복귀"
             return out

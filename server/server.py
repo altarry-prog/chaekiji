@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""책이지 MCP 참조 서버 v0.3.4
+"""책이지 MCP 참조 서버 v0.3.5
 MCP(Model Context Protocol) stdio 전송: 줄 단위 JSON-RPC 2.0.
 MCP를 지원하는 어떤 AI 도구(클로드 데스크톱·Codex CLI·VS Code 등)에도 그대로 연결된다 (README·lab/README 참조).
 표준 도구 10종(핵심 8종+확장 2종)을 노출하며, 지역 고유값은 전부 config/*.yaml에 있다.
 v0.3.1(실험실): 감사 기록(CHAEKIJI_AUDIT) — 모든 tools/call을 해시 사슬 JSONL로 남긴다.
-v0.3.4(상담 비서): 상담 묶음 도구 consult_request(도구 10종 + 1) · MCP 프롬프트 `consult`(사서 모드 지시문) · relay/auto 모드."""
+v0.3.4(상담 비서): 상담 묶음 도구 consult_request(도구 10종 + 1) · MCP 프롬프트 `consult`(사서 모드 지시문) · relay/auto 모드.
+v0.3.5: 정보나루 조회가 실패하고 픽스처에도 없는 책은 「미소장」이 아니라 「소장 확인 불가(창구에서 조회)」로 답한다."""
 import sys, json, traceback
 from pathlib import Path
 import tools, audit, store
 
-SERVER = {"name": "chaekiji-mcp", "version": "0.3.4"}
+SERVER = {"name": "chaekiji-mcp", "version": "0.3.5"}
 PROTO  = "2024-11-05"
 
 def S(o): return {"type": "object", **o}
@@ -65,7 +66,7 @@ TOOLS = [
                                    "pickup": {"type": "string"}},
                     "required": ["user", "op"]})},
  {"name": "consult_request",
-  "description": "[v0.3.4 상담 묶음] 창구·전화 상담용. 이용자의 말(가능하면 책 제목)과 받을 도서관을 주면 도서 특정 → 관내 소장·대출 상태 → 상호대차 가능 여부·갈래(바로 이용/관내 상호대차/예약/책바다) 판정 → 이용자 안내문 → 접수 메모까지 한 번에 돌려준다. 접수는 하지 않는다. 회원 토큰(user)이 있으면 규정 7종 전부, 없으면 비치·제외자료 규정만 판정하고 한도·연체·중복은 창구 확인으로 보류.",
+  "description": "[v0.3.4 상담 묶음] 창구·전화 상담용. 이용자의 말(가능하면 책 제목)과 받을 도서관을 주면 도서 특정 → 관내 소장·대출 상태 → 상호대차 가능 여부·갈래(바로 이용/관내 상호대차/예약/책바다/소장 확인 불가) 판정 → 이용자 안내문 → 접수 메모까지 한 번에 돌려준다. 접수는 하지 않는다. 회원 토큰(user)이 있으면 규정 7종 전부, 없으면 비치·제외자료 규정만 판정하고 한도·연체·중복은 창구 확인으로 보류.",
   "inputSchema": S({"properties": {"utterance": {"type": "string", "description": "이용자의 말 또는 책 제목"},
                                    "pickup": {"type": "string", "description": "받을 도서관 이름(기본: 설정의 home_library)"},
                                    "lang": {"type": "string", "description": "이용자 언어 코드(기본 ko). ko가 아니면 translate_to로 돌려줌"},

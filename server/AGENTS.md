@@ -9,8 +9,10 @@
 운영 서비스가 아니다 — 시연·검증용이며 실제 접수는 일어나지 않는다.
 
 ## 실행·시험
-- 적합성 시험(반드시 33건 통과 유지): `python3 tests/run_scenarios.py`
+- 한 번에: `run.bat`(윈도우) · `sh run.sh` — 시험 82건(적합성 48 · 실험실 14 · 중계 모드 14 · 공개 모델 호스트 6)
+- 적합성 시험(48건 전부 통과 유지): `python3 tests/run_scenarios.py`
 - 실험실 점검 시험: `python3 lab/check_store.py`
+- 중계·원격 상담 비서(저장소 루트에서): `node relay/test_worker.mjs` · `node relay/test_mcp.mjs` · `python3 relay/test_mcp_parity.py` · `python3 relay/build_mcp_data.py --check`
 - 서버 수동 실행: `python3 server.py` (stdin으로 JSON-RPC 한 줄씩)
 - 의존성: Python 3.9+ · PyYAML. **새 외부 패키지를 더하지 말 것**(꼭 필요하면 출처·라이선스를 prompts/에 기록하고 사람 확인).
 
@@ -19,7 +21,8 @@
 2. 운영 중인 시스템(도서관리시스템 알파스, 도서관 누리집, 통합 SSO)에 접속·자동화하는 코드를 만들지 않는다. 연동은 `connectors/alpas_stub.py`의 함수 7종 **모의**로만.
 3. 개인정보를 만들거나 넣지 않는다. 회원은 `fixtures/members.json`의 가상 인물뿐. 내부망 주소·시스템 구조·화면 구성을 코드·주석·문서에 적지 않는다.
 4. 정직 고지를 지운다·약화하지 않는다: 「전일 기준」(정보나루 대출 가능 여부), 「모의」(알파스·회원·추천·대체자료), 「실제 접수 없음」.
-5. `tests/run_scenarios.py`의 시험 수(33건)와 기존 시험의 판정 기준을 바꾸지 않는다. 새 시험은 `lab/` 아래 별도 파일로.
+5. 기존 시험의 판정 기준을 바꾸거나 시험을 지우지 않는다(약하게 만들지 않는다). 새 시험은 더해도 되며, 더하면 시험 수를 README·CHANGELOG·CI 이름에 함께 고친다(2026. 10. 기준 적합성 48건).
+   원격 상담 비서(`relay/mcp.js`)는 이 서버의 relay 모드와 같은 답을 내야 한다 — `tools.py`·`policy.py`·`connectors/naru.py`의 판정·안내문을 고치면 `relay/mcp.js`도 같이 고치고 `relay/test_mcp_parity.py`로 대조한다. 설정·픽스처·지시문을 고치면 `python3 relay/build_mcp_data.py`.
 6. 지역 규정 숫자·도서관 코드를 코드에 쓰지 않는다 — `config/*.yaml`에만.
 7. 파일 삭제·외부 접속·발송처럼 영향이 큰 동작은 실행 전에 사람에게 묻는다.
 
@@ -40,6 +43,6 @@ policy.py      규정 판정 7종(숫자 없음)          vault.py      토큰 �
 store.py       영속 저장(SQLite, 환경변수로 켬)  audit.py      감사 기록(해시 사슬 JSONL)
 connectors/    naru.py(정보나루) · alpas_stub.py(도서관리시스템 모의 = 벤더 명세)
 config/        도시별 설정                        fixtures/     실측·모의 데이터
-tests/         적합성 시험 33건                   lab/          실험실 스크립트·점검 시험·결과
+tests/         적합성 48 · 중계 모드 14 · 호스트 6  lab/          실험실 스크립트·점검 시험·결과·코랩 노트북
 docs/          로드맵·명세·설계                   prompts/      지시문 기록
 ```

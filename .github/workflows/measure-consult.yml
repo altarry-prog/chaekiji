@@ -1,0 +1,32 @@
+# 원격 상담 비서(/mcp) 처리 시간 실측 — 이용자 문의 15건을 실제 주소로 보내 걸린 시간·판정을 기록한다.
+# 결과는 server/lab/out/consult_timing_YYYY-MM-DD.{json,md}로 커밋한다(키·개인정보 없음).
+# 실행: 이 파일이나 측정 스크립트를 고쳐 올리면 돈다(또는 Actions 탭에서 수동 실행).
+# 정보나루 하루 한도(500건)를 생각해 하루 한 번만 돌린다 — 목록 밖 책 10건이 1건당 최대 19회 정도 부른다.
+name: measure-consult
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["server/lab/measure_consult.py", ".github/workflows/measure-consult.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: measure-consult
+  cancel-in-progress: false
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 문의 15건 실측
+        working-directory: server
+        run: python3 lab/measure_consult.py
+      - name: 기록 커밋
+        run: |
+          git config user.name "chaekiji-measure"
+          git config user.email "measure@users.noreply.github.com"
+          git add server/lab/out/consult_timing_*.json server/lab/out/consult_timing_*.md
+          if ! git diff --cached --quiet; then git commit -m "원격 상담 비서 처리 시간 실측 $(date -u -d '+9 hours' '+%Y-%m-%d %H:%M')" && git pull --rebase -q origin main && git push; fi

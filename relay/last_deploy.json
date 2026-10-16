@@ -1,5 +1,5 @@
 {
- "time": "2026-10-16 17:22 KST",
+ "time": "2026-10-16 17:23 KST",
  "result": "fail",
  "url": null,
  "error": "계정을 하나로 정하지 못함(찾은 수 0) — 토큰 상태 active [] · 멤버십 0건 ['Authentication error']. 계정 ID를 CLOUDFLARE_ACCOUNT_ID 비밀값으로 넣거나(대시보드 주소 전체를 붙여 넣어도 됨), 토큰을 다시 만들 때 「계정 리소스」에서 계정을 고르세요"

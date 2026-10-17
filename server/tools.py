@@ -22,7 +22,7 @@ MODE = os.environ.get("CHAEKIJI_MODE", "demo")        # demo | relay | live | au
 naru.RELAY = os.environ.get("CHAEKIJI_RELAY") or str(CFG.get("relay_url") or "")
 if MODE == "auto":                                    # 심사위원 기본값: 중계(오늘) → 매일 갱신 스냅샷(어제) → 8/18 픽스처
     MODE = "relay" if naru.relay_ok() else ("snapshot" if naru.snapshot_fresh() else "demo")
-# 관내 소장·대출의 출처 — alpas: 도서관리시스템 실시간(모의) / naru: 정보나루 bookExist(전일 기준, live·relay·snapshot이면 실조회분)
+# 관내 소장·대출의 출처 — alpas: 도서관리시스템 실시간 연동 모의(값은 8/18 픽스처) / naru: 정보나루 bookExist(전일 기준, live·relay·snapshot이면 실조회분)
 LOCAL_SOURCE = os.environ.get("CHAEKIJI_LOCAL_SOURCE", "naru" if MODE in ("relay", "live", "snapshot") else "alpas")
 
 # [v0.3.1] 서버를 켤 때 저장된 이력이 있으면 복원한다(CHAEKIJI_STORE가 있을 때만).
@@ -43,7 +43,9 @@ def _local_holdings(isbn13: str):
         return rt, naru.LAST_META.get("basis", "관내: 정보나루(전일 기준)")
     if isbn13 in naru._hold.get("_examples", []):        # 실측이 아닌 예시 장면용 값
         return alpas.holdings_realtime(isbn13), "관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면 — 이 책의 실제 소장과 다를 수 있음)"
-    return alpas.holdings_realtime(isbn13), "관내: 도서관리시스템 실시간(모의)"
+    # demo: 도서관리시스템 실시간 연동을 흉내 낸 모의 커넥터 — 값은 픽스처(정보나루 실측)이므로 안내문의 조회일과 같은 출처를 밝힌다
+    y, m, d = naru.FIX_ASOF.split("-")
+    return alpas.holdings_realtime(isbn13), f"관내: 도서관리시스템 실시간 연동 모의(값은 {y}. {int(m)}. {int(d)}. 정보나루 실측)"
 
 def search_item(utterance: str, lang: str = "ko"):
     return naru.search(utterance, mode=MODE)

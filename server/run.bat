@@ -4,6 +4,12 @@ rem 탐색기에서 두 번 눌러도 결과를 읽을 수 있게 끝에서 멈�
 chcp 65001 >nul
 set PYTHONUTF8=1
 cd /d "%~dp0"
+if not exist "tests\run_scenarios.py" (
+  echo 압축 파일 안에서 실행되어 다른 파일을 찾지 못했습니다.
+  echo 압축 파일을 먼저 풀고, 풀린 폴더 안의 server\run.bat 을 다시 실행해 주세요.
+  pause
+  exit /b 1
+)
 set "PY="
 python -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" >nul 2>nul && set "PY=python"
 if not defined PY py -3 -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" >nul 2>nul && set "PY=py -3"

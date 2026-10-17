@@ -211,8 +211,8 @@ async def main():
         # ── 4. 흐름 1 소개 ──
         mark("4 흐름 1 소개", "연결 방법 카드 — 세 줄")
         await crumb("<b>흐름 1</b> / 3 · 창구·전화 상담(주 결과물)")
-        L = ["claude.ai 설정의 커넥터에서 「커스텀 커넥터 추가」",
-             "주소 <b>chaekiji-relay.altarry2.workers.dev/mcp</b> 입력, 인증키는 필요 없습니다",
+        L = ["claude.ai 「사용자 정의 → 커넥터」에서 「커스텀 커넥터 추가」",
+             "주소 <b>chaekiji-relay.altarry2.workers.dev/mcp</b> 입력, 인증은 「로그인 없음」",
              "새 대화에서 커넥터를 켜고, 이용자의 말을 그대로 넣습니다"]
         await card("흐름 1 · 창구·전화 상담", "claude.ai에 주소 한 줄이면\n설치 없이 씁니다", "", L)
         await lines(L, 3100, 2200, first=1200)
@@ -294,7 +294,7 @@ async def main():
         else:
             mark("9 자리 표시(코랩)", "자리 표시 카드 — 코랩 실행 화면과 기록표가 들어갈 곳")
             await slot("코랩 실행 화면과 기록표",
-                       "10. 19. 실행 뒤 이 자리에 넣습니다\n지금까지는 가짜 Ollama로 두 방식(도구 호출·JSON) 시험 6건만 통과했습니다")
+                       "10. 19. 실행 뒤 이 자리에 넣습니다\n지금까지는 모의 Ollama로 두 방식(도구 호출·JSON) 시험 6건만 통과했습니다")
             await acdp.send("Page.startScreencast", {"format": "jpeg", "quality": 90, "maxWidth": 468, "maxHeight": 948, "everyNthFrame": 1})
             await W(7000)
 

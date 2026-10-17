@@ -198,7 +198,7 @@ body.bigmode .bqitems{font-size:15.5px}
 
 .tin{display:flex;gap:7px}
 .tin input{
-  flex:1;border:1.6px solid var(--line);border-radius:11px;padding:12px 13px;
+  flex:1;min-width:0;border:1.6px solid var(--line);border-radius:11px;padding:12px 13px;   /* v1.12.3: min-width:0 — 검색 단추가 화면 밖으로 밀리지 않게 */
   font-size:14.5px;font-family:inherit;outline:none;background:#fbfcfc;
 }
 .tin input:focus{border-color:var(--brand);background:#fff}
@@ -206,6 +206,7 @@ body.bigmode .bqitems{font-size:15.5px}
 .tin button{
   border:none;background:var(--brand);color:#fff;border-radius:11px;
   padding:0 17px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;
+  white-space:nowrap;flex:none;   /* v1.12.3: 큰글자 모드에서 「검/색」 두 줄로 꺾이지 않게 */
 }
 .chips{margin-top:11px}
 .chips .lbl{font-size:11.5px;color:var(--ink3);margin-bottom:6px}
@@ -376,6 +377,8 @@ body.bigmode .bqitems{font-size:15.5px}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
 .done h2{font-size:21px;margin:0 0 9px}
 .done p{font-size:14px;color:var(--ink2);margin:0 0 22px;line-height:1.65}
+.done .donenote{display:inline-block;font-size:12.5px;color:#7a4d00;background:#fff4dc;border-radius:8px;padding:5px 10px;margin:0 0 14px;line-height:1.5}   /* v1.12.3: 완료 화면 시연 표시 */
+.done .donenote[hidden]{display:none}
 .recap{
   background:#f7f8f9;border-radius:13px;padding:15px;text-align:left;margin-bottom:8px;
 }
@@ -802,6 +805,7 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="done">
         <div class="check">✓</div>
         <h2 id="doneT">신청이 접수됐습니다</h2>
+        <p class="donenote" id="doneNote" hidden></p>
         <p id="donetx"></p>
         <div class="psvia" id="psVia" hidden><b></b><span></span></div>
         <div class="recap" id="recap"></div>
@@ -825,7 +829,7 @@ body.bigmode .foot button{font-size:12.5px}
 
   <div class="foot">
     <button id="infobtn" onclick="document.getElementById('isheet').classList.add('on')" aria-label="책이지 안내 열기">
-      <b>ⓘ 안내</b> · 정보나루 Open API 2026. 8. 18. 기준 · 시연 모델
+      <b>ⓘ 안내</b> · <span id="footSrc">정보나루 Open API 2026. 8. 18. 기준</span> · 시연 모델
     </button>
   </div>
 
@@ -937,6 +941,7 @@ const 기준일 = "2026. 8. 18.";
    v1.12.2: 중계 주소 연결(2026. 10. 16. Cloudflare Workers 첫 배포). 순서는 오늘 새벽 매일 갱신 파일 → (그 파일이 오늘 것이 아니거나 그 책이 없을 때만) 중계 → 2일 이내 파일 → 8/18.
    정보나루 대출 상태는 어차피 전일 기준이라 낮에 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않고 하루 호출 한도를 아낀다(서버 auto 모드와 같은 규칙) */
 const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
+/* v1.12.3: 완료 화면에 시연 표시(실제 신청 아님) · 받침에 맞춘 「로/으로」 · 바닥글 날짜 자동(매일 갱신 파일) · 검색 단추 한 줄 */
 /* v1.12.2: 중계 연결 · 오늘 새벽 파일 먼저(위 RELAY 설명).
 /* v1.12.1: 예시 단추 = 8/18 장면 고정, 말·입력 검색 = 오늘 자료. ③ 예시 배지·출처 줄 정정(관내에 없음은 예시였고, 10/16 실제 조회에서는 16개관 소장).
 /* v1.12: 화면 정리 — 첫 화면의 책큐·패스 카드를 글자 줄로, 도서관코드 숨김, 확인 시트에서 기술 용어 행 제거,
@@ -951,10 +956,16 @@ function officialLink(title){ if(!OFFICIAL_SEARCH || !title) return ''; const k 
 /* v1.11: 중계가 없거나 답이 없으면, 같은 출처의 「매일 갱신」 파일(data/holdings-today.json · 깃허브 액션이 새벽에 씀)을 본다. 2일 넘게 묵으면 무시
    v1.12.2: 그 파일이 오늘(한국 날짜) 것이고 그 책이 있으면 중계를 부르지 않는다 */
 function asofText(a){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(a || ''); return m ? `${m[1]}. ${+m[2]}. ${+m[3]}.` : a; }
+/* v1.12.3: 받침에 맞춰 「로/으로」 — 「관내 상호대차으로」 같은 오타를 막는다(받침 없음·ㄹ 받침은 「로」) */
+function ro(w){ const c = String(w || '').trim().slice(-1).charCodeAt(0) - 0xAC00;
+  if(!(c >= 0 && c <= 11171)) return '(으)로'; const j = c % 28; return (j === 0 || j === 8) ? '로' : '으로'; }
 function kstToday(){ return new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); }
 function dailyJson(){
   return fetch('data/holdings-today.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null);
 }
+/* v1.12.3: 바닥글 날짜 — 매일 갱신 파일이 2일 이내면 「○. ○. 갱신」, 아니면 「2026. 8. 18. 기준」 그대로 */
+dailyJson().then(j => { if(!j || !j.asof) return; const age = (Date.now() - new Date(j.asof + 'T00:00:00')) / 864e5;
+  const el = document.getElementById('footSrc'); if(el && age >= 0 && age <= 2.5) el.textContent = `정보나루 Open API ${asofText(j.asof)} 갱신`; });
 function useDaily(c, j, todayOnly){
   if(!j || !j.holdings || !j.holdings[c.book.isbn] || !j.asof) return false;
   if(todayOnly){ if(j.asof !== kstToday()) return false; }
@@ -1537,7 +1548,7 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  kPath:'처리 경로',pathV:'도서관리시스템 커넥터(MCP)',pathS:'동일 시스템(알파스 등) 사용 도서관은 커넥터 재사용',
  kUser:'신청자',user:'홍○○ · 등록된 기기',yes:'네, 신청합니다',no:'취소',
  dT:'신청이 접수됐습니다',
-  d1:(md,l,m)=>`<b>${md}</b>으로 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
+  d1:(md,l,m)=>`<b>${md}</b>${ro(md)} 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
  innerBusy:k=>`${k}곳 소장 · 모두 대출 중`,tag3:'반납 대기',shT2:'책바다 신청 안내를 받을까요?',shT3:'예약을 신청할까요?',yes2:'네, 안내 받을게요',kProc:'절차',procV:'책바다 가입 → 사서 승인 → 배송비 결제',procS:'왕복 5,800원 · 장애인 무료 · 별도 시스템이라 직접 신청은 안내로 대신합니다',kHold:'수령 기한',holdV:'도착 후 3일 안에 방문',holdS:'기한 내 미수령 시 10일간 신청 제한 (예시 규정)',kCancel:'취소',cancelV:'접수 상태에서만 가능 · 이송이 시작되면 도서관에 문의',didT:'책이지가 대신 한 일',didV:'말을 글로 옮김 → 무슨 책인지 확정 → 16개관 소장·대출 확인 → 규정 7종 검토 → 접수 · 이용자는 말 한마디, 확인 한 번',kNext:'다음 단계',nextV:'문자로 보낸 안내대로 책바다 가입 → 도서관에서 승인',d2:m=>`책바다 신청 방법을 문자로 보내드렸어요.<br>가입과 승인은 <b>${m}도서관</b>에서 도와드립니다.`,d3:(l,m)=>`예약이 접수되었습니다.<br><b>${l}</b>에서 반납되면 상호대차로 자동 전환되어 <b>${m}도서관</b>으로 옵니다.<br>도착하면 문자로 알려드립니다.`,
  shP2:'아래 내용을 문자로 안내해 드립니다',dT2:'안내를 보내드렸습니다',didV2:'말을 글로 옮김 → 무슨 책인지 확정 → 관내 16개관·전국 확인 → 신청 경로 판정 → 안내 발송 · 이용자는 말 한마디, 확인 한 번',
  kArr:'예상 도착',kNum:'접수번호',home:'처음으로' },
@@ -2433,6 +2444,7 @@ function finishRequest(via){
   const T = u.tier[t], bt = best(c), btName = dispName(u, bt);
   $('doneT').textContent = (t === 2) ? u.dT2 : u.dT;
   $('donetx').innerHTML = (t === 2) ? u.d2(내관) : (t === 3) ? u.d3(btName, 내관) : u.d1(T[1], btName, 내관);
+  $('doneNote').textContent = u.caution; $('doneNote').hidden = false;   /* v1.12.3: 시연 — 실제 신청은 이루어지지 않음 */
   $('psVia').hidden = !via;
   if(via){ $('psVia').querySelector('b').textContent = P.via; $('psVia').querySelector('span').textContent = P.viaS; passBump(); }
   const tail = (t === 2) ? `
@@ -2449,7 +2461,7 @@ function finishRequest(via){
   if(L.m) say(L.m.dn());
   else say(t === 2 ? `책바다 신청 방법을 문자로 보내드렸습니다. 가입과 승인은 도서관에서 도와드립니다.` :
       t === 3 ? `예약이 접수되었습니다. 반납되면 상호대차로 자동 전환되어 도착하면 문자로 알려드립니다.` :
-      `${T[1]}으로 신청되었습니다. 도착하면 문자로 알려드립니다. 도착 후 3일 안에 찾아가 주세요.`);
+      `${T[1]}${ro(T[1])} 신청되었습니다. 도착하면 문자로 알려드립니다. 도착 후 3일 안에 찾아가 주세요.`);
 };
 
 /* 우리 관에 있으면: 신청 자체가 없다 — 시트를 띄우지 않고 방문 안내로 끝 (전화 모드와 같은 판정).
@@ -2459,6 +2471,7 @@ function finishGuide(){
   const c = CASES[cur], u = U(), g = G_(), bt = best(c), btName = dispName(u, bt);
   const q = encodeURIComponent('부천 ' + 내관 + '도서관');
   $('doneT').textContent = g.dT;
+  $('doneNote').hidden = true;                                          /* 방문 안내는 신청 자체가 없음 */
   $('donetx').innerHTML = g.tx(btName);
   $('psVia').hidden = true;
   $('recap').innerHTML = `

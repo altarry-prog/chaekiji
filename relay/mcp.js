@@ -8,7 +8,8 @@
  *   relay/test_mcp_parity.py가 두 판을 같은 입력으로 돌려 맞춰 본다. 설정·픽스처·지시문은 relay/mcp_data.js(자동 생성).
  * 무엇이 다른가: 읽기·판정만 — consult_request · search_item · check_availability 셋. 접수·회원 토큰·위임은 없다
  *   (개인정보를 받지 않는다). 상태를 저장하지 않는다(세션 없음).
- * 전송: MCP Streamable HTTP — POST /mcp 에 JSON-RPC, 응답은 application/json. 알림만 오면 202. GET·DELETE는 405. */
+ * 전송: MCP Streamable HTTP — POST /mcp 에 JSON-RPC, 응답은 application/json. 알림만 오면 202. GET·DELETE는 405
+ *       (사람이 인터넷 창으로 열 때 — Accept에 text/html, text/event-stream 없음 — 만 안내 화면). */
 import { CFG, CATALOG, HOLD, PROMPT_BODY, TOOLS, PROMPTS, SERVER_VERSION } from "./mcp_data.js";
 
 const PROTOCOLS = ["2025-06-18", "2025-03-26", "2024-11-05"];     // 앞이 최신
@@ -401,8 +402,34 @@ async function handleOne(m, deps) {
   }
 }
 
+// [10/17] 사람이 인터넷 창으로 이 주소를 열면 오류 대신 안내 화면. MCP 클라이언트의 GET(Accept에 text/event-stream)은 규격대로 405.
+function guidePage(req) {
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const addr = esc(new URL(req.url).origin + "/mcp");
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>책이지 원격 상담 비서 — 커넥터 주소</title><style>
+body{margin:0;background:#f4f7f5;color:#1d2421;font:16px/1.65 system-ui,-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;word-break:keep-all}
+main{max-width:640px;margin:0 auto;padding:28px 18px 40px}h1{font-size:22px;line-height:1.35;margin:0 0 12px;color:#11463a}
+.box{background:#fff;border:1px solid #d5dfda;border-radius:12px;padding:16px 18px;margin:16px 0}ol{margin:0;padding-left:22px}li{margin:6px 0}
+code{background:#eef3f0;border-radius:4px;padding:1px 5px;font-size:.95em;overflow-wrap:anywhere}.n{color:#55615b;font-size:14px}a{color:#0b5c8a}
+</style></head><body><main>
+<h1>이 주소는 claude.ai 커넥터에 넣는 주소입니다</h1>
+<p>인터넷 창으로 열면 이 안내만 보이는 것이 정상입니다. AI 프로그램(MCP 클라이언트)이 이 주소로 질문을 보내면, 책이지 상담 비서가 부천시립도서관 상호대차 판정과 안내문을 돌려줍니다.</p>
+<div class="box"><b>붙이는 법</b><ol>
+<li>claude.ai → 사용자 정의 → 커넥터 → 「+ 추가」 → 「커스텀 커넥터 추가」</li>
+<li>이름 「책이지 상담 비서」, 주소 <code>${addr}</code> → 「계속」 → 인증 방식 「로그인 없음」 → 「추가」</li>
+<li>새 대화의 「+」 → 커넥터에서 켜고, 이용자의 말을 그대로 입력(예: 나미야 잡화점의 기적 빌리고 싶어요, 상동에서 받을게요)</li>
+</ol></div>
+<p class="n">시연·검증용입니다. 접수는 하지 않으며, 대출 상태는 정보나루 조회일 전일 기준입니다. 무료 요금제는 커스텀 커넥터를 1개까지 쓸 수 있습니다.</p>
+<p class="n">시민용 시연 웹 <a href="https://altarry-prog.github.io/chaekiji/">altarry-prog.github.io/chaekiji</a> · 소스 <a href="https://github.com/altarry-prog/chaekiji">github.com/altarry-prog/chaekiji</a></p>
+</main></body></html>`;
+}
+
 export async function handleMcp(req, deps) {
   const H = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  const accept = req.headers.get("Accept") || "";
+  if (req.method === "GET" && accept.includes("text/html") && !accept.includes("text/event-stream"))
+    return new Response(guidePage(req), { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
   if (req.method !== "POST") return new Response(JSON.stringify(rpcError(null, -32000, "POST만 받습니다(Streamable HTTP · 이어 받기 없음)")),
                                                   { status: 405, headers: { ...H, Allow: "POST" } });
   let body;

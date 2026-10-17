@@ -39,7 +39,13 @@ ok(JSON.stringify(r.body.result) === "{}", "ping");
 
 // 2. 규약 오류
 let raw = await worker.fetch(new Request("https://relay.test/mcp"), env);
-ok(raw.status === 405 && raw.headers.get("Allow") === "POST", "GET /mcp → 405(이어 받기 통로 없음)");
+const sse = await worker.fetch(new Request("https://relay.test/mcp", { headers: { Accept: "text/event-stream" } }), env);
+const page = await worker.fetch(new Request("https://relay.test/mcp", { headers: { Accept: "text/html,application/xhtml+xml,*/*;q=0.8" } }), env);
+const pageText = await page.text();
+ok(raw.status === 405 && raw.headers.get("Allow") === "POST" && sse.status === 405 && sse.headers.get("Allow") === "POST" &&
+   page.status === 200 && (page.headers.get("Content-Type") || "").startsWith("text/html") &&
+   pageText.includes("커넥터에 넣는 주소") && pageText.includes("https://relay.test/mcp") && !pageText.includes("<script"),
+   "GET /mcp → 405(이어 받기 통로 없음) · 인터넷 창으로 열면 안내 화면(스크립트 없음)");
 r = await rpc(worker, env, "{not json");
 ok(r.status === 400 && r.body.error.code === -32700, "JSON이 아님 → 400 · -32700");
 r = await rpc(worker, env, []);

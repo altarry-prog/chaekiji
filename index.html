@@ -941,6 +941,8 @@ const 기준일 = "2026. 8. 18.";
    v1.12.2: 중계 주소 연결(2026. 10. 16. Cloudflare Workers 첫 배포). 순서는 오늘 새벽 매일 갱신 파일 → (그 파일이 오늘 것이 아니거나 그 책이 없을 때만) 중계 → 2일 이내 파일 → 8/18.
    정보나루 대출 상태는 어차피 전일 기준이라 낮에 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않고 하루 호출 한도를 아낀다(서버 auto 모드와 같은 규칙) */
 const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
+/* v1.12.5: 「공식 누리집에서 이 책 보기」 링크를 제목 검색 → ISBN 검색으로 — 그 판본 화면까지 바로 열림(2026. 10. 18. 담당자가 자료검색에서 확인).
+   ISBN이 없을 때만 제목 검색. 화면 글자는 그대로 */
 /* v1.12.4: 상호대차 규정 문구를 부천시립도서관 누리집 안내(2026. 8. 10. 수정판)와 맞춤 — 소요 「평일 다음 날」(금·토 신청은 월·화), 수령 「도착일 포함 3일」,
    미수령 「자동 반납 · 7일간 상호대차 신청 제한」(이전 「10일·예시 규정」·음성 「열흘간」), 10개 언어 */
 /* v1.12.3: 완료 화면에 시연 표시(실제 신청 아님) · 받침에 맞춘 「로/으로」 · 바닥글 날짜 자동(매일 갱신 파일) · 검색 단추 한 줄 */
@@ -948,13 +950,15 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
 /* v1.12.1: 예시 단추 = 8/18 장면 고정, 말·입력 검색 = 오늘 자료. ③ 예시 배지·출처 줄 정정(관내에 없음은 예시였고, 10/16 실제 조회에서는 16개관 소장).
 /* v1.12: 화면 정리 — 첫 화면의 책큐·패스 카드를 글자 줄로, 도서관코드 숨김, 확인 시트에서 기술 용어 행 제거,
    결과 화면에 「공식 누리집에서 이 책 보기·신청」 링크(접수는 이용자가 누리집에 로그인해 직접 — 이 화면의 접수는 시연). */
-const OFFICIAL_SEARCH = 'https://alpasq.bcl.go.kr/search/keyword/{title}';   /* v1.12 공식 자료검색 주소 틀 — 비우면 링크 생략 */
+const OFFICIAL_SEARCH = 'https://alpasq.bcl.go.kr/search/keyword/{isbn13}';   /* v1.12.5 공식 자료검색 주소 틀(ISBN, 이전 {title}) — 비우면 링크 생략 */
+const OFFICIAL_SEARCH_TITLE = 'https://alpasq.bcl.go.kr/search/keyword/{title}';   /* v1.12.5 ISBN이 없는 책만 제목 검색 */
 const OLINK = {ko:'공식 누리집에서 이 책 보기 · 신청 ›', en:'Open this book on the official library site ›', zh:'在图书馆官网查看本书 · 申请 ›',
   ja:'図書館公式サイトでこの本を見る · 申込 ›', vi:'Xem sách này trên trang web chính thức của thư viện ›', th:'ดูหนังสือเล่มนี้ที่เว็บไซต์ห้องสมุด ›',
   ru:'Открыть эту книгу на сайте библиотеки ›', mn:'Номын сангийн албан ёсны сайтаас энэ номыг үзэх ›', uz:'Bu kitobni kutubxona rasmiy saytida ko‘rish ›',
   id:'Lihat buku ini di situs resmi perpustakaan ›'};
-function officialLink(title){ if(!OFFICIAL_SEARCH || !title) return ''; const k = Object.keys(LANGS).find(x=>LANGS[x]===L) || 'ko';
-  return `<a class="olink" href="${OFFICIAL_SEARCH.replace('{title}', encodeURIComponent(title))}" target="_blank" rel="noopener">${OLINK[k] || OLINK.ko}</a>`; }
+function officialLink(title, isbn){ const tmpl = isbn ? OFFICIAL_SEARCH : OFFICIAL_SEARCH_TITLE; if(!tmpl || !(isbn || title)) return ''; const k = Object.keys(LANGS).find(x=>LANGS[x]===L) || 'ko';
+  const href = tmpl.replace('{isbn13}', encodeURIComponent(isbn || '')).replace('{title}', encodeURIComponent(title || ''));
+  return `<a class="olink" href="${href}" target="_blank" rel="noopener">${OLINK[k] || OLINK.ko}</a>`; }
 /* v1.11: 중계가 없거나 답이 없으면, 같은 출처의 「매일 갱신」 파일(data/holdings-today.json · 깃허브 액션이 새벽에 씀)을 본다. 2일 넘게 묵으면 무시
    v1.12.2: 그 파일이 오늘(한국 날짜) 것이고 그 책이 있으면 중계를 부르지 않는다 */
 function asofText(a){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(a || ''); return m ? `${m[1]}. ${+m[2]}. ${+m[3]}.` : a; }
@@ -2327,7 +2331,7 @@ function result(){
 
     <button class="cta" id="apply">${(t !== 0 && passReady(t)) ? P_().btn : T[3]}</button>
 
-    <div class="src">${c.real ? u.srcR(c.asof || 기준일) : u.srcD}</div>${t !== 2 ? officialLink(c.book.t) : ''}`;
+    <div class="src">${c.real ? u.srcR(c.asof || 기준일) : u.srcD}</div>${t !== 2 ? officialLink(c.book.t, c.book.isbn) : ''}`;
 
   if(t === 0) h += `<div class="rule">${u.rule(내관)}</div>`;
 

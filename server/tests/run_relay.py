@@ -113,6 +113,10 @@ r10 = c.call("consult_request", utterance="희랍어 시간 있나요?", pickup=
 ok(r10["found"] and r10["route"] == "check" and "확인하지 못했습니다" in r10["notice"] and "소장되어 있지 않습니다" not in r10["notice"]
    and r10["availability"]["nation"] is None and any("비치" in x for x in r10["policy"]["pending"]) and "확인 불가" in r10["desk_memo"],
    "④′ 그 책 조회만 실패 + 픽스처에도 없는 책 — 「미소장 → 책바다」가 아니라 「소장 확인 불가 → 창구 조회」(비치 규정도 창구 확인)")
+from urllib.parse import quote as _q
+ok(r10["official_link"] == "https://alpasq.bcl.go.kr/search/keyword/" + _q(r10["book"]["title"], safe="")
+   and (r["official_link"] or "").endswith("/" + r["book"]["isbn13"]),
+   "④‴ [10/18] 누리집 링크 — 소장을 확인한 책은 ISBN(그 판본 화면), 소장 확인 불가인 책은 제목 검색(그 판본이 없을 수도 있어)")
 r11 = c.call("consult_request", utterance="흐르는 강물처럼", pickup="상동")
 ok(r11["found"] is False and r11["route"] == "check" and "연결되지 않아" in r11["notice"] and r11["desk_memo"].startswith("[조회 불가]"),
    "④″ 서지 검색부터 실패 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」")

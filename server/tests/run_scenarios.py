@@ -190,9 +190,10 @@ ok(len(k1["policy"]["pending"]) == 5 and k1["policy"]["allowed_so_far"] and "창
    "    회원 토큰 없음 — 비치·제외자료만 확정, 한도 3종·연체·중복은 창구 확인으로 보류")
 ok("전일 기준" in k1["notice"] and "2026. 8. 18." in k1["notice"] and "접수하지 않음" in k1["desk_memo"],
    "    안내문에 조회일·전일 기준 명시 · 접수 메모에 「이 도구는 접수하지 않음」")
-ok((k1.get("official_link") or "").startswith("https://alpasq.bcl.go.kr/search/keyword/%EB%82%98%EB%AF%B8%EC%95%BC")
+# [10/18] 부천 설정의 링크 틀이 제목 → ISBN으로 바뀜(담당자가 자료검색 ISBN 검색 확인) — 기대값만 그 판본 주소로, 기준은 그대로
+ok((k1.get("official_link") or "") == "https://alpasq.bcl.go.kr/search/keyword/9788972756194"
    and k1["official_link"] in k1["notice"] and "접수는 이용자가 직접" in k1["notice"],
-   "    안내문 끝에 공식 누리집 링크(설정 official_search_url, 제목을 주소에 넣음) — 그 책 화면까지, 접수는 이용자가 직접")
+   "    안내문 끝에 공식 누리집 링크(설정 official_search_url, ISBN을 주소에 넣어 그 판본 화면까지) — 접수는 이용자가 직접")
 k2 = c.call("consult_request", utterance="한강 소년이 온다 찾아주세요", pickup="상동")
 ok(k2["route"] == "visit" and "바로 대출" in k2["notice"] and "다만" not in k2["notice"],
    "㉕ 수령관 서가에 있는 책 — 「바로 이용」, 상호대차 아님(비치 규정을 되풀이하지 않음)")
@@ -212,6 +213,16 @@ k7 = c.call("consult_request", utterance="불편한 편의점", pickup="역곡",
 ok(k7["translate_to"] == "vi" and k7["route"] == "ill", "㉚ 이용자 언어 vi — translate_to로 호스트 모델이 옮기게 넘김")
 k8 = c.call("consult_request", utterance="불편한 편의점", pickup="없는관")
 ok("_error" in k8 and "설정에 없는" in k8["_error"], "㉛ 설정에 없는 수령관 — 오류로 거부")
+# [10/18] 작은도서관 받을 곳(pickup_points) — 정보나루 자료가 없으므로 그곳 소장·도착일·보관은 말하지 않고 창구 확인
+k10 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동역 칙칙폭폭")
+ok(k10["pickup"] == "상동역 칙칙폭폭" and k10["route"] == "ill" and "상동역 칙칙폭폭도서관에서 받으실 수 있고" in k10["notice"]
+   and "도서관에는" not in k10["notice"] and "도착일과 보관 기한은 창구에서 확인" in k10["notice"] and "7일 동안" in k10["notice"]
+   and any("비치" in x for x in k10["policy"]["pending"]) and "작은도서관" in k10["desk_memo"],
+   "㉜ 작은도서관 받을 곳 — 관내 상호대차로 판정, 그곳 서가 비치·도착일·보관은 창구 확인(지어내지 않음)")
+k11 = c.call("consult_request", utterance="불편한 편의점", pickup="해밀작은도서관")
+k12 = c.call("consult_request", utterance="불편한 편의점", pickup="신중동역칙칙폭폭도서관")
+ok(k11["pickup"] == "해밀" and "해밀도서관에서 받으실 수 있고" in k11["notice"] and k12["pickup"] == "신중동역 칙칙폭폭",
+   "㉝ 작은도서관 이름 — 「해밀작은도서관」·「신중동역칙칙폭폭도서관」도 설정 이름으로")
 c.close()
 
 print("── 설정 교체 검증 · 가상시(ill_limit 5→2) ──")

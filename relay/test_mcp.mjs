@@ -65,7 +65,7 @@ ok(!c.isError && c.out.route === "ill" && c.out.from_lib === "꿈여울" && c.ou
    c.out.notice.includes(`정보나루 ${+today.slice(0, 4)}. ${+today.slice(5, 7)}. ${+today.slice(8, 10)}. 조회, 전일 기준`) &&
    !log.some(u => u.includes("data4library")),
    "나미야 — 오늘 새벽 자료로 판정(정보나루 호출 0회) · 관내 상호대차 · 안내문에 조회일");
-ok(c.out.official_link === "https://alpasq.bcl.go.kr/search/keyword/" + encodeURIComponent("나미야 잡화점의 기적") &&
+ok(c.out.official_link === "https://alpasq.bcl.go.kr/search/keyword/9788972756194" &&   // [10/18] 부천 링크 틀 제목 → ISBN(그 판본 화면까지)
    c.out.notice.includes("공식 누리집에서 이 책 보기·신청") && c.out.desk_memo.includes("접수: 창구에서"),
    "   공식 누리집 링크 · 접수 메모(접수는 창구)");
 c = await call(worker, env, "consult_request", { utterance: "작별하지 않는다 빌리고 싶어요" });
@@ -78,12 +78,19 @@ ok(!c.isError && c.out.route === "check" && c.out.notice.includes("확인하지 
    c.out.availability.nation === null && c.out.policy.pending.some(x => x.includes("비치")) && c.out.desk_memo.includes("확인 불가") &&
    c.out.official_link !== null,
    "목록 밖 책인데 소장 조회 실패 — 「미소장」이 아니라 「소장 확인 불가 → 창구 조회」 · 비치 규정도 창구 확인 · 누리집 링크");
+ok(c.out.official_link === "https://alpasq.bcl.go.kr/search/keyword/" + encodeURIComponent(c.out.book.title),
+   "   [10/18] 소장 확인 불가인 책의 누리집 링크는 제목 검색(그 판본이 없을 수도 있어 ISBN 대신)");
 c = await call(worker, env, "consult_request", { utterance: "흐르는 강물처럼", pickup: "상동" });
 ok(!c.isError && c.out.found === false && c.out.route === "check" && c.out.notice.includes("연결되지 않아") &&
    c.out.desk_memo.startsWith("[조회 불가]"),
    "서지 검색부터 연결 끊김 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」");
 c = await call(worker, env, "consult_request", { utterance: "나미야", user: "tok_demo" });
 ok(c.isError && c.text.includes("회원 토큰을 받지 않습니다"), "회원 토큰을 넘기면 거절(개인정보를 받지 않음)");
+c = await call(worker, env, "consult_request", { utterance: "나미야 잡화점의 기적", pickup: "상동역칙칙폭폭" });
+ok(!c.isError && c.out.pickup === "상동역 칙칙폭폭" && c.out.route === "ill" && c.out.notice.includes("상동역 칙칙폭폭도서관에서 받으실 수 있고") &&
+   !c.out.notice.includes("도서관에는") && c.out.notice.includes("도착일과 보관 기한은 창구에서 확인") &&
+   c.out.policy.pending.some(x => x.includes("비치")) && c.out.desk_memo.includes("작은도서관"),
+   "[10/18] 작은도서관 받을 곳 — 관내 상호대차로 판정, 그곳 서가 비치·도착일·보관은 창구 확인(파이썬 판과 같음)");
 c = await call(worker, env, "consult_request", { utterance: "나미야", pickup: "없는관" });
 ok(c.isError && c.text.startsWith("ValueError: 수령관 「없는관」"), "설정에 없는 수령관 → 오류(파이썬 판과 같은 문구)");
 c = await call(worker, env, "search_item", { utterance: "채식주의자 상호대차 되나요?" });

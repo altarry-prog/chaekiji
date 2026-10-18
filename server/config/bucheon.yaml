@@ -40,6 +40,8 @@ pass:                          # 책이지 패스(구독 자동화) 위임 기�
   max_per_cycle: 3            # 월 최대 권수
   free_routes_only: true      # 무료 경로(관내)만 자동 실행
 relay_url: "https://chaekiji-relay.altarry2.workers.dev"   # [v0.3.4] 정보나루 중계(relay/) 주소 — 2026-10-16 Cloudflare Workers 첫 배포(깃허브 액션 deploy-relay.yml, 확인 기록 relay/last_deploy.json). auto 모드에서 중계가 답하면 오늘 데이터, 안 되면 매일 갱신 스냅샷 → 8/18 픽스처. 비우면 중계를 쓰지 않는다. 환경변수 CHAEKIJI_RELAY가 우선. 키 값은 여기 없다(중계 서버만 가짐)
-official_search_url: "https://alpasq.bcl.go.kr/search/keyword/{title}"   # [v0.3.4] 공식 자료검색 주소 틀 — {title} 또는 {isbn13}이 채워져 안내문 끝에 「공식 누리집에서 이 책 보기」 링크로 붙는다(접수는 이용자가 로그인해 직접). 비우면 생략. 검색어가 주소에 들어감은 2026-10-16 확인
+official_search_url: "https://alpasq.bcl.go.kr/search/keyword/{isbn13}"   # [10/18] ISBN으로 그 판본 화면까지 — 담당자가 자료검색에서 ISBN 검색 확인(이전 {title}). 접수는 이용자가 로그인해 직접. 비우면 생략
+official_search_url_title: "https://alpasq.bcl.go.kr/search/keyword/{title}"   # [10/18] 소장을 확인하지 못한 책은 그 판본이 없을 수도 있어 제목 검색으로
+pickup_points: [상동역 칙칙폭폭, 숲속, 꿈꾸는새싹, 약대신나는가족, 시정담벼락, 신중동역 칙칙폭폭, 소사칙칙폭폭, 해밀]   # [10/18] 작은도서관 받을 곳 — 자료검색 「상호대차 신청」의 받을 곳 목록(담당자 화면, 16개관 외). 정보나루 자료가 없어 서가 비치·도착일·보관 기한은 창구 확인. 안내문은 「○○도서관」으로 부름
 sso: sso.bucheon.go.kr
 notify_channels: [sms, voice_call]

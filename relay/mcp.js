@@ -34,7 +34,11 @@ function kstDay(offsetDays = 0) {
   const d = new Date(Date.now() + 9 * 3600e3 + offsetDays * 864e5);
   return d.toISOString().slice(0, 10);
 }
-function illTerms(pickup, eta, hold) {                         // tools._ill_terms — [10/18] 도착·보관·미수령 문장(값과 문장은 설정에서)
+function illTerms(pickup, eta, hold, point = false) {          // tools._ill_terms — [10/18] 도착·보관·미수령 문장(값과 문장은 설정에서)
+  if (point)                                                    // 작은도서관 받을 곳 — 도착일·보관 기한은 창구 확인
+    return `관내 상호대차로 신청하시면 ${pickup}도서관에서 받으실 수 있고 비용은 없습니다. ` +
+           `작은도서관으로 받으시면 도착일과 보관 기한은 창구에서 확인해 드립니다.` +
+           (CFG.no_pickup_block_days ? ` 기한이 지나면 자동 반납되고 ${CFG.no_pickup_block_days}일 동안 상호대차를 신청할 수 없습니다.` : "");
   let out = CFG.ill_eta_text
     ? `관내 상호대차로 신청하시면 ${CFG.ill_eta_text} ${pickup}도서관에 도착하며 비용은 없습니다. `
     : `관내 상호대차로 신청하시면 ${eta}일 안에 ${pickup}도서관에서 받으실 수 있고 비용은 없습니다. `;
@@ -210,6 +214,9 @@ function pickupName(p) {                                       // tools._pickup_
   const has = k => Object.prototype.hasOwnProperty.call(CFG.libraries, k);
   if (has(s)) return s;
   for (const suf of ["도서관", "관"]) if (s.endsWith(suf) && has(s.slice(0, -suf.length))) return s.slice(0, -suf.length);
+  const pts = Object.fromEntries((CFG.pickup_points || []).map(x => [words(x).join(""), x]));   // [10/18] 작은도서관 받을 곳
+  for (const cand of [s, s.endsWith("작은도서관") ? s.slice(0, -5) : "", s.endsWith("도서관") ? s.slice(0, -3) : ""])
+    if (cand && Object.prototype.hasOwnProperty.call(pts, cand)) return pts[cand];
   return String(p);
 }
 async function checkAvailability(isbn13, deps, ctx) {          // tools.check_availability(LOCAL_SOURCE=naru)
@@ -262,8 +269,8 @@ function guestPolicy(onShelf, pickup, item, isbn13) {
   return { allowed_so_far: decided.every(c => c.pass), checks: v.checks, pending,
            basis: "회원 토큰 없이 판정 — 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인" };
 }
-function officialLink(title, isbn13) {
-  const tmpl = String(CFG.official_search_url || "").trim();
+function officialLink(title, isbn13, byTitle = false) {         // tools._official_link — [10/18] ISBN 기본, 소장 확인 불가는 제목 검색
+  const tmpl = String((byTitle && CFG.official_search_url_title) || CFG.official_search_url || "").trim();
   if (!tmpl) return null;
   return tmpl.split("{title}").join(pyQuote(title)).split("{isbn13}").join(pyQuote(isbn13));
 }
@@ -276,8 +283,10 @@ export async function consultRequest(args, deps, ctx) {
   if (args.user) throw new ToolError("ValueError", "원격 상담 비서는 회원 토큰을 받지 않습니다(개인정보 보호) — 회원 규정은 창구에서 확인합니다");
   const pickup = pickupName(args.pickup || CFG.home_library);
   const lang = args.lang || "ko";
-  if (!Object.prototype.hasOwnProperty.call(LIBS, pickup))
-    throw new ToolError("ValueError", `수령관 「${pickup}」은(는) 설정에 없는 도서관입니다: ${Object.keys(LIBS).join(", ")}`);
+  const points = CFG.pickup_points || [];
+  const isPoint = points.includes(pickup) && !Object.prototype.hasOwnProperty.call(LIBS, pickup);   // [10/18] 작은도서관 받을 곳
+  if (!Object.prototype.hasOwnProperty.call(LIBS, pickup) && !isPoint)
+    throw new ToolError("ValueError", `수령관 「${pickup}」은(는) 설정에 없는 도서관입니다: ${[...Object.keys(LIBS), ...points].join(", ")}`);
   const eta = CFG.ill_eta_days ?? "2~3", hold = CFG.hold_days ?? 3;
   const found = await searchItem(utterance, deps, ctx);
   const base = { utterance, pickup, lang, mode: "relay",
@@ -296,7 +305,7 @@ export async function consultRequest(args, deps, ctx) {
   const isbn = found.isbn13, title = found.title || isbn;
   const { res: avail, rt, meta } = await checkAvailability(isbn, deps, ctx);
   const unknown = !!avail.status_unknown;                     // [v0.3.5] 정보나루 조회 실패 + 픽스처에도 없는 책
-  const atPickup = unknown ? "unknown" : avail.available_at.includes(pickup) ? "ok" : avail.loaned_at.includes(pickup) ? "busy" : "none";
+  const atPickup = unknown ? "unknown" : isPoint ? "point" : avail.available_at.includes(pickup) ? "ok" : avail.loaned_at.includes(pickup) ? "busy" : "none";
   const othersOk = avail.available_at.filter(l => l !== pickup);
   const nation = nn(avail.nation);
   let route, fromLib;
@@ -311,6 +320,14 @@ export async function consultRequest(args, deps, ctx) {
     for (const c of pol.checks) {
       if (c.rule.includes("비치") && c.pass !== null) {
         c.pass = null; c.detail = "소장·대출 상태 확인 불가 — 창구에서 도서관리시스템으로 확인"; pol.pending.push(c.rule);
+      }
+    }
+    pol.allowed_so_far = pol.checks.filter(c => c.pass !== null).every(c => c.pass);
+  }
+  if (isPoint) {                                              // [10/18] 작은도서관 서가 비치 여부는 정보나루에 없다
+    for (const c of pol.checks) {
+      if (c.rule.includes("비치") && c.pass !== null) {
+        c.pass = null; c.detail = "작은도서관 서가 비치 여부는 정보나루에 없어 창구에서 확인"; pol.pending.push(c.rule);
       }
     }
     pol.allowed_so_far = pol.checks.filter(c => c.pass !== null).every(c => c.pass);
@@ -331,6 +348,8 @@ export async function consultRequest(args, deps, ctx) {
   if (route === "visit") {
     notice = `${t_} 지금 ${pickup}도서관 서가에 있어 바로 대출하실 수 있습니다. ` +
              `받으실 도서관에 있는 자료는 상호대차 신청 대상이 아니니 방문해 주세요.`;
+  } else if (route === "ill" && isPoint) {                     // [10/18] 작은도서관에서 받기 — 그곳 소장 여부는 말하지 않는다(모름)
+    notice = `${t_} ${fromLib}도서관 등 ${CFG.city}시립도서관 ${nOk}곳에 대출 가능 상태입니다. ` + illTerms(pickup, eta, hold, true);
   } else if (route === "ill") {
     const where = atPickup === "busy" ? "대출 중이" : "없";
     notice = `${t_} ${pickup}도서관에는 ${where}지만 ${fromLib}도서관 등 ${CFG.city}시립도서관 ${nOk}곳에 대출 가능 상태입니다. ` +
@@ -354,7 +373,7 @@ export async function consultRequest(args, deps, ctx) {
   if (pol.pending.length) notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다.";
   const bad = pol.checks.filter(c => c.pass === false && !(route === "visit" && c.rule.includes("비치")));
   if (bad.length) notice += " 다만 " + bad.map(c => `${c.rule}(${c.detail})`).join("; ") + " — 이 조건을 먼저 확인해야 합니다.";
-  const link = ["visit", "ill", "reserve", "check"].includes(route) ? officialLink(title, isbn) : null;
+  const link = ["visit", "ill", "reserve", "check"].includes(route) ? officialLink(title, isbn, route === "check") : null;
   if (link) {
     const tail = { visit: "이 책 보기", ill: "이 책 보기·신청(로그인 뒤 「상호대차 신청」 — 접수는 이용자가 직접)",
                    reserve: "이 책 보기·예약(로그인 뒤 「예약」)", check: "이 책의 소장·대출 상태 보기" }[route];
@@ -363,7 +382,8 @@ export async function consultRequest(args, deps, ctx) {
   const memo = [
     `도서: ${title} (${found.author || ""}) ISBN ${isbn}`,
     `갈래: ${ROUTE_LABEL[route]}` + (fromLib ? ` · 소장관 ${fromLib}` : ""),
-    `수령관: ${pickup} (현재 ${atPickup === "ok" ? "서가 비치" : atPickup === "busy" ? "대출 중" : unknown ? "확인 불가" : "미소장"})`,
+    isPoint ? `수령관: ${pickup}도서관 (작은도서관 — 서가 비치·도착일·보관 기한은 창구 확인)`
+            : `수령관: ${pickup} (현재 ${atPickup === "ok" ? "서가 비치" : atPickup === "busy" ? "대출 중" : unknown ? "확인 불가" : "미소장"})`,
     unknown ? "대출 가능 관: 확인 불가 / 대출 중: 확인 불가"
             : `대출 가능 관: ${avail.available_at.join(", ") || "없음"} / 대출 중: ${avail.loaned_at.join(", ") || "없음"}`,
     `근거: ${avail.basis}`,

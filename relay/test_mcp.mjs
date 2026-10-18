@@ -86,6 +86,12 @@ c = await call(worker, env, "consult_request", { utterance: "나미야", user: "
 ok(c.isError && c.text.includes("회원 토큰을 받지 않습니다"), "회원 토큰을 넘기면 거절(개인정보를 받지 않음)");
 c = await call(worker, env, "consult_request", { utterance: "나미야", pickup: "없는관" });
 ok(c.isError && c.text.startsWith("ValueError: 수령관 「없는관」"), "설정에 없는 수령관 → 오류(파이썬 판과 같은 문구)");
+c = await call(worker, env, "search_item", { utterance: "채식주의자 상호대차 되나요?" });
+ok(!c.isError && c.out.found && c.out.query === "채식주의자" && c.out.isbn13 === "9788936433598",
+   "[10/18] 문장째 넘어온 「채식주의자 상호대차 되나요?」 → 검색어 「채식주의자」(「되나요」까지 걷어냄)");
+c = await call(worker, env, "consult_request", { utterance: "채식주의자 상동도서관으로 가져다줄 수 있어요?", pickup: "부천시립 상동도서관" });
+ok(!c.isError && c.out.book.isbn13 === "9788936433598" && c.out.pickup === "상동" && c.out.route === "visit",
+   "[10/18] 수령관 「부천시립 상동도서관」 → 「상동」 · 검색어에서 「상동도서관으로」를 뺌 → 바로 이용");
 c = await call(worker, env, "check_availability", { isbn13: "12345" });
 ok(c.isError, "ISBN 형식 오류 → 오류");
 

@@ -44,13 +44,34 @@ const REQ_PHRASES = ["빌리고 싶어요", "빌리고 싶은데요", "빌리고
   "빌릴수있어요", "빌릴수있나요", "찾아 주세요", "찾아주세요", "찾아줘", "찾아 줘", "있나요", "있어요", "있을까요",
   "있습니까", "보고 싶어요", "읽고 싶어요", "대출 되나요", "대출되나요", "대출할 수 있나요", "신청해 주세요",
   "신청해주세요", "신청할게요", "부탁해요", "부탁드려요", "부탁합니다", "주세요", "가져다 줄 수 있어요",
-  "가져다줄 수 있어요", "상호대차", "그 왜", "그거", "라는 책", "이라는 책", "하는 책", "인가 하는"];
+  "가져다줄 수 있어요", "상호대차", "그 왜", "그거", "라는 책", "이라는 책", "하는 책", "인가 하는",
+  // [10/18] 공개 모델 실측에서 문장째 넘어온 말끝(「채식주의자 상호대차 되나요?」 → 다른 책을 찾음)
+  "되나요", "될까요", "가능한가요", "가능할까요", "가능해요", "가능한지", "가능 여부",
+  "받을게요", "받을래요", "받고 싶어요", "받을 수 있나요", "받을 수 있어요", "받을 수 있을까요",
+  "가져다줄 수 있나요", "가져다 줄 수 있나요", "가져다주세요", "가져다 주세요"];
 const PHRASES_BY_LEN = [...REQ_PHRASES].sort((a, b) => b.length - a.length);   // 안정 정렬 — 파이썬 sorted와 같은 순서
+const JOSA_LIB = "(?:으로|로|에서|에|까지)";
+const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function dropPlaces(t, places) {                               // naru._drop_places — 「○○도서관(으로·에서 …)」은 어디서든, 「○○에서·으로」는 맨 끝일 때만
+  if (!places.length) return t;
+  const alts = [...places].sort((a, b) => b.length - a.length).map(reEsc).join("|");
+  const libWord = new RegExp(`^(?:${alts})도서관${JOSA_LIB}?$`), libTail = new RegExp(`^도서관${JOSA_LIB}?$`);
+  const toks = t.split(" "), out = [];
+  for (let i = 0; i < toks.length; i++) {
+    const w = toks[i];
+    if (libWord.test(w)) continue;
+    if (places.includes(w) && i + 1 < toks.length && libTail.test(toks[i + 1])) { i++; continue; }
+    out.push(w);
+  }
+  if (out.length > 1 && new RegExp(`^(?:${alts})(?:으로|로|에서|까지)$`).test(out[out.length - 1])) out.pop();
+  return out.join(" ");
+}
 export function cleanTitle(utterance) {                        // naru.clean_title
   let t = " " + words(utterance).join(" ") + " ";
   for (const ph of PHRASES_BY_LEN) if (t.includes(ph)) t = replaceAll(replaceAll(t, " " + ph + " ", " "), ph, " ");
-  t = t.replace(/[?.!]/g, " ");
+  t = t.replace(/[?.!,]/g, " ");
   t = words(t).join(" ");
+  t = dropPlaces(t, Object.keys(CFG.libraries));               // [10/18] 수령관 말을 검색어에서 뺀다(파이썬 naru.PLACES와 같은 이름·순서)
   if (t.endsWith(" 책")) t = t.slice(0, -2).trimEnd();
   for (const suf of ["이라고", "라고", "이란", "란", "은", "는", "을", "를", "이", "가"]) {
     if ([...t].length > 3 && t.endsWith(suf) && !t.endsWith(" " + suf)) { t = t.slice(0, -suf.length).trimEnd(); break; }
@@ -175,6 +196,14 @@ async function nationRemote(isbn13, deps, ctx) {              // naru.availabili
     const out = fixtureNation(isbn13); out.note += " · 중계 응답 없음 → 픽스처로 복귀"; return out;
   }
 }
+function pickupName(p) {                                       // tools._pickup_name — 「꿈빛도서관」·「부천시립 꿈빛도서관」도 「꿈빛」으로(모르면 그대로)
+  let s = words(p).join("");
+  for (const pre of [CFG.city + "시립", CFG.city + "시"]) if (s.startsWith(pre) && s.length > pre.length) { s = s.slice(pre.length); break; }
+  const has = k => Object.prototype.hasOwnProperty.call(CFG.libraries, k);
+  if (has(s)) return s;
+  for (const suf of ["도서관", "관"]) if (s.endsWith(suf) && has(s.slice(0, -suf.length))) return s.slice(0, -suf.length);
+  return String(p);
+}
 async function checkAvailability(isbn13, deps, ctx) {          // tools.check_availability(LOCAL_SOURCE=naru)
   const home = CFG.home_library;
   const { out: rt, meta } = await holdingsLocal(isbn13, deps, ctx);
@@ -237,7 +266,7 @@ export async function consultRequest(args, deps, ctx) {
   const utterance = args.utterance;
   if (typeof utterance !== "string" || !utterance.trim()) throw new ToolError("TypeError", "utterance(이용자의 말 또는 책 제목)가 필요합니다");
   if (args.user) throw new ToolError("ValueError", "원격 상담 비서는 회원 토큰을 받지 않습니다(개인정보 보호) — 회원 규정은 창구에서 확인합니다");
-  const pickup = args.pickup || CFG.home_library;
+  const pickup = pickupName(args.pickup || CFG.home_library);
   const lang = args.lang || "ko";
   if (!Object.prototype.hasOwnProperty.call(LIBS, pickup))
     throw new ToolError("ValueError", `수령관 「${pickup}」은(는) 설정에 없는 도서관입니다: ${Object.keys(LIBS).join(", ")}`);

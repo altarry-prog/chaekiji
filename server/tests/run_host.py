@@ -26,6 +26,11 @@ class FakeOllama(http.server.BaseHTTPRequestHandler):
         if model == "fake-json" and req.get("tools"):
             return self._send({"error": f"registry.ollama.ai/library/{model} does not support tools"}, 400)
         has_tool_result = any(m["role"] == "tool" for m in msgs) or last_user.startswith("[도구 결과]")
+        if model == "fake-badpickup":                 # [10/18] 수령관을 지어내는 모델(2차 실측의 엑사원: 「dream」·「book」)
+            if not has_tool_result:
+                return self._send({"message": {"role": "assistant", "content": "",
+                                               "tool_calls": [{"function": {"name": "consult_request",
+                                                                            "arguments": {"utterance": "나미야 잡화점의 기적", "pickup": "dream", "lang": "en"}}}]}})
         if model == "fake-loop":                      # [10/18] 설정에 없는 수령관으로 끝없이 되풀이하는 모델(실측에서 본 라마의 행동)
             return self._send({"message": {"role": "assistant", "content": "",
                                            "tool_calls": [{"function": {"name": "consult_request",
@@ -98,5 +103,11 @@ ok("(멈춤) 같은 도구 오류가 3번" in out4 and len(rows2) == 3 and all(r
    "⑤ 같은 인자의 도구 오류가 3번 되풀이되면 멈추고, 멈춘 사실을 답으로 남김(호출 기록 3줄)")
 out5 = run("fake-native", "나미야 잡화점의 기적 빌리고 싶어요", str(log2), extra=("--tools", "consult"))
 ok("도구 1종" in out5 and "관내 상호대차" in out5, "⑥ --tools consult — 모델에 상담 묶음 하나만 보여도 같은 판정")
+log3 = Path(tempfile.mkdtemp()) / "host_log3.ndjson"
+out6 = run("fake-badpickup", "나미야 잡화점의 기적 빌리고 싶어요", str(log3), extra=("--pickup", "상동", "--lang", "ko"))
+rows3 = [json.loads(l) for l in open(log3, encoding="utf-8")]
+ok("호출자 값으로 고정" in out6 and "관내 상호대차" in out6 and rows3[0]["arguments"]["pickup"] == "상동"
+   and rows3[0]["arguments"]["lang"] == "ko" and rows3[0].get("forced"),
+   "⑦ 모델이 지어낸 수령관·언어(dream·en)는 호출자 값(상동·ko)으로 고정하고 기록에 남김")
 httpd.shutdown()
 print(f"\n호스트 시험 {PASS}건 통과 — 공개 모델에서도 같은 서버·같은 지시문·같은 도구.")

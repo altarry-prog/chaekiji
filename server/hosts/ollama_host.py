@@ -159,7 +159,13 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
             if isinstance(args, str):
                 try: args = json.loads(args)
                 except json.JSONDecodeError: args = {"utterance": args}
-            print(f"▶ 도구 호출 {step}: {name} {json.dumps(args, ensure_ascii=False)}  (모델 {resp['_ms']} ms)")
+            forced = None
+            if name == "consult_request" and isinstance(args, dict):      # [10/18] 수령관·언어는 호출자(사서)가 정한다 — 2차 실측에서 작은 모델이 「dream」·「book」을 지어냄
+                for k, v in (("pickup", a.pickup), ("lang", a.lang)):
+                    if v and args.get(k) != v:
+                        forced = (forced or []) + [f"{k}: {args.get(k)!r} → {v!r}"]; args[k] = v
+            print(f"▶ 도구 호출 {step}: {name} {json.dumps(args, ensure_ascii=False)}  (모델 {resp['_ms']} ms)"
+                  + (f"  ※ 호출자 값으로 고정 — {', '.join(forced)}" if forced else ""))
             ms, o = 0, None
             if name not in tool_names:
                 result, err = json.dumps({"error": f"없는 도구: {name}", "available": sorted(tool_names)}, ensure_ascii=False), True
@@ -175,7 +181,8 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
             if logf:
                 row = {"ts": datetime.datetime.now().isoformat(timespec="seconds"), "model": a.model,
                        "protocol": protocol, "step": step, "tool": name, "arguments": args,
-                       "error": err, "result_chars": len(result), "model_ms": resp["_ms"], "tool_ms": ms, "ask": user_text}
+                       "error": err, "result_chars": len(result), "model_ms": resp["_ms"], "tool_ms": ms, "ask": user_text,
+                       **({"forced": forced} if forced else {})}
                 if isinstance(o, dict):                   # 판정 결과의 요점(갈래·데이터 출처·조회일) — 기록표용
                     row.update({k: o[k] for k in ("found", "route", "route_label", "mode") if k in o})
                     if isinstance(o.get("availability"), dict): row["asof"] = o["availability"].get("asof")

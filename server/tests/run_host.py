@@ -31,6 +31,11 @@ class FakeOllama(http.server.BaseHTTPRequestHandler):
                 return self._send({"message": {"role": "assistant", "content": "",
                                                "tool_calls": [{"function": {"name": "consult_request",
                                                                             "arguments": {"utterance": "나미야 잡화점의 기적", "pickup": "dream", "lang": "en"}}}]}})
+        if model == "fake-nulluser":                  # [10/18] 회원 토큰 자리에 문자열 "null"을 넘기는 모델(3차 실측의 라마)
+            if not has_tool_result:
+                return self._send({"message": {"role": "assistant", "content": "",
+                                               "tool_calls": [{"function": {"name": "consult_request",
+                                                                            "arguments": {"utterance": "나미야 잡화점의 기적", "pickup": "상동", "lang": "ko", "user": "null"}}}]}})
         if model == "fake-loop":                      # [10/18] 설정에 없는 수령관으로 끝없이 되풀이하는 모델(실측에서 본 라마의 행동)
             return self._send({"message": {"role": "assistant", "content": "",
                                            "tool_calls": [{"function": {"name": "consult_request",
@@ -109,5 +114,9 @@ rows3 = [json.loads(l) for l in open(log3, encoding="utf-8")]
 ok("호출자 값으로 고정" in out6 and "관내 상호대차" in out6 and rows3[0]["arguments"]["pickup"] == "상동"
    and rows3[0]["arguments"]["lang"] == "ko" and rows3[0].get("forced"),
    "⑦ 모델이 지어낸 수령관·언어(dream·en)는 호출자 값(상동·ko)으로 고정하고 기록에 남김")
+out7 = run("fake-nulluser", "나미야 잡화점의 기적 빌리고 싶어요", str(log3), extra=("--pickup", "상동"))
+rows4 = [json.loads(l) for l in open(log3, encoding="utf-8")]
+ok("관내 상호대차" in out7 and "user" not in rows4[-1]["arguments"] and not rows4[-1]["error"],
+   "⑧ 모델이 넘긴 회원 토큰(user=\"null\")은 빼고 부름 — 도구 오류 없이 같은 판정")
 httpd.shutdown()
 print(f"\n호스트 시험 {PASS}건 통과 — 공개 모델에서도 같은 서버·같은 지시문·같은 도구.")

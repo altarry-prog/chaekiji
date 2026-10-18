@@ -164,6 +164,8 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
                 for k, v in (("pickup", a.pickup), ("lang", a.lang)):
                     if v and args.get(k) != v:
                         forced = (forced or []) + [f"{k}: {args.get(k)!r} → {v!r}"]; args[k] = v
+                if "user" in args:                                     # [10/18] 회원 토큰은 모델이 넘기지 않는다(지시문 4) — 3차 실측에서 라마가 user="null"을 넘겨 도구 오류
+                    forced = (forced or []) + [f"user: {args.pop('user')!r} → (뺌)"]
             print(f"▶ 도구 호출 {step}: {name} {json.dumps(args, ensure_ascii=False)}  (모델 {resp['_ms']} ms)"
                   + (f"  ※ 호출자 값으로 고정 — {', '.join(forced)}" if forced else ""))
             ms, o = 0, None

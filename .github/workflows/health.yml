@@ -1,0 +1,29 @@
+# 운영 점검 — 심사위원이 여는 세 곳(시연 웹·중계·원격 상담 비서)이 살아 있는지 매일 확인한다.
+# 정보나루는 부르지 않고(호출 0건), 아무것도 커밋하지 않는다. 결과는 Actions 탭의 초록(통과)·빨강(실패)과 요약 표로만 남는다.
+# 확인 7가지: 시연 웹 캐시 번호·첫 화면이 저장소와 같은지, 새벽 자료가 1일 이내인지, 중계 /health,
+#             원격 상담 비서(인터넷 창 안내 화면 · 프로그램 GET 405 · 초기화·도구 목록·판 번호). 자세히는 relay/health_check.py
+# 실행: 매일 10:07(한국 시간, 매일 갱신이 끝난 뒤) 자동 · Actions 탭에서 수동 · 이 파일이나 점검 스크립트를 고쳐 올릴 때
+name: health
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7 1 * * *"
+  push:
+    branches: [main]
+    paths: ["relay/health_check.py", ".github/workflows/health.yml"]
+permissions:
+  contents: read
+concurrency:
+  group: health
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 시연 웹·중계·원격 상담 비서 확인 (정보나루 호출 0건 · 커밋 없음)
+        run: python3 relay/health_check.py

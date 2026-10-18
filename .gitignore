@@ -8,3 +8,7 @@ venv/
 # 실험실 실행 중 생기는 상태 파일 — 저장소에 올리지 않는다 (lab/out의 측정 CSV·요약은 기록이므로 올린다)
 *.sqlite3
 *.jsonl
+
+# 측정 스크립트 연습 실행(--demo, 픽스처) 결과 — 실측 기록이 아니므로 올리지 않는다(10/18)
+server/lab/out/*_demo.csv
+server/lab/out/*_demo_*.md

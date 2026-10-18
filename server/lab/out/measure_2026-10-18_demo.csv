@@ -1,6 +1,0 @@
-﻿n,title,isbn_csv,isbn_found,edition_match,edition_fixed,found,holding_count,ok,busy,none,home_status,nation_found,policy_allowed,calls_search,calls_local,calls_policy,calls_nation,calls_total,ms_search,ms_local,ms_policy,ms_nation,ms_total,note
-1,소년이 온다,9788936434120,9788936434120,True,False,True,16,11,5,0,ok,,False,0,0,0,0,0,0,0,0,,0,
-2,나미야 잡화점의 기적,9788972756194,9788972756194,True,False,True,13,8,5,3,busy,,True,0,0,0,0,0,0,0,0,,0,
-3,불편한 편의점,9791161571188,9791161571188,True,False,True,10,7,3,6,busy,,True,0,0,0,0,0,0,0,0,,0,
-4,설민석의 한국사 대모험,9791195794799,9791195794799,True,False,True,13,9,4,3,ok,,False,0,0,0,0,0,0,0,0,,0,
-5,지구 끝의 온실,9791191824001,9791191824001,True,False,True,0,0,0,16,none,6,True,0,0,0,0,0,0,0,0,,0,

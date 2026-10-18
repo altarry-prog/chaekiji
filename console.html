@@ -179,7 +179,7 @@ const BOOK = {
 };
 const ALT = {"9788936434120":{audiobook:true,braille:true},"9791191824001":{audiobook:false,braille:false}};
 const CFG = {
- bucheon:{name:"부천", home:"상동", rules:{ill:5,total:20,per:5,excluded:["신착도서","참고자료"]}, eta:"2~3", notify:["sms","voice_call"]},
+ bucheon:{name:"부천", home:"상동", rules:{ill:5,total:20,per:5,excluded:["부록자료"]}, eta:"1", notify:["sms","voice_call"]},
  example:{name:"가상시(예시)", home:"중앙", rules:{ill:2,total:10,per:3,excluded:["신착도서"]}, eta:"3~4", notify:["sms"]}
 };
 const MAT = {"9788972756194":"일반","9788936434120":"일반","9791191824001":"일반","9791161571188":"일반"};
@@ -399,7 +399,7 @@ function confirmGo(btn){
   btn.closest(".confirmrow").remove();
   lastPayload={user:"tok_kimsj",isbn13:lastISBN,from_lib:"한울빛",pickup:"상동",confirmed_by_user:true,client_request_id:"c-"+Math.random().toString(16).slice(2,8)};
   callTool("request_service",lastPayload,
-    o=>o.accepted?`접수했어요. 접수번호 ${o.receipt}, ${o.eta_days}일 뒤 도착 예정이에요. 도착 후 ${o.hold_days}일 안에 찾아가시면 되고, 이송 전이면 취소도 돼요.`:`규정에 걸려 접수하지 못했어요.`);
+    o=>o.accepted?`접수했어요. 접수번호 ${o.receipt}, 평일 기준 ${o.eta_days}일 뒤 도착 예정이에요. 도착한 날을 포함해 ${o.hold_days}일 안에 찾아가시면 되고, 이송 전이면 취소도 돼요.`:`규정에 걸려 접수하지 못했어요.`);
 }
 document.querySelectorAll("[data-step]").forEach(b=>b.onclick=()=>STEPS[+b.dataset.step](false));
 

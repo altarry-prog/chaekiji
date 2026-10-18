@@ -34,6 +34,14 @@ function kstDay(offsetDays = 0) {
   const d = new Date(Date.now() + 9 * 3600e3 + offsetDays * 864e5);
   return d.toISOString().slice(0, 10);
 }
+function illTerms(pickup, eta, hold) {                         // tools._ill_terms — [10/18] 도착·보관·미수령 문장(값과 문장은 설정에서)
+  let out = CFG.ill_eta_text
+    ? `관내 상호대차로 신청하시면 ${CFG.ill_eta_text} ${pickup}도서관에 도착하며 비용은 없습니다. `
+    : `관내 상호대차로 신청하시면 ${eta}일 안에 ${pickup}도서관에서 받으실 수 있고 비용은 없습니다. `;
+  out += CFG.hold_includes_arrival_day ? `도착한 날을 포함해 ${hold}일 안에 찾아가 주세요.` : `도착 후 ${hold}일 안에 찾아가 주세요.`;
+  if (CFG.no_pickup_block_days) out += ` 기한이 지나면 자동 반납되고 ${CFG.no_pickup_block_days}일 동안 상호대차를 신청할 수 없습니다.`;
+  return out;
+}
 function eun(word) {                                          // tools._eun — 받침에 따라 은/는
   if (!word) return "은(는)";
   const ch = [...word].pop();
@@ -326,11 +334,12 @@ export async function consultRequest(args, deps, ctx) {
   } else if (route === "ill") {
     const where = atPickup === "busy" ? "대출 중이" : "없";
     notice = `${t_} ${pickup}도서관에는 ${where}지만 ${fromLib}도서관 등 ${CFG.city}시립도서관 ${nOk}곳에 대출 가능 상태입니다. ` +
-             `관내 상호대차로 신청하시면 ${eta}일 안에 ${pickup}도서관에서 받으실 수 있고 비용은 없습니다. ` +
-             `도착 후 ${hold}일 안에 찾아가 주세요.`;
+             illTerms(pickup, eta, hold);
   } else if (route === "reserve") {
-    notice = `${t_} ${CFG.city}시립도서관 ${nBusy}곳이 소장하고 있지만 ` +
-             `지금은 모두 대출 중입니다. 상호대차 대신 예약을 권해 드립니다(책바다는 관내에 없는 자료가 대상입니다).`;
+    notice = `${t_} ${CFG.city}시립도서관 ${nBusy}곳이 소장하고 있지만 지금은 모두 대출 중입니다. ` +
+             (CFG.reserve_converts_to_ill ? "먼저 예약해 두시면, 책이 반납될 때 상호대차로 바꿔 신청할 수 있습니다"
+                                          : "상호대차 대신 예약을 권해 드립니다") +
+             "(책바다는 관내에 없는 자료가 대상입니다).";
   } else if (route === "check") {
     notice = `${t_} 지금 ${CFG.city}시립도서관의 소장·대출 상태를 확인하지 못했습니다(정보나루 조회가 되지 않았습니다). ` +
              `창구에서 도서관리시스템으로 확인해 드리겠습니다.`;

@@ -168,14 +168,20 @@ vo = c.call("check_policy", user="tok_parkys", isbn13="9788972756194", pickup="�
 fo = [x for x in vo["checks"] if not x["pass"]]
 ok((not vo["allowed"]) and any("연체" in x["rule"] for x in fo),
    f"㉑ 연체 회원 차단 — {fo[0]['detail']}")
-vn = c.call("check_policy", user="tok_kimsj", isbn13="9790000000012", pickup="상동")
+# [10/18] ㉒·㉓은 「설정에 적힌 제외 규정을 엔진이 그대로 막는가」를 보는 시험 — 부천 설정이 누리집 안내(부록자료만 제외, 신착 규정 없음)로
+#   바뀌어 시험 전용 설정(rules-test.yaml: 부천 설정 + 제외 규정 두 줄)으로 돈다. 판정 기준·문구는 그대로(담당자 승인 10/18).
+ct = Client("rules-test.yaml")
+ct.rpc("initialize", {"protocolVersion":"2024-11-05","capabilities":{},
+                      "clientInfo":{"name":"kit","version":"0"}})
+vn = ct.call("check_policy", user="tok_kimsj", isbn13="9790000000012", pickup="상동")
 fn = [x for x in vn["checks"] if not x["pass"]]
 ok((not vn["allowed"]) and any("제외" in x["rule"] for x in fn),
    "㉒ 신착 자료 제외 — 설정(exclude_new_arrival)으로 차단")
-vd = c.call("check_policy", user="tok_kimsj", isbn13="9790000000029", pickup="상동")
+vd = ct.call("check_policy", user="tok_kimsj", isbn13="9790000000029", pickup="상동")
 fd = [x for x in vd["checks"] if not x["pass"]]
 ok((not vd["allowed"]) and any("제외" in x["rule"] for x in fd),
    "㉓ 비도서(DVD) 제외 — 설정(excluded_types)으로 차단")
+ct.close()
 print("── v0.3.4 · 상담 묶음(consult_request) — 창구·전화에서 지금 쓰는 판정 ──")
 k1 = c.call("consult_request", utterance="나미야 잡화점의 기적 빌리고 싶어요", pickup="상동")
 ok(k1["found"] and k1["route"] == "ill" and k1["from_lib"] in k1["availability"]["available_at"] and k1["from_lib"] != "상동",

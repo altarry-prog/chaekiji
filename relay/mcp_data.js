@@ -31,14 +31,17 @@ export const CFG = {
   "block_if_pickup_on_shelf": true,
   "block_if_overdue": true,
   "excluded_types": [
-   "DVD",
-   "참고자료"
+   "부록"
   ],
-  "exclude_new_arrival": true
+  "exclude_new_arrival": false
  },
- "ill_eta_days": "2~3",
+ "ill_eta_days": "1",
  "hold_days": 3,
- "official_search_url": "https://alpasq.bcl.go.kr/search/keyword/{title}"
+ "official_search_url": "https://alpasq.bcl.go.kr/search/keyword/{title}",
+ "ill_eta_text": "월~목요일 신청은 다음 날, 금·토요일 신청은 월·화요일에",
+ "hold_includes_arrival_day": true,
+ "no_pickup_block_days": 7,
+ "reserve_converts_to_ill": true
 };
 export const CATALOG = [
  {

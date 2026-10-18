@@ -122,6 +122,21 @@ _ROUTE_LABEL = {"visit": "바로 이용(수령관 서가에 있음)", "ill": "�
                 "sea": "책바다(전국 상호대차) 안내", "unknown": "도서 미확정", "check": "소장 확인 불가(창구에서 조회)"}
 _MEMBER_RULE_KEYS = ("권", "연체", "중복")              # 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
 
+def _ill_terms(pickup: str, eta, hold) -> str:
+    """[10/18] 관내 상호대차 안내의 「도착·보관·미수령」 문장 — 값과 문장은 설정에서(ill_eta_text·hold_includes_arrival_day·no_pickup_block_days).
+    설정에 없으면 예전 문장(「○일 안에 받으실 수 있고」·「도착 후 ○일 안에」) 그대로."""
+    eta_text = CFG.get("ill_eta_text")
+    if eta_text:
+        out = f"관내 상호대차로 신청하시면 {eta_text} {pickup}도서관에 도착하며 비용은 없습니다. "
+    else:
+        out = f"관내 상호대차로 신청하시면 {eta}일 안에 {pickup}도서관에서 받으실 수 있고 비용은 없습니다. "
+    out += (f"도착한 날을 포함해 {hold}일 안에 찾아가 주세요." if CFG.get("hold_includes_arrival_day")
+            else f"도착 후 {hold}일 안에 찾아가 주세요.")
+    block = CFG.get("no_pickup_block_days")
+    if block:
+        out += f" 기한이 지나면 자동 반납되고 {block}일 동안 상호대차를 신청할 수 없습니다."
+    return out
+
 def _eun(word: str) -> str:
     """받침에 따라 은/는 — 안내문이 사람 말처럼 읽히게."""
     if not word: return "은(는)"
@@ -240,11 +255,12 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     elif route == "ill":
         where = "대출 중이" if at_pickup == "busy" else "없"
         notice = (f"{t_} {pickup}도서관에는 {where}지만 {from_lib}도서관 등 {CFG['city']}시립도서관 {n_ok}곳에 대출 가능 상태입니다. "
-                  f"관내 상호대차로 신청하시면 {eta}일 안에 {pickup}도서관에서 받으실 수 있고 비용은 없습니다. "
-                  f"도착 후 {hold}일 안에 찾아가 주세요.")
+                  + _ill_terms(pickup, eta, hold))
     elif route == "reserve":
-        notice = (f"{t_} {CFG['city']}시립도서관 {n_busy}곳이 소장하고 있지만 "
-                  f"지금은 모두 대출 중입니다. 상호대차 대신 예약을 권해 드립니다(책바다는 관내에 없는 자료가 대상입니다).")
+        notice = (f"{t_} {CFG['city']}시립도서관 {n_busy}곳이 소장하고 있지만 지금은 모두 대출 중입니다. "
+                  + ("먼저 예약해 두시면, 책이 반납될 때 상호대차로 바꿔 신청할 수 있습니다" if CFG.get("reserve_converts_to_ill")
+                     else "상호대차 대신 예약을 권해 드립니다")
+                  + "(책바다는 관내에 없는 자료가 대상입니다).")
     elif route == "check":
         notice = (f"{t_} 지금 {CFG['city']}시립도서관의 소장·대출 상태를 확인하지 못했습니다(정보나루 조회가 되지 않았습니다). "
                   f"창구에서 도서관리시스템으로 확인해 드리겠습니다.")

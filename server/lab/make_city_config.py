@@ -55,8 +55,12 @@ def main():
     y += [f'  {n}: "{c}"' for n, c in names.items()]
     y += ["rules:", "  ill_limit: 5                # 【확인】 상호대차 1인 한도", "  total_limit: 20             # 【확인】 통합 대출 한도",
           "  per_lib_limit: 5            # 【확인】 도서관별 한도", "  block_if_pickup_on_shelf: true   # 【확인】",
-          "  block_if_overdue: true", "  excluded_types: [DVD, 참고자료]   # 【확인】", "  exclude_new_arrival: true   # 【확인】",
-          'ill_eta_days: "2~3"           # 【확인】', "hold_days: 3                  # 【확인】",
+          "  block_if_overdue: true", "  excluded_types: [부록]       # 【확인】", "  exclude_new_arrival: false  # 【확인】",
+          'ill_eta_days: "1"             # 【확인】 평일 기준 소요일',
+          'ill_eta_text: ""              # 【확인】 안내문 문장(예: 「월~목요일 신청은 다음 날, 금·토요일 신청은 월·화요일에」) — 비우면 「○일 안에」',
+          "hold_days: 3                  # 【확인】 도착 후 보관 기한(일)", "hold_includes_arrival_day: true   # 【확인】 도착일 포함 여부",
+          "no_pickup_block_days: 7       # 【확인】 미수령(자동반납) 시 신청 제한 일수 — 0이면 안내 안 함",
+          "reserve_converts_to_ill: true # 【확인】 예약 도서 반납 시 상호대차 전환 신청 가능 여부",
           "pass:", "  max_per_cycle: 3", "  free_routes_only: true",
           f"sso: 【확인】.go.kr", "notify_channels: [sms]"]
     out.write_text("\n".join(y) + "\n", encoding="utf-8")

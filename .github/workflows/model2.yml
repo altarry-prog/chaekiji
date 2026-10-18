@@ -1,0 +1,48 @@
+# 공개 모델 2종 실측 — 코랩 노트북(server/lab/colab_model2.ipynb)의 코드 칸을 깃허브 액션 서버(CPU)에서 그대로 돌린다.
+# 왜: 행정망 PC에서 코랩이 열리지 않아(2026-10-18), 사람 손 없이 같은 단계(같은 모델 2종·같은 문의 5건·같은 서버)를 실행하고 기록을 남기려고.
+# 결과: 기록표와 원 기록을 이 가지(tools/model2)의 server/lab/out/에 커밋한다. main은 건드리지 않는다.
+# 정보나루: 원격 중계를 거쳐 오늘 자료 — 새벽 자료에 있는 책은 호출 0, 없는 책만 한 번(약 17건). 인증키는 쓰지 않는다.
+name: model2
+on:
+  workflow_dispatch:
+  push:
+    branches: [tools/model2]
+    paths: [".github/workflows/model2.yml", "tools/model2/**"]
+permissions:
+  contents: write
+concurrency:
+  group: model2
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      PYTHONUNBUFFERED: "1"
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 준비 — 노트북이 코랩에서 까는 도구(zstd·pciutils), 코랩과 같은 작업 폴더(/content)
+        run: |
+          sudo apt-get -qq update > /dev/null
+          sudo apt-get -qq install -y zstd pciutils > /dev/null
+          sudo mkdir -p /content && sudo chown "$USER" /content
+          nproc; free -h | head -2
+      - name: 노트북 코드 칸 실행(바꾼 곳은 기록의 환경 이름과 파일 이름뿐)
+        run: python3 tools/model2/run_notebook.py server/lab/colab_model2.ipynb
+      - name: 기록을 이 가지에 커밋
+        if: always()
+        run: |
+          mkdir -p server/lab/out
+          cp /content/chaekiji/server/lab/out/model2_record_actions_*.md server/lab/out/ 2>/dev/null || true
+          cp /content/chaekiji/server/lab/out/host_log_actions_*.ndjson server/lab/out/ 2>/dev/null || true
+          cp /content/chaekiji/server/lab/out/host_answers_actions_*.ndjson server/lab/out/ 2>/dev/null || true
+          ls -la server/lab/out | grep actions || echo "기록 파일 없음"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out
+          git commit -m "공개 모델 2종 실측 기록 — 깃허브 액션(${RUN_URL##*/})" || echo "커밋할 것 없음"
+          git push

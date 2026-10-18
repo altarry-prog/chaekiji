@@ -22,6 +22,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 MAX_STEPS = 6
+HARD_STEPS = MAX_STEPS + 2      # [10/18] 한도 안내 뒤에도 도구만 부르면 여기서 멈춘다(실측에서 같은 오류를 30분 되풀이)
+SAME_ERROR_STOP = 3             # [10/18] 같은 도구·같은 인자의 오류가 이만큼 되풀이되면 멈춘다
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")            # 윈도우 콘솔 한글
@@ -127,7 +129,7 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
     tool_names = {t["name"] for t in tools}
     messages = [{"role": "system", "content": system + (JSON_RULES + catalog_text(tools) if protocol == "json" else "")},
                 {"role": "user", "content": user_text}]
-    step = 0
+    step, errs, last_err = 0, {}, ""
     while True:
         try:
             resp = ollama_chat(a.ollama, a.model, messages, tools=(to_ollama_tools(tools) if protocol == "native" else None),
@@ -183,6 +185,14 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
                 messages.append({"role": "tool", "content": result})
             else:
                 messages.append({"role": "user", "content": "[도구 결과] " + name + "\n" + result})
+            if err:
+                key = name + json.dumps(args, ensure_ascii=False, sort_keys=True)
+                errs[key] = errs.get(key, 0) + 1
+                last_err = result
+        if errs and max(errs.values()) >= SAME_ERROR_STOP:     # [10/18] 무한 반복 막기 — 멈춘 사실을 답으로 그대로 남긴다
+            return (f"(멈춤) 같은 도구 오류가 {SAME_ERROR_STOP}번 되풀이되어 멈췄습니다. 마지막 오류: {last_err[:200]}", resp["_ms"])
+        if step >= HARD_STEPS:
+            return (f"(멈춤) 도구 호출이 {HARD_STEPS}번에 닿도록 최종 답이 없어 멈췄습니다.", resp["_ms"])
         if step >= MAX_STEPS:
             messages.append({"role": "user", "content": "도구 호출 한도에 닿았습니다. 지금까지의 결과로 최종 답을 주세요." +
                              (' {"answer": "..."} 형식으로만.' if protocol == "json" else "")})
@@ -198,6 +208,8 @@ def main():
     ap.add_argument("--lang", default="ko")
     ap.add_argument("--ask", default="", help="한 문장만 묻고 끝낸다(없으면 대화형)")
     ap.add_argument("--protocol", default="auto", choices=["auto", "native", "json"])
+    ap.add_argument("--tools", default="all", choices=["all", "consult"],
+                    help="모델에 보여 줄 도구 — all(11종) / consult(상담 묶음 consult_request 하나만, 작은 모델이 다른 도구로 새지 않게)")
     ap.add_argument("--log", default="", help="호출 기록 JSONL 경로(예: lab/out/host_log.ndjson)")
     ap.add_argument("--answers", default="", help="최종 답 기록 JSONL 경로(예: lab/out/host_answers.ndjson)")
     ap.add_argument("--num-ctx", type=int, default=4096)
@@ -208,6 +220,8 @@ def main():
     if a.relay: env["CHAEKIJI_RELAY"] = a.relay
     mcp = MCP(a.server, env)
     tools = mcp.tools()
+    if a.tools == "consult":                              # [10/18] 실측에서 작은 모델이 찾기 도구만 부르고 추측으로 답함 → 상담 묶음 하나만
+        tools = [t for t in tools if t["name"] == "consult_request"]
     system = mcp.prompt("consult", {k: v for k, v in {"pickup": a.pickup, "lang": a.lang}.items() if v})
     state = {"protocol": "native" if a.protocol in ("auto", "native") else "json"}
     logf = open(a.log, "a", encoding="utf-8") if a.log else None

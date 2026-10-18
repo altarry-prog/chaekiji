@@ -20,6 +20,7 @@ CFG = yaml.safe_load(open(os.environ.get("CHAEKIJI_CONFIG", ROOT/"config"/"buche
 MODE = os.environ.get("CHAEKIJI_MODE", "demo")        # demo | relay | live | auto
 # [v0.3.4] 중계 주소 — 환경변수 CHAEKIJI_RELAY > 설정 relay_url. 키 값은 어디에도 없다(중계 서버만 가짐).
 naru.RELAY = os.environ.get("CHAEKIJI_RELAY") or str(CFG.get("relay_url") or "")
+naru.PLACES = list(CFG["libraries"])            # [10/18] 검색어에서 수령관 말(「원미도서관으로」·「상동에서」)을 뺄 때 쓰는 도서관 이름
 if MODE == "auto":                                    # 심사위원 기본값: 중계(오늘) → 매일 갱신 스냅샷(어제) → 8/18 픽스처
     MODE = "relay" if naru.relay_ok() else ("snapshot" if naru.snapshot_fresh() else "demo")
 # 관내 소장·대출의 출처 — alpas: 도서관리시스템 실시간 연동 모의(값은 8/18 픽스처) / naru: 정보나루 bookExist(전일 기준, live·relay·snapshot이면 실조회분)
@@ -164,11 +165,22 @@ def _official_link(title: str, isbn13: str):
     from urllib.parse import quote
     return tmpl.replace("{title}", quote(title, safe="")).replace("{isbn13}", quote(isbn13, safe=""))
 
+def _pickup_name(p):
+    """[10/18] 「꿈빛도서관」·「부천시립 꿈빛도서관」·「꿈빛 도서관」도 설정의 짧은 이름(「꿈빛」)으로. 모르면 그대로 둔다(뒤에서 설정에 없는 도서관 오류)."""
+    s = "".join(str(p).split())
+    for pre in (CFG["city"] + "시립", CFG["city"] + "시"):
+        if s.startswith(pre) and len(s) > len(pre):
+            s = s[len(pre):]; break
+    if s in CFG["libraries"]: return s
+    for suf in ("도서관", "관"):
+        if s.endswith(suf) and s[: -len(suf)] in CFG["libraries"]: return s[: -len(suf)]
+    return str(p)
+
 def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: str = None):
     """[v0.3.4] 상담 묶음 — 이용자의 말 한마디로 ① 도서 특정 ② 관내 소장·대출 상태 ③ 상호대차 가능 여부·갈래 판정
     ④ 이용자 안내문 ⑤ 접수 메모까지 한 번에. 회원 토큰(user)이 있으면 규정 7종을 전부 판정하고, 없으면 회원 규정은 창구 확인으로 보류.
     접수는 하지 않는다(접수는 request_service 또는 창구에서 사서가)."""
-    pickup = pickup or CFG["home_library"]
+    pickup = _pickup_name(pickup or CFG["home_library"])
     if pickup not in CFG["libraries"]:
         raise ValueError(f"수령관 「{pickup}」은(는) 설정에 없는 도서관입니다: {', '.join(CFG['libraries'])}")
     eta, hold = CFG.get("ill_eta_days", "2~3"), CFG.get("hold_days", 3)

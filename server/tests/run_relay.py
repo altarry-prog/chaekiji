@@ -101,6 +101,14 @@ ok(r2["found"] and r2["book"]["isbn13"] == "9788936433598" and r2["route"] == "i
    f"③ 픽스처에 없는 책 — 중계 서지 검색으로 찾음(『{r2['book']['title']}』) → {r2['route_label']} · 소장관 {r2['from_lib']}")
 r3 = c.call("search_item", utterance="데미안이라는 책 있을까요")
 ok(r3["found"] is False and r3.get("query") == "데미안", "   요청 말투를 걷어낸 검색어로 중계에 묻는다(「데미안」) · 없으면 못 찾음으로 정직하게")
+r3b = c.call("search_item", utterance="채식주의자 상호대차 되나요?")
+ok(r3b["found"] and r3b.get("query") == "채식주의자" and r3b["isbn13"] == "9788936433598",
+   "   [10/18] 문장째 넘어온 「채식주의자 상호대차 되나요?」 → 검색어 「채식주의자」(「되나요」까지 걷어냄)")
+r3c = c.call("consult_request", utterance="채식주의자 원미도서관으로 가져다줄 수 있어요?", pickup="원미도서관")
+ok(r3c["found"] and r3c["book"]["isbn13"] == "9788936433598" and r3c["pickup"] == "원미" and r3c["route"] == "visit",
+   "   [10/18] 수령관 「원미도서관」도 설정 이름 「원미」로 · 검색어에서 「원미도서관으로」를 뺌 → 바로 이용")
+r3d = c.call("consult_request", utterance="채식주의자 있나요?", pickup="부천시립 꿈빛도서관")
+ok(r3d["pickup"] == "꿈빛" and r3d["route"] == "visit", "   [10/18] 「부천시립 꿈빛도서관」 → 「꿈빛」")
 r10 = c.call("consult_request", utterance="희랍어 시간 있나요?", pickup="상동")
 ok(r10["found"] and r10["route"] == "check" and "확인하지 못했습니다" in r10["notice"] and "소장되어 있지 않습니다" not in r10["notice"]
    and r10["availability"]["nation"] is None and any("비치" in x for x in r10["policy"]["pending"]) and "확인 불가" in r10["desk_memo"],

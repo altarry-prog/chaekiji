@@ -29,10 +29,10 @@ echo
 echo "== 실험실 점검(14건) =="
 "$PY" lab/check_store.py
 echo
-echo "== 중계 모드 시험(17건, 모의 중계) =="
+echo "== 중계 모드 시험(20건, 모의 중계) =="
 "$PY" tests/run_relay.py
 echo
-echo "== 공개 모델 호스트 시험(6건, 모의 Ollama) =="
+echo "== 공개 모델 호스트 시험(8건, 모의 Ollama) =="
 "$PY" tests/run_host.py
 echo
-echo "[chaekiji-mcp] 준비 완료 — 시험 85건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts/ollama_host.py 를 보세요."
+echo "[chaekiji-mcp] 준비 완료 — 시험 90건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts/ollama_host.py 를 보세요."

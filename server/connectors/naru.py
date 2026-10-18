@@ -18,7 +18,7 @@ v0.3.4 (상담 비서 판, 2026. 10.)
 - LAST_META.asof: 어느 모드든 「몇 월 며칠 조회분」인지 날짜를 함께 돌려준다(안내문의 전일 기준 표시용).
 - snapshot: lab/refresh_today.py가 매일 써 두는 fixtures/holdings-today.json(어제 기준 조회분)을 읽는다.
   auto 모드는 중계 → 신선한 스냅샷(2일 이내) → 8/18 픽스처 순으로 고른다. relay 모드도 스냅샷에 있는 책은 중계를 부르지 않는다(한도 절약)."""
-import json, os, time, datetime, socket, urllib.error, urllib.parse, urllib.request
+import json, os, re, time, datetime, socket, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 
 FIX = Path(__file__).resolve().parent.parent / "fixtures"
@@ -73,14 +73,34 @@ _REQ_PHRASES = ["빌리고 싶어요", "빌리고 싶은데요", "빌리고 싶�
                 "빌릴수있어요", "빌릴수있나요", "찾아 주세요", "찾아주세요", "찾아줘", "찾아 줘", "있나요", "있어요", "있을까요",
                 "있습니까", "보고 싶어요", "읽고 싶어요", "대출 되나요", "대출되나요", "대출할 수 있나요", "신청해 주세요",
                 "신청해주세요", "신청할게요", "부탁해요", "부탁드려요", "부탁합니다", "주세요", "가져다 줄 수 있어요",
-                "가져다줄 수 있어요", "상호대차", "그 왜", "그거", "라는 책", "이라는 책", "하는 책", "인가 하는"]
-def clean_title(utterance: str) -> str:
-    """발화에서 요청 말투를 걷어 제목 비슷한 것만 남긴다(정보나루 제목 검색용). 모델이 제목만 넘기면 그대로 통과."""
+                "가져다줄 수 있어요", "상호대차", "그 왜", "그거", "라는 책", "이라는 책", "하는 책", "인가 하는",
+                # [10/18] 공개 모델 실측에서 문장째 넘어온 말끝(「채식주의자 상호대차 되나요?」 → 다른 책을 찾음)
+                "되나요", "될까요", "가능한가요", "가능할까요", "가능해요", "가능한지", "가능 여부",
+                "받을게요", "받을래요", "받고 싶어요", "받을 수 있나요", "받을 수 있어요", "받을 수 있을까요",
+                "가져다줄 수 있나요", "가져다 줄 수 있나요", "가져다주세요", "가져다 주세요"]
+PLACES: list = []       # [10/18] 도서관 짧은 이름(tools가 설정에서 채운다) — 검색어에서 「원미도서관으로」·「상동에서」 같은 수령관 말을 뺀다
+_JOSA_LIB = "(?:으로|로|에서|에|까지)"
+def _drop_places(t: str, places) -> str:
+    """「○○도서관(으로·에서 …)」은 어디서든, 「○○에서·으로」만 붙은 말은 맨 끝일 때만 뺀다(「동화로 읽는 …」 같은 제목을 지키려고)."""
+    if not places: return t
+    alts = "|".join(re.escape(x) for x in sorted(places, key=len, reverse=True))
+    lib_word, lib_tail = re.compile(f"(?:{alts})도서관{_JOSA_LIB}?"), re.compile(f"도서관{_JOSA_LIB}?")
+    toks, out, i = t.split(" "), [], 0
+    while i < len(toks):
+        w = toks[i]
+        if lib_word.fullmatch(w): i += 1; continue
+        if w in places and i + 1 < len(toks) and lib_tail.fullmatch(toks[i + 1]): i += 2; continue
+        out.append(w); i += 1
+    if len(out) > 1 and re.fullmatch(f"(?:{alts})(?:으로|로|에서|까지)", out[-1]): out.pop()
+    return " ".join(out)
+def clean_title(utterance: str, places=None) -> str:
+    """발화에서 요청 말투와 수령관 말을 걷어 제목 비슷한 것만 남긴다(정보나루 제목 검색용). 모델이 제목만 넘기면 그대로 통과."""
     t = " " + " ".join(str(utterance).split()) + " "
     for ph in sorted(_REQ_PHRASES, key=len, reverse=True):
         t = t.replace(" " + ph + " ", " ").replace(ph, " ") if ph in t else t
-    t = t.replace("?", " ").replace(".", " ").replace("!", " ")
+    t = t.replace("?", " ").replace(".", " ").replace("!", " ").replace(",", " ")
     t = " ".join(t.split())
+    t = _drop_places(t, PLACES if places is None else places)
     if t.endswith(" 책"): t = t[:-2].rstrip()                   # 낱말 「책」은 떼고, 「그림책」처럼 붙은 것은 둔다
     for suf in ("이라고", "라고", "이란", "란", "은", "는", "을", "를", "이", "가"):
         if len(t) > 3 and t.endswith(suf) and not t.endswith(" " + suf):

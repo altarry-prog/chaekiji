@@ -272,6 +272,17 @@ async function searchItem(utterance, deps, ctx) {
                   evidence: "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)" +
                             (best.q !== title || best.j > 0 ? ` · 검색어 「${best.q}」 결과 ${best.j + 1}번째를 문의와 맞춰 고름` : "") };
     if (others.length) res.same_title_others = others;
+    const eds = [];                                            // [10/19] 같은 작품의 다른 판(같은 핵심 서명 · 같은 첫 저자 · 문의와도 맞음) — naru.pick_search와 같게
+    for (const p of pool) {
+      const o = p.d;
+      if (o.isbn13 === d.isbn13 || coreTitle(o.title, o.author) !== ct) continue;
+      const oa = firstAuthor(o.author);
+      if (!(fa && oa && (fa.includes(oa) || oa.includes(fa)))) continue;
+      if (scoreDoc(o, title, base, vol, p.dropped) < 60) continue;
+      eds.push(bookOf(o));
+      if (eds.length >= 2) break;
+    }
+    if (eds.length) res.same_work_editions = eds;
     return res;
   }
   if (sawDocs) {
@@ -512,6 +523,27 @@ export async function consultRequest(args, deps, ctx) {
   if (others.length)
     notice += ` 같은 제목의 다른 책도 있습니다(${others.map(b => `${b.author || ""} · ${b.publisher || ""} ${b.year || ""}`).join(" / ")}) — ` +
               `찾으시는 책의 저자가 다르면 알려 주세요.`;
+  const alt = [];                                              // [10/19] 판본 보정 — 고른 판이 관내에 없을 때 같은 작품의 다른 판 하나가 관내에 있으면 알린다. 갈래는 그대로(tools.consult_request와 같게)
+  if (route === "sea") {                                     // 하나만 본다 — Cloudflare 무료 요금제는 요청당 외부 호출 50회 한도(검색 ≤3 + 관내 16 + 전국 1 + 다른 판 16)
+    for (const b of (found.same_work_editions || []).slice(0, 1)) {
+      const { out: rt2, meta: m2 } = await holdingsLocal(b.isbn13, deps, ctx);
+      if (m2.unavailable || (m2.asof || FIX_ASOF) !== asof) continue;   // 조회가 안 됐거나 조회일이 다르면 섞지 않는다
+      const ok2 = Object.keys(rt2).filter(l => rt2[l] === "ok").sort(), busy2 = Object.keys(rt2).filter(l => rt2[l] === "busy").sort();
+      if (ok2.length || busy2.length)
+        alt.push({ ...b, available_at: ok2, loaned_at: busy2, official_link: officialLink(b.title || b.isbn13, b.isbn13) });
+    }
+  }
+  if (alt.length) {
+    const altWhere = b => {
+      const ed = [b.publisher || "", b.year ? `${b.year}년` : ""].filter(x => x).join(" ") || `ISBN ${b.isbn13}`;
+      if (b.available_at.includes(pickup)) return `${ed} 판은 ${pickup}도서관 서가에 있습니다`;
+      if (b.available_at.length) return `${ed} 판은 ${b.available_at[0]}도서관 등 ${b.available_at.length}곳에 대출 가능합니다`;
+      return `${ed} 판은 ${b.loaned_at.length}곳이 소장하고 있지만 모두 대출 중입니다`;
+    };
+    const lk = alt[0].official_link;
+    notice += " 같은 책의 다른 판은 관내에 있습니다: " + alt.map(altWhere).join("; ") +
+              ". 판이 달라도 괜찮으시면 그 판으로 이용하실 수 있습니다" + (lk ? `(그 판의 공식 누리집 화면: ${lk}).` : ".");
+  }
   const bad = pol.checks.filter(c => c.pass === false && !(route === "visit" && c.rule.includes("비치")));
   if (bad.length) notice += " 다만 " + bad.map(c => `${c.rule}(${c.detail})`).join("; ") + " — 이 조건을 먼저 확인해야 합니다.";
   const link = ["visit", "ill", "reserve", "check"].includes(route) ? officialLink(title, isbn, route === "check") : null;
@@ -531,12 +563,16 @@ export async function consultRequest(args, deps, ctx) {
     `규정: ${pol.checks.filter(c => c.pass === true).length}건 통과 · ${pol.checks.filter(c => c.pass === false).length}건 불가 · ${pol.pending.length}건 창구 확인`,
     "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)",
   ];
+  for (const b of alt)                                         // [10/19] 판본 보정 — 다른 판의 관내 소장(접수 전 판 확인)
+    memo.splice(memo.length - 1, 0, `다른 판 관내: ${b.publisher || ""} ${b.year || ""} ISBN ${b.isbn13} — ` +
+                                    `대출 가능 ${b.available_at.join(", ") || "없음"} / 대출 중 ${b.loaned_at.join(", ") || "없음"}`);
   return { ...base, found: true, route, route_label: ROUTE_LABEL[route], from_lib: fromLib,
            book: { isbn13: isbn, title, author: nn(found.author), publisher: nn(found.publisher), year: nn(found.year), evidence: nn(found.evidence),
                    ...(found.vol ? { vol: found.vol } : {}) },
            availability: { at_pickup: atPickup, available_at: avail.available_at, loaned_at: avail.loaned_at, nation, basis: avail.basis, asof },
            policy: pol, notice, official_link: link, translate_to: lang === "ko" ? null : lang,
-           desk_memo: memo.join("\n"), next_tool: null, ...(others.length ? { same_title_others: others } : {}) };
+           desk_memo: memo.join("\n"), next_tool: null, ...(others.length ? { same_title_others: others } : {}),
+           ...(alt.length ? { other_editions: alt } : {}) };
 }
 
 const IMPL = {

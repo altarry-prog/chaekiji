@@ -160,5 +160,12 @@ ok(s1.route === "sea" && s1.same_title_others.length === 3 && s1.notice.includes
 s1 = await call2("consult_request", { utterance: "양귀자 모순 빌리고 싶은데 상동역 칙칙폭폭에서 받을게요", pickup: "상동역 칙칙폭폭" }, 507);
 ok(s1.found && s1.book.isbn13 === "9788998441012" && s1.availability.at_pickup === "point" && s1.route === "ill",
    "[10/19] 문장째 문의 — 「빌리고 싶은데」·「상동역 칙칙폭폭에서」를 걷어 「양귀자 모순」으로 찾고 작은도서관 받기로 판정");
+// [10/19 밤] 판본 보정 — 고른 판이 관내에 없을 때만 같은 작품의 다른 판을 확인해 알린다(갈래는 그대로). 두 판의 소장 값은 모의
+s1 = await call2("consult_request", { utterance: "문헌정보학개론 김수경", pickup: "상동" }, 509);
+const s1e = await call2("consult_request", { utterance: "해리 포터와 마법사의 돌", pickup: "원미" }, 510);
+ok(s1.route === "sea" && s1.book.isbn13 === "9791187268512" && (s1.other_editions || []).length === 1 && s1.other_editions[0].isbn13 === "9791187268758" &&
+   s1.notice.includes("같은 책의 다른 판은 관내에 있습니다") && s1.notice.includes("상동도서관 서가에") && s1.desk_memo.includes("다른 판 관내:") &&
+   s1.official_link === null && String(s1.other_editions[0].official_link).endsWith("9791187268758") && !("other_editions" in s1e),
+   "[10/19 밤] 판본 보정 — 고른 판(2021)이 관내에 없으면 같은 작품의 다른 판(2024)을 확인해 알림·갈래(책바다)는 그대로 · 관내에 있는 책은 다른 판을 보지 않음");
 
 console.log(`\n원격 상담 비서 점검 ${n}건 통과`);

@@ -206,6 +206,10 @@ p5 = _naru.pick_search("문헌정보학개론", _fake, _E)
 p6 = _naru.pick_search("문헌정보학개론 정동열", _fake, _E)
 ok(p5["found"] and len(p5["same_title_others"]) == 3 and p6["found"] is False and len(p6["candidate_books"]) == 3,
    "   ⑦‴ 같은 제목·다른 저자는 함께 알림(3건) · 말한 저자가 어느 결과와도 안 맞으면 고르지 않고 후보 3건과 되묻기")
+p8 = _naru.pick_search("문헌정보학개론 김수경", _fake, _E)
+ok(p8["found"] and p8["isbn13"] == "9791187268512" and [b["isbn13"] for b in p8.get("same_work_editions", [])] == ["9791187268758"]
+   and "same_work_editions" not in p5 and "9788983920690" in [b["isbn13"] for b in p1.get("same_work_editions", [])],
+   "   ⑦⁵ [10/19 밤] 판본 보정 준비 — 같은 작품의 다른 판(같은 서명·같은 첫 저자)을 따로 모음: 「문헌정보학개론 김수경」 2021 → 2024 판, 저자가 다른 같은 제목 책은 판이 아님")
 def _boom(q): raise RuntimeError("연결 끊김")
 p7 = _naru.pick_search("아무 책", _boom, _E, unavailable_reason="중계 응답 없음")
 ok(p7["found"] is False and p7.get("unavailable") is True and _naru.pick_search("아무도 모르는 제목", _fake, _E)["candidates"] == [],

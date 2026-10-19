@@ -309,6 +309,24 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     if others:
         notice += (" 같은 제목의 다른 책도 있습니다(" + " / ".join(f"{b.get('author') or ''} · {b.get('publisher') or ''} {b.get('year') or ''}"
                                                           for b in others) + ") — 찾으시는 책의 저자가 다르면 알려 주세요.")
+    alt = []                                          # [10/19] 판본 보정 — 고른 판이 관내에 없을 때 같은 작품의 다른 판 하나가 관내에 있으면 알린다. 갈래는 그대로
+    if route == "sea":                               # 하나만 본다 — 원격 판(Cloudflare 무료)은 요청당 외부 호출 50회 한도라 관내 조회(16회)를 두 번 더 하면 넘을 수 있다
+        for b in (found.get("same_work_editions") or [])[:1]:
+            rt2, _ = _local_holdings(b["isbn13"])
+            if LOCAL_SOURCE == "naru" and (naru.LAST_META.get("unavailable") or (naru.LAST_META.get("asof") or naru.FIX_ASOF) != asof):
+                continue                              # 조회가 안 됐거나 조회일이 다르면 섞지 않는다
+            ok2 = sorted(l for l, s in rt2.items() if s == "ok"); busy2 = sorted(l for l, s in rt2.items() if s == "busy")
+            if ok2 or busy2:
+                alt.append({**b, "available_at": ok2, "loaned_at": busy2, "official_link": _official_link(b.get("title") or b["isbn13"], b["isbn13"])})
+    if alt:
+        def _alt_where(b):
+            ed = " ".join(x for x in (b.get("publisher") or "", f"{b['year']}년" if b.get("year") else "") if x) or f"ISBN {b['isbn13']}"
+            if pickup in b["available_at"]: return f"{ed} 판은 {pickup}도서관 서가에 있습니다"
+            if b["available_at"]: return f"{ed} 판은 {b['available_at'][0]}도서관 등 {len(b['available_at'])}곳에 대출 가능합니다"
+            return f"{ed} 판은 {len(b['loaned_at'])}곳이 소장하고 있지만 모두 대출 중입니다"
+        lk = alt[0]["official_link"]
+        notice += (" 같은 책의 다른 판은 관내에 있습니다: " + "; ".join(_alt_where(b) for b in alt)
+                   + ". 판이 달라도 괜찮으시면 그 판으로 이용하실 수 있습니다" + (f"(그 판의 공식 누리집 화면: {lk})." if lk else "."))
     bad = [c for c in pol["checks"] if c["pass"] is False and not (route == "visit" and "비치" in c["rule"])]
     if bad:                                           # 바로 이용 갈래에서 비치 규정은 곧 그 갈래의 이유이므로 되풀이하지 않는다
         notice += " 다만 " + "; ".join(f"{c['rule']}({c['detail']})" for c in bad) + " — 이 조건을 먼저 확인해야 합니다."
@@ -326,6 +344,9 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                   f"근거: {avail['basis']}",
                   f"규정: {sum(1 for c in pol['checks'] if c['pass'] is True)}건 통과 · {sum(1 for c in pol['checks'] if c['pass'] is False)}건 불가 · {len(pol['pending'])}건 창구 확인",
                   "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)"]
+    for b in alt:                                     # [10/19] 판본 보정 — 다른 판의 관내 소장(접수 전 판 확인)
+        memo_lines.insert(-1, f"다른 판 관내: {b.get('publisher') or ''} {b.get('year') or ''} ISBN {b['isbn13']} — "
+                              f"대출 가능 {', '.join(b['available_at']) or '없음'} / 대출 중 {', '.join(b['loaned_at']) or '없음'}")
     next_tool = None
     if route == "ill" and user:
         next_tool = {"tool": "request_service", "arguments": {"user": user, "isbn13": isbn, "from_lib": from_lib, "pickup": pickup,
@@ -337,7 +358,8 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                              "nation": nation, "basis": avail["basis"], "asof": asof},
             "policy": pol, "notice": notice, "official_link": link,
             "translate_to": None if lang == "ko" else lang,
-            "desk_memo": "\n".join(memo_lines), "next_tool": next_tool, **({"same_title_others": others} if others else {})}
+            "desk_memo": "\n".join(memo_lines), "next_tool": next_tool, **({"same_title_others": others} if others else {}),
+            **({"other_editions": alt} if alt else {})}
 
 def suggest_items(user: str = None, count: int = 3):
     """[확장 v0.2] 이달의 추천 — 운영: AI 책큐/정보나루 recommandList 커넥터."""

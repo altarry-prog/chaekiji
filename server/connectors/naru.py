@@ -524,6 +524,17 @@ def pick_search(title, search_fn, evidence, unavailable_reason=None):
                "evidence": evidence + (f" · 검색어 「{best['q']}」 결과 {best['j'] + 1}번째를 문의와 맞춰 고름"
                                        if best["q"] != title or best["j"] > 0 else "")}
         if others: res["same_title_others"] = others
+        # [10/19] 같은 작품의 다른 판(같은 핵심 서명 · 같은 첫 저자 · 문의와도 맞음) — 고른 판이 관내에 없을 때만 소장을 다시 본다(tools.consult_request)
+        eds = []
+        for p in pool:
+            o = p["d"]
+            if o["isbn13"] == d["isbn13"] or _core_title(o.get("title"), o.get("author")) != ct: continue
+            oa = _first_author(o.get("author"))
+            if not (fa and oa and (fa in oa or oa in fa)): continue
+            if _score_doc(o, title, base, vol, p["dropped"]) < 60: continue
+            eds.append(_book_of(o))
+            if len(eds) >= 2: break
+        if eds: res["same_work_editions"] = eds
         return res
     if saw_docs:
         cands = [_book_of(p["d"]) for p in pool[:3]]

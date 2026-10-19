@@ -33,7 +33,7 @@ echo == 실험실 점검(14건) ==
 %PY% lab\check_store.py
 if errorlevel 1 goto fail
 echo.
-echo == 중계 모드 시험(28건, 모의 중계) ==
+echo == 중계 모드 시험(29건, 모의 중계) ==
 %PY% tests\run_relay.py
 if errorlevel 1 goto fail
 echo.
@@ -41,7 +41,7 @@ echo == 공개 모델 호스트 시험(10건, 모의 Ollama) ==
 %PY% tests\run_host.py
 if errorlevel 1 goto fail
 echo.
-echo [chaekiji-mcp] 준비 완료 — 시험 102건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts\ollama_host.py 를 보세요.
+echo [chaekiji-mcp] 준비 완료 — 시험 103건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts\ollama_host.py 를 보세요.
 pause
 exit /b 0
 

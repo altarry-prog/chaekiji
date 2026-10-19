@@ -490,7 +490,7 @@ export async function consultRequest(args, deps, ctx) {
   const asof = meta.asof || FIX_ASOF;
   const [y, m, d] = asof.split("-"); const asofK = `${y}. ${parseInt(m, 10)}. ${parseInt(d, 10)}.`;
   const nOk = avail.available_at.length, nBusy = avail.loaned_at.length;
-  const disp = found.vol ? `${mainTitle(title)} ${volLabel(found.vol)}` : title;   // [10/19] 권차가 있으면 「흔한남매 1권」처럼 밝힌다
+  const disp = found.vol ? `${mainTitle(title)} ${volLabel(found.vol)}` : String(title).trim();   // [10/19] 권차가 있으면 「흔한남매 1권」처럼 밝힌다 · 정보나루 서명 끝 빈칸은 뗀다(「은(는)」 방지)
   const t_ = `『${disp}』${eun(disp)}`;
   let notice;
   if (route === "visit") {
@@ -553,7 +553,7 @@ export async function consultRequest(args, deps, ctx) {
     notice += ` 공식 누리집에서 ${tail}: ${link}`;
   }
   const memo = [
-    `도서: ${title}${found.vol ? ` [${volLabel(found.vol)}]` : ""} (${found.author || ""}) ISBN ${isbn}` + (others.length ? ` · 같은 제목 다른 책 ${others.length}건 — 저자 확인` : ""),
+    `도서: ${String(title).trim()}${found.vol ? ` [${volLabel(found.vol)}]` : ""} (${found.author || ""}) ISBN ${isbn}` + (others.length ? ` · 같은 제목 다른 책 ${others.length}건 — 저자 확인` : ""),
     `갈래: ${ROUTE_LABEL[route]}` + (fromLib ? ` · 소장관 ${fromLib}` : ""),
     isPoint ? `수령관: ${pickup}도서관 (작은도서관 — 서가 비치·도착일·보관 기한은 창구 확인)`
             : `수령관: ${pickup} (현재 ${atPickup === "ok" ? "서가 비치" : atPickup === "busy" ? "대출 중" : unknown ? "확인 불가" : "미소장"})`,

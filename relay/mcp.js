@@ -156,7 +156,7 @@ async function relaySearchDocs(params, deps, ctx) {             // naru._relay_s
 // ── [10/19] 서지 고르기(naru.pick_doc) — 검색 결과 첫 번째(대출 많은 순)를 그대로 쓰지 않고 문의와 견줘 고른다 ──────────
 // AI 대조 시험(10/19)에서 「해리 포터와 마법사의 돌」 → 「혼혈 왕자」, 「구름빵 백희나」 → 중문판, 「불편한 편의점 2」 → 1권을 고른 일.
 // 점수: 본서명 일치 100 · 문의가 서명에 다 들어 있음 80 · 낱말이 서명·저자에 나뉘어 다 들어 있음 70 · 본서명이 문의 안에 있음 60
-//       + 저자 일치 10 · 권차 일치 15(다른 권 -100, 권을 알 수 없음 -50) · 한국어 문의에 외국어 판 -60 · 검색어에서 뺀 낱말이 안 맞음 -50
+//       + 저자 일치 10 · 권차 일치 15(다른 권이거나 몇 권인지 모르면 고르지 않음) · 한국어 문의에 외국어 판 -60 · 검색어에서 뺀 낱말이 안 맞음 -50
 //       60점 아래면 고르지 않고 후보를 보이며 되묻는다(틀린 책으로 판정하지 않는다).
 const VOL_EXPLICIT = /^(.*?)\s*(?:제\s*)?(\d{1,3})\s*권$/, VOL_TRAIL = /^(.*\D)\s+(\d{1,2})$/;
 export function splitVolume(t) {                               // naru.split_volume — 「흔한남매 1권」 → [흔한남매, 1, 권 명시]
@@ -182,6 +182,13 @@ function firstAuthor(a) {                                      // naru._first_au
   return tnorm(first.split(/[\s:()]+/).filter(w => w && !ROLE_WORDS.has(w)).join(""));
 }
 const sameAuthor = (a, b) => !a || !b || a.includes(b) || b.includes(a);
+const GENERIC_SUB = ["소설", "에세이", "시집", "산문", "장편", "단편", "연작", "개정", "큰글자", "특별판", "한정판", "양장", "리커버"];
+function coreTitle(title, author) {                            // naru._core_title — 본서명 + (작품을 가르는 부서명만). 「장편소설」·저자 이름 같은 부서명은 뺀다
+  const raw = String(title ?? ""), i = raw.search(/[:：]/);
+  const sub = i < 0 ? "" : raw.slice(i + 1), subn = tnorm(sub), fa = firstAuthor(author);
+  const generic = !subn || GENERIC_SUB.some(w => sub.includes(w)) || (!!fa && subn.includes(fa));
+  return tnorm(mainTitle(raw)) + (generic ? "" : subn);
+}
 const FOREIGN_MARK = ["중문판", "영문판", "일문판", "원서"];
 function scoreDoc(doc, qFull, qBase, vol, dropped) {           // naru._score_doc
   const qn = tnorm(vol ? qBase : qFull), tn = tnorm(mainTitle(doc.title)), fn = tnorm(doc.title), an = tnorm(doc.author);
@@ -201,11 +208,9 @@ function scoreDoc(doc, qFull, qBase, vol, dropped) {           // naru._score_do
   if (dropped.map(tnorm).filter(x => x).some(x => !fn.includes(x) && !an.includes(x))) s -= 50;
   if (vol) {
     const dv = String(doc.vol ?? "").replace(/\D/g, "").replace(/^0+/, "");
-    if (dv) s += dv === vol ? 15 : -100;
-    else {
-      const nums = (mainTitle(doc.title).match(/\d+/g) || []).map(x => x.replace(/^0+/, ""));
-      s += nums.includes(vol) ? 15 : nums.length ? -100 : -50;
-    }
+    const nums = (mainTitle(doc.title).match(/\d+/g) || []).map(x => x.replace(/^0+/, ""));
+    if (dv ? dv !== vol : !nums.includes(vol)) return 0;       // 다른 권이거나 몇 권인지 모르면 고르지 않는다(되묻기)
+    s += 15;
   }
   if (hasHangul(qFull)) {
     const t = String(doc.title ?? "");
@@ -247,11 +252,11 @@ async function searchItem(utterance, deps, ctx) {
     if (best && !(vol && !explicit && i === 0)) break;         // 권차가 낱말 끝 숫자일 때만 두 검색을 함께 견준다
   }
   if (best) {
-    const d = best.d, tn = tnorm(mainTitle(d.title)), fa = firstAuthor(d.author);
+    const d = best.d, ct = coreTitle(d.title, d.author), fa = firstAuthor(d.author);
     const others = [], seenA = [fa];
     for (const p of pool) {
       const o = p.d;
-      if (o.isbn13 === d.isbn13 || tnorm(mainTitle(o.title)) !== tn) continue;
+      if (o.isbn13 === d.isbn13 || coreTitle(o.title, o.author) !== ct) continue;
       const oa = firstAuthor(o.author);
       if (seenA.some(a => sameAuthor(a, oa))) continue;
       seenA.push(oa); others.push(bookOf(o));

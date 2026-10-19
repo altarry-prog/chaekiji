@@ -411,7 +411,7 @@ def _live_search(utterance):
 # ── [10/19] 서지 고르기 — 검색 결과 첫 번째(대출 많은 순)를 그대로 쓰지 않고 문의와 견줘 고른다(relay/mcp.js와 같은 규칙) ──
 # AI 대조 시험(10/19)에서 「해리 포터와 마법사의 돌」 → 「혼혈 왕자」, 「구름빵 백희나」 → 중문판, 「불편한 편의점 2」 → 1권을 고른 일.
 # 점수: 본서명 일치 100 · 문의가 서명에 다 들어 있음 80 · 낱말이 서명·저자에 나뉘어 다 들어 있음 70 · 본서명이 문의 안에 있음 60
-#       + 저자 일치 10 · 권차 일치 15(다른 권 -100, 권을 알 수 없음 -50) · 한국어 문의에 외국어 판 -60 · 검색어에서 뺀 낱말이 안 맞음 -50
+#       + 저자 일치 10 · 권차 일치 15(다른 권이거나 몇 권인지 모르면 고르지 않음) · 한국어 문의에 외국어 판 -60 · 검색어에서 뺀 낱말이 안 맞음 -50
 #       60점 아래면 고르지 않고 후보를 보이며 되묻는다(틀린 책으로 판정하지 않는다).
 _VOL_EXPLICIT = re.compile(r"^(.*?)\s*(?:제\s*)?([0-9]{1,3})\s*권$")
 _VOL_TRAIL = re.compile(r"^(.*[^0-9])\s+([0-9]{1,2})$")
@@ -438,6 +438,15 @@ def _first_author(a):
     first = re.split(r"[;,|]", str(a if a is not None else ""))[0]
     return _tnorm("".join(w for w in re.split(r"[\s:()]+", first) if w and w not in _ROLE_WORDS))
 def _same_author(a, b): return (not a) or (not b) or (a in b) or (b in a)
+_GENERIC_SUB = ("소설", "에세이", "시집", "산문", "장편", "단편", "연작", "개정", "큰글자", "특별판", "한정판", "양장", "리커버")
+def _core_title(title, author):
+    """본서명 + (작품을 가르는 부서명만). 「장편소설」·저자 이름 같은 부서명은 뺀다 — 같은 제목 다른 책을 가를 때 쓴다."""
+    raw = str(title if title is not None else "")
+    m = re.search(r"[:：]", raw)
+    sub = "" if not m else raw[m.end():]
+    subn, fa = _tnorm(sub), _first_author(author)
+    generic = (not subn) or any(w in sub for w in _GENERIC_SUB) or (bool(fa) and fa in subn)
+    return _tnorm(_main_title(raw)) + ("" if generic else subn)
 _FOREIGN_MARK = ("중문판", "영문판", "일문판", "원서")
 def _score_doc(doc, q_full, q_base, vol, dropped):
     qn, tn = _tnorm(q_base if vol else q_full), _tnorm(_main_title(doc.get("title")))
@@ -457,10 +466,9 @@ def _score_doc(doc, q_full, q_base, vol, dropped):
     if any(x not in fn and x not in an for x in (_tnorm(w) for w in dropped) if x): s -= 50
     if vol:
         dv = re.sub(r"[^0-9]", "", str(doc.get("vol") or "")).lstrip("0")
-        if dv: s += 15 if dv == vol else -100
-        else:
-            nums = [x.lstrip("0") for x in re.findall(r"[0-9]+", _main_title(doc.get("title")))]
-            s += 15 if vol in nums else (-100 if nums else -50)
+        nums = [x.lstrip("0") for x in re.findall(r"[0-9]+", _main_title(doc.get("title")))]
+        if (dv != vol) if dv else (vol not in nums): return 0   # 다른 권이거나 몇 권인지 모르면 고르지 않는다(되묻기)
+        s += 15
     if _has_hangul(q_full):
         t = str(doc.get("title") or "")
         cjk = sum(1 for ch in t if "一" <= ch <= "鿿")
@@ -497,11 +505,11 @@ def pick_search(title, search_fn, evidence, unavailable_reason=None):
             if sc >= 60 and (best is None or sc > best["sc"]): best = {**p, "sc": sc}
         if best and not (vol and not explicit and i == 0): break   # 권차가 낱말 끝 숫자일 때만 두 검색을 함께 견준다
     if best:
-        d = best["d"]; tn = _tnorm(_main_title(d.get("title"))); fa = _first_author(d.get("author"))
+        d = best["d"]; ct = _core_title(d.get("title"), d.get("author")); fa = _first_author(d.get("author"))
         others, seen_a = [], [fa]
         for p in pool:
             o = p["d"]
-            if o["isbn13"] == d["isbn13"] or _tnorm(_main_title(o.get("title"))) != tn: continue
+            if o["isbn13"] == d["isbn13"] or _core_title(o.get("title"), o.get("author")) != ct: continue
             oa = _first_author(o.get("author"))
             if any(_same_author(a, oa) for a in seen_a): continue
             seen_a.append(oa); others.append(_book_of(o))

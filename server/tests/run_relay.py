@@ -197,8 +197,11 @@ ok(p1["found"] and p1["isbn13"] == "9788983920683" and "2번째" in p1["evidence
    "   ⑦′ 검색 첫 결과를 그대로 쓰지 않음 — 「해리 포터와 마법사의 돌」은 2번째(같은 책), 「구름빵 백희나」는 중문판 대신 「구름빵」을 다시 찾아 저자로 확인")
 p3 = _naru.pick_search("흔한남매 1권", _fake, _E)
 p4 = _naru.pick_search("불편한 편의점 2", _fake, _E)
-ok(p3["found"] and p3["isbn13"] == "9790000000103" and p4["found"] and p4["isbn13"] == "9791161572062",
-   "   ⑦″ 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 2권(시연 도서 1권이 아님)")
+p3b = _naru.pick_search("흔한남매 9권", _fake, _E)
+ok(p3["found"] and p3["isbn13"] == "9790000000103" and p4["found"] and p4["isbn13"] == "9791161572062" and p3b["found"] is False
+   and _naru._core_title("구름빵 : 키 크는 빵 주세요", "GIMC|DPS") != _naru._core_title("구름빵", "글·그림: 백희나")
+   and _naru._core_title("채식주의자:한강 연작소설", "한강") == "채식주의자",
+   "   ⑦″ 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 2권(시연 도서 1권이 아님), 없는 권·권 모르는 판은 고르지 않음 · 부서명이 작품을 가르면 다른 책")
 p5 = _naru.pick_search("문헌정보학개론", _fake, _E)
 p6 = _naru.pick_search("문헌정보학개론 정동열", _fake, _E)
 ok(p5["found"] and len(p5["same_title_others"]) == 3 and p6["found"] is False and len(p6["candidate_books"]) == 3,

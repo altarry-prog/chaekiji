@@ -143,12 +143,15 @@ let s1 = await call2("consult_request", { utterance: "해리 포터와 마법사
 ok(s1.book.isbn13 === "9788983920683" && s1.book.title === "해리포터와 마법사의 돌" && s1.book.evidence.includes("2번째") && s1.route === "ill",
    "[10/19] 「해리 포터와 마법사의 돌」 — 검색 첫 결과(혼혈 왕자)가 아니라 같은 책(2번째)을 고름 · 근거에 고른 사실");
 s1 = await call2("consult_request", { utterance: "구름빵 백희나 있어요?", pickup: "별빛마루" }, 502);
-ok(s1.book.isbn13 === "9788953527058" && !s1.book.title.includes("중문판") && s1.book.evidence.includes("「구름빵」") && s1.route === "visit",
-   "[10/19] 「구름빵 백희나」 — 중문판만 나오면 고르지 않고 「구름빵」으로 다시 찾아 저자(백희나)로 확인");
+ok(s1.book.isbn13 === "9788953527058" && !s1.book.title.includes("중문판") && s1.book.evidence.includes("「구름빵」") && s1.route === "visit" &&
+   !("same_title_others" in s1) && !s1.notice.includes("같은 제목의 다른 책"),
+   "[10/19] 「구름빵 백희나」 — 중문판만 나오면 고르지 않고 「구름빵」으로 다시 찾아 저자(백희나)로 확인 · 부서명이 다른 시리즈 책(「구름빵 : 키 크는 빵 주세요」)은 「같은 제목」으로 세지 않음");
 s1 = await call2("consult_request", { utterance: "흔한남매 1권", pickup: "송내" }, 503);
 const s1b = await call2("search_item", { utterance: "불편한 편의점 2" }, 504);
-ok(s1.book.isbn13 === "9790000000103" && s1.route === "ill" && s1b.found && s1b.isbn13 === "9791161572062" && s1b.isbn13 !== "9791161571188",
-   "[10/19] 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 시연 도서 1권 픽스처로 가지 않음");
+const s1d = await call2("search_item", { utterance: "흔한남매 9권" }, 508);
+ok(s1.book.isbn13 === "9790000000103" && s1.route === "ill" && s1b.found && s1b.isbn13 === "9791161572062" && s1b.isbn13 !== "9791161571188" &&
+   s1d.found === false && s1d.candidate_books.length === 3,
+   "[10/19] 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 시연 도서 1권 픽스처로 가지 않음, 없는 권(9권)·권 모르는 판은 고르지 않고 되묻기");
 s1 = await call2("consult_request", { utterance: "문헌정보학개론", pickup: "상동" }, 505);
 const s1c = await call2("search_item", { utterance: "문헌정보학개론 정동열" }, 506);
 ok(s1.route === "sea" && s1.same_title_others.length === 3 && s1.notice.includes("같은 제목의 다른 책도 있습니다") && s1.desk_memo.includes("저자 확인") &&

@@ -21,6 +21,7 @@ MODE = os.environ.get("CHAEKIJI_MODE", "demo")        # demo | relay | live | au
 # [v0.3.4] 중계 주소 — 환경변수 CHAEKIJI_RELAY > 설정 relay_url. 키 값은 어디에도 없다(중계 서버만 가짐).
 naru.RELAY = os.environ.get("CHAEKIJI_RELAY") or str(CFG.get("relay_url") or "")
 naru.PLACES = list(CFG["libraries"])            # [10/18] 검색어에서 수령관 말(「원미도서관으로」·「상동에서」)을 뺄 때 쓰는 도서관 이름
+naru.POINTS = list(CFG.get("pickup_points") or [])   # [10/19] 작은도서관 받을 곳 이름도(「상동역 칙칙폭폭에서」)
 if MODE == "auto":                                    # 심사위원 기본값: 중계(오늘) → 매일 갱신 스냅샷(어제) → 8/18 픽스처
     MODE = "relay" if naru.relay_ok() else ("snapshot" if naru.snapshot_fresh() else "demo")
 # 관내 소장·대출의 출처 — alpas: 도서관리시스템 실시간 연동 모의(값은 8/18 픽스처) / naru: 정보나루 bookExist(전일 기준, live·relay·snapshot이면 실조회분)
@@ -220,10 +221,15 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                 "notice": "지금 정보나루에 연결되지 않아 책을 찾지 못했습니다. 창구에서 도서관리시스템으로 찾아 드리겠습니다.",
                 "desk_memo": f"[조회 불가] 문의 「{utterance}」 — 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회"}
     if not found.get("found"):
-        return {**base, "found": False, "route": "unknown", "route_label": _ROUTE_LABEL["unknown"],
-                "book": None, "reason": found.get("reason"), "candidates": found.get("candidates", []),
-                "notice": "말씀하신 책을 아직 찾지 못했습니다. 저자나 출판사, 대략의 내용을 조금 더 알려 주시겠어요?",
-                "desk_memo": f"[미확정] 문의 「{utterance}」 — 서지 재확인 필요"}
+        out = {**base, "found": False, "route": "unknown", "route_label": _ROUTE_LABEL["unknown"],
+               "book": None, "reason": found.get("reason"), "candidates": found.get("candidates", []),
+               "notice": "말씀하신 책을 아직 찾지 못했습니다. 저자나 출판사, 대략의 내용을 조금 더 알려 주시겠어요?",
+               "desk_memo": f"[미확정] 문의 「{utterance}」 — 서지 재확인 필요"}
+        if found.get("candidate_books"):              # [10/19] 검색은 됐지만 문의와 맞는 책을 못 고름 — 후보를 보여 주고 되묻는다
+            out["candidate_books"] = found["candidate_books"]
+            out["desk_memo"] += "\n검색 후보: " + " / ".join(
+                f"{b.get('title') or ''}({b.get('author') or ''}, {b.get('publisher') or ''} {b.get('year') or ''})" for b in found["candidate_books"])
+        return out
     isbn = found["isbn13"]; title = found.get("title") or isbn
     avail = check_availability(isbn)
     unknown = bool(avail.get("status_unknown"))       # [v0.3.5] 정보나루 조회 실패 + 픽스처에도 없는 책
@@ -298,6 +304,10 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         notice += f" (대출 상태는 정보나루 {asof_k} 조회, 전일 기준)"
     if pol["pending"]:
         notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다."
+    others = found.get("same_title_others") or []    # [10/19] 같은 제목·다른 저자의 책이 함께 검색됨 — 고른 책을 밝히고 확인을 청한다
+    if others:
+        notice += (" 같은 제목의 다른 책도 있습니다(" + " / ".join(f"{b.get('author') or ''} · {b.get('publisher') or ''} {b.get('year') or ''}"
+                                                          for b in others) + ") — 찾으시는 책의 저자가 다르면 알려 주세요.")
     bad = [c for c in pol["checks"] if c["pass"] is False and not (route == "visit" and "비치" in c["rule"])]
     if bad:                                           # 바로 이용 갈래에서 비치 규정은 곧 그 갈래의 이유이므로 되풀이하지 않는다
         notice += " 다만 " + "; ".join(f"{c['rule']}({c['detail']})" for c in bad) + " — 이 조건을 먼저 확인해야 합니다."
@@ -306,7 +316,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         tail = {"visit": "이 책 보기", "ill": "이 책 보기·신청(로그인 뒤 「상호대차 신청」 — 접수는 이용자가 직접)",
                 "reserve": "이 책 보기·예약(로그인 뒤 「예약」)", "check": "이 책의 소장·대출 상태 보기"}[route]
         notice += f" 공식 누리집에서 {tail}: {link}"
-    memo_lines = [f"도서: {title} ({found.get('author') or ''}) ISBN {isbn}",
+    memo_lines = [f"도서: {title} ({found.get('author') or ''}) ISBN {isbn}" + (f" · 같은 제목 다른 책 {len(others)}건 — 저자 확인" if others else ""),
                   f"갈래: {_ROUTE_LABEL[route]}" + (f" · 소장관 {from_lib}" if from_lib else ""),
                   (f"수령관: {pickup}도서관 (작은도서관 — 서가 비치·도착일·보관 기한은 창구 확인)" if is_point else
                    f"수령관: {pickup} (현재 {'서가 비치' if at_pickup == 'ok' else '대출 중' if at_pickup == 'busy' else '확인 불가' if unknown else '미소장'})"),
@@ -326,7 +336,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                              "nation": nation, "basis": avail["basis"], "asof": asof},
             "policy": pol, "notice": notice, "official_link": link,
             "translate_to": None if lang == "ko" else lang,
-            "desk_memo": "\n".join(memo_lines), "next_tool": next_tool}
+            "desk_memo": "\n".join(memo_lines), "next_tool": next_tool, **({"same_title_others": others} if others else {})}
 
 def suggest_items(user: str = None, count: int = 3):
     """[확장 v0.2] 이달의 추천 — 운영: AI 책큐/정보나루 recommandList 커넥터."""

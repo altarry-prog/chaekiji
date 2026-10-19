@@ -28,7 +28,7 @@ export function mockFetch(scenario, snapshot, log = []) {
       if (t && (scenario.fail_q || []).includes(t)) throw new TypeError("Network connection lost.");
       const docs = t ? (scenario.books || {})[t] || [] : allBooks.filter(b => b.isbn13 === isbn).slice(0, 1);
       return reply({ docs: docs.map(b => ({ doc: { isbn13: b.isbn13, bookname: b.title, authors: b.author,
-                                                     publisher: b.publisher, publication_year: b.year } })) });
+                                                     publisher: b.publisher, publication_year: b.year, ...(b.vol ? { vol: b.vol } : {}) } })) });
     }
     if (api === "libSrchByBook") {
       if (u.searchParams.get("dtl_region")) {

@@ -178,4 +178,33 @@ ok(r8["mode"] == "relay" and "매일 갱신" in r8["availability"]["basis"] and 
    "   relay 모드라도 스냅샷에 있는 책은 중계를 안 부름(한도 절약) — 스냅샷 값으로 판정")
 ok(r9["found"] and "중계" in r9["availability"]["basis"] and r9["route"] == "ill", "   스냅샷에 없는 책은 중계로 — 『채식주의자』 관내 상호대차")
 c6.banner(); httpd2.shutdown(); httpd2.server_close()
+# [10/19] 서지 고르기 — AI 대조 시험(상담 비서로 실제 책 12건)에서 다른 책을 고른 3건·못 찾은 2건을 고친 것(relay/mcp.js와 같은 규칙).
+#   검색 결과는 2026. 10. 19. 실제 /search 응답(relay/test_mcp_scenarios.json에 실음), 「흔한남매」 권차는 모의 값. 순수 함수로 확인(네트워크 없음)
+_SC = json.load(open(ROOT.parent / "relay" / "test_mcp_scenarios.json", encoding="utf-8"))["books"]
+def _fake(q): return [dict(x) for x in _SC.get(q, [])]
+_LIBN = ["꿈빛", "꿈여울", "도당", "동화", "별빛마루", "북부", "상동", "송내", "수주", "심곡", "역곡", "역곡밝은", "오정", "원미", "책마루", "한울빛"]
+_PTS = ["상동역 칙칙폭폭", "숲속", "꿈꾸는새싹", "약대신나는가족", "시정담벼락", "신중동역 칙칙폭폭", "소사칙칙폭폭", "해밀"]
+ok(_naru.split_volume("흔한남매 1권") == ("흔한남매", "1", True) and _naru.split_volume("불편한 편의점 2") == ("불편한 편의점", "2", False)
+   and _naru.split_volume("트렌드 코리아 2026")[1] is None and _naru.split_volume("1984")[1] is None
+   and _naru.clean_title("양귀자 모순 빌리고 싶은데 상동역 칙칙폭폭에서 받을게요", places=_LIBN, points=_PTS) == "양귀자 모순"
+   and _naru.clean_title("불편한 편의점 빌리고 싶대요, 송내에서 받는대요", places=_LIBN, points=_PTS) == "불편한 편의점"
+   and _naru.clean_title("숲속 작은 집", places=_LIBN, points=_PTS) == "숲속 작은 집",
+   "⑦ [10/19] 권차 나누기(「2026」·「1984」는 권차 아님) · 말끝·작은도서관 이름 걷기(「숲속 작은 집」 같은 제목은 그대로)")
+_E = "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)"
+p1 = _naru.pick_search("해리 포터와 마법사의 돌", _fake, _E)
+p2 = _naru.pick_search("구름빵 백희나", _fake, _E)
+ok(p1["found"] and p1["isbn13"] == "9788983920683" and "2번째" in p1["evidence"] and p2["found"] and p2["isbn13"] == "9788953527058" and "「구름빵」" in p2["evidence"],
+   "   ⑦′ 검색 첫 결과를 그대로 쓰지 않음 — 「해리 포터와 마법사의 돌」은 2번째(같은 책), 「구름빵 백희나」는 중문판 대신 「구름빵」을 다시 찾아 저자로 확인")
+p3 = _naru.pick_search("흔한남매 1권", _fake, _E)
+p4 = _naru.pick_search("불편한 편의점 2", _fake, _E)
+ok(p3["found"] and p3["isbn13"] == "9790000000103" and p4["found"] and p4["isbn13"] == "9791161572062",
+   "   ⑦″ 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 2권(시연 도서 1권이 아님)")
+p5 = _naru.pick_search("문헌정보학개론", _fake, _E)
+p6 = _naru.pick_search("문헌정보학개론 정동열", _fake, _E)
+ok(p5["found"] and len(p5["same_title_others"]) == 3 and p6["found"] is False and len(p6["candidate_books"]) == 3,
+   "   ⑦‴ 같은 제목·다른 저자는 함께 알림(3건) · 말한 저자가 어느 결과와도 안 맞으면 고르지 않고 후보 3건과 되묻기")
+def _boom(q): raise RuntimeError("연결 끊김")
+p7 = _naru.pick_search("아무 책", _boom, _E, unavailable_reason="중계 응답 없음")
+ok(p7["found"] is False and p7.get("unavailable") is True and _naru.pick_search("아무도 모르는 제목", _fake, _E)["candidates"] == [],
+   "   ⑦⁗ 첫 검색이 끊기면 「없음」이 아니라 unavailable(v0.3.5 그대로) · 결과가 없으면 후보 없이 못 찾음")
 print(f"\n중계 시험 {PASS}건 통과 — 키 없이 오늘 데이터, 중계가 멈춰도 멈추지 않는다.")

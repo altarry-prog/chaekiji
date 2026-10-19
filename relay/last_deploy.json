@@ -1,10 +1,10 @@
 {
- "time": "2026-10-19 19:46 KST",
+ "time": "2026-10-19 19:51 KST",
  "result": "ok",
  "url": "https://chaekiji-relay.altarry2.workers.dev",
  "health": {
   "status": 200,
-  "ms": 91,
+  "ms": 240,
   "ok": true,
   "keyed": true,
   "region": "31050",
@@ -12,7 +12,7 @@
  },
  "probe_python_default_name": {
   "status": 403,
-  "ms": 28,
+  "ms": 70,
   "text": "error code: 1010"
  },
  "cors_web": {
@@ -21,14 +21,14 @@
  },
  "holdings_sample": {
   "status": 200,
-  "ms": 4064,
+  "ms": 3173,
   "asof": "2026-10-19",
   "calls": 16,
   "via": "http",
   "cached": false,
-  "upstream_ms": 4030,
-  "call_ms_median": 2616,
-  "call_ms_max": 4030,
+  "upstream_ms": 3062,
+  "call_ms_median": 1968,
+  "call_ms_max": 3062,
   "placement": "local-ORD",
   "edge": "ORD",
   "isbn": "9788972756194",
@@ -37,22 +37,25 @@
   "none": 3
  },
  "search_sample": {
-  "status": 200,
-  "ms": 966,
-  "via": "http",
-  "docs": 6,
-  "first": "나미야 잡화점의 기적 :히가시노 게이고 장편소설 "
+  "status": 502,
+  "ms": 686,
+  "error": "upstream",
+  "detail": [
+   "naru:1일 500건 이상 요청 시 IP 등록이 필요합니다. 등록 된 IP를 확인하시기 바랍니다."
+  ]
  },
  "nation_sample": {
-  "status": 200,
-  "ms": 1713,
-  "found_count": 200,
-  "via": "http"
+  "status": 502,
+  "ms": 3227,
+  "error": "upstream",
+  "detail": [
+   "naru:1일 500건 이상 요청 시 IP 등록이 필요합니다. 등록 된 IP를 확인하시기 바랍니다."
+  ]
  },
  "mcp": {
   "initialize": {
    "status": 200,
-   "ms": 34,
+   "ms": 75,
    "protocol": "2025-06-18",
    "server": "0.3.5-remote"
   },
@@ -66,7 +69,7 @@
   ],
   "consult": {
    "status": 200,
-   "ms": 152,
+   "ms": 123,
    "route": "ill",
    "asof": "2026-10-19",
    "basis": "관내: 정보나루 bookExist(매일 갱신 · 2026-10-19 조회 · 전일 기준)",
@@ -84,5 +87,5 @@
   "Claude-User": 200,
   "Mozilla/5.0 (compatible; Claude-User/1.0; +Claude-User@anthropic.com)": 200
  },
- "check": "ok"
+ "check": "fail"
 }

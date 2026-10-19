@@ -43,19 +43,30 @@ CACHE_SEC = 600
 FIX_ASOF = "2026-08-18"                               # 픽스처 실측일
 SNAPSHOT_PATH = Path(os.environ.get("CHAEKIJI_SNAPSHOT") or (FIX / "holdings-today.json"))
 SNAPSHOT_MAX_DAYS = 2
+# [10/19] 심사 기간 고정 자료 — 2026. 11. 8. 18시 동결 뒤 새벽 갱신이 멈추므로, 11. 8. 이후 날짜의 새벽 자료는 11. 26.까지 신선한 것으로 본다.
+#   평소 규칙(2일)은 그대로이고, 안내문에는 지금처럼 조회일(「2026. 11. 8. 조회」)을 밝힌다. 결선(11. 25.) 뒤 지운다. relay/mcp.js·index.html·health_check.py와 같은 값.
+FROZEN_FROM = datetime.date(2026, 11, 8)
+FROZEN_UNTIL = datetime.date(2026, 11, 26)
 try:
     _snap = json.load(open(SNAPSHOT_PATH, encoding="utf-8")) if SNAPSHOT_PATH.exists() else None
 except Exception:
     _snap = None
 
+def snapshot_ok(asof: datetime.date, today: datetime.date) -> bool:
+    """새벽 자료를 써도 되는 날짜인가 — 평소 2일 이내, 또는 심사 기간 고정 자료(11. 8.~ 자료를 11. 26.까지). 순수 함수(시험용)."""
+    age = (today - asof).days
+    if 0 <= age <= SNAPSHOT_MAX_DAYS:
+        return True
+    return FROZEN_FROM <= asof <= today <= FROZEN_UNTIL
+
 def snapshot_fresh() -> bool:
-    """오늘 조회분 파일이 있고 2일 안쪽이면 참(대출 상태는 어차피 전일 기준이라 하루 지난 것까지 쓴다)."""
+    """오늘 조회분 파일이 있고 2일 안쪽이면 참(대출 상태는 어차피 전일 기준이라 하루 지난 것까지 쓴다). 심사 기간에는 11. 8. 자료도 참."""
     if not _snap or not _snap.get("holdings"): return False
     try:
         d = datetime.date.fromisoformat(_snap["asof"])
     except Exception:
         return False
-    return 0 <= (datetime.datetime.now(KST).date() - d).days <= SNAPSHOT_MAX_DAYS
+    return snapshot_ok(d, datetime.datetime.now(KST).date())
 
 def _snapshot_holdings(isbn13, libraries):
     if not snapshot_fresh(): return None

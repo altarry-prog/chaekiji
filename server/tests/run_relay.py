@@ -152,12 +152,22 @@ r6 = c4.call("consult_request", utterance="나미야 잡화점의 기적", picku
 ok(r6["mode"] == "snapshot" and r6["route"] == "visit" and "매일 갱신" in r6["availability"]["basis"] and r6["availability"]["asof"] == TODAY,
    "   중계 없음 + 신선한 스냅샷 → auto가 snapshot 선택 · 어제 반납분이 「바로 이용」으로 반영")
 c4.banner()
-snap["asof"] = (datetime.datetime.now(KST).date() - datetime.timedelta(days=10)).isoformat()
+snap["asof"] = (datetime.datetime.now(KST).date() - datetime.timedelta(days=30)).isoformat()   # [10/19] 10일 → 30일(심사 기간 고정 자료 규칙과 겹치지 않게 — 판정 기준은 그대로)
 json.dump(snap, open(tmp/"snap.json", "w", encoding="utf-8"), ensure_ascii=False)
 c5 = Client(CHAEKIJI_MODE="auto", CHAEKIJI_RELAY=RELAY, CHAEKIJI_SNAPSHOT=str(tmp/"snap.json"))
 r7 = c5.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동")
-ok(r7["mode"] == "demo" and r7["availability"]["asof"] == "2026-08-18", "   10일 지난 스냅샷은 무시 → demo(8/18 픽스처)")
+ok(r7["mode"] == "demo" and r7["availability"]["asof"] == "2026-08-18", "   30일 지난 스냅샷은 무시 → demo(8/18 픽스처)")
 c5.banner()
+# [10/19] 심사 기간 고정 자료 — 동결(11/8 18시) 뒤 새벽 갱신이 멈춰도 11/8 자료로 결선(11/25)까지 답한다. 날짜를 넣어 순수 함수로 확인(실제 시계와 무관)
+sys.path.insert(0, str(ROOT))
+from connectors import naru as _naru
+D = datetime.date
+ok(_naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 13)) and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 17)) and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 25))
+   and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 26)) and not _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 27))
+   and not _naru.snapshot_ok(D(2026, 11, 7), D(2026, 11, 13)) and not _naru.snapshot_ok(D(2026, 11, 9), D(2026, 11, 8)),
+   "   ⑥′ 심사 기간 고정 자료 — 11/8 자료는 11/13·11/17·11/25·11/26에 신선, 11/27엔 아님 · 11/7 자료는 아님 · 미래 날짜 자료는 아님")
+ok(_naru.snapshot_ok(D(2026, 10, 19), D(2026, 10, 19)) and _naru.snapshot_ok(D(2026, 10, 17), D(2026, 10, 19)) and not _naru.snapshot_ok(D(2026, 10, 16), D(2026, 10, 19)),
+   "   ⑥″ 평소 규칙은 그대로 — 2일 이내만 신선(10/17 자료는 10/19에 신선, 10/16 자료는 아님)")
 httpd2 = serve(PORT + 1); time.sleep(0.3)
 snap["asof"] = TODAY
 json.dump(snap, open(tmp/"snap.json", "w", encoding="utf-8"), ensure_ascii=False)

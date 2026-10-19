@@ -16,6 +16,8 @@ const PROTOCOLS = ["2025-06-18", "2025-03-26", "2024-11-05"];     // 앞이 최�
 export const SNAPSHOT_URL = "https://altarry-prog.github.io/chaekiji/data/holdings-today.json";
 const FIX_ASOF = "2026-08-18";
 const SNAPSHOT_MAX_DAYS = 2;
+// [10/19] 심사 기간 고정 자료 — 11. 8. 18시 동결 뒤 새벽 갱신이 멈추므로 11. 8. 이후 자료는 11. 26.까지 신선한 것으로 본다(naru.snapshot_ok와 같은 규칙). 결선 뒤 지움
+const FROZEN_FROM = "2026-11-08", FROZEN_UNTIL = "2026-11-26";
 const SNAP_CACHE_MS = 10 * 60 * 1000;
 const ROUTE_LABEL = { visit: "바로 이용(수령관 서가에 있음)", ill: "관내 상호대차", reserve: "예약 권장(관내 소장분 전부 대출 중)",
                       sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정", check: "소장 확인 불가(창구에서 조회)" };
@@ -106,10 +108,15 @@ async function snapshot(ctx) {
   state.snap = snap; state.snapAt = Date.now();
   return snap;
 }
+export function snapshotOk(asof, today) {                      // naru.snapshot_ok — 평소 2일 이내, 또는 심사 기간 고정 자료
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(asof || "") || !/^\d{4}-\d{2}-\d{2}$/.test(today || "")) return false;
+  const days = Math.round((Date.parse(today + "T00:00:00Z") - Date.parse(asof + "T00:00:00Z")) / 864e5);
+  if (days >= 0 && days <= SNAPSHOT_MAX_DAYS) return true;
+  return FROZEN_FROM <= asof && asof <= today && today <= FROZEN_UNTIL;
+}
 function snapshotFresh(snap) {
-  if (!snap || !pyTruthy(snap.holdings) || !/^\d{4}-\d{2}-\d{2}$/.test(snap.asof || "")) return false;
-  const days = Math.round((Date.parse(kstDay() + "T00:00:00Z") - Date.parse(snap.asof + "T00:00:00Z")) / 864e5);
-  return days >= 0 && days <= SNAPSHOT_MAX_DAYS;
+  if (!snap || !pyTruthy(snap.holdings)) return false;
+  return snapshotOk(snap.asof, kstDay());
 }
 
 // ── 찾기(naru.search relay 모드) ──────────────────────────────────────────

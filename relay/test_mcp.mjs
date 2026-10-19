@@ -1,7 +1,7 @@
 // 원격 상담 비서(relay/mcp.js) 점검 — MCP 규약(초기화·목록·호출·오류)과 판정 몇 가지를 모의 정보나루로 돌려 본다.
 // 실행: node relay/test_mcp.mjs   (네트워크·키 불필요. 파이썬 판과의 대조는 relay/test_mcp_parity.py)
 import worker from "./worker.js";
-import { _resetForTest } from "./mcp.js";
+import { _resetForTest, snapshotOk } from "./mcp.js";
 import { mockFetch, rpc, call } from "./test_naru_mock.mjs";
 import { readFileSync } from "node:fs";
 
@@ -121,4 +121,10 @@ for (let i = 0; i < 70 && !limited; i++) {
   limited = x.isError && x.text.includes("호출 한도");
 }
 ok(limited, "호출 상한(10분에 60회) — 넘으면 도구 오류로 알림");
+// [10/19] 심사 기간 고정 자료 — 동결 뒤 새벽 갱신이 멈춰도 11/8 자료로 결선까지 답한다(파이썬 naru.snapshot_ok와 같은 규칙, 날짜를 넣어 확인)
+ok(snapshotOk("2026-11-08", "2026-11-13") && snapshotOk("2026-11-08", "2026-11-17") && snapshotOk("2026-11-08", "2026-11-25") && snapshotOk("2026-11-08", "2026-11-26") &&
+   !snapshotOk("2026-11-08", "2026-11-27") && !snapshotOk("2026-11-07", "2026-11-13") && !snapshotOk("2026-11-09", "2026-11-08") &&
+   snapshotOk("2026-10-19", "2026-10-19") && snapshotOk("2026-10-17", "2026-10-19") && !snapshotOk("2026-10-16", "2026-10-19") && !snapshotOk("bad", "2026-11-13"),
+   "심사 기간 고정 자료 — 11/8 자료는 11/13~11/26에 신선, 11/27·11/7 자료·미래 날짜는 아님 · 평소 2일 규칙 그대로");
+
 console.log(`\n원격 상담 비서 점검 ${n}건 통과`);

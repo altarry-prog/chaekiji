@@ -576,6 +576,10 @@ body.bigmode .bqitems{font-size:15.5px}
 }
 .atools button.on{background:#fff;color:var(--brand-d);border-color:#fff}
 body.bigmode .body{zoom:1.18}
+/* v1.12.6 큰글자 모드: 글자만 키우고 마이크 단추와 둘레 고리는 보통 모드 크기 그대로 — 고리가 안내 글을 가로지르지 않게 */
+body.bigmode .mic{zoom:calc(1/1.18)}
+@media (min-height:721px){ body.bigmode .micwrap{min-height:136px} }
+@media (max-height:720px){ body.bigmode .micwrap{min-height:110px} }
 body.bigmode .pb{font-size:16px}body.bigmode .pb.s{font-size:13px}body.bigmode .pb.d{font-size:14px}
 body.bigmode .pc-num{font-size:18px}body.bigmode .pc-sub{font-size:14px}body.bigmode .pc-status{font-size:14.5px}
 body.bigmode .pc-chips button{font-size:14px;padding:8px 12px}body.bigmode .pc-tin input{font-size:16px}
@@ -941,6 +945,9 @@ const 기준일 = "2026. 8. 18.";
    v1.12.2: 중계 주소 연결(2026. 10. 16. Cloudflare Workers 첫 배포). 순서는 오늘 새벽 매일 갱신 파일 → (그 파일이 오늘 것이 아니거나 그 책이 없을 때만) 중계 → 2일 이내 파일 → 8/18.
    정보나루 대출 상태는 어차피 전일 기준이라 낮에 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않고 하루 호출 한도를 아낀다(서버 auto 모드와 같은 규칙) */
 const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
+/* v1.12.6: 심사 기간 고정 자료 — 2026. 11. 8. 18시 동결 뒤 새벽 갱신이 멈추므로, 11. 8. 이후 날짜의 새벽 자료는 11. 26.까지 오늘 자료처럼 쓴다
+   (시연 도서는 중계·정보나루를 부르지 않고, 바닥글·결과의 조회일은 그대로 「11. 8.」). 평소 규칙(오늘 파일 → 중계 → 2.5일 이내 파일)은 그대로. 결선 뒤 지움.
+   큰글자 모드에서 마이크 단추와 둘레 고리는 보통 크기 그대로(고리가 안내 글을 가로지르던 것) — 10/17 고침안, 10/19 승인 */
 /* v1.12.5: 「공식 누리집에서 이 책 보기」 링크를 제목 검색 → ISBN 검색으로 — 그 판본 화면까지 바로 열림(2026. 10. 18. 담당자가 자료검색에서 확인).
    ISBN이 없을 때만 제목 검색. 화면 글자는 그대로 */
 /* v1.12.4: 상호대차 규정 문구를 부천시립도서관 누리집 안내(2026. 8. 10. 수정판)와 맞춤 — 소요 「평일 다음 날」(금·토 신청은 월·화), 수령 「도착일 포함 3일」,
@@ -966,16 +973,19 @@ function asofText(a){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(a || ''); retur
 function ro(w){ const c = String(w || '').trim().slice(-1).charCodeAt(0) - 0xAC00;
   if(!(c >= 0 && c <= 11171)) return '(으)로'; const j = c % 28; return (j === 0 || j === 8) ? '로' : '으로'; }
 function kstToday(){ return new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); }
+/* v1.12.6: 심사 기간 고정 자료 — 서버 naru.snapshot_ok·원격 상담 비서 snapshotOk와 같은 규칙 */
+const FROZEN_FROM = '2026-11-08', FROZEN_UNTIL = '2026-11-26';
+function frozenOk(asof){ const t = kstToday(); return typeof asof === 'string' && asof >= FROZEN_FROM && asof <= t && t <= FROZEN_UNTIL; }
 function dailyJson(){
   return fetch('data/holdings-today.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null);
 }
 /* v1.12.3: 바닥글 날짜 — 매일 갱신 파일이 2일 이내면 「○. ○. 갱신」, 아니면 「2026. 8. 18. 기준」 그대로 */
 dailyJson().then(j => { if(!j || !j.asof) return; const age = (Date.now() - new Date(j.asof + 'T00:00:00')) / 864e5;
-  const el = document.getElementById('footSrc'); if(el && age >= 0 && age <= 2.5) el.textContent = `정보나루 Open API ${asofText(j.asof)} 갱신`; });
+  const el = document.getElementById('footSrc'); if(el && ((age >= 0 && age <= 2.5) || frozenOk(j.asof))) el.textContent = `정보나루 Open API ${asofText(j.asof)} 갱신`; });
 function useDaily(c, j, todayOnly){
   if(!j || !j.holdings || !j.holdings[c.book.isbn] || !j.asof) return false;
-  if(todayOnly){ if(j.asof !== kstToday()) return false; }
-  else { const age = (Date.now() - new Date(j.asof + 'T00:00:00')) / 864e5; if(!(age >= 0 && age <= 2.5)) return false; }
+  if(todayOnly){ if(j.asof !== kstToday() && !frozenOk(j.asof)) return false; }   /* v1.12.6: 심사 기간엔 11/8 자료를 오늘 자료처럼 */
+  else { const age = (Date.now() - new Date(j.asof + 'T00:00:00')) / 864e5; if(!(age >= 0 && age <= 2.5) && !frozenOk(j.asof)) return false; }
   const bx = {}; Object.keys(LIB).forEach(n => { bx[n] = j.holdings[c.book.isbn][n] || 'none'; });
   c.bx = bx; c.asof = asofText(j.asof); return true;
 }

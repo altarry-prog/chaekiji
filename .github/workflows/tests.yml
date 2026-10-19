@@ -1,4 +1,4 @@
-# GitHub Actions — 커밋할 때마다 참조 서버(server/)의 시험 103건(적합성 50·실험실 14·중계 모드 29·호스트 10)과
+# GitHub Actions — 커밋할 때마다 참조 서버(server/)의 시험 104건(적합성 50·실험실 14·중계 모드 30·호스트 10)과
 # 중계·원격 상담 비서(relay/) 점검(중계 서버 20 · 원격 상담 비서 38 · 파이썬 판 대조 31)을 자동 실행(공개 저장소는 무료).
 # 결과는 저장소 Actions 탭과 README 배지로 보인다:
 #   ![tests](https://github.com/altarry-prog/chaekiji/actions/workflows/tests.yml/badge.svg)
@@ -25,7 +25,7 @@ jobs:
         run: python3 tests/run_scenarios.py
       - name: 실험실 점검 14건 (저장·감사·관내 출처)
         run: python3 lab/check_store.py
-      - name: 중계 모드 시험 29건 (모의 중계)
+      - name: 중계 모드 시험 30건 (모의 중계)
         run: python3 tests/run_relay.py
       - name: 공개 모델 호스트 시험 10건 (모의 Ollama)
         run: python3 tests/run_host.py

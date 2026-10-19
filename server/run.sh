@@ -29,10 +29,15 @@ echo
 echo "== 실험실 점검(14건) =="
 "$PY" lab/check_store.py
 echo
-echo "== 중계 모드 시험(29건, 모의 중계) =="
+echo "== 중계 모드 시험(30건, 모의 중계) =="
 "$PY" tests/run_relay.py
 echo
 echo "== 공개 모델 호스트 시험(10건, 모의 Ollama) =="
 "$PY" tests/run_host.py
 echo
-echo "[chaekiji-mcp] 준비 완료 — 시험 103건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts/ollama_host.py 를 보세요."
+echo "[chaekiji-mcp] 준비 완료 — 시험 104건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts/ollama_host.py 를 보세요."
+if [ "$PY" = ".venv/bin/python" ]; then                  # [10/19 밤] 리허설 지적 — 가상환경에 설치했으면 다음 명령도 그 파이썬으로
+  echo "※ 이 PC는 파이썬 패키지 설치를 막아 두어 이 폴더의 가상환경(.venv)에 설치했습니다."
+  echo "  다음 명령(lab/consult_cli.py · hosts/ollama_host.py · 클로드 데스크톱 설정의 command)은 python 대신 아래 파이썬으로 실행하세요."
+  echo "  $(pwd)/.venv/bin/python"
+fi

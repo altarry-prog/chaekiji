@@ -24,6 +24,9 @@ naru.PLACES = list(CFG["libraries"])            # [10/18] 검색어에서 수령
 naru.POINTS = list(CFG.get("pickup_points") or [])   # [10/19] 작은도서관 받을 곳 이름도(「상동역 칙칙폭폭에서」)
 if MODE == "auto":                                    # 심사위원 기본값: 중계(오늘) → 매일 갱신 스냅샷(어제) → 8/18 픽스처
     MODE = "relay" if naru.relay_ok() else ("snapshot" if naru.snapshot_fresh() else "demo")
+    AUTO_FELL_BACK = MODE in ("snapshot", "demo")    # [10/19 밤] auto인데 중계에 닿지 못함 — 시연 도서 밖의 책은 찾을 길이 없다
+else:
+    AUTO_FELL_BACK = False
 # 관내 소장·대출의 출처 — alpas: 도서관리시스템 실시간 연동 모의(값은 8/18 픽스처) / naru: 정보나루 bookExist(전일 기준, live·relay·snapshot이면 실조회분)
 LOCAL_SOURCE = os.environ.get("CHAEKIJI_LOCAL_SOURCE", "naru" if MODE in ("relay", "live", "snapshot") else "alpas")
 
@@ -50,7 +53,14 @@ def _local_holdings(isbn13: str):
     return alpas.holdings_realtime(isbn13), f"관내: 도서관리시스템 실시간 연동 모의(값은 {y}. {int(m)}. {int(d)}. 정보나루 실측)"
 
 def search_item(utterance: str, lang: str = "ko"):
-    return naru.search(utterance, mode=MODE)
+    r = naru.search(utterance, mode=MODE)
+    if AUTO_FELL_BACK and not r.get("found") and not r.get("unavailable"):
+        # [10/19 밤] 리허설 지적 — auto인데 중계에 닿지 못해 시연 도서 5종만 찾을 수 있을 때, 그 밖의 책은 「저자를 알려 달라」고 되묻지 않고
+        #   「조회 불가 → 창구」로(relay 모드의 v0.3.5 규칙과 같게). 일부러 고른 demo 모드는 그대로(시연용 되묻기)
+        title = naru.clean_title(utterance, places=naru.PLACES, points=naru.POINTS)
+        r = {"found": False, "reason": f"중계에 닿지 못함(auto → {MODE}) — 시연 도서 5종 밖의 책은 찾을 수 없음(검색어 「{title}」)",
+             "candidates": [], "unavailable": True}
+    return r
 
 def check_availability(isbn13: str, realtime: bool = True):
     home = CFG["home_library"]

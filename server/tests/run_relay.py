@@ -137,6 +137,10 @@ c2.banner()
 c3 = Client(CHAEKIJI_MODE="auto", CHAEKIJI_RELAY=RELAY)
 r5 = c3.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동")
 ok(r5["mode"] == "demo", "① auto → 중계 죽어 있으면 demo 선택")
+r5b = c3.call("consult_request", utterance="데미안 빌리고 싶어요", pickup="상동")
+ok(r5b["found"] is False and r5b["route"] == "check" and "연결되지 않아" in r5b["notice"] and "저자나 출판사" not in r5b["notice"]
+   and r5b["desk_memo"].startswith("[조회 불가]") and "auto → demo" in r5b["reason"],
+   "   [10/19 밤] auto인데 중계에 닿지 못하면 시연 도서 밖의 책은 되묻지 않고 「조회 불가 → 창구」(처음 보는 AI 리허설 지적)")
 c3.banner()
 print("── 매일 갱신 스냅샷(refresh_today.py 결과) ──")
 tmp = Path(tempfile.mkdtemp())

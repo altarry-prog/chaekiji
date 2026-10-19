@@ -223,7 +223,8 @@ function volLabel(v) {                                       // naru._vol_label 
   const dg = String(v ?? "").replace(/\D/g, "").replace(/^0+/, "");
   return dg ? `${dg}권` : String(v ?? "").trim();
 }
-const bookOf = d => ({ isbn13: d.isbn13, title: nn(d.title), author: nn(d.author), publisher: nn(d.publisher), year: nn(d.year) });
+const bookOf = d => ({ isbn13: d.isbn13, title: nn(d.title), author: nn(d.author), publisher: nn(d.publisher), year: nn(d.year),   // naru._book_of — [10/19 밤] 권차가 있으면 함께
+                       ...(d.vol ? { vol: String(d.vol) } : {}) });
 async function searchItem(utterance, deps, ctx) {
   const title = cleanTitle(utterance);
   const [base, vol, explicit] = splitVolume(title);
@@ -445,7 +446,8 @@ export async function consultRequest(args, deps, ctx) {
                   desk_memo: `[미확정] 문의 「${utterance}」 — 서지 재확인 필요` };
     if (found.candidate_books) {                               // [10/19] 검색은 됐지만 문의와 맞는 책을 못 고름 — 후보를 보여 주고 되묻는다
       out.candidate_books = found.candidate_books;
-      out.desk_memo += "\n검색 후보: " + found.candidate_books.map(b => `${b.title || ""}(${b.author || ""}, ${b.publisher || ""} ${b.year || ""})`).join(" / ");
+      out.desk_memo += "\n검색 후보: " + found.candidate_books.map(b => `${String(b.title || "").trim()}${b.vol ? ` [${volLabel(b.vol)}]` : ""}` +
+                                                                 `(${b.author || ""}, ${b.publisher || ""} ${b.year || ""})`).join(" / ");
     }
     return out;
   }

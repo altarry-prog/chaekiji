@@ -150,8 +150,8 @@ s1 = await call2("consult_request", { utterance: "흔한남매 1권", pickup: "�
 const s1b = await call2("search_item", { utterance: "불편한 편의점 2" }, 504);
 const s1d = await call2("search_item", { utterance: "흔한남매 9권" }, 508);
 ok(s1.book.isbn13 === "9790000000103" && s1.book.vol === "1" && s1.notice.startsWith("『흔한남매 1권』은") && s1.desk_memo.includes("[1권]") && s1.route === "ill" && s1b.found && s1b.isbn13 === "9791161572062" && s1b.isbn13 !== "9791161571188" &&
-   s1d.found === false && s1d.candidate_books.length === 3,
-   "[10/19] 권차 — 「흔한남매 1권」은 1권(모의 권차 · 안내문에 「흔한남매 1권」), 「불편한 편의점 2」는 시연 도서 1권 픽스처로 가지 않음, 없는 권(9권)·권 모르는 판은 고르지 않고 되묻기");
+   s1d.found === false && s1d.candidate_books.length === 3 && s1d.candidate_books.filter(b => b.vol).length >= 2,
+   "[10/19] 권차 — 「흔한남매 1권」은 1권(모의 권차 · 안내문에 「흔한남매 1권」), 「불편한 편의점 2」는 시연 도서 1권 픽스처로 가지 않음, 없는 권(9권)·권 모르는 판은 고르지 않고 되묻기 · [10/19 밤] 후보에 권차를 함께(같은 제목 여러 권을 가리게)");
 s1 = await call2("consult_request", { utterance: "문헌정보학개론", pickup: "상동" }, 505);
 const s1c = await call2("search_item", { utterance: "문헌정보학개론 정동열" }, 506);
 ok(s1.route === "sea" && s1.same_title_others.length === 3 && s1.notice.includes("같은 제목의 다른 책도 있습니다") && s1.desk_memo.includes("저자 확인") &&

@@ -228,7 +228,8 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         if found.get("candidate_books"):              # [10/19] 검색은 됐지만 문의와 맞는 책을 못 고름 — 후보를 보여 주고 되묻는다
             out["candidate_books"] = found["candidate_books"]
             out["desk_memo"] += "\n검색 후보: " + " / ".join(
-                f"{b.get('title') or ''}({b.get('author') or ''}, {b.get('publisher') or ''} {b.get('year') or ''})" for b in found["candidate_books"])
+                f"{(b.get('title') or '').strip()}" + (f" [{naru.vol_label(b['vol'])}]" if b.get('vol') else "")
+                + f"({b.get('author') or ''}, {b.get('publisher') or ''} {b.get('year') or ''})" for b in found["candidate_books"])
         return out
     isbn = found["isbn13"]; title = found.get("title") or isbn
     avail = check_availability(isbn)

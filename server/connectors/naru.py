@@ -478,8 +478,8 @@ def vol_label(v):
     """「2」·「제2권」 → 「2권」(숫자가 없으면 그대로)."""
     dg = re.sub(r"[^0-9]", "", str(v if v is not None else "")).lstrip("0")
     return f"{dg}권" if dg else str(v if v is not None else "").strip()
-def _book_of(d): return {"isbn13": d.get("isbn13"), "title": d.get("title"), "author": d.get("author"),
-                         "publisher": d.get("publisher"), "year": d.get("year")}
+def _book_of(d): return {"isbn13": d.get("isbn13"), "title": d.get("title"), "author": d.get("author"),   # [10/19 밤] 권차가 있으면 함께(후보가 「흔한남매」 여러 권일 때 가릴 수 있게)
+                         "publisher": d.get("publisher"), "year": d.get("year"), **({"vol": str(d["vol"])} if d.get("vol") else {})}
 def pick_search(title, search_fn, evidence, unavailable_reason=None):
     """검색어를 한두 번 바꿔 가며(권차 · 앞뒤 낱말 빼기, 최대 3회) 문의와 맞는 책을 고른다. 첫 검색이 끊기면 unavailable."""
     base, vol, explicit = split_volume(title)

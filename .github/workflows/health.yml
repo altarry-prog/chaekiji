@@ -2,7 +2,7 @@
 # 정보나루는 부르지 않고(호출 0건), 아무것도 커밋하지 않는다. 결과는 Actions 탭의 초록(통과)·빨강(실패)과 요약 표로만 남는다.
 # 확인 7가지: 시연 웹 캐시 번호·첫 화면이 저장소와 같은지, 새벽 자료가 1일 이내인지, 중계 /health,
 #             원격 상담 비서(인터넷 창 안내 화면 · 프로그램 GET 405 · 초기화·도구 목록·판 번호). 자세히는 relay/health_check.py
-# 실행: 매일 10:07(한국 시간, 매일 갱신이 끝난 뒤) 자동 · Actions 탭에서 수동 · 이 파일이나 점검 스크립트를 고쳐 올릴 때
+# 실행: 매일 10:07(한국 시간, 매일 갱신이 끝난 뒤) 자동 · Actions 탭에서 수동 · 이 파일이나 점검 스크립트를 고쳐 올릴 때(배포가 끝나길 3분 기다린 뒤)
 name: health
 on:
   workflow_dispatch:
@@ -25,5 +25,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: 푸시로 돌 때는 배포가 끝나길 기다림 (화면·중계 배포 2~3분 — 10/19 점검 스크립트를 고친 푸시에서 배포 전 옛 판과 비교해 빨강이 뜬 일)
+        if: github.event_name == 'push'
+        run: sleep 180
       - name: 시연 웹·중계·원격 상담 비서 확인 (정보나루 호출 0건 · 커밋 없음)
         run: python3 relay/health_check.py

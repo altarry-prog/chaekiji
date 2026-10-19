@@ -474,6 +474,10 @@ def _score_doc(doc, q_full, q_base, vol, dropped):
         cjk = sum(1 for ch in t if "一" <= ch <= "鿿")
         if cjk >= 2 or any(mk in t for mk in _FOREIGN_MARK) or not _has_hangul(t): s -= 60
     return s
+def vol_label(v):
+    """「2」·「제2권」 → 「2권」(숫자가 없으면 그대로)."""
+    dg = re.sub(r"[^0-9]", "", str(v if v is not None else "")).lstrip("0")
+    return f"{dg}권" if dg else str(v if v is not None else "").strip()
 def _book_of(d): return {"isbn13": d.get("isbn13"), "title": d.get("title"), "author": d.get("author"),
                          "publisher": d.get("publisher"), "year": d.get("year")}
 def pick_search(title, search_fn, evidence, unavailable_reason=None):
@@ -515,7 +519,7 @@ def pick_search(title, search_fn, evidence, unavailable_reason=None):
             seen_a.append(oa); others.append(_book_of(o))
             if len(others) >= 3: break
         res = {"found": True, "isbn13": d["isbn13"], "title": d.get("title"), "author": d.get("author"),
-               "publisher": d.get("publisher"), "year": d.get("year"),
+               "publisher": d.get("publisher"), "year": d.get("year"), **({"vol": str(d["vol"])} if d.get("vol") else {}),
                "candidates": [p["d"]["isbn13"] for p in pool if p["q"] == best["q"]], "query": best["q"], "confidence": 0.85,
                "evidence": evidence + (f" · 검색어 「{best['q']}」 결과 {best['j'] + 1}번째를 문의와 맞춰 고름"
                                        if best["q"] != title or best["j"] > 0 else "")}

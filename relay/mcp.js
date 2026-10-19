@@ -219,6 +219,10 @@ function scoreDoc(doc, qFull, qBase, vol, dropped) {           // naru._score_do
   }
   return s;
 }
+function volLabel(v) {                                       // naru._vol_label — 「2」·「제2권」 → 「2권」
+  const dg = String(v ?? "").replace(/\D/g, "").replace(/^0+/, "");
+  return dg ? `${dg}권` : String(v ?? "").trim();
+}
 const bookOf = d => ({ isbn13: d.isbn13, title: nn(d.title), author: nn(d.author), publisher: nn(d.publisher), year: nn(d.year) });
 async function searchItem(utterance, deps, ctx) {
   const title = cleanTitle(utterance);
@@ -264,7 +268,7 @@ async function searchItem(utterance, deps, ctx) {
     }
     const docsQ = pool.filter(p => p.q === best.q).map(p => p.d.isbn13);
     const res = { found: true, isbn13: d.isbn13, title: nn(d.title), author: nn(d.author), publisher: nn(d.publisher), year: nn(d.year),
-                  candidates: docsQ, query: best.q, confidence: 0.85,
+                  ...(d.vol ? { vol: String(d.vol) } : {}), candidates: docsQ, query: best.q, confidence: 0.85,
                   evidence: "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)" +
                             (best.q !== title || best.j > 0 ? ` · 검색어 「${best.q}」 결과 ${best.j + 1}번째를 문의와 맞춰 고름` : "") };
     if (others.length) res.same_title_others = others;
@@ -475,7 +479,8 @@ export async function consultRequest(args, deps, ctx) {
   const asof = meta.asof || FIX_ASOF;
   const [y, m, d] = asof.split("-"); const asofK = `${y}. ${parseInt(m, 10)}. ${parseInt(d, 10)}.`;
   const nOk = avail.available_at.length, nBusy = avail.loaned_at.length;
-  const t_ = `『${title}』${eun(title)}`;
+  const disp = found.vol ? `${mainTitle(title)} ${volLabel(found.vol)}` : title;   // [10/19] 권차가 있으면 「흔한남매 1권」처럼 밝힌다
+  const t_ = `『${disp}』${eun(disp)}`;
   let notice;
   if (route === "visit") {
     notice = `${t_} 지금 ${pickup}도서관 서가에 있어 바로 대출하실 수 있습니다. ` +
@@ -516,7 +521,7 @@ export async function consultRequest(args, deps, ctx) {
     notice += ` 공식 누리집에서 ${tail}: ${link}`;
   }
   const memo = [
-    `도서: ${title} (${found.author || ""}) ISBN ${isbn}` + (others.length ? ` · 같은 제목 다른 책 ${others.length}건 — 저자 확인` : ""),
+    `도서: ${title}${found.vol ? ` [${volLabel(found.vol)}]` : ""} (${found.author || ""}) ISBN ${isbn}` + (others.length ? ` · 같은 제목 다른 책 ${others.length}건 — 저자 확인` : ""),
     `갈래: ${ROUTE_LABEL[route]}` + (fromLib ? ` · 소장관 ${fromLib}` : ""),
     isPoint ? `수령관: ${pickup}도서관 (작은도서관 — 서가 비치·도착일·보관 기한은 창구 확인)`
             : `수령관: ${pickup} (현재 ${atPickup === "ok" ? "서가 비치" : atPickup === "busy" ? "대출 중" : unknown ? "확인 불가" : "미소장"})`,
@@ -527,7 +532,8 @@ export async function consultRequest(args, deps, ctx) {
     "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)",
   ];
   return { ...base, found: true, route, route_label: ROUTE_LABEL[route], from_lib: fromLib,
-           book: { isbn13: isbn, title, author: nn(found.author), publisher: nn(found.publisher), year: nn(found.year), evidence: nn(found.evidence) },
+           book: { isbn13: isbn, title, author: nn(found.author), publisher: nn(found.publisher), year: nn(found.year), evidence: nn(found.evidence),
+                   ...(found.vol ? { vol: found.vol } : {}) },
            availability: { at_pickup: atPickup, available_at: avail.available_at, loaned_at: avail.loaned_at, nation, basis: avail.basis, asof },
            policy: pol, notice, official_link: link, translate_to: lang === "ko" ? null : lang,
            desk_memo: memo.join("\n"), next_tool: null, ...(others.length ? { same_title_others: others } : {}) };

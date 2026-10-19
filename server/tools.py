@@ -272,7 +272,8 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     asof = naru.LAST_META.get("asof") or naru.FIX_ASOF
     y, m, d = asof.split("-"); asof_k = f"{y}. {int(m)}. {int(d)}."
     n_ok = len(avail["available_at"]); n_busy = len(avail["loaned_at"])
-    t_ = f"『{title}』{_eun(title)}"
+    disp = f"{naru._main_title(title)} {naru.vol_label(found['vol'])}" if found.get("vol") else title   # [10/19] 권차가 있으면 「흔한남매 1권」처럼
+    t_ = f"『{disp}』{_eun(disp)}"
     if route == "visit":
         notice = (f"{t_} 지금 {pickup}도서관 서가에 있어 바로 대출하실 수 있습니다. "
                   f"받으실 도서관에 있는 자료는 상호대차 신청 대상이 아니니 방문해 주세요.")
@@ -316,7 +317,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         tail = {"visit": "이 책 보기", "ill": "이 책 보기·신청(로그인 뒤 「상호대차 신청」 — 접수는 이용자가 직접)",
                 "reserve": "이 책 보기·예약(로그인 뒤 「예약」)", "check": "이 책의 소장·대출 상태 보기"}[route]
         notice += f" 공식 누리집에서 {tail}: {link}"
-    memo_lines = [f"도서: {title} ({found.get('author') or ''}) ISBN {isbn}" + (f" · 같은 제목 다른 책 {len(others)}건 — 저자 확인" if others else ""),
+    memo_lines = [f"도서: {title}" + (f" [{naru.vol_label(found['vol'])}]" if found.get("vol") else "") + f" ({found.get('author') or ''}) ISBN {isbn}" + (f" · 같은 제목 다른 책 {len(others)}건 — 저자 확인" if others else ""),
                   f"갈래: {_ROUTE_LABEL[route]}" + (f" · 소장관 {from_lib}" if from_lib else ""),
                   (f"수령관: {pickup}도서관 (작은도서관 — 서가 비치·도착일·보관 기한은 창구 확인)" if is_point else
                    f"수령관: {pickup} (현재 {'서가 비치' if at_pickup == 'ok' else '대출 중' if at_pickup == 'busy' else '확인 불가' if unknown else '미소장'})"),
@@ -331,7 +332,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                                                               "confirmed_by_user": True}, "note": "이용자 확인 뒤에만"}
     return {**base, "found": True, "route": route, "route_label": _ROUTE_LABEL[route], "from_lib": from_lib,
             "book": {"isbn13": isbn, "title": title, "author": found.get("author"), "publisher": found.get("publisher"),
-                     "year": found.get("year"), "evidence": found.get("evidence")},
+                     "year": found.get("year"), "evidence": found.get("evidence"), **({"vol": found["vol"]} if found.get("vol") else {})},
             "availability": {"at_pickup": at_pickup, "available_at": avail["available_at"], "loaned_at": avail["loaned_at"],
                              "nation": nation, "basis": avail["basis"], "asof": asof},
             "policy": pol, "notice": notice, "official_link": link,

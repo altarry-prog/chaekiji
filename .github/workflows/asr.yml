@@ -20,7 +20,9 @@ jobs:
         with:
           python-version: "3.11"
       - name: 음성 인식기 설치
-        run: pip install -q faster-whisper==1.1.0
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+          pip install -q faster-whisper==1.2.1 requests
       - name: 받아쓰기
         run: python tools/video/asr_check.py tools/video/narration tools/video/narration/audio
       - name: 결과 올리기

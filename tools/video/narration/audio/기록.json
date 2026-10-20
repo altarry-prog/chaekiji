@@ -1,0 +1,19 @@
+{
+ "engine": "MeloTTS KR (MIT)",
+ "items": [
+  {
+   "file": "sample_01_opening_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 36.9,
+   "chars": 232,
+   "made_in_s": 30.5
+  },
+  {
+   "file": "sample_01_opening_속도1.1.mp3",
+   "speed": 1.1,
+   "seconds": 34.0,
+   "chars": 232,
+   "made_in_s": 20.1
+  }
+ ]
+}

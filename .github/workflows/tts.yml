@@ -1,0 +1,39 @@
+# 시연영상 음성(내레이션) 만들기 — 가지 tools/video 전용(제출 산출물 아님)
+# MeloTTS(MIT 라이선스, 상업·비상업 모두 무료 — https://github.com/myshell-ai/MeloTTS)의 한국어 모델로
+# tools/video/narration/*.txt 를 읽어 mp3를 만들고 tools/video/narration/out/ 에 올린다.
+# 계정·인증키가 필요 없고, 정보나루를 부르지 않는다.
+name: tts-narration
+on:
+  push:
+    branches: [tools/video]
+    paths: ["tools/video/narration/*.txt", "tools/video/tts_melo.py", ".github/workflows/tts.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tools/video
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: MeloTTS 설치
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+          pip install -q git+https://github.com/myshell-ai/MeloTTS.git
+          python -m unidic download
+      - name: 음성 만들기
+        run: python tools/video/tts_melo.py tools/video/narration tools/video/narration/out
+      - name: 결과 올리기
+        run: |
+          git config user.name "chaekiji-tts"
+          git config user.email "tts@users.noreply.github.com"
+          git add tools/video/narration/out
+          git diff --cached --quiet && exit 0
+          git commit -q -m "음성 샘플(MeloTTS 한국어) $(date -u -d '+9 hours' '+%Y-%m-%d %H:%M')"
+          git pull --rebase -q || true
+          git push -q

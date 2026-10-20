@@ -1,0 +1,34 @@
+# 시연영상 음성 받아쓰기 점검 — tools/video/narration/audio/*.mp3를 음성 인식으로 다시 받아써 원고와 견준다.
+# 사람이 듣기 전에 잘못 읽은 곳을 찾는 참고용이다. 계정·인증키 없음, 정보나루 호출 없음.
+# 음성 파일은 바꾸지 않고 받아쓰기.json만 올린다.
+name: asr-check
+on:
+  push:
+    branches: [tools/video]
+    paths: ["tools/video/asr_check.py", ".github/workflows/asr.yml"]
+permissions:
+  contents: write
+jobs:
+  asr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tools/video
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: 음성 인식기 설치
+        run: pip install -q faster-whisper==1.1.0
+      - name: 받아쓰기
+        run: python tools/video/asr_check.py tools/video/narration tools/video/narration/audio
+      - name: 결과 올리기
+        run: |
+          git config user.name "chaekiji-tts"
+          git config user.email "tts@users.noreply.github.com"
+          git add tools/video/narration/audio/받아쓰기.json
+          git diff --cached --quiet && exit 0
+          git commit -q -m "음성 받아쓰기 점검 결과 $(date -u -d '+9 hours' '+%Y-%m-%d %H:%M')"
+          git pull --rebase -q || true
+          git push -q

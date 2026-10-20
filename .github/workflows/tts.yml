@@ -1,19 +1,21 @@
 # 시연영상 음성(내레이션) 만들기 — 가지 tools/video 전용(제출 산출물 아님)
 # MeloTTS(MIT 라이선스, 상업·비상업 모두 무료 — https://github.com/myshell-ai/MeloTTS)의 한국어 모델로
-# tools/video/narration/*.txt 를 읽어 mp3를 만들고 tools/video/narration/audio/ 에 올린다(out/은 .gitignore 대상이라 쓰지 않음).
+# tools/video/narration/script/*.txt(장면별 원고)를 읽어 mp3를 만들고(보통 속도 — 담당자 10. 20. 선택),
+# 음성 인식(faster-whisper, MIT)으로 다시 받아써 원고와 견준 뒤 tools/video/narration/audio/script/ 에 올린다.
+# 첫 샘플(tools/video/narration/sample_01_opening.txt → audio/)은 다시 만들지 않는다.
 # 계정·인증키가 필요 없고, 정보나루를 부르지 않는다.
 name: tts-narration
 on:
   push:
     branches: [tools/video]
-    paths: ["tools/video/narration/*.txt", "tools/video/tts_melo.py", ".github/workflows/tts.yml"]
+    paths: ["tools/video/narration/script/*.txt", "tools/video/tts_melo.py", ".github/workflows/tts.yml"]
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
   tts:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,14 +28,22 @@ jobs:
           sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
           pip install -q git+https://github.com/myshell-ai/MeloTTS.git
           python -m unidic download
-      - name: 음성 만들기
-        run: python tools/video/tts_melo.py tools/video/narration tools/video/narration/audio
+      - name: 음성 만들기(장면별 + 전체 이어듣기)
+        env:
+          SPEEDS: "1.0"
+          JOIN: "1"
+        run: python tools/video/tts_melo.py tools/video/narration/script tools/video/narration/audio/script
+      - name: 받아쓰기 점검(따로 둔 환경)
+        run: |
+          python -m venv /tmp/asr
+          /tmp/asr/bin/pip install -q faster-whisper==1.2.1 requests
+          /tmp/asr/bin/python tools/video/asr_check.py tools/video/narration/script tools/video/narration/audio/script
       - name: 결과 올리기
         run: |
           git config user.name "chaekiji-tts"
           git config user.email "tts@users.noreply.github.com"
-          git add tools/video/narration/audio
+          git add tools/video/narration/audio/script
           git diff --cached --quiet && exit 0
-          git commit -q -m "음성 샘플(MeloTTS 한국어) $(date -u -d '+9 hours' '+%Y-%m-%d %H:%M')"
+          git commit -q -m "내레이션 음성(MeloTTS 한국어, 보통 속도)·받아쓰기 점검 $(date -u -d '+9 hours' '+%Y-%m-%d %H:%M')"
           git pull --rebase -q || true
           git push -q

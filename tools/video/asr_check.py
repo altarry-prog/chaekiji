@@ -24,7 +24,10 @@ def norm(s):
 items = []
 for mp3 in sorted(glob.glob(os.path.join(audio_dir, "*.mp3"))):
     name = os.path.basename(mp3).rsplit("_속도", 1)[0]
-    src = open(os.path.join(src_dir, name + ".txt"), encoding="utf-8").read().strip()
+    txt = os.path.join(src_dir, name + ".txt")
+    if not os.path.exists(txt):  # 이어 붙인 파일(전체_이어듣기) 등 원고가 없는 것은 건너뜀
+        continue
+    src = open(txt, encoding="utf-8").read().strip()
     segs, _ = model.transcribe(load(mp3), language="ko", beam_size=5)
     segs = list(segs)
     heard = " ".join(s.text.strip() for s in segs)

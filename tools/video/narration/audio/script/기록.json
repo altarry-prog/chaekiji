@@ -4,88 +4,88 @@
   {
    "file": "01_제목_왜만들었나_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 36.8,
+   "seconds": 36.9,
    "chars": 232,
-   "made_in_s": 20.9
+   "made_in_s": 28.2
   },
   {
    "file": "02_어떻게푸나_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 24.4,
-   "chars": 159,
-   "made_in_s": 8.6
+   "seconds": 24.6,
+   "chars": 160,
+   "made_in_s": 14.6
   },
   {
    "file": "03_흐름1_연결_속도1.0.mp3",
    "speed": 1.0,
    "seconds": 14.1,
    "chars": 90,
-   "made_in_s": 5.1
+   "made_in_s": 8.4
   },
   {
    "file": "04_claude화면_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 11.0,
+   "seconds": 10.8,
    "chars": 74,
-   "made_in_s": 4.0
+   "made_in_s": 6.7
   },
   {
    "file": "05_명령창1_나미야_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 29.6,
-   "chars": 180,
-   "made_in_s": 10.5
+   "seconds": 29.5,
+   "chars": 181,
+   "made_in_s": 17.7
   },
   {
    "file": "06_명령창2_바로이용_속도1.0.mp3",
    "speed": 1.0,
    "seconds": 7.6,
    "chars": 43,
-   "made_in_s": 2.7
+   "made_in_s": 4.7
   },
   {
    "file": "07_명령창3_연결끊김_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 8.8,
-   "chars": 53,
-   "made_in_s": 3.3
+   "seconds": 9.0,
+   "chars": 56,
+   "made_in_s": 5.6
   },
   {
    "file": "08_흐름2_공개모델_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 28.0,
+   "seconds": 27.8,
    "chars": 191,
-   "made_in_s": 10.4
+   "made_in_s": 17.7
   },
   {
    "file": "09_흐름3_시연웹_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 58.4,
-   "chars": 359,
-   "made_in_s": 19.9
+   "seconds": 59.2,
+   "chars": 366,
+   "made_in_s": 36.5
   },
   {
    "file": "10_설치형_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 12.9,
+   "seconds": 12.8,
    "chars": 75,
-   "made_in_s": 4.4
+   "made_in_s": 7.9
   },
   {
    "file": "11_어디까지진짜인가_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 27.4,
-   "chars": 175,
-   "made_in_s": 9.5
+   "seconds": 27.5,
+   "chars": 176,
+   "made_in_s": 16.7
   },
   {
    "file": "12_끝_속도1.0.mp3",
    "speed": 1.0,
-   "seconds": 7.6,
+   "seconds": 7.5,
    "chars": 39,
-   "made_in_s": 2.7
+   "made_in_s": 4.5
   }
  ],
- "합계_초": 266.6,
- "전체_이어듣기_초": 274.8
+ "합계_초": 267.3,
+ "전체_이어듣기_초": 275.8
 }

@@ -1,0 +1,91 @@
+{
+ "engine": "MeloTTS KR (MIT)",
+ "items": [
+  {
+   "file": "01_제목_왜만들었나_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 36.8,
+   "chars": 232,
+   "made_in_s": 20.9
+  },
+  {
+   "file": "02_어떻게푸나_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 24.4,
+   "chars": 159,
+   "made_in_s": 8.6
+  },
+  {
+   "file": "03_흐름1_연결_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 14.1,
+   "chars": 90,
+   "made_in_s": 5.1
+  },
+  {
+   "file": "04_claude화면_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 11.0,
+   "chars": 74,
+   "made_in_s": 4.0
+  },
+  {
+   "file": "05_명령창1_나미야_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 29.6,
+   "chars": 180,
+   "made_in_s": 10.5
+  },
+  {
+   "file": "06_명령창2_바로이용_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 7.6,
+   "chars": 43,
+   "made_in_s": 2.7
+  },
+  {
+   "file": "07_명령창3_연결끊김_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 8.8,
+   "chars": 53,
+   "made_in_s": 3.3
+  },
+  {
+   "file": "08_흐름2_공개모델_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 28.0,
+   "chars": 191,
+   "made_in_s": 10.4
+  },
+  {
+   "file": "09_흐름3_시연웹_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 58.4,
+   "chars": 359,
+   "made_in_s": 19.9
+  },
+  {
+   "file": "10_설치형_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 12.9,
+   "chars": 75,
+   "made_in_s": 4.4
+  },
+  {
+   "file": "11_어디까지진짜인가_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 27.4,
+   "chars": 175,
+   "made_in_s": 9.5
+  },
+  {
+   "file": "12_끝_속도1.0.mp3",
+   "speed": 1.0,
+   "seconds": 7.6,
+   "chars": 39,
+   "made_in_s": 2.7
+  }
+ ],
+ "합계_초": 266.6,
+ "전체_이어듣기_초": 274.8
+}

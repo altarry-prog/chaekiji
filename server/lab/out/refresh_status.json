@@ -1,5 +1,5 @@
 {
- "asof": "2026-10-21",
+ "asof": "2026-10-22",
  "mode": "live",
  "books": [
   {
@@ -12,13 +12,13 @@
    "isbn": "9788972756194",
    "ok": true,
    "owned": 13,
-   "available": 7
+   "available": 8
   },
   {
    "isbn": "9791161571188",
    "ok": true,
    "owned": 16,
-   "available": 11
+   "available": 12
   },
   {
    "isbn": "9791195794799",
@@ -36,5 +36,5 @@
  "calls": 81,
  "via": "http",
  "result": "성공",
- "generated": "2026-10-21 08:18 KST"
+ "generated": "2026-10-22 08:31 KST"
 }

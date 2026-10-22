@@ -40,10 +40,18 @@ jobs:
             echo "열쇠(GITLAB_TOKEN)가 아직 없어 확인만 하고 끝냅니다." | tee -a "$GITHUB_STEP_SUMMARY"; exit 0
           fi
           git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@${GL_HOST}/${GL_PATH}.git"
+          # 진단: 열쇠로 읽을 수 있는지, 깃랩 main이 깃허브 이력 안에 있는지(로그 본문 대신 알림 줄로 남긴다)
+          if ! remote=$(git ls-remote gitlab refs/heads/main 2>&1 | sed "s/${GITLAB_TOKEN}/***/g"); then
+            echo "::error::열쇠로 깃랩을 읽지 못함: $(echo "$remote" | tail -1)"; exit 1; fi
+          rsha=$(echo "$remote" | awk '{print $1}')
+          if [ -z "$rsha" ]; then echo "::notice::깃랩 main이 비어 있음 — 처음 올림"
+          elif git merge-base --is-ancestor "$rsha" HEAD 2>/dev/null; then echo "::notice::깃랩 main ${rsha:0:8}은 깃허브 이력 안에 있음 — 이어 올리기 가능"
+          else echo "::warning::깃랩 main ${rsha:0:8}이 깃허브 이력에 없음(깃랩에만 있는 커밋) — 덮어쓰지 않음"; fi
           if git push gitlab HEAD:refs/heads/main 2>err.txt; then
             echo "반영 완료: $(git rev-parse --short HEAD)" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "::notice::반영 완료 $(git rev-parse --short HEAD)"
           else
-            sed "s/${GITLAB_TOKEN}/***/g" err.txt
-            echo "::error::깃랩이 받아 주지 않았습니다(깃랩 쪽에 다른 커밋이 있거나 main 보호 설정). 확인이 필요합니다."
+            msg=$(sed "s/${GITLAB_TOKEN}/***/g" err.txt | grep -v '^To ' | tr '\n' ' ' | cut -c1-400)
+            echo "::error::깃랩이 받아 주지 않음: $msg"
             exit 1
           fi

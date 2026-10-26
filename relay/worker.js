@@ -4,7 +4,7 @@
  *
  * 제공 경로(화이트리스트):
  *   GET /holdings?isbn=9788972756194   → 부천 16개관 소장·대출 상태 {코드: ok|busy|none}
- *   GET /search?q=나미야 잡화점의 기적   → 서지 검색 상위 5건 (제목 부분일치)   [v0.3.4 상담 비서]
+ *   GET /search?q=나미야 잡화점의 기적   → 서지 검색 상위 10건 (제목 부분일치 · 권차) [v0.3.4 상담 비서 · 10/19 10건]
  *   GET /search?isbn=9788972756194      → 서지 1건
  *   GET /nation?isbn=9788972756194      → 경기 광역 소장관 수(전국 예시)       [v0.3.4]
  *   GET /health                         → {ok:true}  (키 유무만 알려주고 값은 절대 내보내지 않음)
@@ -104,11 +104,12 @@ function kstDate() {
 }
 
 async function search(q, isbn, key, ctx) {
-  // 서지 검색 — 제목 부분일치 상위 5건(대출 많은 순). 자료유형·신착 여부는 정보나루가 주지 않는다.
-  const params = isbn ? { isbn13: isbn, pageSize: 1 } : { title: q, exactMatch: "false", pageSize: 5 };
+  // 서지 검색 — 제목 부분일치 상위 10건(대출 많은 순, [10/19] 5 → 10 · 권차 vol 함께). 자료유형·신착 여부는 정보나루가 주지 않는다.
+  const params = isbn ? { isbn13: isbn, pageSize: 1 } : { title: q, exactMatch: "false", pageSize: 10 };
   const r = await naru("srchBooks", params, key, ctx);
   const docs = (r.docs || []).map(x => x.doc || x).filter(d => d.isbn13).map(d => ({
-    isbn13: String(d.isbn13), title: d.bookname, author: d.authors, publisher: d.publisher, year: d.publication_year }));
+    isbn13: String(d.isbn13), title: d.bookname, author: d.authors, publisher: d.publisher, year: d.publication_year,
+    ...(d.vol ? { vol: String(d.vol) } : {}) }));
   return { query: isbn || q, docs, asof: kstDate(), basis: "정보나루 srchBooks" };
 }
 

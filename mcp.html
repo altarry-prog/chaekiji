@@ -146,7 +146,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
 <p><span class="who">김순자</span>"그 왜… 나미야 잡화점인가 하는 책 좀 빌려줘요."</p>
 <p class="ai"><span class="who">책이지</span>"『나미야 잡화점의 기적』(히가시노 게이고)으로 찾았어요.
 상동도서관 책은 지금 대출 중인데, 한울빛도서관 책을 상동으로 가져다 드릴 수 있어요.
-무료이고 2~3일 걸려요. 신청할까요?"</p>
+무료이고, 평일엔 다음 날 도착해요. 신청할까요?"</p>
 <p><span class="who">김순자</span>"응, 해줘요."</p>
 <p class="ai"><span class="who">책이지</span>"접수했어요. 도착하면 전화로 알려드릴게요. 도착 후 3일 안에 찾아가시면 되고, 책이 떠나기 전이면 취소도 돼요."</p>
 </div>
@@ -201,7 +201,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
 <text x="560" y="270" opacity=".75">상동 대출중 · 한울빛 등 8곳 가능</text>
 <text x="316" y="314">③ check_policy — 규정상 신청 돼?</text>
 <text x="560" y="342" opacity=".75">7개 규정 전부 통과 (2/5권)</text>
-<text x="130" y="386" opacity=".85">"한울빛 → 상동, 2~3일, 무료. 신청할까요?"</text>
+<text x="130" y="386" opacity=".85">"한울빛 → 상동, 평일 다음 날, 무료. 신청할까요?"</text>
 <text x="110" y="414">"응, 해줘요" ✓</text>
 <text x="316" y="442">④ request_service — 접수해 (확인받음)</text>
 <text x="551" y="470">알파스에 상호대차 신청 생성</text>
@@ -392,7 +392,7 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
 대조한 결과, 책바다는 <b>관내 미소장</b> 자료가 대상이라 "관내 소장은 있으나 전부 대출 중"은 전국이 아니라 예약으로 가야 하고,
 책바다는 별도 가입·사서 승인·실비 결제를 거치는 별도 시스템이라 에이전트가 <b>대신 신청할 수 없습니다</b>.
 그래서 3단계는 「대행」이 아니라 「안내와 승인 요청 전달」이고, 대행의 범위는 관내 상호대차입니다. 도착 후 보관기한(통상 3일) 안에
-찾아가지 않으면 열흘에서 한 달의 신청 제한이 따르는 미수령 제재, 이용자 취소는 접수 상태에서만 된다는 점도 설계에 들어갔습니다.
+찾아가지 않으면 신청이 제한되는 미수령 제재(조사한 다섯 곳은 열흘~한 달, 부천은 7일), 이용자 취소는 접수 상태에서만 된다는 점도 설계에 들어갔습니다.
 이 항목들의 설정값(4장 YAML의 v0.4 예정 줄)은 다음 판의 규정 8종에 반영됩니다.</div>
 
 <h2 id="c4"><span class="no">04</span>커넥터의 실체 — 번역기 한 편의 속살</h2>
@@ -445,11 +445,11 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
   <span class="k">total_limit</span>: <span class="s">20</span>                <span class="d"># 시 통합 대출 한도</span>
   <span class="k">per_lib_limit</span>: <span class="s">5</span>               <span class="d"># 도서관별 한도 (직접+상호대차 합산)</span>
   <span class="k">block_if_pickup_on_shelf</span>: <span class="s">true</span> <span class="d"># 수령관 비치 시 신청 불가 규정</span>
-  <span class="k">excluded</span>: [<span class="s">신착도서</span>, <span class="s">참고자료</span>]   <span class="d"># 상호대차 제외 자료 (예시값 · 기관 확정)</span>
+  <span class="k">excluded</span>: [<span class="s">부록</span>]   <span class="d"># 상호대차 제외 자료 (부천 누리집 「부록자료 등」)</span>
   <span class="k">block_suspended</span>: <span class="s">true</span>         <span class="d"># 연체·정지 회원 불가</span>
   <span class="k">block_duplicate</span>: <span class="s">true</span>         <span class="d"># 동일 도서 중복 신청 불가</span>
-  <span class="k">hold_days</span>: <span class="s">3</span>                  <span class="d"># v0.4 예정 — 도착 후 보관기한</span>
-  <span class="k">no_show_penalty_days</span>: <span class="s">14</span>      <span class="d"># v0.4 예정 — 미수령 제재 (기관 확정: 10~30일)</span>
+  <span class="k">hold_days</span>: <span class="s">3</span>                  <span class="d"># 도착일 포함 3일 (부천 누리집 기준)</span>
+  <span class="k">no_pickup_block_days</span>: <span class="s">7</span>       <span class="d"># 미수령 자동반납 1회 시 7일 신청 불가 (부천 누리집 기준 · 안내문 고지, 판정은 v0.4)</span>
   <span class="k">cancel_allowed_states</span>: [<span class="s">접수</span>]   <span class="d"># v0.4 예정 — 이용자 취소 가능 상태</span>
 <span class="k">sso</span>: <span class="s">sso.bucheon.go.kr</span>
 <span class="k">notify_channels</span>: [<span class="s">sms</span>, <span class="s">voice_call</span>]</pre></div>

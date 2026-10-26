@@ -4,6 +4,12 @@ rem 탐색기에서 두 번 눌러도 결과를 읽을 수 있게 끝에서 멈�
 chcp 65001 >nul
 set PYTHONUTF8=1
 cd /d "%~dp0"
+if not exist "tests\run_scenarios.py" (
+  echo 압축 파일 안에서 실행되어 다른 파일을 찾지 못했습니다.
+  echo 압축 파일을 먼저 풀고, 풀린 폴더 안의 server\run.bat 을 다시 실행해 주세요.
+  pause
+  exit /b 1
+)
 set "PY="
 python -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" >nul 2>nul && set "PY=python"
 if not defined PY py -3 -c "import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)" >nul 2>nul && set "PY=py -3"
@@ -19,7 +25,7 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-echo == 적합성 시험(48건) ==
+echo == 적합성 시험(50건) ==
 %PY% tests\run_scenarios.py
 if errorlevel 1 goto fail
 echo.
@@ -27,15 +33,15 @@ echo == 실험실 점검(14건) ==
 %PY% lab\check_store.py
 if errorlevel 1 goto fail
 echo.
-echo == 중계 모드 시험(17건, 모의 중계) ==
+echo == 중계 모드 시험(30건, 모의 중계) ==
 %PY% tests\run_relay.py
 if errorlevel 1 goto fail
 echo.
-echo == 공개 모델 호스트 시험(6건, 모의 Ollama) ==
+echo == 공개 모델 호스트 시험(10건, 모의 Ollama) ==
 %PY% tests\run_host.py
 if errorlevel 1 goto fail
 echo.
-echo [chaekiji-mcp] 준비 완료 — 시험 85건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts\ollama_host.py 를 보세요.
+echo [chaekiji-mcp] 준비 완료 — 시험 104건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts\ollama_host.py 를 보세요.
 pause
 exit /b 0
 

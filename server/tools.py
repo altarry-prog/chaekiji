@@ -20,9 +20,14 @@ CFG = yaml.safe_load(open(os.environ.get("CHAEKIJI_CONFIG", ROOT/"config"/"buche
 MODE = os.environ.get("CHAEKIJI_MODE", "demo")        # demo | relay | live | auto
 # [v0.3.4] 중계 주소 — 환경변수 CHAEKIJI_RELAY > 설정 relay_url. 키 값은 어디에도 없다(중계 서버만 가짐).
 naru.RELAY = os.environ.get("CHAEKIJI_RELAY") or str(CFG.get("relay_url") or "")
+naru.PLACES = list(CFG["libraries"])            # [10/18] 검색어에서 수령관 말(「원미도서관으로」·「상동에서」)을 뺄 때 쓰는 도서관 이름
+naru.POINTS = list(CFG.get("pickup_points") or [])   # [10/19] 작은도서관 받을 곳 이름도(「상동역 칙칙폭폭에서」)
 if MODE == "auto":                                    # 심사위원 기본값: 중계(오늘) → 매일 갱신 스냅샷(어제) → 8/18 픽스처
     MODE = "relay" if naru.relay_ok() else ("snapshot" if naru.snapshot_fresh() else "demo")
-# 관내 소장·대출의 출처 — alpas: 도서관리시스템 실시간(모의) / naru: 정보나루 bookExist(전일 기준, live·relay·snapshot이면 실조회분)
+    AUTO_FELL_BACK = MODE in ("snapshot", "demo")    # [10/19 밤] auto인데 중계에 닿지 못함 — 시연 도서 밖의 책은 찾을 길이 없다
+else:
+    AUTO_FELL_BACK = False
+# 관내 소장·대출의 출처 — alpas: 도서관리시스템 실시간 연동 모의(값은 8/18 픽스처) / naru: 정보나루 bookExist(전일 기준, live·relay·snapshot이면 실조회분)
 LOCAL_SOURCE = os.environ.get("CHAEKIJI_LOCAL_SOURCE", "naru" if MODE in ("relay", "live", "snapshot") else "alpas")
 
 # [v0.3.1] 서버를 켤 때 저장된 이력이 있으면 복원한다(CHAEKIJI_STORE가 있을 때만).
@@ -43,10 +48,19 @@ def _local_holdings(isbn13: str):
         return rt, naru.LAST_META.get("basis", "관내: 정보나루(전일 기준)")
     if isbn13 in naru._hold.get("_examples", []):        # 실측이 아닌 예시 장면용 값
         return alpas.holdings_realtime(isbn13), "관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면 — 이 책의 실제 소장과 다를 수 있음)"
-    return alpas.holdings_realtime(isbn13), "관내: 도서관리시스템 실시간(모의)"
+    # demo: 도서관리시스템 실시간 연동을 흉내 낸 모의 커넥터 — 값은 픽스처(정보나루 실측)이므로 안내문의 조회일과 같은 출처를 밝힌다
+    y, m, d = naru.FIX_ASOF.split("-")
+    return alpas.holdings_realtime(isbn13), f"관내: 도서관리시스템 실시간 연동 모의(값은 {y}. {int(m)}. {int(d)}. 정보나루 실측)"
 
 def search_item(utterance: str, lang: str = "ko"):
-    return naru.search(utterance, mode=MODE)
+    r = naru.search(utterance, mode=MODE)
+    if AUTO_FELL_BACK and not r.get("found") and not r.get("unavailable"):
+        # [10/19 밤] 리허설 지적 — auto인데 중계에 닿지 못해 시연 도서 5종만 찾을 수 있을 때, 그 밖의 책은 「저자를 알려 달라」고 되묻지 않고
+        #   「조회 불가 → 창구」로(relay 모드의 v0.3.5 규칙과 같게). 일부러 고른 demo 모드는 그대로(시연용 되묻기)
+        title = naru.clean_title(utterance, places=naru.PLACES, points=naru.POINTS)
+        r = {"found": False, "reason": f"중계에 닿지 못함(auto → {MODE}) — 시연 도서 5종 밖의 책은 찾을 수 없음(검색어 「{title}」)",
+             "candidates": [], "unavailable": True}
+    return r
 
 def check_availability(isbn13: str, realtime: bool = True):
     home = CFG["home_library"]
@@ -119,6 +133,26 @@ _ROUTE_LABEL = {"visit": "바로 이용(수령관 서가에 있음)", "ill": "�
                 "sea": "책바다(전국 상호대차) 안내", "unknown": "도서 미확정", "check": "소장 확인 불가(창구에서 조회)"}
 _MEMBER_RULE_KEYS = ("권", "연체", "중복")              # 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
 
+def _ill_terms(pickup: str, eta, hold, point: bool = False) -> str:
+    """[10/18] 관내 상호대차 안내의 「도착·보관·미수령」 문장 — 값과 문장은 설정에서(ill_eta_text·hold_includes_arrival_day·no_pickup_block_days).
+    설정에 없으면 예전 문장(「○일 안에 받으실 수 있고」·「도착 후 ○일 안에」) 그대로.
+    작은도서관 받을 곳(point)은 도착일·보관 기한을 모르므로 창구 확인으로 안내한다."""
+    block = CFG.get("no_pickup_block_days")
+    if point:
+        return (f"관내 상호대차로 신청하시면 {pickup}도서관에서 받으실 수 있고 비용은 없습니다. "
+                f"작은도서관으로 받으시면 도착일과 보관 기한은 창구에서 확인해 드립니다."
+                + (f" 기한이 지나면 자동 반납되고 {block}일 동안 상호대차를 신청할 수 없습니다." if block else ""))
+    eta_text = CFG.get("ill_eta_text")
+    if eta_text:
+        out = f"관내 상호대차로 신청하시면 {eta_text} {pickup}도서관에 도착하며 비용은 없습니다. "
+    else:
+        out = f"관내 상호대차로 신청하시면 {eta}일 안에 {pickup}도서관에서 받으실 수 있고 비용은 없습니다. "
+    out += (f"도착한 날을 포함해 {hold}일 안에 찾아가 주세요." if CFG.get("hold_includes_arrival_day")
+            else f"도착 후 {hold}일 안에 찾아가 주세요.")
+    if block:
+        out += f" 기한이 지나면 자동 반납되고 {block}일 동안 상호대차를 신청할 수 없습니다."
+    return out
+
 def _eun(word: str) -> str:
     """받침에 따라 은/는 — 안내문이 사람 말처럼 읽히게."""
     if not word: return "은(는)"
@@ -153,22 +187,40 @@ def _unverified_item(item) -> bool:
     """[v0.3.5] 정보나루 서지만으로는 자료 유형(비도서 등)·신착 여부를 알 수 없다 — 픽스처에 없는 책의 서지."""
     return (not item) or "미제공" in str(item.get("basis", ""))
 
-def _official_link(title: str, isbn13: str):
+def _official_link(title: str, isbn13: str, by_title: bool = False):
     """[v0.3.4] 공식 누리집(자료검색) 링크 — 설정 official_search_url의 {title}/{isbn13}을 채운다.
-    「그 책 화면까지」만 — 접수는 이용자가 누리집에 로그인해 직접 한다(이 도구는 접수하지 않는다)."""
-    tmpl = str(CFG.get("official_search_url") or "").strip()
+    「그 책 화면까지」만 — 접수는 이용자가 누리집에 로그인해 직접 한다(이 도구는 접수하지 않는다).
+    [10/18] 부천은 ISBN으로 그 판본 화면까지(담당자 확인). 소장을 확인하지 못한 책(by_title)은 그 판본이 없을 수도 있어
+    official_search_url_title(제목 검색)이 있으면 그것으로."""
+    tmpl = str((by_title and CFG.get("official_search_url_title")) or CFG.get("official_search_url") or "").strip()
     if not tmpl:
         return None
     from urllib.parse import quote
     return tmpl.replace("{title}", quote(title, safe="")).replace("{isbn13}", quote(isbn13, safe=""))
 
+def _pickup_name(p):
+    """[10/18] 「꿈빛도서관」·「부천시립 꿈빛도서관」·「꿈빛 도서관」도 설정의 짧은 이름(「꿈빛」)으로. 모르면 그대로 둔다(뒤에서 설정에 없는 도서관 오류)."""
+    s = "".join(str(p).split())
+    for pre in (CFG["city"] + "시립", CFG["city"] + "시"):
+        if s.startswith(pre) and len(s) > len(pre):
+            s = s[len(pre):]; break
+    if s in CFG["libraries"]: return s
+    for suf in ("도서관", "관"):
+        if s.endswith(suf) and s[: -len(suf)] in CFG["libraries"]: return s[: -len(suf)]
+    pts = {"".join(x.split()): x for x in (CFG.get("pickup_points") or [])}   # [10/18] 작은도서관 받을 곳 — 띄어쓰기·「(작은)도서관」 무시
+    for cand in (s, s[:-5] if s.endswith("작은도서관") else "", s[:-3] if s.endswith("도서관") else ""):
+        if cand and cand in pts: return pts[cand]
+    return str(p)
+
 def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: str = None):
     """[v0.3.4] 상담 묶음 — 이용자의 말 한마디로 ① 도서 특정 ② 관내 소장·대출 상태 ③ 상호대차 가능 여부·갈래 판정
     ④ 이용자 안내문 ⑤ 접수 메모까지 한 번에. 회원 토큰(user)이 있으면 규정 7종을 전부 판정하고, 없으면 회원 규정은 창구 확인으로 보류.
     접수는 하지 않는다(접수는 request_service 또는 창구에서 사서가)."""
-    pickup = pickup or CFG["home_library"]
-    if pickup not in CFG["libraries"]:
-        raise ValueError(f"수령관 「{pickup}」은(는) 설정에 없는 도서관입니다: {', '.join(CFG['libraries'])}")
+    pickup = _pickup_name(pickup or CFG["home_library"])
+    points = list(CFG.get("pickup_points") or [])
+    is_point = pickup in points and pickup not in CFG["libraries"]   # [10/18] 작은도서관 받을 곳 — 정보나루 자료가 없어 서가·도착일·보관은 창구 확인
+    if pickup not in CFG["libraries"] and not is_point:
+        raise ValueError(f"수령관 「{pickup}」은(는) 설정에 없는 도서관입니다: {', '.join(list(CFG['libraries']) + points)}")
     eta, hold = CFG.get("ill_eta_days", "2~3"), CFG.get("hold_days", 3)
     found = search_item(utterance, lang)
     base = {"utterance": utterance, "pickup": pickup, "lang": lang, "mode": MODE,
@@ -179,14 +231,20 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                 "notice": "지금 정보나루에 연결되지 않아 책을 찾지 못했습니다. 창구에서 도서관리시스템으로 찾아 드리겠습니다.",
                 "desk_memo": f"[조회 불가] 문의 「{utterance}」 — 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회"}
     if not found.get("found"):
-        return {**base, "found": False, "route": "unknown", "route_label": _ROUTE_LABEL["unknown"],
-                "book": None, "reason": found.get("reason"), "candidates": found.get("candidates", []),
-                "notice": "말씀하신 책을 아직 찾지 못했습니다. 저자나 출판사, 대략의 내용을 조금 더 알려 주시겠어요?",
-                "desk_memo": f"[미확정] 문의 「{utterance}」 — 서지 재확인 필요"}
+        out = {**base, "found": False, "route": "unknown", "route_label": _ROUTE_LABEL["unknown"],
+               "book": None, "reason": found.get("reason"), "candidates": found.get("candidates", []),
+               "notice": "말씀하신 책을 아직 찾지 못했습니다. 저자나 출판사, 대략의 내용을 조금 더 알려 주시겠어요?",
+               "desk_memo": f"[미확정] 문의 「{utterance}」 — 서지 재확인 필요"}
+        if found.get("candidate_books"):              # [10/19] 검색은 됐지만 문의와 맞는 책을 못 고름 — 후보를 보여 주고 되묻는다
+            out["candidate_books"] = found["candidate_books"]
+            out["desk_memo"] += "\n검색 후보: " + " / ".join(
+                f"{(b.get('title') or '').strip()}" + (f" [{naru.vol_label(b['vol'])}]" if b.get('vol') else "")
+                + f"({b.get('author') or ''}, {b.get('publisher') or ''} {b.get('year') or ''})" for b in found["candidate_books"])
+        return out
     isbn = found["isbn13"]; title = found.get("title") or isbn
     avail = check_availability(isbn)
     unknown = bool(avail.get("status_unknown"))       # [v0.3.5] 정보나루 조회 실패 + 픽스처에도 없는 책
-    at_pickup = "unknown" if unknown else _lib_status(avail, pickup)
+    at_pickup = "unknown" if unknown else ("point" if is_point else _lib_status(avail, pickup))
     others_ok = [l for l in avail["available_at"] if l != pickup]
     nation = avail.get("nation")
     if unknown:
@@ -210,6 +268,12 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                 c["pass"] = None; c["detail"] = "소장·대출 상태 확인 불가 — 창구에서 도서관리시스템으로 확인"
                 pol["pending"].append(c["rule"])
         pol["allowed_so_far"] = all(c["pass"] for c in pol["checks"] if c["pass"] is not None)
+    if is_point:                                      # [10/18] 작은도서관 서가 비치 여부는 정보나루에 없다 — 「통과」로 두지 않는다
+        for c in pol["checks"]:
+            if "비치" in c["rule"] and c["pass"] is not None:
+                c["pass"] = None; c["detail"] = "작은도서관 서가 비치 여부는 정보나루에 없어 창구에서 확인"
+                pol["pending"].append(c["rule"])
+        pol["allowed_so_far"] = all(c["pass"] for c in pol["checks"] if c["pass"] is not None)
     if _unverified_item(naru.bibinfo(isbn, mode=MODE)):   # 자료 유형·신착을 모르면 제외 자료 규정도 창구 확인(「통과」로 두지 않는다)
         for c in pol["checks"]:
             if c["rule"] == "상호대차 제외 자료 아님" and c["pass"] is not None:
@@ -219,18 +283,23 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     asof = naru.LAST_META.get("asof") or naru.FIX_ASOF
     y, m, d = asof.split("-"); asof_k = f"{y}. {int(m)}. {int(d)}."
     n_ok = len(avail["available_at"]); n_busy = len(avail["loaned_at"])
-    t_ = f"『{title}』{_eun(title)}"
+    disp = f"{naru._main_title(title)} {naru.vol_label(found['vol'])}" if found.get("vol") else str(title).strip()   # [10/19] 권차가 있으면 「흔한남매 1권」처럼 · 서명 끝 빈칸은 뗀다
+    t_ = f"『{disp}』{_eun(disp)}"
     if route == "visit":
         notice = (f"{t_} 지금 {pickup}도서관 서가에 있어 바로 대출하실 수 있습니다. "
                   f"받으실 도서관에 있는 자료는 상호대차 신청 대상이 아니니 방문해 주세요.")
+    elif route == "ill" and is_point:                # [10/18] 작은도서관에서 받기 — 그곳 소장 여부는 말하지 않는다(모름)
+        notice = (f"{t_} {from_lib}도서관 등 {CFG['city']}시립도서관 {n_ok}곳에 대출 가능 상태입니다. "
+                  + _ill_terms(pickup, eta, hold, point=True))
     elif route == "ill":
         where = "대출 중이" if at_pickup == "busy" else "없"
         notice = (f"{t_} {pickup}도서관에는 {where}지만 {from_lib}도서관 등 {CFG['city']}시립도서관 {n_ok}곳에 대출 가능 상태입니다. "
-                  f"관내 상호대차로 신청하시면 {eta}일 안에 {pickup}도서관에서 받으실 수 있고 비용은 없습니다. "
-                  f"도착 후 {hold}일 안에 찾아가 주세요.")
+                  + _ill_terms(pickup, eta, hold))
     elif route == "reserve":
-        notice = (f"{t_} {CFG['city']}시립도서관 {n_busy}곳이 소장하고 있지만 "
-                  f"지금은 모두 대출 중입니다. 상호대차 대신 예약을 권해 드립니다(책바다는 관내에 없는 자료가 대상입니다).")
+        notice = (f"{t_} {CFG['city']}시립도서관 {n_busy}곳이 소장하고 있지만 지금은 모두 대출 중입니다. "
+                  + ("먼저 예약해 두시면, 책이 반납될 때 상호대차로 바꿔 신청할 수 있습니다" if CFG.get("reserve_converts_to_ill")
+                     else "상호대차 대신 예약을 권해 드립니다")
+                  + "(책바다는 관내에 없는 자료가 대상입니다).")
     elif route == "check":
         notice = (f"{t_} 지금 {CFG['city']}시립도서관의 소장·대출 상태를 확인하지 못했습니다(정보나루 조회가 되지 않았습니다). "
                   f"창구에서 도서관리시스템으로 확인해 드리겠습니다.")
@@ -247,34 +316,61 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         notice += f" (대출 상태는 정보나루 {asof_k} 조회, 전일 기준)"
     if pol["pending"]:
         notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다."
+    others = found.get("same_title_others") or []    # [10/19] 같은 제목·다른 저자의 책이 함께 검색됨 — 고른 책을 밝히고 확인을 청한다
+    if others:
+        notice += (" 같은 제목의 다른 책도 있습니다(" + " / ".join(f"{b.get('author') or ''} · {b.get('publisher') or ''} {b.get('year') or ''}"
+                                                          for b in others) + ") — 찾으시는 책의 저자가 다르면 알려 주세요.")
+    alt = []                                          # [10/19] 판본 보정 — 고른 판이 관내에 없을 때 같은 작품의 다른 판 하나가 관내에 있으면 알린다. 갈래는 그대로
+    if route == "sea":                               # 하나만 본다 — 원격 판(Cloudflare 무료)은 요청당 외부 호출 50회 한도라 관내 조회(16회)를 두 번 더 하면 넘을 수 있다
+        for b in (found.get("same_work_editions") or [])[:1]:
+            rt2, _ = _local_holdings(b["isbn13"])
+            if LOCAL_SOURCE == "naru" and (naru.LAST_META.get("unavailable") or (naru.LAST_META.get("asof") or naru.FIX_ASOF) != asof):
+                continue                              # 조회가 안 됐거나 조회일이 다르면 섞지 않는다
+            ok2 = sorted(l for l, s in rt2.items() if s == "ok"); busy2 = sorted(l for l, s in rt2.items() if s == "busy")
+            if ok2 or busy2:
+                alt.append({**b, "available_at": ok2, "loaned_at": busy2, "official_link": _official_link(b.get("title") or b["isbn13"], b["isbn13"])})
+    if alt:
+        def _alt_where(b):
+            ed = " ".join(x for x in (b.get("publisher") or "", f"{b['year']}년" if b.get("year") else "") if x) or f"ISBN {b['isbn13']}"
+            if pickup in b["available_at"]: return f"{ed} 판은 {pickup}도서관 서가에 있습니다"
+            if b["available_at"]: return f"{ed} 판은 {b['available_at'][0]}도서관 등 {len(b['available_at'])}곳에 대출 가능합니다"
+            return f"{ed} 판은 {len(b['loaned_at'])}곳이 소장하고 있지만 모두 대출 중입니다"
+        lk = alt[0]["official_link"]
+        notice += (" 같은 책의 다른 판은 관내에 있습니다: " + "; ".join(_alt_where(b) for b in alt)
+                   + ". 판이 달라도 괜찮으시면 그 판으로 이용하실 수 있습니다" + (f"(그 판의 공식 누리집 화면: {lk})." if lk else "."))
     bad = [c for c in pol["checks"] if c["pass"] is False and not (route == "visit" and "비치" in c["rule"])]
     if bad:                                           # 바로 이용 갈래에서 비치 규정은 곧 그 갈래의 이유이므로 되풀이하지 않는다
         notice += " 다만 " + "; ".join(f"{c['rule']}({c['detail']})" for c in bad) + " — 이 조건을 먼저 확인해야 합니다."
-    link = _official_link(title, isbn) if route in ("visit", "ill", "reserve", "check") else None   # 관내에 없는 책(책바다)은 누리집에 없다
+    link = _official_link(title, isbn, by_title=(route == "check")) if route in ("visit", "ill", "reserve", "check") else None   # 관내에 없는 책(책바다)은 누리집에 없다
     if link:
         tail = {"visit": "이 책 보기", "ill": "이 책 보기·신청(로그인 뒤 「상호대차 신청」 — 접수는 이용자가 직접)",
                 "reserve": "이 책 보기·예약(로그인 뒤 「예약」)", "check": "이 책의 소장·대출 상태 보기"}[route]
         notice += f" 공식 누리집에서 {tail}: {link}"
-    memo_lines = [f"도서: {title} ({found.get('author') or ''}) ISBN {isbn}",
+    memo_lines = [f"도서: {str(title).strip()}" + (f" [{naru.vol_label(found['vol'])}]" if found.get("vol") else "") + f" ({found.get('author') or ''}) ISBN {isbn}" + (f" · 같은 제목 다른 책 {len(others)}건 — 저자 확인" if others else ""),
                   f"갈래: {_ROUTE_LABEL[route]}" + (f" · 소장관 {from_lib}" if from_lib else ""),
-                  f"수령관: {pickup} (현재 {'서가 비치' if at_pickup == 'ok' else '대출 중' if at_pickup == 'busy' else '확인 불가' if unknown else '미소장'})",
+                  (f"수령관: {pickup}도서관 (작은도서관 — 서가 비치·도착일·보관 기한은 창구 확인)" if is_point else
+                   f"수령관: {pickup} (현재 {'서가 비치' if at_pickup == 'ok' else '대출 중' if at_pickup == 'busy' else '확인 불가' if unknown else '미소장'})"),
                   ("대출 가능 관: 확인 불가 / 대출 중: 확인 불가" if unknown else
                    f"대출 가능 관: {', '.join(avail['available_at']) or '없음'} / 대출 중: {', '.join(avail['loaned_at']) or '없음'}"),
                   f"근거: {avail['basis']}",
                   f"규정: {sum(1 for c in pol['checks'] if c['pass'] is True)}건 통과 · {sum(1 for c in pol['checks'] if c['pass'] is False)}건 불가 · {len(pol['pending'])}건 창구 확인",
                   "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)"]
+    for b in alt:                                     # [10/19] 판본 보정 — 다른 판의 관내 소장(접수 전 판 확인)
+        memo_lines.insert(-1, f"다른 판 관내: {b.get('publisher') or ''} {b.get('year') or ''} ISBN {b['isbn13']} — "
+                              f"대출 가능 {', '.join(b['available_at']) or '없음'} / 대출 중 {', '.join(b['loaned_at']) or '없음'}")
     next_tool = None
     if route == "ill" and user:
         next_tool = {"tool": "request_service", "arguments": {"user": user, "isbn13": isbn, "from_lib": from_lib, "pickup": pickup,
                                                               "confirmed_by_user": True}, "note": "이용자 확인 뒤에만"}
     return {**base, "found": True, "route": route, "route_label": _ROUTE_LABEL[route], "from_lib": from_lib,
             "book": {"isbn13": isbn, "title": title, "author": found.get("author"), "publisher": found.get("publisher"),
-                     "year": found.get("year"), "evidence": found.get("evidence")},
+                     "year": found.get("year"), "evidence": found.get("evidence"), **({"vol": found["vol"]} if found.get("vol") else {})},
             "availability": {"at_pickup": at_pickup, "available_at": avail["available_at"], "loaned_at": avail["loaned_at"],
                              "nation": nation, "basis": avail["basis"], "asof": asof},
             "policy": pol, "notice": notice, "official_link": link,
             "translate_to": None if lang == "ko" else lang,
-            "desk_memo": "\n".join(memo_lines), "next_tool": next_tool}
+            "desk_memo": "\n".join(memo_lines), "next_tool": next_tool, **({"same_title_others": others} if others else {}),
+            **({"other_editions": alt} if alt else {})}
 
 def suggest_items(user: str = None, count: int = 3):
     """[확장 v0.2] 이달의 추천 — 운영: AI 책큐/정보나루 recommandList 커넥터."""

@@ -101,10 +101,22 @@ ok(r2["found"] and r2["book"]["isbn13"] == "9788936433598" and r2["route"] == "i
    f"③ 픽스처에 없는 책 — 중계 서지 검색으로 찾음(『{r2['book']['title']}』) → {r2['route_label']} · 소장관 {r2['from_lib']}")
 r3 = c.call("search_item", utterance="데미안이라는 책 있을까요")
 ok(r3["found"] is False and r3.get("query") == "데미안", "   요청 말투를 걷어낸 검색어로 중계에 묻는다(「데미안」) · 없으면 못 찾음으로 정직하게")
+r3b = c.call("search_item", utterance="채식주의자 상호대차 되나요?")
+ok(r3b["found"] and r3b.get("query") == "채식주의자" and r3b["isbn13"] == "9788936433598",
+   "   [10/18] 문장째 넘어온 「채식주의자 상호대차 되나요?」 → 검색어 「채식주의자」(「되나요」까지 걷어냄)")
+r3c = c.call("consult_request", utterance="채식주의자 원미도서관으로 가져다줄 수 있어요?", pickup="원미도서관")
+ok(r3c["found"] and r3c["book"]["isbn13"] == "9788936433598" and r3c["pickup"] == "원미" and r3c["route"] == "visit",
+   "   [10/18] 수령관 「원미도서관」도 설정 이름 「원미」로 · 검색어에서 「원미도서관으로」를 뺌 → 바로 이용")
+r3d = c.call("consult_request", utterance="채식주의자 있나요?", pickup="부천시립 꿈빛도서관")
+ok(r3d["pickup"] == "꿈빛" and r3d["route"] == "visit", "   [10/18] 「부천시립 꿈빛도서관」 → 「꿈빛」")
 r10 = c.call("consult_request", utterance="희랍어 시간 있나요?", pickup="상동")
 ok(r10["found"] and r10["route"] == "check" and "확인하지 못했습니다" in r10["notice"] and "소장되어 있지 않습니다" not in r10["notice"]
    and r10["availability"]["nation"] is None and any("비치" in x for x in r10["policy"]["pending"]) and "확인 불가" in r10["desk_memo"],
    "④′ 그 책 조회만 실패 + 픽스처에도 없는 책 — 「미소장 → 책바다」가 아니라 「소장 확인 불가 → 창구 조회」(비치 규정도 창구 확인)")
+from urllib.parse import quote as _q
+ok(r10["official_link"] == "https://alpasq.bcl.go.kr/search/keyword/" + _q(r10["book"]["title"], safe="")
+   and (r["official_link"] or "").endswith("/" + r["book"]["isbn13"]),
+   "④‴ [10/18] 누리집 링크 — 소장을 확인한 책은 ISBN(그 판본 화면), 소장 확인 불가인 책은 제목 검색(그 판본이 없을 수도 있어)")
 r11 = c.call("consult_request", utterance="흐르는 강물처럼", pickup="상동")
 ok(r11["found"] is False and r11["route"] == "check" and "연결되지 않아" in r11["notice"] and r11["desk_memo"].startswith("[조회 불가]"),
    "④″ 서지 검색부터 실패 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」")
@@ -125,6 +137,10 @@ c2.banner()
 c3 = Client(CHAEKIJI_MODE="auto", CHAEKIJI_RELAY=RELAY)
 r5 = c3.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동")
 ok(r5["mode"] == "demo", "① auto → 중계 죽어 있으면 demo 선택")
+r5b = c3.call("consult_request", utterance="데미안 빌리고 싶어요", pickup="상동")
+ok(r5b["found"] is False and r5b["route"] == "check" and "연결되지 않아" in r5b["notice"] and "저자나 출판사" not in r5b["notice"]
+   and r5b["desk_memo"].startswith("[조회 불가]") and "auto → demo" in r5b["reason"],
+   "   [10/19 밤] auto인데 중계에 닿지 못하면 시연 도서 밖의 책은 되묻지 않고 「조회 불가 → 창구」(처음 보는 AI 리허설 지적)")
 c3.banner()
 print("── 매일 갱신 스냅샷(refresh_today.py 결과) ──")
 tmp = Path(tempfile.mkdtemp())
@@ -140,12 +156,22 @@ r6 = c4.call("consult_request", utterance="나미야 잡화점의 기적", picku
 ok(r6["mode"] == "snapshot" and r6["route"] == "visit" and "매일 갱신" in r6["availability"]["basis"] and r6["availability"]["asof"] == TODAY,
    "   중계 없음 + 신선한 스냅샷 → auto가 snapshot 선택 · 어제 반납분이 「바로 이용」으로 반영")
 c4.banner()
-snap["asof"] = (datetime.datetime.now(KST).date() - datetime.timedelta(days=10)).isoformat()
+snap["asof"] = (datetime.datetime.now(KST).date() - datetime.timedelta(days=30)).isoformat()   # [10/19] 10일 → 30일(심사 기간 고정 자료 규칙과 겹치지 않게 — 판정 기준은 그대로)
 json.dump(snap, open(tmp/"snap.json", "w", encoding="utf-8"), ensure_ascii=False)
 c5 = Client(CHAEKIJI_MODE="auto", CHAEKIJI_RELAY=RELAY, CHAEKIJI_SNAPSHOT=str(tmp/"snap.json"))
 r7 = c5.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동")
-ok(r7["mode"] == "demo" and r7["availability"]["asof"] == "2026-08-18", "   10일 지난 스냅샷은 무시 → demo(8/18 픽스처)")
+ok(r7["mode"] == "demo" and r7["availability"]["asof"] == "2026-08-18", "   30일 지난 스냅샷은 무시 → demo(8/18 픽스처)")
 c5.banner()
+# [10/19] 심사 기간 고정 자료 — 동결(11/8 18시) 뒤 새벽 갱신이 멈춰도 11/8 자료로 결선(11/25)까지 답한다. 날짜를 넣어 순수 함수로 확인(실제 시계와 무관)
+sys.path.insert(0, str(ROOT))
+from connectors import naru as _naru
+D = datetime.date
+ok(_naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 13)) and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 17)) and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 25))
+   and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 26)) and not _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 27))
+   and not _naru.snapshot_ok(D(2026, 11, 7), D(2026, 11, 13)) and not _naru.snapshot_ok(D(2026, 11, 9), D(2026, 11, 8)),
+   "   ⑥′ 심사 기간 고정 자료 — 11/8 자료는 11/13·11/17·11/25·11/26에 신선, 11/27엔 아님 · 11/7 자료는 아님 · 미래 날짜 자료는 아님")
+ok(_naru.snapshot_ok(D(2026, 10, 19), D(2026, 10, 19)) and _naru.snapshot_ok(D(2026, 10, 17), D(2026, 10, 19)) and not _naru.snapshot_ok(D(2026, 10, 16), D(2026, 10, 19)),
+   "   ⑥″ 평소 규칙은 그대로 — 2일 이내만 신선(10/17 자료는 10/19에 신선, 10/16 자료는 아님)")
 httpd2 = serve(PORT + 1); time.sleep(0.3)
 snap["asof"] = TODAY
 json.dump(snap, open(tmp/"snap.json", "w", encoding="utf-8"), ensure_ascii=False)
@@ -156,4 +182,40 @@ ok(r8["mode"] == "relay" and "매일 갱신" in r8["availability"]["basis"] and 
    "   relay 모드라도 스냅샷에 있는 책은 중계를 안 부름(한도 절약) — 스냅샷 값으로 판정")
 ok(r9["found"] and "중계" in r9["availability"]["basis"] and r9["route"] == "ill", "   스냅샷에 없는 책은 중계로 — 『채식주의자』 관내 상호대차")
 c6.banner(); httpd2.shutdown(); httpd2.server_close()
+# [10/19] 서지 고르기 — AI 대조 시험(상담 비서로 실제 책 12건)에서 다른 책을 고른 3건·못 찾은 2건을 고친 것(relay/mcp.js와 같은 규칙).
+#   검색 결과는 2026. 10. 19. 실제 /search 응답(relay/test_mcp_scenarios.json에 실음), 「흔한남매」 권차는 모의 값. 순수 함수로 확인(네트워크 없음)
+_SC = json.load(open(ROOT.parent / "relay" / "test_mcp_scenarios.json", encoding="utf-8"))["books"]
+def _fake(q): return [dict(x) for x in _SC.get(q, [])]
+_LIBN = ["꿈빛", "꿈여울", "도당", "동화", "별빛마루", "북부", "상동", "송내", "수주", "심곡", "역곡", "역곡밝은", "오정", "원미", "책마루", "한울빛"]
+_PTS = ["상동역 칙칙폭폭", "숲속", "꿈꾸는새싹", "약대신나는가족", "시정담벼락", "신중동역 칙칙폭폭", "소사칙칙폭폭", "해밀"]
+ok(_naru.split_volume("흔한남매 1권") == ("흔한남매", "1", True) and _naru.split_volume("불편한 편의점 2") == ("불편한 편의점", "2", False)
+   and _naru.split_volume("트렌드 코리아 2026")[1] is None and _naru.split_volume("1984")[1] is None
+   and _naru.clean_title("양귀자 모순 빌리고 싶은데 상동역 칙칙폭폭에서 받을게요", places=_LIBN, points=_PTS) == "양귀자 모순"
+   and _naru.clean_title("불편한 편의점 빌리고 싶대요, 송내에서 받는대요", places=_LIBN, points=_PTS) == "불편한 편의점"
+   and _naru.clean_title("숲속 작은 집", places=_LIBN, points=_PTS) == "숲속 작은 집",
+   "⑦ [10/19] 권차 나누기(「2026」·「1984」는 권차 아님) · 말끝·작은도서관 이름 걷기(「숲속 작은 집」 같은 제목은 그대로)")
+_E = "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)"
+p1 = _naru.pick_search("해리 포터와 마법사의 돌", _fake, _E)
+p2 = _naru.pick_search("구름빵 백희나", _fake, _E)
+ok(p1["found"] and p1["isbn13"] == "9788983920683" and "2번째" in p1["evidence"] and p2["found"] and p2["isbn13"] == "9788953527058" and "「구름빵」" in p2["evidence"],
+   "   ⑦′ 검색 첫 결과를 그대로 쓰지 않음 — 「해리 포터와 마법사의 돌」은 2번째(같은 책), 「구름빵 백희나」는 중문판 대신 「구름빵」을 다시 찾아 저자로 확인")
+p3 = _naru.pick_search("흔한남매 1권", _fake, _E)
+p4 = _naru.pick_search("불편한 편의점 2", _fake, _E)
+p3b = _naru.pick_search("흔한남매 9권", _fake, _E)
+ok(p3["found"] and p3["isbn13"] == "9790000000103" and p4["found"] and p4["isbn13"] == "9791161572062" and p3b["found"] is False
+   and _naru._core_title("구름빵 : 키 크는 빵 주세요", "GIMC|DPS") != _naru._core_title("구름빵", "글·그림: 백희나")
+   and _naru._core_title("채식주의자:한강 연작소설", "한강") == "채식주의자",
+   "   ⑦″ 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 2권(시연 도서 1권이 아님), 없는 권·권 모르는 판은 고르지 않음 · 부서명이 작품을 가르면 다른 책")
+p5 = _naru.pick_search("문헌정보학개론", _fake, _E)
+p6 = _naru.pick_search("문헌정보학개론 정동열", _fake, _E)
+ok(p5["found"] and len(p5["same_title_others"]) == 3 and p6["found"] is False and len(p6["candidate_books"]) == 3,
+   "   ⑦‴ 같은 제목·다른 저자는 함께 알림(3건) · 말한 저자가 어느 결과와도 안 맞으면 고르지 않고 후보 3건과 되묻기")
+p8 = _naru.pick_search("문헌정보학개론 김수경", _fake, _E)
+ok(p8["found"] and p8["isbn13"] == "9791187268512" and [b["isbn13"] for b in p8.get("same_work_editions", [])] == ["9791187268758"]
+   and "same_work_editions" not in p5 and "9788983920690" in [b["isbn13"] for b in p1.get("same_work_editions", [])],
+   "   ⑦⁵ [10/19 밤] 판본 보정 준비 — 같은 작품의 다른 판(같은 서명·같은 첫 저자)을 따로 모음: 「문헌정보학개론 김수경」 2021 → 2024 판, 저자가 다른 같은 제목 책은 판이 아님")
+def _boom(q): raise RuntimeError("연결 끊김")
+p7 = _naru.pick_search("아무 책", _boom, _E, unavailable_reason="중계 응답 없음")
+ok(p7["found"] is False and p7.get("unavailable") is True and _naru.pick_search("아무도 모르는 제목", _fake, _E)["candidates"] == [],
+   "   ⑦⁗ 첫 검색이 끊기면 「없음」이 아니라 unavailable(v0.3.5 그대로) · 결과가 없으면 후보 없이 못 찾음")
 print(f"\n중계 시험 {PASS}건 통과 — 키 없이 오늘 데이터, 중계가 멈춰도 멈추지 않는다.")

@@ -1,6 +1,6 @@
 # lab/ — AI 정부 실험실 4주 과제용 스크립트와 기록
 
-실험실 VM(우분투)에서 돌리는 것들. 전부 파이썬 표준 라이브러리 + PyYAML만 쓴다.
+AI 정부 실험실 가상서버(우분투)용으로 만든 것들. 가상서버는 접속이 되지 않아 쓰지 못했고, 이 스크립트들은 깃허브 액션 등 다른 우분투 환경에서 돌린다. 전부 파이썬 표준 라이브러리 + PyYAML만 쓴다.
 **인증키는 환경변수로만**: `read -s NARU_KEY; export NARU_KEY` (화면·파일·기록에 남지 않음).
 
 | 주차 | 파일 | 하는 일 | 정보나루 호출 |
@@ -11,6 +11,7 @@
 | 3 | `make_city_config.py` | 다른 도시 도서관 코드표로 `config/<도시>.yaml` 초안 | 1회 |
 | 3 | `check_store.py` | 저장 계층·감사 기록·관내 출처 전환 점검 시험 14건(네트워크 없음) | 0 |
 | — | `refresh_today.py` · `refresh_list.txt` | [v0.3.4] 매일 1회 조회분 갱신 — 픽스처 5종 + 목록의 ISBN, `--max-calls` 상한, `--demo` 연습 | 권당 1+소장관 수 |
+| — | `stability.py` | 전일 기준 자료의 하루 사이 유지율 — 매일 새벽 자료(`data/holdings-today.json`)의 깃 이력을 이어지는 두 날씩 견줌, `--write`면 `out/`에 기록표 | 0 |
 | — | `기록지/` | 실측 B·C·D·E 기록지, 자가점검 G | — |
 | — | `codex_config.example.toml` · `vscode_mcp.example.json` · `gitlab-ci.example.yml` | AI 도구·CI 연결 예시 | — |
 

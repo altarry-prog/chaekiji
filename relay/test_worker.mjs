@@ -17,8 +17,11 @@ globalThis.fetch = async (url) => {
     const held = ["141321", "141065"].includes(code);          // 소장관 둘: 상동(대출 중)·꿈빛(대출 가능)
     body = { response: { result: { hasBook: held ? "Y" : "N", loanAvailable: code === "141065" ? "Y" : "N" } } };
   } else if (api === "srchBooks") {
-    body = { response: { docs: u.searchParams.get("title")?.includes("채식")
-      ? [{ doc: { isbn13: "9788936433598", bookname: "채식주의자", authors: "한강 지음", publisher: "창비", publication_year: "2007" } }] : [] } };
+    const t = u.searchParams.get("title") || "";
+    body = { response: { docs: t.includes("채식")
+      ? [{ doc: { isbn13: "9788936433598", bookname: "채식주의자", authors: "한강 지음", publisher: "창비", publication_year: "2007" } }]
+      : t.includes("흔한")                                        // [10/19] 권차(vol) 칸이 있는 서지(모의)
+      ? [{ doc: { isbn13: "9790000000103", bookname: "흔한남매", authors: "원작: 흔한남매", publisher: "미래엔", publication_year: "2019", vol: "1" } }] : [] } };
   } else body = { response: { error: "unknown api" } };
   return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
 };
@@ -38,6 +41,10 @@ ok(r.status === 200 && r.body.libs["141065"] === "ok" && r.body.libs["141321"] =
 ok(/^\d{4}-\d{2}-\d{2}$/.test(r.body.asof), "   asof 날짜(YYYY-MM-DD)");
 r = await get("/search?q=채식주의자 있나요");
 ok(r.status === 200 && r.body.docs.length === 1 && r.body.docs[0].isbn13 === "9788936433598", "/search?q= — 서지 1건(제목 부분일치)");
+r = await get("/search?q=흔한남매");
+ok(r.status === 200 && r.body.docs[0].vol === "1" && calls.some(u => String(u).includes("srchBooks") && String(u).includes("pageSize=10")) &&
+   !("vol" in (await get("/search?q=채식주의자 있나요")).body.docs[0]),
+   "[10/19] /search?q= — 상위 10건(pageSize=10) · 권차(vol)가 있으면 함께 주고 없으면 칸을 두지 않음");
 r = await get("/search?isbn=9788936433598");
 ok(r.status === 200 && Array.isArray(r.body.docs), "/search?isbn= — 서지 조회 경로");
 r = await get("/nation?isbn=9788972756194");

@@ -18,7 +18,7 @@ v0.3.4 (상담 비서 판, 2026. 10.)
 - LAST_META.asof: 어느 모드든 「몇 월 며칠 조회분」인지 날짜를 함께 돌려준다(안내문의 전일 기준 표시용).
 - snapshot: lab/refresh_today.py가 매일 써 두는 fixtures/holdings-today.json(어제 기준 조회분)을 읽는다.
   auto 모드는 중계 → 신선한 스냅샷(2일 이내) → 8/18 픽스처 순으로 고른다. relay 모드도 스냅샷에 있는 책은 중계를 부르지 않는다(한도 절약)."""
-import json, os, time, datetime, socket, urllib.error, urllib.parse, urllib.request
+import json, os, re, time, datetime, socket, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 
 FIX = Path(__file__).resolve().parent.parent / "fixtures"
@@ -43,19 +43,30 @@ CACHE_SEC = 600
 FIX_ASOF = "2026-08-18"                               # 픽스처 실측일
 SNAPSHOT_PATH = Path(os.environ.get("CHAEKIJI_SNAPSHOT") or (FIX / "holdings-today.json"))
 SNAPSHOT_MAX_DAYS = 2
+# [10/19] 심사 기간 고정 자료 — 2026. 11. 8. 18시 동결 뒤 새벽 갱신이 멈추므로, 11. 8. 이후 날짜의 새벽 자료는 11. 26.까지 신선한 것으로 본다.
+#   평소 규칙(2일)은 그대로이고, 안내문에는 지금처럼 조회일(「2026. 11. 8. 조회」)을 밝힌다. 결선(11. 25.) 뒤 지운다. relay/mcp.js·index.html·health_check.py와 같은 값.
+FROZEN_FROM = datetime.date(2026, 11, 8)
+FROZEN_UNTIL = datetime.date(2026, 11, 26)
 try:
     _snap = json.load(open(SNAPSHOT_PATH, encoding="utf-8")) if SNAPSHOT_PATH.exists() else None
 except Exception:
     _snap = None
 
+def snapshot_ok(asof: datetime.date, today: datetime.date) -> bool:
+    """새벽 자료를 써도 되는 날짜인가 — 평소 2일 이내, 또는 심사 기간 고정 자료(11. 8.~ 자료를 11. 26.까지). 순수 함수(시험용)."""
+    age = (today - asof).days
+    if 0 <= age <= SNAPSHOT_MAX_DAYS:
+        return True
+    return FROZEN_FROM <= asof <= today <= FROZEN_UNTIL
+
 def snapshot_fresh() -> bool:
-    """오늘 조회분 파일이 있고 2일 안쪽이면 참(대출 상태는 어차피 전일 기준이라 하루 지난 것까지 쓴다)."""
+    """오늘 조회분 파일이 있고 2일 안쪽이면 참(대출 상태는 어차피 전일 기준이라 하루 지난 것까지 쓴다). 심사 기간에는 11. 8. 자료도 참."""
     if not _snap or not _snap.get("holdings"): return False
     try:
         d = datetime.date.fromisoformat(_snap["asof"])
     except Exception:
         return False
-    return 0 <= (datetime.datetime.now(KST).date() - d).days <= SNAPSHOT_MAX_DAYS
+    return snapshot_ok(d, datetime.datetime.now(KST).date())
 
 def _snapshot_holdings(isbn13, libraries):
     if not snapshot_fresh(): return None
@@ -73,14 +84,48 @@ _REQ_PHRASES = ["빌리고 싶어요", "빌리고 싶은데요", "빌리고 싶�
                 "빌릴수있어요", "빌릴수있나요", "찾아 주세요", "찾아주세요", "찾아줘", "찾아 줘", "있나요", "있어요", "있을까요",
                 "있습니까", "보고 싶어요", "읽고 싶어요", "대출 되나요", "대출되나요", "대출할 수 있나요", "신청해 주세요",
                 "신청해주세요", "신청할게요", "부탁해요", "부탁드려요", "부탁합니다", "주세요", "가져다 줄 수 있어요",
-                "가져다줄 수 있어요", "상호대차", "그 왜", "그거", "라는 책", "이라는 책", "하는 책", "인가 하는"]
-def clean_title(utterance: str) -> str:
-    """발화에서 요청 말투를 걷어 제목 비슷한 것만 남긴다(정보나루 제목 검색용). 모델이 제목만 넘기면 그대로 통과."""
+                "가져다줄 수 있어요", "상호대차", "그 왜", "그거", "라는 책", "이라는 책", "하는 책", "인가 하는",
+                # [10/18] 공개 모델 실측에서 문장째 넘어온 말끝(「채식주의자 상호대차 되나요?」 → 다른 책을 찾음)
+                "되나요", "될까요", "가능한가요", "가능할까요", "가능해요", "가능한지", "가능 여부",
+                "받을게요", "받을래요", "받고 싶어요", "받을 수 있나요", "받을 수 있어요", "받을 수 있을까요",
+                "가져다줄 수 있나요", "가져다 줄 수 있나요", "가져다주세요", "가져다 주세요",
+                # [10/19] AI 대조 시험에서 검색어에 남은 말(「양귀자 모순 빌리고 싶은데 …」 → 못 찾음)·직원 안내서 예시의 전해 말하기
+                "빌리고 싶은데", "빌리고 싶대요", "빌리고 싶다고", "빌리려고 하는데요", "빌리려고 하는데", "빌리려고 해요", "빌리려고요",
+                "받는대요", "받고 싶대요", "찾는데요", "찾고 있어요"]
+PLACES: list = []       # [10/18] 도서관 짧은 이름(tools가 설정에서 채운다) — 검색어에서 「원미도서관으로」·「상동에서」 같은 수령관 말을 뺀다
+POINTS: list = []       # [10/19] 작은도서관 받을 곳 이름(tools가 설정 pickup_points에서 채운다) — 「상동역 칙칙폭폭에서」도 뺀다
+_JOSA_LIB = "(?:으로|로|에서|에|까지)"
+def _drop_places(t: str, places) -> str:
+    """「○○도서관(으로·에서 …)」은 어디서든, 「○○에서·으로」만 붙은 말은 맨 끝일 때만 뺀다(「동화로 읽는 …」 같은 제목을 지키려고)."""
+    if not places: return t
+    alts = "|".join(re.escape(x) for x in sorted(places, key=len, reverse=True))
+    lib_word, lib_tail = re.compile(f"(?:{alts})도서관{_JOSA_LIB}?"), re.compile(f"도서관{_JOSA_LIB}?")
+    toks, out, i = t.split(" "), [], 0
+    while i < len(toks):
+        w = toks[i]
+        if lib_word.fullmatch(w): i += 1; continue
+        if w in places and i + 1 < len(toks) and lib_tail.fullmatch(toks[i + 1]): i += 2; continue
+        out.append(w); i += 1
+    if len(out) > 1 and re.fullmatch(f"(?:{alts})(?:으로|로|에서|까지)", out[-1]): out.pop()
+    return " ".join(out)
+def _drop_points(t: str, points) -> str:
+    """[10/19] 작은도서관 받을 곳(두 낱말 이름 포함) — 「○○(작은)도서관(으로·에서 …)」은 어디서든, 「○○에서·으로」는 맨 끝일 때만 뺀다."""
+    if not points: return t
+    alts = "|".join(" ?".join(re.escape(w) for w in p.split()) for p in sorted(points, key=len, reverse=True))
+    t = re.sub(f"(?<= )(?:{alts}) ?(?:작은도서관|도서관){_JOSA_LIB}?(?= )", " ", " " + t + " ")
+    t = " ".join(t.split())
+    m = re.search(f"(?:^| )(?:{alts})(?:으로|로|에서|까지)$", t)
+    if m and m.start() > 0: t = t[:m.start()]
+    return " ".join(t.split())
+def clean_title(utterance: str, places=None, points=None) -> str:
+    """발화에서 요청 말투와 수령관 말을 걷어 제목 비슷한 것만 남긴다(정보나루 제목 검색용). 모델이 제목만 넘기면 그대로 통과."""
     t = " " + " ".join(str(utterance).split()) + " "
     for ph in sorted(_REQ_PHRASES, key=len, reverse=True):
         t = t.replace(" " + ph + " ", " ").replace(ph, " ") if ph in t else t
-    t = t.replace("?", " ").replace(".", " ").replace("!", " ")
+    t = t.replace("?", " ").replace(".", " ").replace("!", " ").replace(",", " ")
     t = " ".join(t.split())
+    t = _drop_places(t, PLACES if places is None else places)
+    t = _drop_points(t, POINTS if points is None else points)
     if t.endswith(" 책"): t = t[:-2].rstrip()                   # 낱말 「책」은 떼고, 「그림책」처럼 붙은 것은 둔다
     for suf in ("이라고", "라고", "이란", "란", "은", "는", "을", "를", "이", "가"):
         if len(t) > 3 and t.endswith(suf) and not t.endswith(" " + suf):
@@ -140,24 +185,14 @@ def search(utterance: str, mode="demo"):
     if mode == "live":
         return _live_search(utterance)
     if mode == "relay":
-        fx = search(utterance, mode="demo")           # 실측 서지 5종은 픽스처가 먼저(시연 도서는 늘 같은 답)
-        if fx.get("found"):
-            fx["evidence"] = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 중계로 오늘 조회"
-            return fx
         title = clean_title(utterance)
-        try:
-            docs = _relay_search(utterance=title)
-            if docs:
-                d = docs[0]
-                return {"found": True, "isbn13": d["isbn13"], "title": d.get("title"), "author": d.get("author"),
-                        "publisher": d.get("publisher"), "year": d.get("year"),
-                        "candidates": [x["isbn13"] for x in docs if x.get("isbn13")], "query": title,
-                        "confidence": 0.85, "evidence": "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)"}
-            return {"found": False, "reason": f"정보나루 서지 검색 결과 없음(검색어 「{title}」) — 제목·저자를 더 알려 주세요",
-                    "candidates": [], "query": title}
-        except Exception:                               # [v0.3.5] 「책이 없다」가 아니라 「찾지 못했다(연결 안 됨)」 — unavailable로 구별
-            return {"found": False, "reason": f"중계 응답 없음 — 픽스처 5종에도 없는 도서(검색어 「{title}」)", "candidates": [],
-                    "unavailable": True}
+        if not split_volume(title)[1]:                # [10/19] 권차를 말하면 시연 도서(1권) 픽스처로 바로 가지 않는다
+            fx = search(utterance, mode="demo")       # 실측 서지 5종은 픽스처가 먼저(시연 도서는 늘 같은 답)
+            if fx.get("found"):
+                fx["evidence"] = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 중계로 오늘 조회"
+                return fx
+        return pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
+                           unavailable_reason=f"중계 응답 없음 — 픽스처 5종에도 없는 도서(검색어 「{title}」)")
     q = _norm(utterance)
     best = None
     for b in _cat["books"]:
@@ -357,18 +392,156 @@ def _get(api, **params):
         raise RuntimeError(f"정보나루 응답 오류({api}): {resp['error']}")
     return resp
 
+def _live_docs(q):
+    resp = _get("srchBooks", title=q, exactMatch=EXACT, pageSize=10)
+    out = []
+    for d in (x.get("doc", x) for x in resp.get("docs", [])):
+        if not d.get("isbn13"): continue
+        _BIB_CACHE[d["isbn13"]] = _bib_from_doc(d)
+        out.append({"isbn13": d["isbn13"], "title": d.get("bookname"), "author": d.get("authors"), "publisher": d.get("publisher"),
+                    "year": d.get("publication_year"), **({"vol": str(d["vol"])} if d.get("vol") else {})})
+    return out
+
 def _live_search(utterance):
-    resp = _get("srchBooks", title=utterance, exactMatch=EXACT, pageSize=5)
-    docs = resp.get("docs", [])
-    if not docs: return {"found": False, "reason": "일치 결과 없음", "candidates": []}
-    ds = [d.get("doc", d) for d in docs]
-    for x in ds:
-        if x.get("isbn13"): _BIB_CACHE[x["isbn13"]] = _bib_from_doc(x)
-    d = ds[0]
-    return {"found": True, "isbn13": d["isbn13"], "title": d["bookname"], "author": d["authors"],
-            "publisher": d["publisher"], "year": d["publication_year"],
-            "candidates": [x["isbn13"] for x in ds if x.get("isbn13")],   # 판본 ISBN 후보(대출순)
-            "confidence": 0.9, "evidence": f"정보나루 srchBooks(title · exactMatch={EXACT}, live)"}
+    title = clean_title(utterance)
+    res = pick_search(title, _live_docs, f"정보나루 srchBooks(title · exactMatch={EXACT}, live)", unavailable_reason=None)
+    if res.get("found"): res["confidence"] = 0.9
+    return res
+
+# ── [10/19] 서지 고르기 — 검색 결과 첫 번째(대출 많은 순)를 그대로 쓰지 않고 문의와 견줘 고른다(relay/mcp.js와 같은 규칙) ──
+# AI 대조 시험(10/19)에서 「해리 포터와 마법사의 돌」 → 「혼혈 왕자」, 「구름빵 백희나」 → 중문판, 「불편한 편의점 2」 → 1권을 고른 일.
+# 점수: 본서명 일치 100 · 문의가 서명에 다 들어 있음 80 · 낱말이 서명·저자에 나뉘어 다 들어 있음 70 · 본서명이 문의 안에 있음 60
+#       + 저자 일치 10 · 권차 일치 15(다른 권이거나 몇 권인지 모르면 고르지 않음) · 한국어 문의에 외국어 판 -60 · 검색어에서 뺀 낱말이 안 맞음 -50
+#       60점 아래면 고르지 않고 후보를 보이며 되묻는다(틀린 책으로 판정하지 않는다).
+_VOL_EXPLICIT = re.compile(r"^(.*?)\s*(?:제\s*)?([0-9]{1,3})\s*권$")
+_VOL_TRAIL = re.compile(r"^(.*[^0-9])\s+([0-9]{1,2})$")
+def split_volume(t: str):
+    """「흔한남매 1권」 → (흔한남매, '1', True) · 「불편한 편의점 2」 → (불편한 편의점, '2', False) · 권차 없으면 (t, None, False)."""
+    m = _VOL_EXPLICIT.match(t)
+    if m and m.group(1).strip(): return m.group(1).strip(), str(int(m.group(2))), True
+    m = _VOL_TRAIL.match(t)
+    if m and len(m.group(1).strip()) >= 2: return m.group(1).strip(), str(int(m.group(2))), False
+    return t, None, False
+def _keep(ch):
+    return ("0" <= ch <= "9") or ("a" <= ch <= "z") or ("가" <= ch <= "힣") or ("ㄱ" <= ch <= "ㅣ") or \
+           ("一" <= ch <= "鿿") or ("぀" <= ch <= "ヿ")
+def _tnorm(s): return "".join(ch for ch in str(s if s is not None else "").lower() if _keep(ch))
+def _has_hangul(s): return any("가" <= ch <= "힣" for ch in str(s if s is not None else ""))
+def _main_title(title):
+    t = re.split(r"[:：]", str(title if title is not None else ""))[0].split(" =")[0]
+    t = re.sub(r"^\s*\([^)]*\)\s*", "", t)
+    t = re.sub(r"\s*\([^)]*\)\s*$", "", t)
+    return t.strip()
+_ROLE_WORDS = {"지은이", "지음", "저자", "저", "글", "그림", "글·그림", "원작", "옮김", "옮긴이", "역", "편", "엮음",
+               "공저", "공역", "감수", "기획", "편저", "편역"}
+def _first_author(a):
+    first = re.split(r"[;,|]", str(a if a is not None else ""))[0]
+    return _tnorm("".join(w for w in re.split(r"[\s:()]+", first) if w and w not in _ROLE_WORDS))
+def _same_author(a, b): return (not a) or (not b) or (a in b) or (b in a)
+_GENERIC_SUB = ("소설", "에세이", "시집", "산문", "장편", "단편", "연작", "개정", "큰글자", "특별판", "한정판", "양장", "리커버")
+def _core_title(title, author):
+    """본서명 + (작품을 가르는 부서명만). 「장편소설」·저자 이름 같은 부서명은 뺀다 — 같은 제목 다른 책을 가를 때 쓴다."""
+    raw = str(title if title is not None else "")
+    m = re.search(r"[:：]", raw)
+    sub = "" if not m else raw[m.end():]
+    subn, fa = _tnorm(sub), _first_author(author)
+    generic = (not subn) or any(w in sub for w in _GENERIC_SUB) or (bool(fa) and fa in subn)
+    return _tnorm(_main_title(raw)) + ("" if generic else subn)
+_FOREIGN_MARK = ("중문판", "영문판", "일문판", "원서")
+def _score_doc(doc, q_full, q_base, vol, dropped):
+    qn, tn = _tnorm(q_base if vol else q_full), _tnorm(_main_title(doc.get("title")))
+    fn, an = _tnorm(doc.get("title")), _tnorm(doc.get("author"))
+    if not tn or not qn: return 0
+    s = 0
+    if tn == qn: s = 100
+    elif qn in fn: s = 80
+    else:
+        toks = [x for x in (_tnorm(w) for w in (q_base if vol else q_full).split()) if len(x) >= 2]
+        in_t = [x for x in toks if x in fn]; in_a = [x for x in toks if x not in fn and x in an]
+        if toks and in_t and len(in_t) + len(in_a) == len(toks): s = 70
+        elif len(tn) >= 2 and tn in qn: s = 60
+    if not s: return 0
+    hints = [x for x in (_tnorm(w) for w in q_full.split() + list(dropped)) if len(x) >= 2]
+    if any(x in an for x in hints): s += 10
+    if any(x not in fn and x not in an for x in (_tnorm(w) for w in dropped) if x): s -= 50
+    if vol:
+        dv = re.sub(r"[^0-9]", "", str(doc.get("vol") or "")).lstrip("0")
+        nums = [x.lstrip("0") for x in re.findall(r"[0-9]+", _main_title(doc.get("title")))]
+        if (dv != vol) if dv else (vol not in nums): return 0   # 다른 권이거나 몇 권인지 모르면 고르지 않는다(되묻기)
+        s += 15
+    if _has_hangul(q_full):
+        t = str(doc.get("title") or "")
+        cjk = sum(1 for ch in t if "一" <= ch <= "鿿")
+        if cjk >= 2 or any(mk in t for mk in _FOREIGN_MARK) or not _has_hangul(t): s -= 60
+    return s
+def vol_label(v):
+    """「2」·「제2권」 → 「2권」(숫자가 없으면 그대로)."""
+    dg = re.sub(r"[^0-9]", "", str(v if v is not None else "")).lstrip("0")
+    return f"{dg}권" if dg else str(v if v is not None else "").strip()
+def _book_of(d): return {"isbn13": d.get("isbn13"), "title": d.get("title"), "author": d.get("author"),   # [10/19 밤] 권차가 있으면 함께(후보가 「흔한남매」 여러 권일 때 가릴 수 있게)
+                         "publisher": d.get("publisher"), "year": d.get("year"), **({"vol": str(d["vol"])} if d.get("vol") else {})}
+def pick_search(title, search_fn, evidence, unavailable_reason=None):
+    """검색어를 한두 번 바꿔 가며(권차 · 앞뒤 낱말 빼기, 최대 3회) 문의와 맞는 책을 고른다. 첫 검색이 끊기면 unavailable."""
+    base, vol, explicit = split_volume(title)
+    toks = title.split()
+    if vol:
+        plan = [(base, [])] if explicit else [(title, []), (base, [])]
+    else:
+        plan = [(title, [])] + ([(" ".join(toks[:-1]), toks[-1:]), (" ".join(toks[1:]), toks[:1])] if len(toks) >= 2 else [])
+    seen, pool, best, saw_docs = set(), [], None, False
+    for i, (q, dropped) in enumerate(plan):
+        if len(_tnorm(q)) < 2 or q in seen: continue
+        seen.add(q)
+        try:
+            docs = search_fn(q)
+        except Exception:                               # [v0.3.5] 「책이 없다」가 아니라 「찾지 못했다(연결 안 됨)」 — unavailable로 구별
+            if i == 0 and unavailable_reason is not None:
+                return {"found": False, "reason": unavailable_reason, "candidates": [], "unavailable": True}
+            if i == 0: raise
+            break
+        for j, d in enumerate(docs):
+            if d.get("isbn13") and not any(p["d"]["isbn13"] == d["isbn13"] for p in pool):
+                pool.append({"d": d, "q": q, "j": j, "dropped": dropped})
+        if docs: saw_docs = True
+        for p in pool:
+            if p["q"] != q: continue
+            sc = _score_doc(p["d"], title, base, vol, p["dropped"])
+            if sc >= 60 and (best is None or sc > best["sc"]): best = {**p, "sc": sc}
+        if best and not (vol and not explicit and i == 0): break   # 권차가 낱말 끝 숫자일 때만 두 검색을 함께 견준다
+    if best:
+        d = best["d"]; ct = _core_title(d.get("title"), d.get("author")); fa = _first_author(d.get("author"))
+        others, seen_a = [], [fa]
+        for p in pool:
+            o = p["d"]
+            if o["isbn13"] == d["isbn13"] or _core_title(o.get("title"), o.get("author")) != ct: continue
+            oa = _first_author(o.get("author"))
+            if any(_same_author(a, oa) for a in seen_a): continue
+            seen_a.append(oa); others.append(_book_of(o))
+            if len(others) >= 3: break
+        res = {"found": True, "isbn13": d["isbn13"], "title": d.get("title"), "author": d.get("author"),
+               "publisher": d.get("publisher"), "year": d.get("year"), **({"vol": str(d["vol"])} if d.get("vol") else {}),
+               "candidates": [p["d"]["isbn13"] for p in pool if p["q"] == best["q"]], "query": best["q"], "confidence": 0.85,
+               "evidence": evidence + (f" · 검색어 「{best['q']}」 결과 {best['j'] + 1}번째를 문의와 맞춰 고름"
+                                       if best["q"] != title or best["j"] > 0 else "")}
+        if others: res["same_title_others"] = others
+        # [10/19] 같은 작품의 다른 판(같은 핵심 서명 · 같은 첫 저자 · 문의와도 맞음) — 고른 판이 관내에 없을 때만 소장을 다시 본다(tools.consult_request)
+        eds = []
+        for p in pool:
+            o = p["d"]
+            if o["isbn13"] == d["isbn13"] or _core_title(o.get("title"), o.get("author")) != ct: continue
+            oa = _first_author(o.get("author"))
+            if not (fa and oa and (fa in oa or oa in fa)): continue
+            if _score_doc(o, title, base, vol, p["dropped"]) < 60: continue
+            eds.append(_book_of(o))
+            if len(eds) >= 2: break
+        if eds: res["same_work_editions"] = eds
+        return res
+    if saw_docs:
+        cands = [_book_of(p["d"]) for p in pool[:3]]
+        return {"found": False, "reason": f"정보나루 서지 검색에서 문의와 맞는 책을 고르지 못함(검색어 「{title}」) — 저자·권차·출판사를 더 알려 주세요",
+                "candidates": [b["isbn13"] for b in cands], "candidate_books": cands, "query": title}
+    return {"found": False, "reason": f"정보나루 서지 검색 결과 없음(검색어 「{title}」) — 제목·저자를 더 알려 주세요",
+            "candidates": [], "query": title}
 
 def _live_nation(isbn13):
     resp = _get("libSrchByBook", isbn=isbn13, region="31", pageSize=200)

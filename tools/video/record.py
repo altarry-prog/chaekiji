@@ -402,7 +402,7 @@ async def main():
         await app.goto(APP_URL + "?r=2", wait_until="load"); await W(900)
         await ev("cover(false)"); await W(400)
         await side("누구나", "큰글자 · 10개 언어 ·\n전화 한 통 모드",
-                   "어르신, 외국인 주민, 시각이 불편한 분도 같은 흐름으로 쓸 수 있습니다.",
+                   "어르신, 외국인 주민, 시각이 불편한 분도\n같은 흐름으로 쓸 수 있습니다.",
                    "음성 인식은 기기·브라우저가 지원하는 언어만 되고, 그 밖은 글자로 입력합니다")
         await W(1300)
         try:

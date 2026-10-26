@@ -15,7 +15,7 @@
 <style>
 :root{
   --brand:#0d6e5f; --brand-d:#0a5548; --brand-l:#e7f3f0;
-  --ink:#15191d; --ink2:#4d565e; --ink3:#8a939b;
+  --ink:#15191d; --ink2:#4d565e; --ink3:#5f6b75;   /* v1.12.7: #8a939b(3.12:1) → 5.46:1 */
   --line:#e3e7ea; --bg:#f2f4f5; --card:#fff;
   --ok:#0d7a3e; --ok-bg:#e6f5ec;
   --busy:#b4571a; --busy-bg:#fdf0e6;
@@ -725,8 +725,8 @@ body.bigmode .foot button{font-size:12.5px}
         <div class="stp" id="w2">
           <div class="dot">2</div>
           <div class="tx">
-            <div class="t" id="st2t">AI가 무슨 책인지 파악</div>
-            <div class="d" id="w2d">불완전한 말도 해석합니다</div>
+            <div class="t" id="st2t">무슨 책인지 맞춰 보기</div>
+            <div class="d" id="w2d">예시 5권 가운데에서 찾습니다</div>
             <div class="fixed" id="fixed"></div>
           </div>
         </div>
@@ -843,7 +843,7 @@ body.bigmode .foot button{font-size:12.5px}
       <h3>책이지 안내</h3>
       <p class="p">답하는 AI가 아니라 대신 하는 AI — 말 한마디면 상호대차가 끝나는 시연 모델입니다</p>
       <div class="kv i"><span class="k">탐색</span><span class="v">자주 가는 도서관 → 관내 16개관 → 전국(책바다)</span></div>
-      <div class="kv i"><span class="k">판정</span><span class="v">수령관 비치 · 한도 · 연체 · 제외 자료 · 중복 신청<small>규정 7종을 자동 검토하고 사유를 함께 안내</small></span></div>
+      <div class="kv i"><span class="k">판정</span><span class="v">수령관 비치 · 한도 · 연체 · 제외 자료 · 중복 신청<small>상담 비서는 규정 7종을 검토해 사유를 안내 · 이 시연 화면은 소장·대출 상태로만 판정(한도·연체는 창구 확인)</small></span></div>
       <div class="kv i"><span class="k">실행</span><span class="v">MCP 표준 도구 10종<small>도서관리시스템(알파스 등) 단위로 확산</small></span></div>
       <div class="kv i"><span class="k">접근성</span><span class="v">큰글자 · 음성 안내 · 10개 언어 · 📷 바코드<small>말하기 어려우면 책 뒤표지 바코드를 찍어도 됩니다(지원 기기)</small></span></div>
       <div class="kv i"><span class="k">등록된 기기</span><span class="v">첫 신청 때 지문·얼굴로 이 기기를 등록(패스키) → 무료 신청은 그 뒤 바로<small>위임(책이지 패스) 생성은 생체인증을 한 번 더 · 회원번호는 어디에도 표시하지 않음 · 시연에서는 기기 안에만 저장</small></span></div>
@@ -855,7 +855,7 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="kv i"><span class="k">전화 한 통</span><span class="v">대표번호로 같은 상담·신청, 화면 없이<small>헤더의 📞 단추에서 통화 흐름을 체험할 수 있습니다 (전화망 연결은 운영 단계 과제)</small></span></div>
       <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
       <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>예시 장면은 2026. 8. 18. 조회 · 직접 찾으면 매일 새벽 받은 자료(없으면 그 자리에서 조회) · 대출 상태는 전일 기준</small></span></div>
-      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">예시 단추는 8. 18. 실측 장면 그대로 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 어제 기준 자료로 판정해요</span></div>
+      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">예시 단추는 8. 18. 실측 장면 그대로 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 어제 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)</span></div>
       <div class="kv i"><span class="k">성격</span><span class="v">실현가능성 검증용 시연 모델<small>실제 신청이 접수되지 않습니다 · 2026. 8. 부천시립도서관 상동도서관</small></span></div>
       <button class="cta ghost" onclick="document.getElementById('isheet').classList.remove('on')">닫기</button>
     </div>
@@ -923,7 +923,7 @@ body.bigmode .foot button{font-size:12.5px}
   <div class="sheet" id="sheet">
     <div class="sheet-in">
       <h3 id="sheet-t">상호대차를 신청할까요?</h3>
-      <p class="p" id="sheetP">아래 내용으로 접수됩니다</p>
+      <p class="p" id="sheetP">시연이라 실제로 접수되지는 않아요</p>
       <div id="sheetkv"></div>
       <p class="pknote" id="pknote" hidden></p>
       <button class="cta" id="confirm">네, 신청합니다</button>
@@ -945,6 +945,10 @@ const 기준일 = "2026. 8. 18.";
    v1.12.2: 중계 주소 연결(2026. 10. 16. Cloudflare Workers 첫 배포). 순서는 오늘 새벽 매일 갱신 파일 → (그 파일이 오늘 것이 아니거나 그 책이 없을 때만) 중계 → 2일 이내 파일 → 8/18.
    정보나루 대출 상태는 어차피 전일 기준이라 낮에 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않고 하루 호출 한도를 아낀다(서버 auto 모드와 같은 규칙) */
 const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
+/* v1.12.7(2026. 10. 26., 캐시 v33): 정직 표시 문구 — 담당자 승인 안 A. 완료 음성 끝에 시연 문장, 예약 갈래 「자동 전환」 → 「반납될 때 상호대차로 바꿔 신청할 수 있음」,
+   확인 시트 「시연이라 실제로 접수되지는 않아요」, 예시 장면(③) 음성 앞머리, 바로 이용 음성·전화 모드에 그 답이 쓴 자료의 조회일, 「이해했습니다」 줄은 들은 말 그대로,
+   못 찾음 「시연 화면은 예시 5권만」, 예약 갈래 배지, 「신청 규정 확인(한도·연체는 창구에서)」, 접수번호 DEMO, 전화 모드 「도착한 날을 포함해 3일」, 로/으로,
+   회색 글자 대비, 2단계 「무슨 책인지 맞춰 보기」 — 10개 언어 같은 뜻. 맞추기·판정·자료 흐름은 그대로 */
 /* v1.12.6: 심사 기간 고정 자료 — 2026. 11. 8. 18시 동결 뒤 새벽 갱신이 멈추므로, 11. 8. 이후 날짜의 새벽 자료는 11. 26.까지 오늘 자료처럼 쓴다
    (시연 도서는 중계·정보나루를 부르지 않고, 바닥글·결과의 조회일은 그대로 「11. 8.」). 평소 규칙(오늘 파일 → 중계 → 2.5일 이내 파일)은 그대로. 결선 뒤 지움.
    큰글자 모드에서 마이크 단추와 둘레 고리는 보통 크기 그대로(고리가 안내 글을 가로지르던 것) — 10/17 고침안, 10/19 승인 */
@@ -969,6 +973,16 @@ function officialLink(title, isbn){ const tmpl = isbn ? OFFICIAL_SEARCH : OFFICI
 /* v1.11: 중계가 없거나 답이 없으면, 같은 출처의 「매일 갱신」 파일(data/holdings-today.json · 깃허브 액션이 새벽에 씀)을 본다. 2일 넘게 묵으면 무시
    v1.12.2: 그 파일이 오늘(한국 날짜) 것이고 그 책이 있으면 중계를 부르지 않는다 */
 function asofText(a){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(a || ''); return m ? `${m[1]}. ${+m[2]}. ${+m[3]}.` : a; }
+/* v1.12.7: 음성에 조회일을 붙일 때 그 언어로 읽기 쉬운 날짜(「10월 26일」 「October 26」 …) — 바로 이용 음성·전화 모드가 씀 */
+const MONTHS = {en:['January','February','March','April','May','June','July','August','September','October','November','December'],
+  th:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
+  ru:['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
+  uz:['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'],
+  id:['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']};
+function dayWords(s, code){ const m = /(\d{4})\D+(\d{1,2})\D+(\d{1,2})/.exec(String(s || '')); if(!m) return String(s || ''); const M = +m[2], D = +m[3];
+  switch(code){ case 'zh': case 'ja': return `${M}月${D}日`; case 'en': return `${MONTHS.en[M-1]} ${D}`; case 'vi': return `ngày ${D} tháng ${M}`;
+    case 'th': return `${D} ${MONTHS.th[M-1]}`; case 'ru': return `${D} ${MONTHS.ru[M-1]}`; case 'mn': return `${M} сарын ${D}`;
+    case 'uz': return `${D}-${MONTHS.uz[M-1]}`; case 'id': return `${D} ${MONTHS.id[M-1]}`; default: return `${M}월 ${D}일`; } }
 /* v1.12.3: 받침에 맞춰 「로/으로」 — 「관내 상호대차으로」 같은 오타를 막는다(받침 없음·ㄹ 받침은 「로」) */
 function ro(w){ const c = String(w || '').trim().slice(-1).charCodeAt(0) - 0xAC00;
   if(!(c >= 0 && c <= 11171)) return '(으)로'; const j = c % 28; return (j === 0 || j === 8) ? '로' : '으로'; }
@@ -1178,52 +1192,52 @@ const CHIPS_L = {
     ['“<b>한강 소년이 온다</b> 찾아주세요”','① 상동도서관에 있음 → 바로 이용','실데이터'],
     ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','② 상동은 대출 중 → 관내 상호대차','실데이터'],
     ['“<b>지구 끝의 온실</b> 찾아주세요”','③ 관내에 없음 → 책바다(전국)',null]],
-    note:'예시 단추는 8. 18. 실측 장면 그대로 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 어제 기준 자료로 판정해요'},
+    note:'예시 단추는 8. 18. 실측 장면 그대로 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 어제 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)'},
   en:{c:[
     ['“Find <b>Human Acts</b> by Han Kang”','① At Sangdong Library → use right away','real data'],
     ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','② Checked out at Sangdong → loan within Bucheon','real data'],
     ['“Find <b>The Greenhouse at the End of the Earth</b>”','③ Not in Bucheon → nationwide (Chaekbada)',null]],
-    note:'Example buttons replay fixed scenes (Aug 18 data) · speak or type a title to check with yesterday\'s Data4Library data'},
+    note:'Example buttons replay fixed scenes (Aug 18 data) · speak or type a title to check with yesterday\'s Data4Library data (③ The Greenhouse at the End of the Earth stays a sample scene even when you search for it)'},
   zh:{c:[
     ['“帮我找韩江的<b>《少年来了》</b>”','① 上洞图书馆有藏 → 直接借阅','实测数据'],
     ['“我想借<b>《解忧杂货店》</b>”','② 上洞馆已借出 → 市内馆际互借','实测数据'],
     ['“帮我找<b>《地球尽头的温室》</b>”','③ 富川市内没有 → 全国服务',null]],
-    note:'示例按钮为固定场景（8月18日实测）· 直接说出或输入书名，将按前一天的图书馆数据判定'},
+    note:'示例按钮为固定场景（8月18日实测）· 直接说出或输入书名，将按前一天的图书馆数据判定（③《地球尽头的温室》直接搜索也只显示示例场景）'},
   ja:{c:[
     ['「ハン・ガンの<b>『少年が来る』</b>を探して」','① 上洞図書館に所蔵 → すぐ利用','実データ'],
     ['「<b>『ナミヤ雑貨店の奇蹟』</b>を借りたい」','② 上洞館は貸出中 → 市内の相互貸借','実データ'],
     ['「<b>『地球の果ての温室』</b>を探して」','③ 富川市内に無し → 全国サービス',null]],
-    note:'例のボタンは固定の場面（8/18実測）· 話すか入力すると前日基準のデータで判定します'},
+    note:'例のボタンは固定の場面（8/18実測）· 話すか入力すると前日基準のデータで判定します（③『地球の果ての温室』は直接探しても例の場面です）'},
   vi:{c:[
     ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','① Có tại TV Sangdong → dùng ngay','dữ liệu thực'],
     ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','② Sangdong đã cho mượn → mượn trong Bucheon','dữ liệu thực'],
     ['“Tìm giúp tôi <b>Nhà kính ở tận cùng Trái Đất</b>”','③ Không có ở Bucheon → toàn quốc',null]],
-    note:'Nút ví dụ là cảnh cố định (dữ liệu 18/8) · nói hoặc nhập tên sách để kiểm tra theo dữ liệu hôm qua'},
+    note:'Nút ví dụ là cảnh cố định (dữ liệu 18/8) · nói hoặc nhập tên sách để kiểm tra theo dữ liệu hôm qua (③ Nhà kính ở tận cùng Trái Đất vẫn là cảnh minh họa dù bạn tự tìm)'},
   th:{c:[
     ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','① มีที่ห้องสมุดซังดง → ใช้ได้เลย','ข้อมูลจริง'],
     ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','② ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน','ข้อมูลจริง'],
     ['“ช่วยหา <b>เรือนกระจกที่สุดขอบโลก</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null]],
-    note:'ปุ่มตัวอย่างเป็นฉากคงที่ (ข้อมูล 18 ส.ค.) · พูดหรือพิมพ์ชื่อหนังสือเพื่อตรวจด้วยข้อมูลของเมื่อวาน'},
+    note:'ปุ่มตัวอย่างเป็นฉากคงที่ (ข้อมูล 18 ส.ค.) · พูดหรือพิมพ์ชื่อหนังสือเพื่อตรวจด้วยข้อมูลของเมื่อวาน (③ เรือนกระจกที่สุดขอบโลก แม้ค้นเองก็ยังเป็นฉากตัวอย่าง)'},
   ru:{c:[
     ['«Найди <b>Человеческие поступки</b> Хан Ган»','① Есть в библиотеке Сандон → сразу читать','реальные данные'],
     ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','② В Сандоне выдана → обмен внутри Пучхона','реальные данные'],
     ['«Найди <b>Теплицу на краю Земли</b>»','③ Нет в Пучхоне → по всей стране',null]],
-    note:'Кнопки-примеры — фиксированные сцены (данные 18 авг.) · скажите или введите название — проверим по вчерашним данным'},
+    note:'Кнопки-примеры — фиксированные сцены (данные 18 авг.) · скажите или введите название — проверим по вчерашним данным (③ «Теплица на краю Земли» и при поиске показывается как пример)'},
   mn:{c:[
     ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','① Сандон номын санд байгаа → шууд ашиглах','бодит өгөгдөл'],
     ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','② Сандонд зээлэгдсэн → Бүчон доторх солилцоо','бодит өгөгдөл'],
     ['“<b>Дэлхийн захын хүлэмж</b>-ийг олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null]],
-    note:'Жишээ товч нь тогтмол үзэгдэл (8/18-ны өгөгдөл) · номын нэрийг хэлж эсвэл бичвэл өчигдрийн өгөгдлөөр шалгана'},
+    note:'Жишээ товч нь тогтмол үзэгдэл (8/18-ны өгөгдөл) · номын нэрийг хэлж эсвэл бичвэл өчигдрийн өгөгдлөөр шалгана (③ Дэлхийн захын хүлэмж-ийг өөрөө хайсан ч жишээ үзэгдэл хэвээр)'},
   uz:{c:[
     ['“Han Kangning <b>Human Acts</b> kitobini toping”','① Sangdon kutubxonasida bor → darhol foydalaning','haqiqiy ma\'lumot'],
     ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','② Sangdonda band → Bucheon ichida almashish','haqiqiy ma\'lumot'],
     ['“<b>Yer chekkasidagi issiqxona</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null]],
-    note:'Misol tugmalari qat\'iy sahnalar (18-avgust ma\'lumoti) · kitob nomini ayting yoki yozing — kechagi ma\'lumot bilan tekshiramiz'},
+    note:'Misol tugmalari qat\'iy sahnalar (18-avgust ma\'lumoti) · kitob nomini ayting yoki yozing — kechagi ma\'lumot bilan tekshiramiz (③ Yer chekkasidagi issiqxona o\'zingiz qidirsangiz ham namuna sahna bo\'lib qoladi)'},
   id:{c:[
     ['“Carikan <b>Mata Malam</b> karya Han Kang”','① Ada di Perpustakaan Sangdong → langsung pakai','data nyata'],
     ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','② Dipinjam di Sangdong → pinjam antar-cabang Bucheon','data nyata'],
     ['“Carikan <b>Rumah Kaca di Ujung Bumi</b>”','③ Tidak ada di Bucheon → seluruh negeri',null]],
-    note:'Tombol contoh adalah adegan tetap (data 18 Agu) · ucapkan atau ketik judul untuk cek dengan data kemarin'},
+    note:'Tombol contoh adalah adegan tetap (data 18 Agu) · ucapkan atau ketik judul untuk cek dengan data kemarin (③ Rumah Kaca di Ujung Bumi tetap adegan contoh walau dicari sendiri)'},
 };
 
 /* 전 화면 언어팩 — 도서명·도서관명은 원어 유지 */
@@ -1381,61 +1395,61 @@ ko:{dT:'상호대차 신청이 필요 없습니다',tx:l=>`<b>${l}</b>에 있고
  did:'말을 글로 옮김 → 무슨 책인지 확정 → 자주 가는 도서관 확인 → 규정상 신청 불필요 판정 → 방문 안내 · 이용자는 말 한마디',
  say:l=>`${l}에 있고 지금 대출 가능합니다. 상호대차 신청은 필요 없습니다. 방문하시면 바로 빌리실 수 있어요.`,
  hint:'방문 안내를 보시려면 화면 가운데의 단추를 눌러 주세요.',
- res:(t,l)=>`검색 결과입니다. ${t}. ${l}에 있고 지금 대출 가능합니다. 상호대차 신청은 필요 없습니다. 방문 안내를 보시려면 화면 가운데의 단추를 눌러 주세요.`},
+ res:(t,l,d)=>`검색 결과입니다. ${t}. ${l}에 있고, ${d} 조회 자료로는 대출 가능합니다. 상호대차 신청은 필요 없습니다. 방문 안내를 보시려면 화면 가운데의 단추를 눌러 주세요.`},
 en:{dT:'No interlibrary loan needed',tx:l=>`It is at <b>${l}</b> and available now.<br>No request needed — just visit and borrow it.`,
  kAt:'Library',kSt:'Loan status',st:'Available now',asOf:d=>`Data4Library, checked ${d} · as of the previous day`,map:'Directions on the map',
  did:'Speech to text → book identified → usual library checked → rule: no request needed → visit guidance · you said one sentence',
  say:l=>`It is at ${l} and available now. No interlibrary loan is needed. Just visit and borrow it.`,
  hint:'Tap the button in the middle of the screen for visit information.',
- res:(t,l)=>`Search result: ${t}. It is at ${l} and available now — no interlibrary loan needed. Tap the green button for visit information.`},
+ res:(t,l,d)=>`Search result: ${t}. It is at ${l}, and the data checked on ${d} shows it available — no interlibrary loan needed. Tap the green button for visit information.`},
 zh:{dT:'无需申请馆际互借',tx:l=>`<b>${l}</b>现有此书，可立即借阅。<br>无需申请，到馆即可直接借出。`,
  kAt:'所在馆',kSt:'借阅状态',st:'现在可借',asOf:d=>`정보나루 ${d} 查询 · 以前一日为准`,map:'在地图上导航',
  did:'语音转文字 → 确定是哪本书 → 查询常去的馆 → 依规判定无需申请 → 到馆指引 · 您只说了一句话',
  say:l=>`${l}现有此书，可立即借阅。无需申请馆际互借，到馆即可直接借出。`,
  hint:'要查看到馆指引，请按屏幕中间的按钮。',
- res:(t,l)=>`搜索结果：${t}。${l}现有此书，可立即借阅，无需申请馆际互借。点击绿色按钮查看到馆指引。`},
+ res:(t,l,d)=>`搜索结果：${t}。${l}有此书，按${d}查询的数据可以借阅，无需申请馆际互借。点击绿色按钮查看到馆指引。`},
 ja:{dT:'相互貸借の申請は不要です',tx:l=>`<b>${l}</b>にあり、今すぐ借りられます。<br>申請なしで、ご来館いただければそのまま借りられます。`,
  kAt:'所蔵館',kSt:'貸出状況',st:'今すぐ貸出可',asOf:d=>`정보나루 ${d} 照会 · 前日基準`,map:'地図で道順',
  did:'音声を文字に → 本を特定 → いつもの館を確認 → 規定上申請不要と判定 → 来館案内 · 利用者はひと言',
  say:l=>`${l}にあり、今すぐ借りられます。相互貸借の申請は不要です。ご来館いただければそのまま借りられます。`,
  hint:'来館案内を見るには画面中央のボタンを押してください。',
- res:(t,l)=>`検索結果：${t}。${l}にあり、今すぐ借りられます。相互貸借の申請は不要です。緑のボタンで来館案内を表示します。`},
+ res:(t,l,d)=>`検索結果：${t}。${l}にあり、${d}に照会したデータでは借りられます。相互貸借の申請は不要です。緑のボタンで来館案内を表示します。`},
 vi:{dT:'Không cần đăng ký mượn liên thư viện',tx:l=>`Sách đang có ở <b>${l}</b> và mượn được ngay.<br>Không cần đăng ký — đến là mượn được.`,
  kAt:'Thư viện có sách',kSt:'Tình trạng',st:'Mượn được ngay',asOf:d=>`정보나루 tra cứu ${d} · tính đến ngày hôm trước`,map:'Chỉ đường trên bản đồ',
  did:'Giọng nói → chữ → xác định sách → kiểm tra thư viện quen → theo quy định không cần đăng ký → hướng dẫn đến mượn · bạn chỉ nói một câu',
  say:l=>`Sách đang có ở ${l} và mượn được ngay. Không cần đăng ký mượn liên thư viện. Đến là mượn được.`,
  hint:'Để xem hướng dẫn đến mượn, bấm nút ở giữa màn hình.',
- res:(t,l)=>`Kết quả: ${t}. Sách đang có ở ${l} và mượn được ngay — không cần đăng ký. Nhấn nút xanh để xem hướng dẫn đến mượn.`},
+ res:(t,l,d)=>`Kết quả: ${t}. Sách có ở ${l}; theo dữ liệu tra cứu ${d}, sách mượn được — không cần đăng ký. Nhấn nút xanh để xem hướng dẫn đến mượn.`},
 th:{dT:'ไม่ต้องยื่นยืมข้ามสาขา',tx:l=>`มีอยู่ที่<b>${l}</b>และยืมได้เลย<br>ไม่ต้องยื่นคำขอ ไปที่ห้องสมุดก็ยืมได้ทันที`,
  kAt:'ห้องสมุดที่มี',kSt:'สถานะการยืม',st:'ยืมได้ตอนนี้',asOf:d=>`정보나루 ตรวจสอบ ${d} · ข้อมูล ณ วันก่อนหน้า`,map:'นำทางบนแผนที่',
  did:'เสียงเป็นข้อความ → ระบุหนังสือ → ตรวจห้องสมุดประจำ → ตามระเบียบไม่ต้องยื่น → แนะนำการไปยืม · คุณพูดแค่คำเดียว',
  say:l=>`มีอยู่ที่${l}และยืมได้เลย ไม่ต้องยื่นยืมข้ามสาขา ไปที่ห้องสมุดก็ยืมได้ทันที`,
  hint:'หากต้องการดูคำแนะนำการไปยืม กดปุ่มกลางหน้าจอ',
- res:(t,l)=>`ผลการค้นหา: ${t} มีอยู่ที่${l}และยืมได้เลย ไม่ต้องยื่นยืมข้ามสาขา กดปุ่มสีเขียวเพื่อดูคำแนะนำการไปยืม`},
+ res:(t,l,d)=>`ผลการค้นหา: ${t} มีอยู่ที่${l} ตามข้อมูลที่ตรวจเมื่อ ${d} ยืมได้ ไม่ต้องยื่นยืมข้ามสาขา กดปุ่มสีเขียวเพื่อดูคำแนะนำการไปยืม`},
 ru:{dT:'Заявка МБА не нужна',tx:l=>`Книга есть в <b>${l}</b> и доступна сейчас.<br>Без заявки — просто приходите и берите.`,
  kAt:'Библиотека',kSt:'Статус',st:'Доступна сейчас',asOf:d=>`정보나루, запрос ${d} · по состоянию на предыдущий день`,map:'Маршрут на карте',
  did:'Речь в текст → книга определена → проверена ваша библиотека → по правилам заявка не нужна → информация о визите · вы сказали одну фразу',
  say:l=>`Книга есть в ${l} и доступна сейчас. Заявка МБА не нужна. Просто приходите и берите.`,
  hint:'Чтобы увидеть информацию о визите, нажмите кнопку в центре экрана.',
- res:(t,l)=>`Результат: ${t}. Книга есть в ${l} и доступна сейчас — заявка не нужна. Нажмите зелёную кнопку для информации о визите.`},
+ res:(t,l,d)=>`Результат: ${t}. Книга есть в ${l}; по данным на ${d} она доступна — заявка не нужна. Нажмите зелёную кнопку для информации о визите.`},
 mn:{dT:'Сан хоорондын зээлийн хүсэлт хэрэггүй',tx:l=>`<b>${l}</b>-д байгаа бөгөөд одоо авах боломжтой.<br>Хүсэлт гаргалгүй, очоод шууд авна.`,
  kAt:'Байгаа номын сан',kSt:'Зээлийн төлөв',st:'Одоо авах боломжтой',asOf:d=>`정보나루 ${d} шалгасан · өмнөх өдрийн байдлаар`,map:'Газрын зураг дээр зам заах',
  did:'Яриаг текст болгов → номыг тодорхойлов → таны номын санг шалгав → дүрмээр хүсэлт хэрэггүй гэж дүгнэв → очих заавар · та нэг л үг хэллээ',
  say:l=>`${l}-д байгаа бөгөөд одоо авах боломжтой. Сан хоорондын зээлийн хүсэлт хэрэггүй. Очоод шууд авна.`,
  hint:'Очих зааврыг харахын тулд дэлгэцийн дундах товчийг дарна уу.',
- res:(t,l)=>`Хайлтын үр дүн: ${t}. ${l}-д байгаа бөгөөд одоо авах боломжтой — хүсэлт хэрэггүй. Очих зааврыг харахын тулд ногоон товчийг дарна уу.`},
+ res:(t,l,d)=>`Хайлтын үр дүн: ${t}. ${l}-д байгаа бөгөөд ${d}-ны өгөгдлөөр авах боломжтой — хүсэлт хэрэггүй. Очих зааврыг харахын тулд ногоон товчийг дарна уу.`},
 uz:{dT:'Kutubxonalararo so‘rov shart emas',tx:l=>`Kitob <b>${l}</b>da bor va hozir olsa bo‘ladi.<br>So‘rovsiz — borib darhol olasiz.`,
  kAt:'Kutubxona',kSt:'Holati',st:'Hozir olsa bo‘ladi',asOf:d=>`정보나루 ${d} tekshirildi · oldingi kun holati`,map:'Xaritada yo‘l',
  did:'Nutq matnga → kitob aniqlandi → odatiy kutubxona tekshirildi → qoidaga ko‘ra so‘rov shart emas → borish yo‘riqnomasi · siz bir jumla aytdingiz',
  say:l=>`Kitob ${l}da bor va hozir olsa bo‘ladi. Kutubxonalararo so‘rov shart emas. Borib darhol olasiz.`,
  hint:'Borish yo‘riqnomasini ko‘rish uchun ekran o‘rtasidagi tugmani bosing.',
- res:(t,l)=>`Natija: ${t}. Kitob ${l}da bor va hozir olsa bo‘ladi — so‘rov shart emas. Borish yo‘riqnomasi uchun yashil tugmani bosing.`},
+ res:(t,l,d)=>`Natija: ${t}. Kitob ${l}da bor; ${d}dagi ma’lumotga ko‘ra olsa bo‘ladi — so‘rov shart emas. Borish yo‘riqnomasi uchun yashil tugmani bosing.`},
 id:{dT:'Tidak perlu pinjam antarperpustakaan',tx:l=>`Ada di <b>${l}</b> dan tersedia sekarang.<br>Tanpa permintaan — datang saja dan pinjam.`,
  kAt:'Perpustakaan',kSt:'Status pinjam',st:'Tersedia sekarang',asOf:d=>`정보나루 dicek ${d} · per hari sebelumnya`,map:'Petunjuk arah di peta',
  did:'Suara ke teks → buku dipastikan → perpustakaan langganan dicek → sesuai aturan tak perlu permintaan → panduan kunjungan · Anda hanya bicara satu kalimat',
  say:l=>`Ada di ${l} dan tersedia sekarang. Tidak perlu pinjam antarperpustakaan. Datang saja dan pinjam.`,
  hint:'Untuk melihat panduan kunjungan, tekan tombol di tengah layar.',
- res:(t,l)=>`Hasil: ${t}. Ada di ${l} dan tersedia sekarang — tidak perlu permintaan. Tekan tombol hijau untuk panduan kunjungan.`},
+ res:(t,l,d)=>`Hasil: ${t}. Ada di ${l}; menurut data per ${d}, buku ini tersedia — tidak perlu permintaan. Tekan tombol hijau untuk panduan kunjungan.`},
 };
 
 /* ── AI 책큐 일괄 처리 문구 (10개 언어) ── */
@@ -1536,333 +1550,333 @@ id:{entry:'Rekomendasi AI BookQ — sekali proses',entryd:'Kumpulkan buku rekome
 
 const UI = {
 ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면에 두면 앱처럼 바로 열리고, 인터넷이 끊겨도 열립니다.', instY:'설치하기', instN:'나중에', instIOS:'아래 「공유」 단추(없으면 「•••」 → 「공유」)를 누른 뒤, 목록을 내려 「홈 화면에 추가」를 선택하세요.', instAOS:'브라우저 메뉴(⋮)를 열고 「앱 설치」 또는 「홈 화면에 추가」를 눌러 주세요.', instIOSother:'아이폰은 사파리(Safari)로 열어야 설치할 수 있어요. 사파리에서 「공유」(또는 「•••」 → 「공유」) → 「홈 화면에 추가」.', NM:n=>n+'도서관',
- st1:'말씀 옮겨 적기',st1d:'음성을 글자로 바꿉니다',st2:'AI가 무슨 책인지 파악',st2d:'불완전한 말도 해석합니다',
+ st1:'말씀 옮겨 적기',st1d:'음성을 글자로 바꿉니다',st2:'무슨 책인지 맞춰 보기',st2d:'예시 5권 가운데에서 찾습니다',
  st3:'범위를 넓혀가며 찾기',st3d:'가까운 곳부터 차례로 확인합니다',
- fix:t=>`<b>${t}</b> 로 이해했습니다`,
+ fix:t=>`<b>${t}</b> 로 이해했습니다`,fixHeard:(h,t)=>`‘${h}’ → <b>${t}</b> ${ro(t)} 이해했습니다`,
  usual:n=>`${n}도서관 (자주 가는 곳)`,mineHave:'소장 · 대출 가능',mineBusy:'소장 · 대출 중',mineNone:'미소장',
  inner:'관내 다른 15개 분관',inner16:'부천 관내 16개 분관',innerOk:k=>`${k}곳 대출 가능`,
  innerNone:'대출 가능한 곳 없음',innerNoneAll:'소장한 곳 없음',nation:'전국 참여 도서관',nationFound:k=>`${k}곳에서 발견`,
  tier:{0:['관내 보유','바로 이용','상동도서관에 지금 있습니다','방문 안내 보기','무료','오늘 바로'],
        1:['2단계','관내 상호대차','시립도서관 16개관 간 이동','상호대차 신청','무료','평일 다음 날'],
        2:['3단계','책바다','전국 상호대차 · 별도 가입·사서 승인','책바다 안내 받기','실비','5~7일'],
-       3:['예약','관내 예약 대기','관내 소장 있음 · 지금은 모두 대출 중','예약 신청','무료','반납되는 대로']},
+       3:['예약','관내 예약 대기','관내 소장 있음 · 지금은 모두 대출 중','예약 신청','무료','반납 뒤 전환 신청']},
  sum0:(m,k)=>`자주 가시는 <b>${m}도서관에 지금 있습니다.</b> 상호대차 없이 바로 빌리실 수 있어요. <span class="s2">관내에서는 ${k}곳이 대출 가능합니다.</span>`,
  sum1:(m,k)=>`<b>${m}도서관은 지금 어렵지만</b>, 가까운 <b>${k}개 분관</b>에서 빌려서 ${m}도서관으로 보내드릴 수 있어요.`,
  sum2:k=>`부천 관내에는 없어서 <b>전국에서 ${k}곳</b>을 찾았어요. 책바다는 별도 가입과 사서 승인이 필요해서, 신청 대신 안내를 드릴게요.`,
- sum3:(m,k)=>`관내 <b>${k}곳</b>이 갖고 있지만 지금은 모두 대출 중이에요. 예약해 두면 반납되는 대로 <b>${m}도서관</b>으로 보내드립니다.`,
+ sum3:(m,k)=>`관내 <b>${k}곳</b>이 갖고 있지만 지금은 모두 대출 중이에요. 먼저 예약해 두시면, 책이 반납될 때 <b>${m}도서관</b>으로 받는 상호대차로 바꿔 신청할 수 있어요.`,
  rec:'추천',tag0:'바로 이용',tag1:'가장 빠름',tag2:'가장 가까움',also:'여기도 가능합니다',
  fold:n=>`그 외 ${n}곳 현황 보기 ＋`,foldC:'접기 －',bOk:'대출 가능',bBusy:'대출 중',bNone:'미소장',
  my:'자주 가는 곳',code:'도서관코드',others:n=>`그 밖 ${n}개 분관`,again:'다시 검색',
  caution:'시연 화면입니다. 실제 신청은 이루어지지 않습니다.',
  srcR:d=>`정보나루 실데이터 · ${d} 조회 · 16개 분관 전수 확인<br><span class="s2">대출 상태는 조회일 <b>전일</b> 기준입니다 (Open API 사양)</span>`,
- srcD:'예시 장면 · 관내에 없는 책일 때의 안내 흐름입니다(이 책의 실제 소장과는 다를 수 있어요)',
+ srcD:'예시 장면 · 관내에 없는 책일 때의 안내 흐름입니다(이 책의 실제 소장과는 다를 수 있어요)',exSay:'예시 장면입니다. 이 책의 실제 소장과는 다를 수 있어요.',
  rule:m=>`규정상 <b>${m}도서관에 자료가 있으면 상호대차 신청이 되지 않습니다.</b> 불필요한 신청을 만들지 않도록 미리 걸러냈습니다.`,
  ax:['이용자 조건에 따른 입구 · 확장 설계','🎧 대체자료 함께 찾기 — 오디오북·점자·큰활자 (국가서지 대체자료목록 연계)','🚚 책나래 우편 수령 — 거동불편·장애 이용자는 자택 배송으로 분기','📞 전화 한 통 모드 — 대표번호로 같은 상담·신청 (화면 불필요)','🌏 다국어 음성 — 10개 언어 인식·안내 <b>(동작 — 헤더 🌏 단추)</b>'],
- shT:'상호대차를 신청할까요?',shP:'아래 내용으로 접수됩니다',
+ shT:'상호대차를 신청할까요?',shP:'시연이라 실제로 접수되지는 않아요',
  kBook:'도서',kMode:'방식',kFrom:'대출 도서관',kTo:'수령 도서관',kTime:'예상 소요',
  kRecv:'수령 방법',recvV:m=>`${m}도서관 방문`,recvS:'거동불편·장애 이용자는 책나래 우편 수령 선택 (확장 설계)',
  kPath:'처리 경로',pathV:'도서관리시스템 커넥터(MCP)',pathS:'동일 시스템(알파스 등) 사용 도서관은 커넥터 재사용',
  kUser:'신청자',user:'홍○○ · 등록된 기기',yes:'네, 신청합니다',no:'취소',
  dT:'신청이 접수됐습니다',
   d1:(md,l,m)=>`<b>${md}</b>${ro(md)} 신청되었습니다.<br><b>${l}</b>의 자료를 <b>${m}도서관</b>으로 옮기는 중입니다.<br>도착하면 문자로 알려드립니다.`,
- innerBusy:k=>`${k}곳 소장 · 모두 대출 중`,tag3:'반납 대기',shT2:'책바다 신청 안내를 받을까요?',shT3:'예약을 신청할까요?',yes2:'네, 안내 받을게요',kProc:'절차',procV:'책바다 가입 → 사서 승인 → 배송비 결제',procS:'왕복 5,800원 · 장애인 무료 · 별도 시스템이라 직접 신청은 안내로 대신합니다',kHold:'수령 기한',holdV:'도착일 포함 3일 안에 방문',holdS:'기한 내 미수령 시 자동 반납 · 7일간 신청 제한',kCancel:'취소',cancelV:'접수 상태에서만 가능 · 이송이 시작되면 도서관에 문의',didT:'책이지가 대신 한 일',didV:'말을 글로 옮김 → 무슨 책인지 확정 → 16개관 소장·대출 확인 → 규정 7종 검토 → 접수 · 이용자는 말 한마디, 확인 한 번',kNext:'다음 단계',nextV:'문자로 보낸 안내대로 책바다 가입 → 도서관에서 승인',d2:m=>`책바다 신청 방법을 문자로 보내드렸어요.<br>가입과 승인은 <b>${m}도서관</b>에서 도와드립니다.`,d3:(l,m)=>`예약이 접수되었습니다.<br><b>${l}</b>에서 반납되면 상호대차로 자동 전환되어 <b>${m}도서관</b>으로 옵니다.<br>도착하면 문자로 알려드립니다.`,
+ innerBusy:k=>`${k}곳 소장 · 모두 대출 중`,tag3:'반납 대기',shT2:'책바다 신청 안내를 받을까요?',shT3:'예약을 신청할까요?',yes2:'네, 안내 받을게요',kProc:'절차',procV:'책바다 가입 → 사서 승인 → 배송비 결제',procS:'왕복 5,800원 · 장애인 무료 · 별도 시스템이라 직접 신청은 안내로 대신합니다',kHold:'수령 기한',holdV:'도착일 포함 3일 안에 방문',holdS:'기한 내 미수령 시 자동 반납 · 7일간 신청 제한',kCancel:'취소',cancelV:'접수 상태에서만 가능 · 이송이 시작되면 도서관에 문의',didT:'책이지가 대신 한 일',didV:'말을 글로 옮김 → 무슨 책인지 확정 → 16개관 소장·대출 확인 → 신청 규정 확인(한도·연체는 창구에서) → 접수(시연) · 이용자는 말 한마디, 확인 한 번',kNext:'다음 단계',nextV:'문자로 보낸 안내대로 책바다 가입 → 도서관에서 승인',d2:m=>`책바다 신청 방법을 문자로 보내드렸어요.<br>가입과 승인은 <b>${m}도서관</b>에서 도와드립니다.`,d3:(l,m)=>`예약이 접수되었습니다.<br>책이 반납되면 <b>${m}도서관</b>으로 받는<br>상호대차로 바꿔 신청할 수 있습니다.`,
  shP2:'아래 내용을 문자로 안내해 드립니다',dT2:'안내를 보내드렸습니다',didV2:'말을 글로 옮김 → 무슨 책인지 확정 → 관내 16개관·전국 확인 → 신청 경로 판정 → 안내 발송 · 이용자는 말 한마디, 확인 한 번',
  kArr:'예상 도착',kNum:'접수번호',home:'처음으로' },
 en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home screen — it opens like an app and works offline.', instY:'Install', instN:'Later', instIOS:'Tap Share (or ••• → Share), then scroll down and choose “Add to Home Screen”.', instAOS:'Open the browser menu (⋮) and tap “Install app” or “Add to Home screen”.', instIOSother:'On iPhone, open this page in Safari to install. In Safari: Share (or ••• → Share) → “Add to Home Screen”.', NM:n=>`${n} Library`,
- st1:'Transcribing your words',st1d:'Turning speech into text',st2:'AI identifies the book',st2d:'Even imperfect phrases work',
+ st1:'Transcribing your words',st1d:'Turning speech into text',st2:'Matching the book',st2d:'Searching the 5 sample books',
  st3:'Searching, nearest first',st3d:'Checking libraries step by step',
- fix:t=>`Understood as <b>${t}</b>`,
+ fix:t=>`Understood as <b>${t}</b>`,fixHeard:(h,t)=>`“${h}” → understood as <b>${t}</b>`,
  usual:n=>`${n} Library (your usual)`,mineHave:'On shelf · available',mineBusy:'Held · checked out',mineNone:'Not held',
  inner:'15 other Bucheon branches',inner16:'All 16 Bucheon branches',innerOk:k=>`${k} available`,
  innerNone:'None available',innerNoneAll:'Not held anywhere',nation:'Libraries nationwide',nationFound:k=>`found at ${k}`,
  tier:{0:['On site','Use right away','Available at your library now','Visit info','Free','Today'],
        1:['Step 2','Bucheon interlibrary loan','Between 16 Bucheon branches','Request interlibrary loan','Free','1 working day'],
        2:['Step 3','Chaekbada (national)','Nationwide · separate sign-up & librarian approval','Get Chaekbada guidance','Fee','5–7 days'],
-       3:['Hold','Place a hold','Held in Bucheon · all copies out now','Place a hold','Free','When returned']},
+       3:['Hold','Place a hold','Held in Bucheon · all copies out now','Place a hold','Free','Request after return']},
  sum0:(m,k)=>`<b>It's at ${m} Library right now.</b> No loan needed — just walk in. <span class="s2">${k} branches have it available.</span>`,
  sum1:(m,k)=>`<b>${m} Library can't lend it now</b>, but <b>${k} branches</b> can — we'll bring it to ${m} for you.`,
  sum2:k=>`Not in Bucheon, but <b>found at ${k} libraries nationwide</b>. Chaekbada needs a separate sign-up and librarian approval, so we'll guide you instead of requesting for you.`,
- sum3:(m,k)=>`<b>${k} Bucheon branches</b> hold it, but every copy is out. Place a hold and we'll send it to <b>${m} Library</b> as soon as one is returned.`,
+ sum3:(m,k)=>`<b>${k} Bucheon branches</b> hold it, but every copy is out. If you place a hold first, you can ask to switch it to an interlibrary loan to <b>${m} Library</b> when the book is returned.`,
  rec:'Recommended',tag0:'Use now',tag1:'Fastest',tag2:'Nearest',also:'Also available here',
  fold:n=>`See ${n} more branches ＋`,foldC:'Close －',bOk:'Available',bBusy:'Checked out',bNone:'Not held',
  my:'your usual',code:'Library code',others:n=>`${n} other branches`,again:'Search again',
  caution:'Demo screen. No real request is made.',
  srcR:d=>`Real data from Data4Library · queried ${d} · all 16 branches<br><span class="s2">Availability is as of the <b>previous day</b> (API spec)</span>`,
- srcD:'Sample scene · how a book not held in Bucheon is handled (may differ from this title\'s actual holdings)',
+ srcD:'Sample scene · how a book not held in Bucheon is handled (may differ from this title\'s actual holdings)',exSay:"This is a sample scene. It may differ from this title's actual holdings.",
  rule:m=>`By policy, <b>interlibrary loan cannot be requested when ${m} Library holds the item.</b> We filtered that out for you.`,
  ax:['Doors that fit each user · extended design','🎧 Alternative formats — audiobook·braille·large print (national bibliography)','🚚 Chaeknarae home delivery — for users with mobility limits','📞 Phone-call mode — same service by voice call, no screen','🌏 Multilingual voice — 10 languages <b>(working — 🌏 button)</b>'],
- shT:'Request this interlibrary loan?',shP:'It will be submitted as below',
+ shT:'Request this interlibrary loan?',shP:'This is a demo, so nothing is actually submitted',
  kBook:'Book',kMode:'Method',kFrom:'Lending library',kTo:'Pickup library',kTime:'Estimated time',
  kRecv:'Pickup',recvV:m=>`Visit ${m} Library`,recvS:'Chaeknarae mail delivery available for users with disabilities (extended)',
  kPath:'Processing path',pathV:'Library-system connector (MCP)',pathS:'Reusable by any library on the same system',
  kUser:'Applicant',user:'Hong ○○ · registered device',yes:'Yes, request it',no:'Cancel',
  dT:'Request submitted',
   d1:(md,l,m)=>`Requested via <b>${md}</b>.<br>The item is moving from <b>${l}</b> to <b>${m} Library</b>.<br>We'll text you when it arrives.`,
- innerBusy:k=>`held at ${k} · all out`,tag3:'Waiting for return',shT2:'Get guidance for Chaekbada?',shT3:'Place a hold?',yes2:'Yes, guide me',kProc:'Steps',procV:'Sign up for Chaekbada → librarian approval → pay shipping',procS:'KRW 5,800 round trip · free for people with disabilities · separate system, so we guide rather than request',kHold:'Pickup window',holdV:'Within 3 days, counting the arrival day',holdS:'Not picked up in time → returned automatically, requests blocked for 7 days',kCancel:'Cancel',cancelV:'Only while “received” · once in transit, contact the library',didT:'What Chaekiji did for you',didV:'Transcribed → identified the book → checked 16 branches → reviewed 7 rules → submitted · You: one sentence, one tap',kNext:'Next step',nextV:'Follow the text message: sign up for Chaekbada → the library approves',d2:m=>`We texted you how to request via Chaekbada.<br><b>${m} Library</b> will help with sign-up and approval.`,d3:(l,m)=>`Your hold is placed.<br>When <b>${l}</b>'s copy is returned it converts to an interlibrary loan to <b>${m} Library</b>.<br>We'll text you on arrival.`,
+ innerBusy:k=>`held at ${k} · all out`,tag3:'Waiting for return',shT2:'Get guidance for Chaekbada?',shT3:'Place a hold?',yes2:'Yes, guide me',kProc:'Steps',procV:'Sign up for Chaekbada → librarian approval → pay shipping',procS:'KRW 5,800 round trip · free for people with disabilities · separate system, so we guide rather than request',kHold:'Pickup window',holdV:'Within 3 days, counting the arrival day',holdS:'Not picked up in time → returned automatically, requests blocked for 7 days',kCancel:'Cancel',cancelV:'Only while “received” · once in transit, contact the library',didT:'What Chaekiji did for you',didV:'Transcribed → identified the book → checked 16 branches → checked request rules (limits and overdues are checked at the desk) → submitted (demo) · You: one sentence, one tap',kNext:'Next step',nextV:'Follow the text message: sign up for Chaekbada → the library approves',d2:m=>`We texted you how to request via Chaekbada.<br><b>${m} Library</b> will help with sign-up and approval.`,d3:(l,m)=>`Your hold is placed.<br>When the book is returned, you can ask to switch it to an interlibrary loan to <b>${m} Library</b>.`,
  shP2:'We will text you the steps below',dT2:'Guidance sent',didV2:'Transcribed → identified the book → checked 16 branches & nationwide → determined the route → sent guidance · You: one sentence, one tap',
  kArr:'Expected arrival',kNum:'Reference no.',home:'Start over' },
 zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，像应用一样打开，断网也能使用。', instY:'安装', instN:'以后再说', instIOS:'点击「分享」（或「•••」→「分享」），向下滑动并选择“添加到主屏幕”。', instAOS:'打开浏览器菜单（⋮），点击“安装应用”或“添加到主屏幕”。', instIOSother:'iPhone 请用 Safari 打开才能安装。在 Safari 中：分享（或「•••」→ 分享）→“添加到主屏幕”。', NM:n=>`${n}图书馆`,
- st1:'转写您的话',st1d:'把语音变成文字',st2:'AI 识别图书',st2d:'说得不准也能理解',
+ st1:'转写您的话',st1d:'把语音变成文字',st2:'匹配图书',st2d:'在5本示例图书中查找',
  st3:'由近及远查找',st3d:'从最近的图书馆开始确认',
- fix:t=>`已识别为 <b>${t}</b>`,
+ fix:t=>`已识别为 <b>${t}</b>`,fixHeard:(h,t)=>`“${h}” → 已识别为 <b>${t}</b>`,
  usual:n=>`${n}图书馆（常去）`,mineHave:'在馆 · 可借',mineBusy:'在馆 · 已借出',mineNone:'无馆藏',
  inner:'富川其他15个分馆',inner16:'富川市内16个分馆',innerOk:k=>`${k}馆可借`,
  innerNone:'均不可借',innerNoneAll:'均无馆藏',nation:'全国参与图书馆',nationFound:k=>`${k}馆有藏`,
  tier:{0:['在馆','立即使用','您常去的图书馆现有此书','到馆指引','免费','今天'],
        1:['第2步','市内馆际互借','富川16个分馆之间调拨','申请馆际互借','免费','1个工作日'],
        2:['第3步','Chaekbada(全国)','全国互借 · 需另行注册与馆员审核','获取申请指引','自费','5~7天'],
-       3:['预约','馆内预约等待','市内有藏 · 目前全部借出','申请预约','免费','归还后']},
+       3:['预约','馆内预约等待','市内有藏 · 目前全部借出','申请预约','免费','归还后申请互借']},
  sum0:(m,k)=>`<b>${m}图书馆现在就有这本书。</b>无需互借，直接去借即可。<span class="s2">市内共有${k}馆可借。</span>`,
  sum1:(m,k)=>`<b>${m}图书馆暂时借不到</b>，但<b>${k}个分馆</b>可借出并送到${m}图书馆。`,
  sum2:k=>`富川市内没有，但<b>全国${k}个图书馆</b>有藏。Chaekbada需另行注册并经馆员审核，因此我们提供申请指引。`,
- sum3:(m,k)=>`市内<b>${k}个馆</b>有藏，但目前全部借出。预约后，一旦归还即调往<b>${m}图书馆</b>。`,
+ sum3:(m,k)=>`市内<b>${k}个馆</b>有藏，但目前全部借出。先预约的话，图书归还时可以申请改为馆际互借，在<b>${m}图书馆</b>领取。`,
  rec:'推荐',tag0:'立即使用',tag1:'最快',tag2:'最近',also:'这些馆也可以',
  fold:n=>`查看其余${n}馆 ＋`,foldC:'收起 －',bOk:'可借',bBusy:'已借出',bNone:'无馆藏',
  my:'常去',code:'图书馆代码',others:n=>`其余${n}个分馆`,again:'重新搜索',
  caution:'演示页面，不会产生真实申请。',
  srcR:d=>`Data4Library 实测数据 · ${d} 查询 · 16个分馆全部确认<br><span class="s2">借阅状态为查询日<b>前一天</b>的数据（API规范）</span>`,
- srcD:'示例场景 · 市内无馆藏时的指引流程（可能与本书实际馆藏不同）',
+ srcD:'示例场景 · 市内无馆藏时的指引流程（可能与本书实际馆藏不同）',exSay:'这是示例场景，可能与本书实际馆藏不同。',
  rule:m=>`按规定，<b>${m}图书馆有馆藏时不能申请馆际互借。</b>系统已提前为您过滤。`,
  ax:['按用户条件提供的入口 · 扩展设计','🎧 替代资料查找 — 有声书·盲文·大字本','🚚 Chaeknarae 邮寄到家 — 行动不便·残障用户','📞 电话模式 — 打电话即可办理，无需屏幕','🌏 多语言语音 — 10种语言 <b>(已实现)</b>'],
- shT:'要申请馆际互借吗？',shP:'将按以下内容受理',
+ shT:'要申请馆际互借吗？',shP:'这是演示，不会实际受理',
  kBook:'图书',kMode:'方式',kFrom:'出借馆',kTo:'取书馆',kTime:'预计时间',
  kRecv:'取书方式',recvV:m=>`到${m}图书馆自取`,recvS:'残障用户可选择邮寄到家（扩展设计）',
  kPath:'处理路径',pathV:'图书馆系统连接器(MCP)',pathS:'同系统图书馆可复用连接器',
  kUser:'申请人',user:'洪○○ · 已登记设备',yes:'是，申请',no:'取消',
  dT:'申请已受理',
   d1:(md,l,m)=>`已通过<b>${md}</b>申请。<br>图书正从<b>${l}</b>调往<b>${m}图书馆</b>。<br>到馆后将短信通知您。`,
- innerBusy:k=>`${k}馆有藏 · 全部借出`,tag3:'等待归还',shT2:'要获取Chaekbada申请指引吗？',shT3:'要申请预约吗？',yes2:'是，获取指引',kProc:'流程',procV:'注册Chaekbada → 馆员审核 → 支付运费',procS:'往返5,800韩元 · 残障人士免费 · 属另一系统，故以指引代替代办',kHold:'取书期限',holdV:'到馆当天起3天内',holdS:'逾期未取 → 自动归还，7天内不能申请',kCancel:'取消',cancelV:'仅受理状态可取消 · 开始调拨后请联系图书馆',didT:'Chaekiji替您完成的事',didV:'转写 → 确定图书 → 查询16馆 → 核对7项规定 → 受理 · 您只说了一句话、点了一次确认',kNext:'下一步',nextV:'按短信指引注册Chaekbada → 图书馆审核',d2:m=>`已短信发送Chaekbada申请方法。<br>注册与审核由<b>${m}图书馆</b>协助。`,d3:(l,m)=>`预约已受理。<br><b>${l}</b>归还后自动转为馆际互借，调往<b>${m}图书馆</b>。<br>到馆后短信通知。`,
+ innerBusy:k=>`${k}馆有藏 · 全部借出`,tag3:'等待归还',shT2:'要获取Chaekbada申请指引吗？',shT3:'要申请预约吗？',yes2:'是，获取指引',kProc:'流程',procV:'注册Chaekbada → 馆员审核 → 支付运费',procS:'往返5,800韩元 · 残障人士免费 · 属另一系统，故以指引代替代办',kHold:'取书期限',holdV:'到馆当天起3天内',holdS:'逾期未取 → 自动归还，7天内不能申请',kCancel:'取消',cancelV:'仅受理状态可取消 · 开始调拨后请联系图书馆',didT:'Chaekiji替您完成的事',didV:'转写 → 确定图书 → 查询16馆 → 核对申请规定（借阅上限、逾期在柜台确认）→ 受理（演示）· 您只说了一句话、点了一次确认',kNext:'下一步',nextV:'按短信指引注册Chaekbada → 图书馆审核',d2:m=>`已短信发送Chaekbada申请方法。<br>注册与审核由<b>${m}图书馆</b>协助。`,d3:(l,m)=>`预约已受理。<br>图书归还后，可以申请改为馆际互借，<br>在<b>${m}图书馆</b>领取。`,
  shP2:'将以短信发送以下指引',dT2:'已发送指引',didV2:'转写 → 确定图书 → 查询16馆及全国 → 判定申请路径 → 发送指引 · 您只说了一句话、点了一次确认',
  kArr:'预计到达',kNum:'受理编号',home:'返回首页' },
 ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に置くとアプリのように開き、オフラインでも使えます。', instY:'インストール', instN:'あとで', instIOS:'「共有」ボタン（または「•••」→「共有」）を押し、下にスクロールして「ホーム画面に追加」を選んでください。', instAOS:'ブラウザのメニュー（⋮）から「アプリをインストール」または「ホーム画面に追加」を押してください。', instIOSother:'iPhone は Safari で開くと設置できます。Safari で「共有」（または「•••」→「共有」）→「ホーム画面に追加」。', NM:n=>`${n}図書館`,
- st1:'発話の書き起こし',st1d:'音声を文字にします',st2:'AIが本を特定',st2d:'あいまいな言い方でも大丈夫',
+ st1:'発話の書き起こし',st1d:'音声を文字にします',st2:'書名を照合',st2d:'例の5冊の中から探します',
  st3:'近い順に検索',st3d:'近くの図書館から順に確認します',
- fix:t=>`<b>${t}</b> と理解しました`,
+ fix:t=>`<b>${t}</b> と理解しました`,fixHeard:(h,t)=>`「${h}」→ <b>${t}</b> と理解しました`,
  usual:n=>`${n}図書館（いつもの）`,mineHave:'所蔵 · 貸出可',mineBusy:'所蔵 · 貸出中',mineNone:'所蔵なし',
  inner:'富川の他15分館',inner16:'富川市内16分館',innerOk:k=>`${k}館で貸出可`,
  innerNone:'貸出可能館なし',innerNoneAll:'所蔵館なし',nation:'全国の参加図書館',nationFound:k=>`${k}館で発見`,
  tier:{0:['所蔵中','すぐ利用','いつもの図書館にあります','来館案内を見る','無料','本日'],
        1:['第2段階','市内相互貸借','富川16館の間で取り寄せ','相互貸借を申請','無料','1営業日'],
        2:['第3段階','チェクバダ(全国)','全国相互貸借 · 別途登録・司書承認','申請案内を受ける','実費','5~7日'],
-       3:['予約','館内予約待ち','市内に所蔵 · 現在すべて貸出中','予約する','無料','返却され次第']},
+       3:['予約','館内予約待ち','市内に所蔵 · 現在すべて貸出中','予約する','無料','返却後に切替申請']},
  sum0:(m,k)=>`<b>${m}図書館に今あります。</b>取り寄せ不要、そのまま借りられます。<span class="s2">市内では${k}館で貸出可能です。</span>`,
  sum1:(m,k)=>`<b>${m}図書館では今借りられませんが</b>、<b>${k}分館</b>から取り寄せて${m}図書館へお届けできます。`,
  sum2:k=>`富川市内にはありませんが、<b>全国${k}館</b>で見つかりました。チェクバダは別途登録と司書承認が必要なため、申請の代わりにご案内します。`,
- sum3:(m,k)=>`市内<b>${k}館</b>に所蔵がありますが、現在すべて貸出中です。予約しておけば返却され次第<b>${m}図書館</b>へお送りします。`,
+ sum3:(m,k)=>`市内<b>${k}館</b>に所蔵がありますが、現在すべて貸出中です。先に予約しておけば、返却時に相互貸借に切り替えて<b>${m}図書館</b>で受け取る申請ができます。`,
  rec:'おすすめ',tag0:'すぐ利用',tag1:'最速',tag2:'最寄り',also:'こちらでも可能',
  fold:n=>`他${n}館を見る ＋`,foldC:'閉じる －',bOk:'貸出可',bBusy:'貸出中',bNone:'所蔵なし',
  my:'いつもの',code:'図書館コード',others:n=>`その他${n}分館`,again:'再検索',
  caution:'デモ画面です。実際の申請は行われません。',
  srcR:d=>`情報ナル実データ · ${d} 照会 · 16分館すべて確認<br><span class="s2">貸出状態は照会日の<b>前日</b>基準です（API仕様）</span>`,
- srcD:'例の場面 · 市内に所蔵がない本の案内の流れです（この本の実際の所蔵とは異なる場合があります）',
+ srcD:'例の場面 · 市内に所蔵がない本の案内の流れです（この本の実際の所蔵とは異なる場合があります）',exSay:'これは例の場面です。この本の実際の所蔵とは異なる場合があります。',
  rule:m=>`規定により、<b>${m}図書館に資料がある場合は相互貸借を申請できません。</b>不要な申請を事前に除外しました。`,
  ax:['利用者に合わせた入口 · 拡張設計','🎧 代替資料も検索 — オーディオブック·点字·大活字','🚚 チェクナレ郵送 — 来館が難しい方へ自宅配送','📞 電話モード — 電話一本で同じ手続き','🌏 多言語音声 — 10言語 <b>(実装済み)</b>'],
- shT:'相互貸借を申請しますか？',shP:'以下の内容で受け付けます',
+ shT:'相互貸借を申請しますか？',shP:'デモのため、実際には受け付けられません',
  kBook:'図書',kMode:'方式',kFrom:'貸出館',kTo:'受取館',kTime:'所要時間',
  kRecv:'受け取り',recvV:m=>`${m}図書館で受け取り`,recvS:'障がいのある方はチェクナレ郵送を選択可（拡張設計）',
  kPath:'処理経路',pathV:'図書館システムコネクタ(MCP)',pathS:'同一システムの図書館はコネクタを再利用',
  kUser:'申請者',user:'洪○○ · 登録済み端末',yes:'はい、申請します',no:'キャンセル',
  dT:'申請を受け付けました',
   d1:(md,l,m)=>`<b>${md}</b>で申請しました。<br>資料は<b>${l}</b>から<b>${m}図書館</b>へ移動中です。<br>到着したらメッセージでお知らせします。`,
- innerBusy:k=>`${k}館所蔵 · すべて貸出中`,tag3:'返却待ち',shT2:'チェクバダの申請案内を受けますか？',shT3:'予約を申請しますか？',yes2:'はい、案内を受けます',kProc:'手順',procV:'チェクバダ登録 → 司書承認 → 送料決済',procS:'往復5,800ウォン · 障害者無料 · 別システムのため代行ではなく案内',kHold:'受取期限',holdV:'到着日を含め3日以内',holdS:'期限内に受け取らないと自動返却・7日間申請不可',kCancel:'キャンセル',cancelV:'受付中のみ可能 · 移送開始後は図書館へ',didT:'Chaekijiが代わりにしたこと',didV:'文字起こし → 本を特定 → 16館確認 → 規定7項目を確認 → 受付 · あなたは一言と確認一回',kNext:'次のステップ',nextV:'SMSの案内に沿ってチェクバダ登録 → 図書館が承認',d2:m=>`チェクバダの申請方法をSMSでお送りしました。<br>登録と承認は<b>${m}図書館</b>がお手伝いします。`,d3:(l,m)=>`予約を受け付けました。<br><b>${l}</b>で返却され次第、相互貸借に切り替わり<b>${m}図書館</b>へ届きます。<br>到着したらSMSでお知らせします。`,
+ innerBusy:k=>`${k}館所蔵 · すべて貸出中`,tag3:'返却待ち',shT2:'チェクバダの申請案内を受けますか？',shT3:'予約を申請しますか？',yes2:'はい、案内を受けます',kProc:'手順',procV:'チェクバダ登録 → 司書承認 → 送料決済',procS:'往復5,800ウォン · 障害者無料 · 別システムのため代行ではなく案内',kHold:'受取期限',holdV:'到着日を含め3日以内',holdS:'期限内に受け取らないと自動返却・7日間申請不可',kCancel:'キャンセル',cancelV:'受付中のみ可能 · 移送開始後は図書館へ',didT:'Chaekijiが代わりにしたこと',didV:'文字起こし → 本を特定 → 16館確認 → 申請規定を確認（上限・延滞は窓口で確認）→ 受付（デモ）· あなたは一言と確認一回',kNext:'次のステップ',nextV:'SMSの案内に沿ってチェクバダ登録 → 図書館が承認',d2:m=>`チェクバダの申請方法をSMSでお送りしました。<br>登録と承認は<b>${m}図書館</b>がお手伝いします。`,d3:(l,m)=>`予約を受け付けました。<br>返却されたら、相互貸借に切り替えて<b>${m}図書館</b>で受け取る申請ができます。`,
  shP2:'以下の内容をSMSでご案内します',dT2:'案内を送りました',didV2:'文字起こし → 本を特定 → 16館と全国を確認 → 経路を判定 → 案内送付 · あなたは一言と確認一回',
  kArr:'到着予定',kNum:'受付番号',home:'最初に戻る' },
 vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào màn hình chính để mở như ứng dụng, dùng được cả khi mất mạng.', instY:'Cài đặt', instN:'Để sau', instIOS:'Nhấn nút Chia sẻ (hoặc ••• → Chia sẻ), kéo xuống và chọn “Thêm vào MH chính”.', instAOS:'Mở menu trình duyệt (⋮) rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào MH chính”.', instIOSother:'Trên iPhone, hãy mở bằng Safari để cài. Trong Safari: Chia sẻ (hoặc ••• → Chia sẻ) → “Thêm vào MH chính”.', NM:n=>`Thư viện ${n}`,
- st1:'Ghi lại lời bạn nói',st1d:'Chuyển giọng nói thành chữ',st2:'AI nhận diện cuốn sách',st2d:'Nói không chính xác cũng được',
+ st1:'Ghi lại lời bạn nói',st1d:'Chuyển giọng nói thành chữ',st2:'Đối chiếu tên sách',st2d:'Tìm trong 5 cuốn sách mẫu',
  st3:'Tìm từ gần đến xa',st3d:'Kiểm tra lần lượt từ thư viện gần nhất',
- fix:t=>`Đã hiểu là <b>${t}</b>`,
+ fix:t=>`Đã hiểu là <b>${t}</b>`,fixHeard:(h,t)=>`“${h}” → đã hiểu là <b>${t}</b>`,
  usual:n=>`Thư viện ${n} (quen thuộc)`,mineHave:'Có sách · mượn được',mineBusy:'Có sách · đang cho mượn',mineNone:'Không có',
  inner:'15 chi nhánh khác ở Bucheon',inner16:'Cả 16 chi nhánh Bucheon',innerOk:k=>`${k} nơi mượn được`,
  innerNone:'Không nơi nào mượn được',innerNoneAll:'Không nơi nào có',nation:'Thư viện toàn quốc',nationFound:k=>`tìm thấy ở ${k} nơi`,
  tier:{0:['Có sẵn','Dùng ngay','Thư viện quen thuộc đang có sách','Xem hướng dẫn đến mượn','Miễn phí','Hôm nay'],
        1:['Bước 2','Mượn liên thư viện Bucheon','Giữa 16 chi nhánh Bucheon','Đăng ký mượn liên thư viện','Miễn phí','1 ngày làm việc'],
        2:['Bước 3','Chaekbada (toàn quốc)','Toàn quốc · đăng ký riêng & thủ thư duyệt','Nhận hướng dẫn Chaekbada','Có phí','5–7 ngày'],
-       3:['Đặt trước','Chờ đặt trước trong thành phố','Có trong Bucheon · hiện đều đang mượn','Đặt trước','Miễn phí','Khi được trả']},
+       3:['Đặt trước','Chờ đặt trước trong thành phố','Có trong Bucheon · hiện đều đang mượn','Đặt trước','Miễn phí','Đăng ký sau khi trả']},
  sum0:(m,k)=>`<b>Thư viện ${m} đang có sách.</b> Không cần mượn liên thư viện — đến lấy ngay. <span class="s2">${k} chi nhánh đang có thể cho mượn.</span>`,
  sum1:(m,k)=>`<b>Thư viện ${m} hiện không mượn được</b>, nhưng <b>${k} chi nhánh</b> có thể cho mượn và chuyển về ${m} cho bạn.`,
  sum2:k=>`Bucheon không có, nhưng <b>tìm thấy ở ${k} thư viện toàn quốc</b>. Chaekbada cần đăng ký riêng và thủ thư duyệt, nên chúng tôi sẽ hướng dẫn thay vì đăng ký hộ.`,
- sum3:(m,k)=>`<b>${k} chi nhánh</b> trong Bucheon có sách nhưng hiện đều đang mượn. Đặt trước, sách sẽ được gửi đến <b>Thư viện ${m}</b> ngay khi được trả.`,
+ sum3:(m,k)=>`<b>${k} chi nhánh</b> trong Bucheon có sách nhưng hiện đều đang mượn. Nếu đặt trước, khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại <b>Thư viện ${m}</b>.`,
  rec:'Đề xuất',tag0:'Dùng ngay',tag1:'Nhanh nhất',tag2:'Gần nhất',also:'Những nơi này cũng được',
  fold:n=>`Xem thêm ${n} chi nhánh ＋`,foldC:'Thu gọn －',bOk:'Mượn được',bBusy:'Đang cho mượn',bNone:'Không có',
  my:'quen thuộc',code:'Mã thư viện',others:n=>`${n} chi nhánh khác`,again:'Tìm lại',
  caution:'Màn hình demo. Không có yêu cầu thật nào được gửi.',
  srcR:d=>`Dữ liệu thực Data4Library · tra cứu ${d} · đủ 16 chi nhánh<br><span class="s2">Tình trạng mượn tính đến <b>ngày hôm trước</b> (theo API)</span>`,
- srcD:'Cảnh minh họa · cách hướng dẫn khi thư viện Bucheon không có sách (có thể khác tình trạng thực của sách này)',
+ srcD:'Cảnh minh họa · cách hướng dẫn khi thư viện Bucheon không có sách (có thể khác tình trạng thực của sách này)',exSay:'Đây là cảnh minh họa, có thể khác tình trạng thực của sách này.',
  rule:m=>`Theo quy định, <b>không thể đăng ký khi Thư viện ${m} đang có sách.</b> Hệ thống đã lọc giúp bạn.`,
  ax:['Cửa vào phù hợp từng người · thiết kế mở rộng','🎧 Tìm cả bản thay thế — sách nói·chữ nổi·chữ to','🚚 Giao tận nhà Chaeknarae — cho người khó di chuyển','📞 Chế độ gọi điện — làm mọi thứ qua một cuộc gọi','🌏 Giọng nói đa ngôn ngữ — 10 thứ tiếng <b>(đang hoạt động)</b>'],
- shT:'Đăng ký mượn liên thư viện?',shP:'Sẽ được tiếp nhận như dưới đây',
+ shT:'Đăng ký mượn liên thư viện?',shP:'Đây là bản demo, yêu cầu sẽ không được gửi thật',
  kBook:'Sách',kMode:'Hình thức',kFrom:'Thư viện cho mượn',kTo:'Nơi nhận',kTime:'Thời gian dự kiến',
  kRecv:'Cách nhận',recvV:m=>`Đến Thư viện ${m}`,recvS:'Người khuyết tật có thể chọn giao tận nhà (mở rộng)',
  kPath:'Đường xử lý',pathV:'Bộ kết nối hệ thống thư viện (MCP)',pathS:'Thư viện cùng hệ thống dùng lại được',
  kUser:'Người đăng ký',user:'Hong ○○ · thiết bị đã đăng ký',yes:'Có, đăng ký',no:'Hủy',
  dT:'Đã tiếp nhận yêu cầu',
   d1:(md,l,m)=>`Đã đăng ký qua <b>${md}</b>.<br>Sách đang được chuyển từ <b>${l}</b> đến <b>Thư viện ${m}</b>.<br>Khi đến nơi sẽ nhắn tin cho bạn.`,
- innerBusy:k=>`${k} nơi có · đều đang mượn`,tag3:'Chờ trả',shT2:'Nhận hướng dẫn Chaekbada?',shT3:'Đặt trước cuốn này?',yes2:'Có, hướng dẫn tôi',kProc:'Các bước',procV:'Đăng ký Chaekbada → thủ thư duyệt → trả phí vận chuyển',procS:'5.800 won khứ hồi · miễn phí cho người khuyết tật · hệ thống riêng nên chỉ hướng dẫn',kHold:'Hạn nhận',holdV:'Trong 3 ngày, tính cả ngày sách đến',holdS:'Không nhận đúng hạn → tự động trả lại, khóa đăng ký 7 ngày',kCancel:'Hủy',cancelV:'Chỉ khi còn “đã tiếp nhận” · đã vận chuyển thì liên hệ thư viện',didT:'Chaekiji đã làm thay bạn',didV:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh → xét 7 quy định → tiếp nhận · Bạn: một câu, một lần chạm',kNext:'Bước tiếp',nextV:'Theo tin nhắn: đăng ký Chaekbada → thư viện duyệt',d2:m=>`Đã nhắn cách đăng ký Chaekbada.<br><b>Thư viện ${m}</b> sẽ hỗ trợ đăng ký và duyệt.`,d3:(l,m)=>`Đã đặt trước.<br>Khi <b>${l}</b> được trả, tự chuyển thành mượn liên thư viện đến <b>Thư viện ${m}</b>.<br>Sẽ nhắn tin khi sách đến.`,
+ innerBusy:k=>`${k} nơi có · đều đang mượn`,tag3:'Chờ trả',shT2:'Nhận hướng dẫn Chaekbada?',shT3:'Đặt trước cuốn này?',yes2:'Có, hướng dẫn tôi',kProc:'Các bước',procV:'Đăng ký Chaekbada → thủ thư duyệt → trả phí vận chuyển',procS:'5.800 won khứ hồi · miễn phí cho người khuyết tật · hệ thống riêng nên chỉ hướng dẫn',kHold:'Hạn nhận',holdV:'Trong 3 ngày, tính cả ngày sách đến',holdS:'Không nhận đúng hạn → tự động trả lại, khóa đăng ký 7 ngày',kCancel:'Hủy',cancelV:'Chỉ khi còn “đã tiếp nhận” · đã vận chuyển thì liên hệ thư viện',didT:'Chaekiji đã làm thay bạn',didV:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh → xét quy định đăng ký (hạn mức, quá hạn kiểm tra tại quầy) → tiếp nhận (demo) · Bạn: một câu, một lần chạm',kNext:'Bước tiếp',nextV:'Theo tin nhắn: đăng ký Chaekbada → thư viện duyệt',d2:m=>`Đã nhắn cách đăng ký Chaekbada.<br><b>Thư viện ${m}</b> sẽ hỗ trợ đăng ký và duyệt.`,d3:(l,m)=>`Đã đặt trước.<br>Khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại <b>Thư viện ${m}</b>.`,
  shP2:'Chúng tôi sẽ nhắn các bước dưới đây',dT2:'Đã gửi hướng dẫn',didV2:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh & toàn quốc → xác định lộ trình → gửi hướng dẫn · Bạn: một câu, một lần chạm',
  kArr:'Dự kiến đến',kNum:'Số tiếp nhận',home:'Về đầu' },
 th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', instD:'เพิ่มไปหน้าจอหลัก เปิดได้เหมือนแอป และใช้ได้แม้ไม่มีเน็ต', instY:'ติดตั้ง', instN:'ไว้ทีหลัง', instIOS:'แตะปุ่มแชร์ (หรือ ••• → แชร์) เลื่อนลงแล้วเลือก “เพิ่มไปยังหน้าจอโฮม”', instAOS:'เปิดเมนูเบราว์เซอร์ (⋮) แล้วแตะ “ติดตั้งแอป” หรือ “เพิ่มไปยังหน้าจอโฮม”', instIOSother:'บน iPhone ต้องเปิดด้วย Safari จึงจะติดตั้งได้ ใน Safari: แชร์ (หรือ ••• → แชร์) → “เพิ่มไปยังหน้าจอโฮม”', NM:n=>`ห้องสมุด${n}`,
- st1:'ถอดคำพูดของคุณ',st1d:'เปลี่ยนเสียงเป็นข้อความ',st2:'AI ระบุหนังสือ',st2d:'พูดไม่ตรงเป๊ะก็เข้าใจ',
+ st1:'ถอดคำพูดของคุณ',st1d:'เปลี่ยนเสียงเป็นข้อความ',st2:'จับคู่ชื่อหนังสือ',st2d:'ค้นจากหนังสือตัวอย่าง 5 เล่ม',
  st3:'ค้นหาจากใกล้ไปไกล',st3d:'ตรวจสอบทีละแห่งจากที่ใกล้ที่สุด',
- fix:t=>`เข้าใจว่า <b>${t}</b>`,
+ fix:t=>`เข้าใจว่า <b>${t}</b>`,fixHeard:(h,t)=>`“${h}” → เข้าใจว่า <b>${t}</b>`,
  usual:n=>`ห้องสมุด${n} (ประจำ)`,mineHave:'มีเล่ม · ยืมได้',mineBusy:'มีเล่ม · ถูกยืมอยู่',mineNone:'ไม่มี',
  inner:'อีก 15 สาขาในบูชอน',inner16:'ครบ 16 สาขาบูชอน',innerOk:k=>`ยืมได้ ${k} แห่ง`,
  innerNone:'ไม่มีที่ยืมได้',innerNoneAll:'ไม่มีที่ใดมี',nation:'ห้องสมุดทั่วประเทศ',nationFound:k=>`พบ ${k} แห่ง`,
  tier:{0:['มีเล่มอยู่','ใช้ได้เลย','ห้องสมุดประจำของคุณมีเล่มนี้','ดูคำแนะนำการไปยืม','ฟรี','วันนี้'],
        1:['ขั้นที่ 2','ยืมข้ามสาขาบูชอน','ระหว่าง 16 สาขาในบูชอน','ขอยืมข้ามสาขา','ฟรี','1 วันทำการ'],
        2:['ขั้นที่ 3','แชกบาดา (ทั่วประเทศ)','ทั่วประเทศ · สมัครแยกและบรรณารักษ์อนุมัติ','รับคำแนะนำแชกบาดา','มีค่าใช้จ่าย','5–7 วัน'],
-       3:['จอง','จองในเมือง','มีในบูชอน · ตอนนี้ถูกยืมหมด','จองหนังสือ','ฟรี','เมื่อคืนแล้ว']},
+       3:['จอง','จองในเมือง','มีในบูชอน · ตอนนี้ถูกยืมหมด','จองหนังสือ','ฟรี','ขอเปลี่ยนหลังคืน']},
  sum0:(m,k)=>`<b>ห้องสมุด${m}มีเล่มนี้อยู่ตอนนี้</b> ไม่ต้องยืมข้ามสาขา ไปรับได้เลย <span class="s2">ในเมืองยืมได้ ${k} แห่ง</span>`,
  sum1:(m,k)=>`<b>ห้องสมุด${m}ยืมไม่ได้ตอนนี้</b> แต่<b> ${k} สาขา</b>ให้ยืมได้ และจะส่งมาที่${m}ให้คุณ`,
  sum2:k=>`ในบูชอนไม่มี แต่<b>พบที่ ${k} ห้องสมุดทั่วประเทศ</b> แชกบาดาต้องสมัครแยกและให้บรรณารักษ์อนุมัติ จึงขอแนะนำวิธีแทนการขอให้`,
- sum3:(m,k)=>`มีที่ <b>${k} สาขา</b>ในบูชอน แต่ตอนนี้ถูกยืมหมด จองไว้แล้วเมื่อคืนจะส่งไป<b>ห้องสมุด${m}</b>ทันที`,
+ sum3:(m,k)=>`มีที่ <b>${k} สาขา</b>ในบูชอน แต่ตอนนี้ถูกยืมหมด ถ้าจองไว้ก่อน เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามสาขาเพื่อรับที่<b>ห้องสมุด${m}</b>ได้`,
  rec:'แนะนำ',tag0:'ใช้ได้เลย',tag1:'เร็วที่สุด',tag2:'ใกล้ที่สุด',also:'ที่นี่ก็ได้เช่นกัน',
  fold:n=>`ดูอีก ${n} สาขา ＋`,foldC:'ย่อ －',bOk:'ยืมได้',bBusy:'ถูกยืมอยู่',bNone:'ไม่มี',
  my:'ประจำ',code:'รหัสห้องสมุด',others:n=>`อีก ${n} สาขา`,again:'ค้นหาใหม่',
  caution:'หน้าจอสาธิต ไม่มีการส่งคำขอจริง',
  srcR:d=>`ข้อมูลจริง Data4Library · สืบค้น ${d} · ครบ 16 สาขา<br><span class="s2">สถานะการยืมเป็นของ<b>วันก่อนหน้า</b> (ตามสเปค API)</span>`,
- srcD:'ฉากตัวอย่าง · ขั้นตอนเมื่อห้องสมุดบูชอนไม่มีหนังสือ (อาจต่างจากการถือครองจริงของเล่มนี้)',
+ srcD:'ฉากตัวอย่าง · ขั้นตอนเมื่อห้องสมุดบูชอนไม่มีหนังสือ (อาจต่างจากการถือครองจริงของเล่มนี้)',exSay:'นี่เป็นฉากตัวอย่าง อาจต่างจากการถือครองจริงของเล่มนี้',
  rule:m=>`ตามระเบียบ <b>ขอยืมข้ามสาขาไม่ได้เมื่อห้องสมุด${m}มีเล่มอยู่</b> ระบบกรองให้แล้ว`,
  ax:['ทางเข้าที่เหมาะกับแต่ละคน · ส่วนขยาย','🎧 ค้นสื่อทางเลือก — หนังสือเสียง·อักษรเบรลล์·ตัวใหญ่','🚚 ส่งถึงบ้าน Chaeknarae — สำหรับผู้เดินทางลำบาก','📞 โหมดโทรศัพท์ — จัดการได้ด้วยสายเดียว','🌏 เสียงหลายภาษา — 10 ภาษา <b>(ใช้งานได้)</b>'],
- shT:'ยืนยันการขอยืมข้ามสาขา?',shP:'จะรับเรื่องตามนี้',
+ shT:'ยืนยันการขอยืมข้ามสาขา?',shP:'นี่เป็นการสาธิต จะไม่มีการรับเรื่องจริง',
  kBook:'หนังสือ',kMode:'วิธี',kFrom:'ห้องสมุดผู้ให้ยืม',kTo:'จุดรับ',kTime:'เวลาโดยประมาณ',
  kRecv:'วิธีรับ',recvV:m=>`ไปรับที่ห้องสมุด${m}`,recvS:'ผู้พิการเลือกส่งถึงบ้านได้ (ส่วนขยาย)',
  kPath:'เส้นทางประมวลผล',pathV:'ตัวเชื่อมระบบห้องสมุด (MCP)',pathS:'ห้องสมุดระบบเดียวกันใช้ซ้ำได้',
  kUser:'ผู้ขอ',user:'ฮง ○○ · อุปกรณ์ที่ลงทะเบียน',yes:'ใช่ ขอยืม',no:'ยกเลิก',
  dT:'รับคำขอแล้ว',
   d1:(md,l,m)=>`ขอผ่าน<b>${md}</b>แล้ว<br>หนังสือกำลังย้ายจาก<b>${l}</b>ไปยัง<b>ห้องสมุด${m}</b><br>ถึงแล้วจะส่งข้อความแจ้ง`,
- innerBusy:k=>`มี ${k} แห่ง · ถูกยืมหมด`,tag3:'รอคืน',shT2:'รับคำแนะนำแชกบาดาไหม?',shT3:'จองเล่มนี้ไหม?',yes2:'ใช่ ขอคำแนะนำ',kProc:'ขั้นตอน',procV:'สมัครแชกบาดา → บรรณารักษ์อนุมัติ → ชำระค่าส่ง',procS:'ไป-กลับ 5,800 วอน · ผู้พิการฟรี · เป็นระบบแยก จึงแนะนำแทนการขอให้',kHold:'กำหนดรับ',holdV:'ภายใน 3 วัน นับรวมวันที่ถึง',holdS:'ไม่มารับตามกำหนด → คืนอัตโนมัติ ระงับการขอ 7 วัน',kCancel:'ยกเลิก',cancelV:'ทำได้เฉพาะสถานะรับเรื่อง · เริ่มขนส่งแล้วให้ติดต่อห้องสมุด',didT:'สิ่งที่ Chaekiji ทำแทนคุณ',didV:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขา → ตรวจกฎ 7 ข้อ → รับเรื่อง · คุณพูดหนึ่งประโยค กดหนึ่งครั้ง',kNext:'ขั้นต่อไป',nextV:'ทำตาม SMS: สมัครแชกบาดา → ห้องสมุดอนุมัติ',d2:m=>`ส่งวิธีขอผ่านแชกบาดาทาง SMS แล้ว<br><b>ห้องสมุด${m}</b>จะช่วยสมัครและอนุมัติ`,d3:(l,m)=>`จองแล้ว<br>เมื่อ<b>${l}</b>ได้รับคืน จะเปลี่ยนเป็นยืมข้ามสาขาไป<b>ห้องสมุด${m}</b>อัตโนมัติ<br>ถึงแล้วจะแจ้งทาง SMS`,
+ innerBusy:k=>`มี ${k} แห่ง · ถูกยืมหมด`,tag3:'รอคืน',shT2:'รับคำแนะนำแชกบาดาไหม?',shT3:'จองเล่มนี้ไหม?',yes2:'ใช่ ขอคำแนะนำ',kProc:'ขั้นตอน',procV:'สมัครแชกบาดา → บรรณารักษ์อนุมัติ → ชำระค่าส่ง',procS:'ไป-กลับ 5,800 วอน · ผู้พิการฟรี · เป็นระบบแยก จึงแนะนำแทนการขอให้',kHold:'กำหนดรับ',holdV:'ภายใน 3 วัน นับรวมวันที่ถึง',holdS:'ไม่มารับตามกำหนด → คืนอัตโนมัติ ระงับการขอ 7 วัน',kCancel:'ยกเลิก',cancelV:'ทำได้เฉพาะสถานะรับเรื่อง · เริ่มขนส่งแล้วให้ติดต่อห้องสมุด',didT:'สิ่งที่ Chaekiji ทำแทนคุณ',didV:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขา → ตรวจกฎการขอ (โควตาและการค้างส่งตรวจที่เคาน์เตอร์) → รับเรื่อง (สาธิต) · คุณพูดหนึ่งประโยค กดหนึ่งครั้ง',kNext:'ขั้นต่อไป',nextV:'ทำตาม SMS: สมัครแชกบาดา → ห้องสมุดอนุมัติ',d2:m=>`ส่งวิธีขอผ่านแชกบาดาทาง SMS แล้ว<br><b>ห้องสมุด${m}</b>จะช่วยสมัครและอนุมัติ`,d3:(l,m)=>`จองแล้ว<br>เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามสาขาเพื่อรับที่<b>ห้องสมุด${m}</b>ได้`,
  shP2:'จะส่งขั้นตอนด้านล่างทาง SMS',dT2:'ส่งคำแนะนำแล้ว',didV2:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขาและทั่วประเทศ → ตัดสินเส้นทาง → ส่งคำแนะนำ · คุณพูดหนึ่งประโยค กดหนึ่งครั้ง',
  kArr:'คาดว่าถึง',kNum:'เลขที่รับเรื่อง',home:'กลับหน้าแรก' },
 ru:{ bq:BQ.ru, instT:'Можно установить на телефон', instD:'Добавьте на главный экран — откроется как приложение и работает без интернета.', instY:'Установить', instN:'Позже', instIOS:'Нажмите «Поделиться» (или ••• → «Поделиться»), пролистайте вниз и выберите «На экран «Домой»».', instAOS:'Откройте меню браузера (⋮) и нажмите «Установить приложение» или «Добавить на главный экран».', instIOSother:'На iPhone установка возможна только в Safari. В Safari: «Поделиться» (или ••• → «Поделиться») → «На экран «Домой»».', NM:n=>`Библиотека ${n}`,
- st1:'Записываю вашу речь',st1d:'Превращаю голос в текст',st2:'ИИ определяет книгу',st2d:'Неточная фраза тоже подойдёт',
+ st1:'Записываю вашу речь',st1d:'Превращаю голос в текст',st2:'Сопоставляю книгу',st2d:'Ищу среди 5 книг-примеров',
  st3:'Поиск от ближнего к дальнему',st3d:'Проверяю библиотеки по очереди',
- fix:t=>`Понял как <b>${t}</b>`,
+ fix:t=>`Понял как <b>${t}</b>`,fixHeard:(h,t)=>`«${h}» → понял как <b>${t}</b>`,
  usual:n=>`Библиотека ${n} (ваша обычная)`,mineHave:'В фонде · доступна',mineBusy:'В фонде · выдана',mineNone:'Нет в фонде',
  inner:'15 других филиалов Пучхона',inner16:'Все 16 филиалов Пучхона',innerOk:k=>`доступна в ${k}`,
  innerNone:'Нигде не доступна',innerNoneAll:'Нигде нет в фонде',nation:'Библиотеки по всей стране',nationFound:k=>`найдена в ${k}`,
  tier:{0:['На месте','Взять сразу','Есть в вашей библиотеке','Как пройти','Бесплатно','Сегодня'],
        1:['Шаг 2','Обмен внутри Пучхона','Между 16 филиалами','Заказать обмен','Бесплатно','1 рабочий день'],
        2:['Шаг 3','Чекпада (по стране)','По стране · отдельная регистрация и одобрение библиотекаря','Получить инструкцию','Платно','5–7 дней'],
-       3:['Бронь','Ожидание в городе','Есть в Пучхоне · сейчас все выданы','Забронировать','Бесплатно','По возврату']},
+       3:['Бронь','Ожидание в городе','Есть в Пучхоне · сейчас все выданы','Забронировать','Бесплатно','МБА после возврата']},
  sum0:(m,k)=>`<b>Книга сейчас в библиотеке ${m}.</b> Обмен не нужен — просто приходите. <span class="s2">Доступна в ${k} филиалах.</span>`,
  sum1:(m,k)=>`<b>В библиотеке ${m} сейчас нельзя взять</b>, но <b>${k} филиалов</b> могут выдать — доставим в ${m}.`,
  sum2:k=>`В Пучхоне нет, но <b>найдена в ${k} библиотеках страны</b>. Для Чекпады нужна отдельная регистрация и одобрение библиотекаря, поэтому мы подскажем, как оформить.`,
- sum3:(m,k)=>`Есть в <b>${k} филиалах</b> Пучхона, но все экземпляры выданы. Забронируйте — как только вернут, отправим в <b>библиотеку ${m}</b>.`,
+ sum3:(m,k)=>`Есть в <b>${k} филиалах</b> Пучхона, но все экземпляры выданы. Если забронировать заранее, после возврата книги бронь можно переоформить на МБА с получением в <b>библиотеке ${m}</b>.`,
  rec:'Рекомендуем',tag0:'Взять сразу',tag1:'Быстрее всего',tag2:'Ближе всего',also:'Также доступна здесь',
  fold:n=>`Ещё ${n} филиалов ＋`,foldC:'Свернуть －',bOk:'Доступна',bBusy:'Выдана',bNone:'Нет',
  my:'обычная',code:'Код библиотеки',others:n=>`ещё ${n} филиалов`,again:'Искать снова',
  caution:'Демо-экран. Реальный заказ не отправляется.',
  srcR:d=>`Реальные данные Data4Library · запрос ${d} · все 16 филиалов<br><span class="s2">Статус выдачи — на <b>предыдущий день</b> (по API)</span>`,
- srcD:'Пример · что делаем, если книги нет в Пучхоне (может отличаться от реального наличия этой книги)',
+ srcD:'Пример · что делаем, если книги нет в Пучхоне (может отличаться от реального наличия этой книги)',exSay:'Это пример: реальное наличие этой книги может отличаться.',
  rule:m=>`По правилам <b>заказ невозможен, если книга есть в библиотеке ${m}.</b> Мы отфильтровали это заранее.`,
  ax:['Вход, подходящий каждому · расширение','🎧 Альтернативные форматы — аудио·Брайль·крупный шрифт','🚚 Доставка на дом Chaeknarae — для маломобильных','📞 Режим звонка — всё по одному звонку','🌏 Голос на 10 языках <b>(работает)</b>'],
- shT:'Оформить заказ?',shP:'Будет принято в следующем виде',
+ shT:'Оформить заказ?',shP:'Это демо: реальная заявка не отправляется',
  kBook:'Книга',kMode:'Способ',kFrom:'Выдающая библиотека',kTo:'Пункт получения',kTime:'Срок',
  kRecv:'Получение',recvV:m=>`Визит в библиотеку ${m}`,recvS:'Для людей с инвалидностью — доставка почтой (расширение)',
  kPath:'Маршрут обработки',pathV:'Коннектор библиотечной системы (MCP)',pathS:'Повторно используется библиотеками той же системы',
  kUser:'Заявитель',user:'Хон ○○ · зарегистрированное устройство',yes:'Да, заказать',no:'Отмена',
  dT:'Заявка принята',
   d1:(md,l,m)=>`Оформлено через <b>${md}</b>.<br>Книга едет из <b>${l}</b> в <b>библиотеку ${m}</b>.<br>Пришлём сообщение о прибытии.`,
- innerBusy:k=>`есть в ${k} · все выданы`,tag3:'Ждём возврата',shT2:'Получить инструкцию по Чекпаде?',shT3:'Забронировать?',yes2:'Да, подскажите',kProc:'Порядок',procV:'Регистрация в Чекпаде → одобрение библиотекаря → оплата доставки',procS:'5 800 вон туда-обратно · бесплатно для людей с инвалидностью · отдельная система, поэтому только подсказываем',kHold:'Срок получения',holdV:'В течение 3 дней, включая день прибытия',holdS:'Не забрали вовремя → автоматический возврат, заказы закрыты на 7 дней',kCancel:'Отмена',cancelV:'Только пока заявка «принята» · после отправки — через библиотеку',didT:'Что сделал Chaekiji за вас',didV:'Распознал речь → определил книгу → проверил 16 филиалов → сверил 7 правил → оформил · Вы: одна фраза, одно касание',kNext:'Далее',nextV:'По SMS: регистрация в Чекпаде → библиотека одобряет',d2:m=>`Мы прислали SMS с инструкцией по Чекпаде.<br><b>Библиотека ${m}</b> поможет с регистрацией и одобрением.`,d3:(l,m)=>`Бронь оформлена.<br>Когда экземпляр из <b>${l}</b> вернут, заявка станет МБА в <b>библиотеку ${m}</b>.<br>Сообщим по SMS.`,
+ innerBusy:k=>`есть в ${k} · все выданы`,tag3:'Ждём возврата',shT2:'Получить инструкцию по Чекпаде?',shT3:'Забронировать?',yes2:'Да, подскажите',kProc:'Порядок',procV:'Регистрация в Чекпаде → одобрение библиотекаря → оплата доставки',procS:'5 800 вон туда-обратно · бесплатно для людей с инвалидностью · отдельная система, поэтому только подсказываем',kHold:'Срок получения',holdV:'В течение 3 дней, включая день прибытия',holdS:'Не забрали вовремя → автоматический возврат, заказы закрыты на 7 дней',kCancel:'Отмена',cancelV:'Только пока заявка «принята» · после отправки — через библиотеку',didT:'Что сделал Chaekiji за вас',didV:'Распознал речь → определил книгу → проверил 16 филиалов → сверил правила заявки (лимит и задолженности проверяют в библиотеке) → оформил (демо) · Вы: одна фраза, одно касание',kNext:'Далее',nextV:'По SMS: регистрация в Чекпаде → библиотека одобряет',d2:m=>`Мы прислали SMS с инструкцией по Чекпаде.<br><b>Библиотека ${m}</b> поможет с регистрацией и одобрением.`,d3:(l,m)=>`Бронь оформлена.<br>После возврата книги её можно переоформить на МБА с получением в <b>библиотеке ${m}</b>.`,
  shP2:'Пришлём по SMS шаги ниже',dT2:'Инструкция отправлена',didV2:'Распознал речь → определил книгу → проверил 16 филиалов и страну → выбрал маршрут → отправил инструкцию · Вы: одна фраза, одно касание',
  kArr:'Ожидаемое прибытие',kNum:'Номер заявки',home:'В начало' },
 mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үндсэн дэлгэц дээр нэмбэл апп шиг нээгдэж, интернэтгүй ч ажиллана.', instY:'Суулгах', instN:'Дараа', instIOS:'«Хуваалцах» товч (эсвэл ••• → «Хуваалцах») дараад, доош гүйлгэж «Үндсэн дэлгэцэд нэмэх»-ийг сонгоно уу.', instAOS:'Хөтчийн цэс (⋮)-г нээж «Апп суулгах» эсвэл «Үндсэн дэлгэцэд нэмэх» дарна уу.', instIOSother:'iPhone дээр Safari-гаар нээж суулгана. Safari дээр: «Хуваалцах» (эсвэл ••• → «Хуваалцах») → «Үндсэн дэлгэцэд нэмэх».', NM:n=>`${n} номын сан`,
- st1:'Таны яриаг буулгаж байна',st1d:'Дуу хоолойг текст болгоно',st2:'AI номыг таньж байна',st2d:'Бүрэн бус хэллэг ч ойлгоно',
+ st1:'Таны яриаг буулгаж байна',st1d:'Дуу хоолойг текст болгоно',st2:'Номыг тулгаж байна',st2d:'5 жишээ номоос хайна',
  st3:'Ойроос хол руу хайх',st3d:'Ойрын номын сангаас эхлэн шалгана',
- fix:t=>`<b>${t}</b> гэж ойлголоо`,
+ fix:t=>`<b>${t}</b> гэж ойлголоо`,fixHeard:(h,t)=>`“${h}” → <b>${t}</b> гэж ойлголоо`,
  usual:n=>`${n} номын сан (байнгын)`,mineHave:'Байгаа · зээлэх боломжтой',mineBusy:'Байгаа · зээлэгдсэн',mineNone:'Байхгүй',
  inner:'Бүчоны бусад 15 салбар',inner16:'Бүчоны бүх 16 салбар',innerOk:k=>`${k} газар боломжтой`,
  innerNone:'Боломжтой газар алга',innerNoneAll:'Хаана ч байхгүй',nation:'Улс даяарх номын сангууд',nationFound:k=>`${k} газраас олдлоо`,
  tier:{0:['Байгаа','Шууд ашиглах','Таны номын санд одоо байна','Очих заавар','Үнэгүй','Өнөөдөр'],
        1:['2-р алхам','Бүчон доторх солилцоо','16 салбарын хооронд','Солилцоо хүсэх','Үнэгүй','1 ажлын өдөр'],
        2:['3-р алхам','Чекпада (улс даяар)','Улс даяар · тусдаа бүртгэл, номын санчийн зөвшөөрөл','Чекпада заавар авах','Төлбөртэй','5–7 хоног'],
-       3:['Захиалга','Хот дотор хүлээх','Бүчонд бий · одоо бүгд зээлэгдсэн','Захиалах','Үнэгүй','Буцаж ирмэгц']},
+       3:['Захиалга','Хот дотор хүлээх','Бүчонд бий · одоо бүгд зээлэгдсэн','Захиалах','Үнэгүй','Буцсаны дараа хүсэлт']},
  sum0:(m,k)=>`<b>${m} номын санд одоо байна.</b> Солилцоо хэрэггүй — очоод аваарай. <span class="s2">${k} салбарт боломжтой.</span>`,
  sum1:(m,k)=>`<b>${m} номын сангаас одоо авах боломжгүй</b> ч <b>${k} салбараас</b> зээлж ${m} руу хүргэж өгнө.`,
  sum2:k=>`Бүчонд байхгүй ч <b>улс даяар ${k} газраас</b> олдлоо. Чекпада тусдаа бүртгэл, номын санчийн зөвшөөрөл шаарддаг тул хүсэлтийн оронд зааварчилгаа өгье.`,
- sum3:(m,k)=>`Бүчоны <b>${k} салбарт</b> бий ч одоо бүгд зээлэгдсэн. Захиалбал буцаж ирмэгц <b>${m} номын сан</b> руу илгээнэ.`,
+ sum3:(m,k)=>`Бүчоны <b>${k} салбарт</b> бий ч одоо бүгд зээлэгдсэн. Эхлээд захиалж байвал ном буцаж ирэхэд <b>${m} номын сан</b>гаас авахаар солилцоо руу шилжүүлэх хүсэлт гаргаж болно.`,
  rec:'Санал болгож буй',tag0:'Шууд',tag1:'Хамгийн хурдан',tag2:'Хамгийн ойр',also:'Эндээс ч болно',
  fold:n=>`Өөр ${n} салбар үзэх ＋`,foldC:'Хаах －',bOk:'Боломжтой',bBusy:'Зээлэгдсэн',bNone:'Байхгүй',
  my:'байнгын',code:'Номын сангийн код',others:n=>`бусад ${n} салбар`,again:'Дахин хайх',
  caution:'Жишээ дэлгэц. Бодит хүсэлт илгээгдэхгүй.',
  srcR:d=>`Data4Library бодит өгөгдөл · ${d} шалгасан · 16 салбар бүрэн<br><span class="s2">Зээлийн байдал <b>өмнөх өдрийн</b> мэдээлэл (API)</span>`,
- srcD:'Жишээ үзэгдэл · Бүчонд байхгүй номын заавар (энэ номын бодит байдлаас ялгаатай байж болно)',
+ srcD:'Жишээ үзэгдэл · Бүчонд байхгүй номын заавар (энэ номын бодит байдлаас ялгаатай байж болно)',exSay:'Энэ бол жишээ үзэгдэл, энэ номын бодит байдлаас ялгаатай байж болно.',
  rule:m=>`Журмаар <b>${m} номын санд ном байгаа үед солилцоо хүсэх боломжгүй.</b> Урьдчилан шүүлээ.`,
  ax:['Хүн бүрд тохирсон хаалга · өргөтгөл','🎧 Орлуулах хувилбар — аудио·брайл·том үсэг','🚚 Гэрт хүргэх Chaeknarae — хөдөлгөөн хязгаарлагдмал хүмүүст','📞 Утасны горим — нэг дуудлагаар бүгд','🌏 10 хэлний дуу хоолой <b>(ажиллаж байна)</b>'],
- shT:'Солилцоо хүсэх үү?',shP:'Дараах байдлаар хүлээн авна',
+ shT:'Солилцоо хүсэх үү?',shP:'Жишээ тул бодит хүсэлт илгээгдэхгүй',
  kBook:'Ном',kMode:'Хэлбэр',kFrom:'Зээлдүүлэгч сан',kTo:'Хүлээн авах газар',kTime:'Хугацаа',
  kRecv:'Хүлээн авах',recvV:m=>`${m} номын санд очих`,recvS:'Хөгжлийн бэрхшээлтэй бол гэрт хүргүүлж болно (өргөтгөл)',
  kPath:'Боловсруулах зам',pathV:'Номын сангийн системийн холбогч (MCP)',pathS:'Ижил системтэй сангууд дахин ашиглана',
  kUser:'Хүсэлт гаргагч',user:'Хон ○○ · бүртгэлтэй төхөөрөмж',yes:'Тийм, хүсье',no:'Цуцлах',
  dT:'Хүсэлт хүлээн авлаа',
   d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээлээ.<br>Ном <b>${l}</b>-аас <b>${m} номын сан</b> руу явж байна.<br>Ирэхэд мессеж илгээнэ.`,
- innerBusy:k=>`${k} газарт бий · бүгд зээлэгдсэн`,tag3:'Буцаахыг хүлээж байна',shT2:'Чекпада заавар авах уу?',shT3:'Захиалах уу?',yes2:'Тийм, зааварчилна уу',kProc:'Дараалал',procV:'Чекпадад бүртгүүлэх → номын санч зөвшөөрөх → хүргэлтийн төлбөр',procS:'Хоёр тийш 5,800 вон · хөгжлийн бэрхшээлтэй хүнд үнэгүй · тусдаа систем тул зөвхөн зааварчилна',kHold:'Авах хугацаа',holdV:'Ирсэн өдрийг оролцуулан 3 хоногт',holdS:'Хугацаандаа аваагүй бол автоматаар буцаагдаж, 7 хоног хүсэлт хориглоно',kCancel:'Цуцлах',cancelV:'Зөвхөн хүлээн авсан үед · тээвэрлэж эхэлбэл номын сантай холбогдоно',didT:'Chaekiji таны өмнөөс хийсэн зүйл',didV:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар шалгасан → 7 дүрэм шалгасан → хүлээн авсан · Та нэг үг, нэг товшилт',kNext:'Дараагийн алхам',nextV:'Мессежийн дагуу Чекпадад бүртгүүлэх → номын сан зөвшөөрнө',d2:m=>`Чекпадагаар хүсэх аргыг мессежээр илгээлээ.<br>Бүртгэл, зөвшөөрлийг <b>${m} номын сан</b> туслана.`,d3:(l,m)=>`Захиалга хүлээн авлаа.<br><b>${l}</b>-аас буцаж ирмэгц солилцоо болж <b>${m} номын сан</b> руу ирнэ.<br>Ирэхэд мессеж илгээнэ.`,
+ innerBusy:k=>`${k} газарт бий · бүгд зээлэгдсэн`,tag3:'Буцаахыг хүлээж байна',shT2:'Чекпада заавар авах уу?',shT3:'Захиалах уу?',yes2:'Тийм, зааварчилна уу',kProc:'Дараалал',procV:'Чекпадад бүртгүүлэх → номын санч зөвшөөрөх → хүргэлтийн төлбөр',procS:'Хоёр тийш 5,800 вон · хөгжлийн бэрхшээлтэй хүнд үнэгүй · тусдаа систем тул зөвхөн зааварчилна',kHold:'Авах хугацаа',holdV:'Ирсэн өдрийг оролцуулан 3 хоногт',holdS:'Хугацаандаа аваагүй бол автоматаар буцаагдаж, 7 хоног хүсэлт хориглоно',kCancel:'Цуцлах',cancelV:'Зөвхөн хүлээн авсан үед · тээвэрлэж эхэлбэл номын сантай холбогдоно',didT:'Chaekiji таны өмнөөс хийсэн зүйл',didV:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар шалгасан → хүсэлтийн дүрэм шалгасан (хязгаар, хугацаа хэтрэлтийг лангуунд шалгана) → хүлээн авсан (жишээ) · Та нэг үг, нэг товшилт',kNext:'Дараагийн алхам',nextV:'Мессежийн дагуу Чекпадад бүртгүүлэх → номын сан зөвшөөрнө',d2:m=>`Чекпадагаар хүсэх аргыг мессежээр илгээлээ.<br>Бүртгэл, зөвшөөрлийг <b>${m} номын сан</b> туслана.`,d3:(l,m)=>`Захиалга хүлээн авлаа.<br>Ном буцаж ирэхэд <b>${m} номын сан</b>гаас авахаар солилцоо руу шилжүүлэх хүсэлт гаргаж болно.`,
  shP2:'Доорх алхмуудыг мессежээр илгээнэ',dT2:'Заавар илгээлээ',didV2:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар, улс даяар шалгасан → замыг тогтоосон → заавар илгээсэн · Та нэг үг, нэг товшилт',
  kArr:'Ирэх хугацаа',kNum:'Бүртгэлийн дугаар',home:'Эхлэл рүү' },
 uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo‘shsangiz, ilova kabi ochiladi va internetsiz ham ishlaydi.', instY:'O‘rnatish', instN:'Keyinroq', instIOS:"«Ulashish» tugmasini (yoki ••• → «Ulashish») bosing, pastga suring va «Bosh ekranga qo‘shish»ni tanlang.", instAOS:"Brauzer menyusini (⋮) oching va «Ilovani o‘rnatish» yoki «Bosh ekranga qo‘shish»ni bosing.", instIOSother:"iPhone’da o‘rnatish uchun Safari’da oching. Safari’da: «Ulashish» (yoki ••• → «Ulashish») → «Bosh ekranga qo‘shish».", NM:n=>`${n} kutubxonasi`,
- st1:"So'zingizni yozib olyapman",st1d:"Ovozni matnga aylantiraman",st2:'AI kitobni aniqlaydi',st2d:"Noaniq aytsangiz ham tushunadi",
+ st1:"So'zingizni yozib olyapman",st1d:"Ovozni matnga aylantiraman",st2:'Kitob nomini solishtiradi',st2d:'5 ta namuna kitob ichidan qidiradi',
  st3:'Yaqin joydan boshlab qidirish',st3d:'Kutubxonalarni birma-bir tekshiradi',
- fix:t=>`<b>${t}</b> deb tushundim`,
+ fix:t=>`<b>${t}</b> deb tushundim`,fixHeard:(h,t)=>`“${h}” → <b>${t}</b> deb tushundim`,
  usual:n=>`${n} kutubxonasi (doimiy)`,mineHave:'Bor · olsa bo\'ladi',mineBusy:'Bor · berilgan',mineNone:"Yo'q",
  inner:"Bucheonning boshqa 15 filiali",inner16:'Bucheonning barcha 16 filiali',innerOk:k=>`${k} joyda mavjud`,
  innerNone:'Hech qayerda mavjud emas',innerNoneAll:"Hech qayerda yo'q",nation:'Butun mamlakat kutubxonalari',nationFound:k=>`${k} joyda topildi`,
  tier:{0:['Joyida','Darhol olish','Doimiy kutubxonangizda bor','Borish yo‘riqnomasi','Bepul','Bugun'],
        1:['2-qadam','Bucheon ichida almashish','16 filial orasida','Almashishga buyurtma','Bepul','1 ish kuni'],
        2:['3-qadam','Chaekbada (mamlakat)',"Mamlakat bo'ylab · alohida ro'yxat va kutubxonachi tasdig'i",'Chaekbada yo‘riqnomasi','Pullik','5–7 kun'],
-       3:['Band qilish','Shahar ichida kutish','Bucheonda bor · hozir hammasi berilgan','Band qilish','Bepul','Qaytarilgach']},
+       3:['Band qilish','Shahar ichida kutish','Bucheonda bor · hozir hammasi berilgan','Band qilish','Bepul',"Qaytgach so'rov"]},
  sum0:(m,k)=>`<b>${m} kutubxonasida hozir bor.</b> Almashish shart emas — borib oling. <span class="s2">${k} filialda mavjud.</span>`,
  sum1:(m,k)=>`<b>${m} kutubxonasida hozir bo'lmaydi</b>, lekin <b>${k} filial</b> berib, ${m}ga yetkazamiz.`,
  sum2:k=>`Bucheonda yo'q, lekin <b>mamlakat bo'ylab ${k} kutubxonada</b> topildi. Chaekbada alohida ro'yxat va kutubxonachi tasdig'ini talab qiladi, shuning uchun buyurtma o'rniga yo'riqnoma beramiz.`,
- sum3:(m,k)=>`Bucheondagi <b>${k} filialda</b> bor, lekin hozir hammasi berilgan. Band qilsangiz, qaytarilishi bilan <b>${m} kutubxonasi</b>ga yuboramiz.`,
+ sum3:(m,k)=>`Bucheondagi <b>${k} filialda</b> bor, lekin hozir hammasi berilgan. Avval band qilsangiz, kitob qaytarilganda uni <b>${m} kutubxonasi</b>da olish uchun almashuvga o'tkazishni so'rashingiz mumkin.`,
  rec:'Tavsiya',tag0:'Darhol',tag1:'Eng tez',tag2:'Eng yaqin',also:'Bu yerlarda ham bor',
  fold:n=>`Yana ${n} filialni ko'rish ＋`,foldC:'Yopish －',bOk:'Mavjud',bBusy:'Berilgan',bNone:"Yo'q",
  my:'doimiy',code:'Kutubxona kodi',others:n=>`yana ${n} filial`,again:'Qayta qidirish',
  caution:"Namoyish ekrani. Haqiqiy so'rov yuborilmaydi.",
  srcR:d=>`Data4Library haqiqiy ma'lumot · ${d} so'ralgan · 16 filial to'liq<br><span class="s2">Holat <b>oldingi kun</b> bo'yicha (API)</span>`,
- srcD:"Namuna sahna · kitob Bucheonda bo'lmaganda yo'l-yo'riq (bu kitobning haqiqiy holatidan farq qilishi mumkin)",
+ srcD:"Namuna sahna · kitob Bucheonda bo'lmaganda yo'l-yo'riq (bu kitobning haqiqiy holatidan farq qilishi mumkin)",exSay:'Bu namuna sahna, bu kitobning haqiqiy holatidan farq qilishi mumkin.',
  rule:m=>`Qoidaga ko'ra <b>${m} kutubxonasida kitob bo'lsa, almashish so'rab bo'lmaydi.</b> Oldindan filtrladik.`,
  ax:["Har kimga mos eshik · kengaytma","🎧 Muqobil formatlar — audio·brayl·yirik shrift","🚚 Chaeknarae uyga yetkazish — harakati cheklanganlarga","📞 Telefon rejimi — bitta qo'ng'iroq bilan","🌏 10 tilda ovoz <b>(ishlaydi)</b>"],
- shT:"Almashishga buyurtma berilsinmi?",shP:'Quyidagicha qabul qilinadi',
+ shT:"Almashishga buyurtma berilsinmi?",shP:"Bu namoyish, haqiqiy so'rov yuborilmaydi",
  kBook:'Kitob',kMode:'Usul',kFrom:'Beruvchi kutubxona',kTo:'Olish joyi',kTime:'Taxminiy vaqt',
  kRecv:'Olish usuli',recvV:m=>`${m} kutubxonasiga borish`,recvS:"Nogironligi borlar uyga yetkazishni tanlashi mumkin (kengaytma)",
  kPath:'Ishlov yo\'li',pathV:'Kutubxona tizimi ulagichi (MCP)',pathS:'Bir xil tizimdagi kutubxonalar qayta ishlatadi',
  kUser:'Ariza beruvchi',user:'Hong ○○ · ro‘yxatdan o‘tgan qurilma',yes:'Ha, buyurtma',no:'Bekor',
  dT:"So'rov qabul qilindi",
   d1:(md,l,m)=>`<b>${md}</b> orqali buyurtma berildi.<br>Kitob <b>${l}</b>dan <b>${m} kutubxonasi</b>ga ketmoqda.<br>Yetib kelganda xabar yuboramiz.`,
- innerBusy:k=>`${k} joyda bor · hammasi berilgan`,tag3:'Qaytarilishini kutmoqda',shT2:"Chaekbada yo'riqnomasini olasizmi?",shT3:'Band qilinsinmi?',yes2:"Ha, yo'riqnoma",kProc:'Tartib',procV:"Chaekbadaga ro'yxat → kutubxonachi tasdig'i → yetkazib berish to'lovi",procS:"Borib-kelish 5 800 von · nogironlar uchun bepul · alohida tizim, shuning uchun faqat yo'riqnoma",kHold:'Olish muddati',holdV:'Kelgan kuni bilan 3 kun ichida',holdS:"O'z vaqtida olinmasa → avtomatik qaytariladi, 7 kun buyurtma yopiladi",kCancel:'Bekor qilish',cancelV:"Faqat “qabul qilindi” holatida · yo'lga chiqqach kutubxonaga murojaat",didT:'Chaekiji siz uchun qilgan ishlar',didV:"Nutqni yozdi → kitobni aniqladi → 16 filialni tekshirdi → 7 qoidani ko'rdi → qabul qildi · Siz: bir jumla, bir bosish",kNext:'Keyingi qadam',nextV:"SMS bo'yicha Chaekbadaga ro'yxatdan o'ting → kutubxona tasdiqlaydi",d2:m=>`Chaekbada orqali so'rash usulini SMS qildik.<br>Ro'yxat va tasdiqda <b>${m} kutubxonasi</b> yordam beradi.`,d3:(l,m)=>`Band qilindi.<br><b>${l}</b> nusxasi qaytgach almashuvga aylanib <b>${m} kutubxonasi</b>ga keladi.<br>Kelganda SMS yuboramiz.`,
+ innerBusy:k=>`${k} joyda bor · hammasi berilgan`,tag3:'Qaytarilishini kutmoqda',shT2:"Chaekbada yo'riqnomasini olasizmi?",shT3:'Band qilinsinmi?',yes2:"Ha, yo'riqnoma",kProc:'Tartib',procV:"Chaekbadaga ro'yxat → kutubxonachi tasdig'i → yetkazib berish to'lovi",procS:"Borib-kelish 5 800 von · nogironlar uchun bepul · alohida tizim, shuning uchun faqat yo'riqnoma",kHold:'Olish muddati',holdV:'Kelgan kuni bilan 3 kun ichida',holdS:"O'z vaqtida olinmasa → avtomatik qaytariladi, 7 kun buyurtma yopiladi",kCancel:'Bekor qilish',cancelV:"Faqat “qabul qilindi” holatida · yo'lga chiqqach kutubxonaga murojaat",didT:'Chaekiji siz uchun qilgan ishlar',didV:"Nutqni yozdi → kitobni aniqladi → 16 filialni tekshirdi → so'rov qoidalarini ko'rdi (limit va qarzdorlikni peshtaxtada tekshiradi) → qabul qildi (namoyish) · Siz: bir jumla, bir bosish",kNext:'Keyingi qadam',nextV:"SMS bo'yicha Chaekbadaga ro'yxatdan o'ting → kutubxona tasdiqlaydi",d2:m=>`Chaekbada orqali so'rash usulini SMS qildik.<br>Ro'yxat va tasdiqda <b>${m} kutubxonasi</b> yordam beradi.`,d3:(l,m)=>`Band qilindi.<br>Kitob qaytarilganda uni <b>${m} kutubxonasi</b>da olish uchun almashuvga o'tkazishni so'rashingiz mumkin.`,
  shP2:'Quyidagi qadamlarni SMS qilamiz',dT2:"Yo'riqnoma yuborildi",didV2:"Nutqni yozdi → kitobni aniqladi → 16 filial va mamlakatni tekshirdi → yo'lni belgiladi → yo'riqnoma yubordi · Siz: bir jumla, bir bosish",
  kArr:'Yetib kelishi',kNum:'Qabul raqami',home:'Boshiga' },
 id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama — terbuka seperti aplikasi dan tetap jalan tanpa internet.', instY:'Pasang', instN:'Nanti', instIOS:'Ketuk tombol Bagikan (atau ••• → Bagikan), gulir ke bawah lalu pilih “Tambahkan ke Layar Utama”.', instAOS:'Buka menu browser (⋮) lalu ketuk “Instal aplikasi” atau “Tambahkan ke Layar Utama”.', instIOSother:'Di iPhone, buka lewat Safari untuk memasang. Di Safari: Bagikan (atau ••• → Bagikan) → “Tambahkan ke Layar Utama”.', NM:n=>`Perpustakaan ${n}`,
- st1:'Mencatat ucapan Anda',st1d:'Mengubah suara jadi teks',st2:'AI mengenali bukunya',st2d:'Ucapan kurang tepat pun dipahami',
+ st1:'Mencatat ucapan Anda',st1d:'Mengubah suara jadi teks',st2:'Mencocokkan buku',st2d:'Mencari di antara 5 buku contoh',
  st3:'Mencari dari yang terdekat',st3d:'Memeriksa perpustakaan satu per satu',
- fix:t=>`Dipahami sebagai <b>${t}</b>`,
+ fix:t=>`Dipahami sebagai <b>${t}</b>`,fixHeard:(h,t)=>`“${h}” → dipahami sebagai <b>${t}</b>`,
  usual:n=>`Perpustakaan ${n} (langganan)`,mineHave:'Ada · bisa dipinjam',mineBusy:'Ada · sedang dipinjam',mineNone:'Tidak ada',
  inner:'15 cabang Bucheon lainnya',inner16:'Semua 16 cabang Bucheon',innerOk:k=>`${k} tempat tersedia`,
  innerNone:'Tidak ada yang tersedia',innerNoneAll:'Tidak dimiliki di mana pun',nation:'Perpustakaan se-nasional',nationFound:k=>`ditemukan di ${k}`,
  tier:{0:['Tersedia','Pakai sekarang','Ada di perpustakaan langganan Anda','Panduan kunjungan','Gratis','Hari ini'],
        1:['Langkah 2','Pinjam antar-cabang Bucheon','Antara 16 cabang Bucheon','Ajukan pinjam antar-cabang','Gratis','1 hari kerja'],
        2:['Langkah 3','Chaekbada (nasional)','Nasional · daftar terpisah & persetujuan pustakawan','Minta panduan Chaekbada','Berbayar','5–7 hari'],
-       3:['Pesan','Antre pesan di kota','Ada di Bucheon · semua sedang dipinjam','Pesan buku','Gratis','Saat dikembalikan']},
+       3:['Pesan','Antre pesan di kota','Ada di Bucheon · semua sedang dipinjam','Pesan buku','Gratis','Ajukan setelah kembali']},
  sum0:(m,k)=>`<b>Ada di Perpustakaan ${m} sekarang.</b> Tak perlu antar-cabang — langsung datang saja. <span class="s2">${k} cabang menyediakannya.</span>`,
  sum1:(m,k)=>`<b>Perpustakaan ${m} sedang tidak bisa</b>, tapi <b>${k} cabang</b> bisa meminjamkan dan mengirimkannya ke ${m}.`,
  sum2:k=>`Tidak ada di Bucheon, tapi <b>ditemukan di ${k} perpustakaan nasional</b>. Chaekbada perlu daftar terpisah dan persetujuan pustakawan, jadi kami memandu alih-alih mengajukan untuk Anda.`,
- sum3:(m,k)=>`Ada di <b>${k} cabang</b> Bucheon, tapi semua sedang dipinjam. Pesan sekarang, begitu dikembalikan akan dikirim ke <b>Perpustakaan ${m}</b>.`,
+ sum3:(m,k)=>`Ada di <b>${k} cabang</b> Bucheon, tapi semua sedang dipinjam. Jika memesan dulu, Anda bisa mengajukan agar buku dialihkan ke <b>Perpustakaan ${m}</b> lewat pinjam antar-cabang saat dikembalikan.`,
  rec:'Rekomendasi',tag0:'Pakai sekarang',tag1:'Tercepat',tag2:'Terdekat',also:'Di sini juga bisa',
  fold:n=>`Lihat ${n} cabang lain ＋`,foldC:'Tutup －',bOk:'Tersedia',bBusy:'Dipinjam',bNone:'Tidak ada',
  my:'langganan',code:'Kode perpustakaan',others:n=>`${n} cabang lain`,again:'Cari lagi',
  caution:'Layar demo. Tidak ada permintaan sungguhan.',
  srcR:d=>`Data nyata Data4Library · ditanya ${d} · lengkap 16 cabang<br><span class="s2">Status pinjam per <b>hari sebelumnya</b> (spek API)</span>`,
- srcD:'Adegan contoh · alur panduan bila buku tidak ada di Bucheon (bisa berbeda dari koleksi nyata buku ini)',
+ srcD:'Adegan contoh · alur panduan bila buku tidak ada di Bucheon (bisa berbeda dari koleksi nyata buku ini)',exSay:'Ini adegan contoh, bisa berbeda dari koleksi nyata buku ini.',
  rule:m=>`Sesuai aturan, <b>tidak bisa mengajukan bila Perpustakaan ${m} memiliki bukunya.</b> Sudah kami saring.`,
  ax:['Pintu sesuai kondisi pengguna · rancangan lanjutan','🎧 Format alternatif — buku audio·braille·huruf besar','🚚 Antar ke rumah Chaeknarae — bagi yang sulit bepergian','📞 Mode telepon — semua lewat satu panggilan','🌏 Suara 10 bahasa <b>(berfungsi)</b>'],
- shT:'Ajukan pinjam antar-cabang?',shP:'Akan diterima sebagai berikut',
+ shT:'Ajukan pinjam antar-cabang?',shP:'Ini demo, permintaan tidak benar-benar diajukan',
  kBook:'Buku',kMode:'Metode',kFrom:'Perpustakaan peminjam',kTo:'Tempat ambil',kTime:'Perkiraan waktu',
  kRecv:'Cara ambil',recvV:m=>`Datang ke Perpustakaan ${m}`,recvS:'Difabel dapat memilih antar ke rumah (lanjutan)',
  kPath:'Jalur pemrosesan',pathV:'Konektor sistem perpustakaan (MCP)',pathS:'Dapat dipakai ulang perpustakaan bersistem sama',
  kUser:'Pemohon',user:'Hong ○○ · perangkat terdaftar',yes:'Ya, ajukan',no:'Batal',
  dT:'Permintaan diterima',
   d1:(md,l,m)=>`Diajukan via <b>${md}</b>.<br>Buku sedang dipindah dari <b>${l}</b> ke <b>Perpustakaan ${m}</b>.<br>Kami SMS saat tiba.`,
- innerBusy:k=>`ada di ${k} · semua dipinjam`,tag3:'Menunggu dikembalikan',shT2:'Minta panduan Chaekbada?',shT3:'Pesan buku ini?',yes2:'Ya, pandu saya',kProc:'Langkah',procV:'Daftar Chaekbada → persetujuan pustakawan → bayar ongkir',procS:'PP 5.800 won · gratis untuk penyandang disabilitas · sistem terpisah, jadi kami memandu saja',kHold:'Batas ambil',holdV:'Dalam 3 hari, termasuk hari tiba',holdS:'Tidak diambil tepat waktu → dikembalikan otomatis, permintaan diblokir 7 hari',kCancel:'Batal',cancelV:'Hanya saat status “diterima” · sudah dikirim, hubungi perpustakaan',didT:'Yang Chaekiji lakukan untuk Anda',didV:'Transkrip → identifikasi buku → cek 16 cabang → tinjau 7 aturan → diterima · Anda: satu kalimat, satu ketukan',kNext:'Langkah berikut',nextV:'Ikuti SMS: daftar Chaekbada → perpustakaan menyetujui',d2:m=>`Cara mengajukan lewat Chaekbada sudah kami SMS.<br><b>Perpustakaan ${m}</b> akan membantu pendaftaran dan persetujuan.`,d3:(l,m)=>`Pesanan diterima.<br>Saat buku di <b>${l}</b> dikembalikan, otomatis menjadi pinjam antar-cabang ke <b>Perpustakaan ${m}</b>.<br>Kami SMS saat tiba.`,
+ innerBusy:k=>`ada di ${k} · semua dipinjam`,tag3:'Menunggu dikembalikan',shT2:'Minta panduan Chaekbada?',shT3:'Pesan buku ini?',yes2:'Ya, pandu saya',kProc:'Langkah',procV:'Daftar Chaekbada → persetujuan pustakawan → bayar ongkir',procS:'PP 5.800 won · gratis untuk penyandang disabilitas · sistem terpisah, jadi kami memandu saja',kHold:'Batas ambil',holdV:'Dalam 3 hari, termasuk hari tiba',holdS:'Tidak diambil tepat waktu → dikembalikan otomatis, permintaan diblokir 7 hari',kCancel:'Batal',cancelV:'Hanya saat status “diterima” · sudah dikirim, hubungi perpustakaan',didT:'Yang Chaekiji lakukan untuk Anda',didV:'Transkrip → identifikasi buku → cek 16 cabang → tinjau aturan permintaan (batas dan keterlambatan dicek di loket) → diterima (demo) · Anda: satu kalimat, satu ketukan',kNext:'Langkah berikut',nextV:'Ikuti SMS: daftar Chaekbada → perpustakaan menyetujui',d2:m=>`Cara mengajukan lewat Chaekbada sudah kami SMS.<br><b>Perpustakaan ${m}</b> akan membantu pendaftaran dan persetujuan.`,d3:(l,m)=>`Pesanan diterima.<br>Saat buku dikembalikan, Anda bisa mengajukan peralihan ke pinjam antar-cabang untuk diambil di <b>Perpustakaan ${m}</b>.`,
  shP2:'Kami akan SMS langkah di bawah',dT2:'Panduan terkirim',didV2:'Transkrip → identifikasi buku → cek 16 cabang & nasional → tentukan jalur → kirim panduan · Anda: satu kalimat, satu ketukan',
  kArr:'Perkiraan tiba',kNum:'No. penerimaan',home:'Kembali ke awal' },
 };
@@ -2214,7 +2228,7 @@ function run(text, live){
     if(hit < 0){
       const code0 = Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko';
       const P0 = (typeof PHONE !== 'undefined' && PHONE[code0]) ? PHONE[code0] : null;
-      const msg = P0 ? P0.unk2 : '찾지 못했어요. 예를 들어 나미야 잡화점의 기적, 이렇게 말씀해 주세요.';
+      const msg = P0 ? P0.unk2 : '시연 화면은 예시 5권만 찾을 수 있어요. 나미야 잡화점의 기적, 소년이 온다, 불편한 편의점, 설민석의 한국사 대모험, 지구 끝의 온실 가운데 하나를 말씀해 주세요.';
       const esc = x => String(x).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
       show('s-idle'); micNote(`“${esc(text)}” — ${esc(msg)}`, true); if(TTS_ON) say(msg);
       return;
@@ -2230,7 +2244,9 @@ function run(text, live){
     const q = (CHIPS_L[code] && CHIPS_L[code].c[cur]) ? CHIPS_L[code].c[cur][0] : c.heard;
     heard = q.replace(/<[^>]+>/g,'');
   }
-  const fixHtml = (code === 'ko') ? c.fix : u.fix(c.book.t);
+  /* v1.12.7: 말하거나 입력해 찾았으면 들은 말을 그대로 인용한다(예시 단추·바코드는 예시 문장 그대로) */
+  const escH = x => String(x).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+  const fixHtml = live ? u.fixHeard(escH(text), c.book.t) : (code === 'ko') ? c.fix : u.fix(c.book.t);
 
   if(SAY_ACTIVE) stopSay();                 /* v1.9: 환영 인사 등 앞선 낭독이 남아 있으면 끊는다 */
   show('s-work');
@@ -2259,7 +2275,7 @@ function run(text, live){
   /* 음성 안내가 켜져 있으면 탐색 줄도 귀가 따라올 속도로 흐르게 한다 */
   const ROW = TTS_ON ? 1150 : 750;
   const midTx = L.m ? L.m.mid(c.book.t)
-                    : `${c.book.t}로 이해했습니다. 가까운 곳부터 확인하고 있습니다.`;
+                    : `${c.book.t}${ro(c.book.t)} 이해했습니다. 가까운 곳부터 확인하고 있습니다.`;   /* v1.12.7: 받침에 맞춰 로/으로 */
 
   const stepScan = () => relayP.then(() => {
     if(scene !== SCENE) return;
@@ -2335,7 +2351,7 @@ function result(){
   const tag = t===0 ? u.tag0 : (t===1 ? u.tag1 : t===3 ? u.tag3 : u.tag2);
   h += `<div class="lib best">
       <span class="pick">${tag}</span>
-      <div class="r1"><div class="nm">${btName}</div><span class="badge b-ok">${u.bOk}</span></div>
+      <div class="r1"><div class="nm">${btName}</div><span class="badge ${bt.s === 'busy' ? 'b-busy' : bt.s === 'none' ? 'b-none' : 'b-ok'}">${bt.s === 'busy' ? u.bBusy : bt.s === 'none' ? u.bNone : u.bOk}</span></div>
       <div class="r2">${bt.loc ? bt.loc : ''}${bt.note ? (bt.loc?'<br>':'')+bt.note : ''}</div>
     </div>
 
@@ -2396,17 +2412,19 @@ function result(){
     this.innerHTML = on ? u.foldC : u.fold(foldN);
   };
   {
-    if(L.m){ say(t === 0 ? G_().res(c.book.t, btName) : L.m.res(c.book.t, btName)); }
+    const exSay = c.real ? '' : u.exSay + ' ';                       /* v1.12.7: 예시 장면(③)은 음성에도 「예시」라고 밝힌다 */
+    const dW = dayWords(c.asof || 기준일, Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko');   /* v1.12.7: 바로 이용 음성에 이 판정이 쓴 자료의 조회일 */
+    if(L.m){ say(exSay + (t === 0 ? G_().res(c.book.t, btName, dW) : L.m.res(c.book.t, btName))); }
     else {
       const plain = document.createElement('div'); plain.innerHTML = h;
       const sum = plain.querySelector('.sumline');
       const sumTx = sum ? sum.textContent.replace(/\s+/g,' ').trim() : '';
       let guide;
-      if(t === 0)      guide = `${btName}에 있고 지금 대출 가능합니다. 상호대차 신청은 필요 없습니다. ${G_().hint}`;
+      if(t === 0)      guide = `${btName}에 있고, ${dW} 조회 자료로는 대출 가능합니다. 상호대차 신청은 필요 없습니다. ${G_().hint}`;
       else if(t === 1) guide = passReady(t) ? `추천 도서관은 ${btName}입니다. ${P_().resP}` : `추천 도서관은 ${btName}입니다. 신청하시려면 화면 가운데의 상호대차 신청 단추를 눌러 주세요.`;
       else if(t === 3) guide = `관내에 있지만 모두 대출 중입니다. 예약하시려면 화면 가운데의 예약 신청 단추를 눌러 주세요.`;
       else             guide = `책바다는 별도 가입과 사서 승인이 필요합니다. 안내를 받으시려면 화면 가운데의 단추를 눌러 주세요.`;
-      say(`검색 결과입니다. ${c.book.t}, ${c.book.a}. ${sumTx} ${guide} 다시 검색하시려면 아래쪽 다시 검색 단추를 누르시면 됩니다.`);
+      say(`${exSay}검색 결과입니다. ${c.book.t}, ${c.book.a}. ${sumTx} ${guide} 다시 검색하시려면 아래쪽 다시 검색 단추를 누르시면 됩니다.`);
     }
   }
 }
@@ -2466,7 +2484,7 @@ function finishRequest(via){
   const tail = (t === 2) ? `
     <div class="kv"><div class="k">${u.kNext}</div><div class="v">${u.nextV}</div></div>` : `
     <div class="kv"><div class="k">${u.kArr}</div><div class="v">${T[5]}</div></div>
-    <div class="kv"><div class="k">${u.kNum}</div><div class="v">${t===3 ? 'RSV' : 'ILL'}-2026-0819-0037</div></div>${(t===1||t===3) ? `
+    <div class="kv"><div class="k">${u.kNum}</div><div class="v">${t===3 ? 'RSV' : 'ILL'}-DEMO-0037</div></div>${(t===1||t===3) ? `
     <div class="kv"><div class="k">${u.kCancel}</div><div class="v">${u.cancelV}</div></div>` : ''}`;
   $('recap').innerHTML = `
     <div class="kv"><div class="k">${u.kBook}</div><div class="v">${c.book.t}</div></div>
@@ -2474,10 +2492,11 @@ function finishRequest(via){
     <div class="kv"><div class="k">${x.kAuth}</div><div class="v">${via ? P.viaAuth : PK.state==='off' ? x.pkOff : PK.state==='new' ? x.pkNew : PK.state==='ok' ? x.pkOk : PK.state==='skip' ? x.pkSkip : x.pkNone}</div></div>
     <div class="did"><b>${u.didT}</b><span>${t===2 ? u.didV2 : u.didV}${via ? ' · ' + P.viaDid : ''}</span></div>`;
   show('s-done');
-  if(L.m) say(L.m.dn());
-  else say(t === 2 ? `책바다 신청 방법을 문자로 보내드렸습니다. 가입과 승인은 도서관에서 도와드립니다.` :
-      t === 3 ? `예약이 접수되었습니다. 반납되면 상호대차로 자동 전환되어 도착하면 문자로 알려드립니다.` :
-      `${T[1]}${ro(T[1])} 신청되었습니다. 도착하면 문자로 알려드립니다. 도착한 날을 포함해 3일 안에 찾아가 주세요.`);
+  /* v1.12.7: 완료 음성 끝에 그 언어의 시연 문장(화면 doneNote와 같은 글) · 예약은 「자동 전환」이 아니라 「바꿔 신청할 수 있음」 */
+  if(L.m) say(L.m.dn() + ' ' + u.caution);
+  else say((t === 2 ? `책바다 신청 방법을 문자로 보내드렸습니다. 가입과 승인은 도서관에서 도와드립니다.` :
+      t === 3 ? `예약이 접수되었습니다. 책이 반납되면 ${내관}도서관으로 받는 상호대차로 바꿔 신청할 수 있습니다.` :
+      `${T[1]}${ro(T[1])} 신청되었습니다. 도착하면 문자로 알려드립니다. 도착한 날을 포함해 3일 안에 찾아가 주세요.`) + ' ' + u.caution);
 };
 
 /* 우리 관에 있으면: 신청 자체가 없다 — 시트를 띄우지 않고 방문 안내로 끝 (전화 모드와 같은 판정).
@@ -3179,13 +3198,13 @@ ko:{num:'부천시립도서관 책이지',demo:'시연 · 실제 전화는 연�
  r0:m=>`말씀하신 책은 자주 가시는 ${m}도서관에 지금 있습니다. 상호대차 없이 바로 빌리실 수 있어요. 자료 위치를 문자로 보내 드릴까요?`,
  r1:(m,k)=>`${m}도서관은 지금 대출 중이지만, 관내 ${k}개 도서관에서 빌릴 수 있습니다. ${m}도서관으로 받아보시겠어요? 무료이고 평일에는 다음 날 도착합니다.`,
  r2:k=>`부천 안에는 없고 전국 ${k}개 도서관에 있습니다. 책바다는 별도 가입과 사서 승인이 필요해서 전화로는 신청을 대신할 수 없어요. 안내 문자를 보내 드릴까요?`,
- r3:(m,k)=>`관내 ${k}곳이 갖고 있지만 지금은 모두 대출 중입니다. 예약을 걸어 두면 반납되는 대로 ${m}도서관으로 보내 드릴까요?`,
- ask:'예, 아니오로 말씀해 주세요.',askAgain:'죄송해요, 잘 못 들었어요. 예 또는 아니오로 말씀해 주세요.',
- unk:'잘 못 들었어요. 책 제목이나 지은이를 다시 말씀해 주세요.',unk2:'찾지 못했어요. 예를 들어 나미야 잡화점의 기적, 이렇게 말씀해 주세요.',
+ r3:(m,k)=>`관내 ${k}곳이 갖고 있지만 지금은 모두 대출 중입니다. 먼저 예약해 두시면 책이 반납될 때 ${m}도서관으로 받는 상호대차로 바꿔 신청할 수 있습니다. 예약해 드릴까요?`,
+ ask:'예, 아니오로 말씀해 주세요.',asofSay:d=>`${d} 조회한 자료로 안내합니다.`,askAgain:'죄송해요, 잘 못 들었어요. 예 또는 아니오로 말씀해 주세요.',
+ unk:'잘 못 들었어요. 책 제목이나 지은이를 다시 말씀해 주세요.',unk2:'시연 화면은 예시 5권만 찾을 수 있어요. 나미야 잡화점의 기적, 소년이 온다, 불편한 편의점, 설민석의 한국사 대모험, 지구 끝의 온실 가운데 하나를 말씀해 주세요.',
  y0:'자료 위치를 문자로 보내 드렸습니다.',
- y1:m=>`접수됐습니다. 도착하면 문자로 알려 드릴게요. 도착 후 3일 안에 ${m}도서관에서 찾아가시면 되고, 취소는 이송 전까지 이 번호로 다시 전화 주세요.`,
+ y1:m=>`접수됐습니다. 도착하면 문자로 알려 드릴게요. 도착한 날을 포함해 3일 안에 ${m}도서관에서 찾아가시면 되고, 취소는 이송 전까지 이 번호로 다시 전화 주세요.`,
  y2:'책바다 안내 문자를 보내 드렸습니다. 필요하시면 창구에서 사서가 도와드립니다.',
- y3:m=>`예약을 접수했습니다. 반납되면 ${m}도서관으로 옮겨 드리고 문자로 알려 드릴게요.`,
+ y3:m=>`예약을 접수했습니다. 책이 반납되면 ${m}도서관으로 받는 상호대차로 바꿔 신청할 수 있습니다.`,
  no:'알겠습니다. 신청하지 않았습니다.',bye:'이용해 주셔서 감사합니다. 안녕히 계세요.',
  did0:'말을 글로 옮김 → 무슨 책인지 확정 → 자주 가는 도서관 확인 → 규정상 신청 불필요 판정 → 위치 안내 · 이용자는 말 한마디, 예 한 번',
  yes:'예',noBtn:'아니오',typePh:'말하는 대신 입력',send:'보내기',hang:'끊기',again:'다시 걸기'},
@@ -3196,13 +3215,13 @@ en:{num:'Bucheon City Library · Chaekiji',demo:'Demo · no real call is placed'
  r0:m=>`That book is available right now at your usual library, ${m}. You can borrow it directly, no interlibrary request needed. Shall I text you where it is?`,
  r1:(m,k)=>`${m} Library has it out on loan, but ${k} libraries in Bucheon can lend it. Shall I have it sent to ${m} Library? It is free and arrives the next working day.`,
  r2:k=>`It is not held in Bucheon, but ${k} libraries nationwide have it. Chaekbada needs a separate sign-up and librarian approval, so I cannot request it by phone. Shall I text you the guidance?`,
- r3:(m,k)=>`${k} libraries in Bucheon hold it, but every copy is out. Shall I place a hold and send it to ${m} Library as soon as it is returned?`,
- ask:'Please say yes or no.',askAgain:'Sorry, I did not catch that. Please say yes or no.',
- unk:'I did not catch that. Please say the title or the author again.',unk2:'I could not find it. For example, say: The Miracles of the Namiya General Store.',
+ r3:(m,k)=>`${k} libraries in Bucheon hold it, but every copy is out. If you place a hold first, you can ask to switch it to an interlibrary loan to ${m} Library when it is returned. Shall I place a hold?`,
+ ask:'Please say yes or no.',asofSay:d=>`This is based on data checked on ${d}.`,askAgain:'Sorry, I did not catch that. Please say yes or no.',
+ unk:'I did not catch that. Please say the title or the author again.',unk2:'This demo can only find its 5 sample books. For example, say: The Miracles of the Namiya General Store.',
  y0:'I have texted you the shelf location.',
- y1:m=>`Done. I will text you when it arrives. Pick it up at ${m} Library within 3 days of arrival; to cancel before transfer, call this number again.`,
+ y1:m=>`Done. I will text you when it arrives. Pick it up at ${m} Library within 3 days, counting the arrival day; to cancel before transfer, call this number again.`,
  y2:'I have texted you the Chaekbada guidance. A librarian can help you at the desk.',
- y3:m=>`Hold placed. When it is returned I will send it to ${m} Library and text you.`,
+ y3:m=>`Hold placed. When it is returned, you can ask to switch it to an interlibrary loan to ${m} Library.`,
  no:'Understood. Nothing was requested.',bye:'Thank you for calling. Goodbye.',
  did0:'Speech to text → book identified → usual library checked → rule: no request needed → location sent · you said one sentence and one yes',
  yes:'Yes',noBtn:'No',typePh:'Type instead of speaking',send:'Send',hang:'Hang up',again:'Call again'},
@@ -3213,13 +3232,13 @@ zh:{num:'富川市立图书馆 책이지',demo:'演示 · 不会真正拨打电�
  r0:m=>`这本书现在就在您常去的${m}图书馆。无需馆际互借，可直接借阅。要把位置发短信给您吗？`,
  r1:(m,k)=>`${m}图书馆已借出，但富川市内有${k}个图书馆可以借。要送到${m}图书馆吗？免费，工作日次日到馆。`,
  r2:k=>`富川市内没有，全国有${k}个图书馆有。책바다需要另行注册和馆员审核，电话无法代为申请。要发送指引短信吗？`,
- r3:(m,k)=>`市内有${k}个馆收藏，但目前全部借出。要预约吗？归还后会送到${m}图书馆。`,
- ask:'请回答“是”或“不是”。',askAgain:'抱歉没听清，请说“是”或“不是”。',
- unk:'没听清，请再说一次书名或作者。',unk2:'没有找到。例如可以说：解忧杂货店。',
+ r3:(m,k)=>`市内有${k}个馆收藏，但目前全部借出。先预约的话，图书归还时可以申请改为馆际互借，在${m}图书馆领取。要帮您预约吗？`,
+ ask:'请回答“是”或“不是”。',asofSay:d=>`以下按${d}查询的数据为您说明。`,askAgain:'抱歉没听清，请说“是”或“不是”。',
+ unk:'没听清，请再说一次书名或作者。',unk2:'演示版只能查找5本示例图书。例如可以说：解忧杂货店。',
  y0:'已把位置发短信给您。',
- y1:m=>`已受理。到馆后会短信通知您，请在到馆后3天内到${m}图书馆领取；如需在转运前取消，请再拨打此号码。`,
+ y1:m=>`已受理。到馆后会短信通知您，请在到馆当天起3天内到${m}图书馆领取；如需在转运前取消，请再拨打此号码。`,
  y2:'已发送책바다指引短信，需要时柜台馆员会协助您。',
- y3:m=>`预约已受理。归还后会送到${m}图书馆并短信通知您。`,
+ y3:m=>`预约已受理。图书归还后，可以申请改为馆际互借，在${m}图书馆领取。`,
  no:'好的，未申请。',bye:'感谢您的来电，再见。',
  did0:'语音转文字 → 确定书目 → 确认常去图书馆 → 判定无需申请 → 发送位置 · 您只说了一句话和一个“是”',
  yes:'是',noBtn:'不是',typePh:'不方便说话时可输入',send:'发送',hang:'挂断',again:'再次拨打'},
@@ -3230,13 +3249,13 @@ ja:{num:'富川市立図書館 책이지',demo:'デモ · 実際の電話はか�
  r0:m=>`その本はいつもの${m}図書館に今あります。相互貸借なしでそのまま借りられます。場所をメッセージで送りましょうか。`,
  r1:(m,k)=>`${m}図書館は貸出中ですが、市内${k}館で借りられます。${m}図書館で受け取りますか。無料で、平日なら翌日に届きます。`,
  r2:k=>`富川市内にはなく、全国${k}館にあります。책바다は別途登録と司書の承認が必要なため、電話では代わりに申し込めません。案内をメッセージで送りましょうか。`,
- r3:(m,k)=>`市内${k}館が所蔵していますが、今はすべて貸出中です。予約しておいて、返却され次第${m}図書館へ送りましょうか。`,
- ask:'「はい」か「いいえ」でお答えください。',askAgain:'すみません、聞き取れませんでした。「はい」か「いいえ」でお答えください。',
- unk:'聞き取れませんでした。書名か著者名をもう一度お話しください。',unk2:'見つかりませんでした。例えば「ナミヤ雑貨店の奇蹟」のようにお話しください。',
+ r3:(m,k)=>`市内${k}館が所蔵していますが、今はすべて貸出中です。先に予約しておけば、返却されたときに相互貸借に切り替えて${m}図書館で受け取る申請ができます。予約しましょうか。`,
+ ask:'「はい」か「いいえ」でお答えください。',asofSay:d=>`${d}に照会したデータでご案内します。`,askAgain:'すみません、聞き取れませんでした。「はい」か「いいえ」でお答えください。',
+ unk:'聞き取れませんでした。書名か著者名をもう一度お話しください。',unk2:'デモでは例の5冊しか探せません。例えば「ナミヤ雑貨店の奇蹟」のようにお話しください。',
  y0:'場所をメッセージで送りました。',
- y1:m=>`受け付けました。到着したらメッセージでお知らせします。到着後3日以内に${m}図書館でお受け取りください。移送前の取消はこの番号にもう一度お電話ください。`,
+ y1:m=>`受け付けました。到着したらメッセージでお知らせします。到着日を含め3日以内に${m}図書館でお受け取りください。移送前の取消はこの番号にもう一度お電話ください。`,
  y2:'책바다の案内をメッセージで送りました。必要ならカウンターで司書がお手伝いします。',
- y3:m=>`予約を受け付けました。返却され次第${m}図書館へ送り、メッセージでお知らせします。`,
+ y3:m=>`予約を受け付けました。返却されたら、相互貸借に切り替えて${m}図書館で受け取る申請ができます。`,
  no:'承知しました。申し込みはしていません。',bye:'ご利用ありがとうございました。失礼します。',
  did0:'音声を文字に → 本を特定 → いつもの図書館を確認 → 規定上申請不要と判定 → 場所を案内 · 利用者は一言と「はい」一回',
  yes:'はい',noBtn:'いいえ',typePh:'話す代わりに入力',send:'送信',hang:'切る',again:'もう一度かける'},
@@ -3247,13 +3266,13 @@ vi:{num:'Thư viện TP Bucheon · Chaekiji',demo:'Demo · không thực hiện 
  r0:m=>`Sách này hiện có tại thư viện ${m} bạn hay đến. Bạn có thể mượn ngay, không cần mượn liên thư viện. Tôi nhắn vị trí sách cho bạn nhé?`,
  r1:(m,k)=>`Thư viện ${m} đã cho mượn, nhưng ${k} thư viện trong Bucheon có thể cho mượn. Gửi về thư viện ${m} nhé? Miễn phí, đến vào ngày làm việc tiếp theo.`,
  r2:k=>`Trong Bucheon không có, nhưng ${k} thư viện toàn quốc có. Chaekbada cần đăng ký riêng và thủ thư phê duyệt nên tôi không thể đăng ký hộ qua điện thoại. Tôi nhắn hướng dẫn cho bạn nhé?`,
- r3:(m,k)=>`${k} thư viện trong Bucheon có sách nhưng tất cả đang được mượn. Đặt trước và gửi về thư viện ${m} ngay khi sách được trả nhé?`,
- ask:'Bạn trả lời có hoặc không nhé.',askAgain:'Xin lỗi, tôi chưa nghe rõ. Bạn nói có hoặc không nhé.',
- unk:'Tôi chưa nghe rõ. Bạn nói lại tên sách hoặc tác giả nhé.',unk2:'Không tìm thấy. Ví dụ: Điều kỳ diệu của tiệm tạp hóa Namiya.',
+ r3:(m,k)=>`${k} thư viện trong Bucheon có sách nhưng tất cả đang được mượn. Nếu đặt trước, khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại thư viện ${m}. Tôi đặt trước giúp bạn nhé?`,
+ ask:'Bạn trả lời có hoặc không nhé.',asofSay:d=>`Thông tin sau theo dữ liệu tra cứu ${d}.`,askAgain:'Xin lỗi, tôi chưa nghe rõ. Bạn nói có hoặc không nhé.',
+ unk:'Tôi chưa nghe rõ. Bạn nói lại tên sách hoặc tác giả nhé.',unk2:'Bản demo chỉ tìm được 5 cuốn sách mẫu. Ví dụ: Điều kỳ diệu của tiệm tạp hóa Namiya.',
  y0:'Tôi đã nhắn vị trí sách cho bạn.',
- y1:m=>`Đã tiếp nhận. Khi sách đến tôi sẽ nhắn tin. Bạn nhận tại thư viện ${m} trong 3 ngày sau khi sách đến; muốn hủy trước khi chuyển, gọi lại số này.`,
+ y1:m=>`Đã tiếp nhận. Khi sách đến tôi sẽ nhắn tin. Bạn nhận tại thư viện ${m} trong 3 ngày, tính cả ngày sách đến; muốn hủy trước khi chuyển, gọi lại số này.`,
  y2:'Đã nhắn hướng dẫn Chaekbada. Thủ thư tại quầy có thể hỗ trợ bạn.',
- y3:m=>`Đã đặt trước. Khi sách được trả, tôi sẽ chuyển về thư viện ${m} và nhắn tin.`,
+ y3:m=>`Đã đặt trước. Khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại thư viện ${m}.`,
  no:'Đã hiểu. Không đăng ký gì cả.',bye:'Cảm ơn bạn đã gọi. Tạm biệt.',
  did0:'Chuyển giọng nói thành chữ → xác định sách → kiểm tra thư viện quen → xét quy định: không cần đăng ký → nhắn vị trí · bạn chỉ nói một câu và một lần “có”',
  yes:'Có',noBtn:'Không',typePh:'Nhập thay vì nói',send:'Gửi',hang:'Cúp máy',again:'Gọi lại'},
@@ -3264,13 +3283,13 @@ th:{num:'ห้องสมุดเมืองบูชอน · Chaekiji',dem
  r0:m=>`หนังสือเล่มนี้มีอยู่ที่ห้องสมุด ${m} ที่คุณไปประจำ ยืมได้เลยโดยไม่ต้องขอยืมข้ามห้องสมุด ให้ส่งตำแหน่งหนังสือทางข้อความไหมคะ`,
  r1:(m,k)=>`ห้องสมุด ${m} ถูกยืมอยู่ แต่มี ${k} แห่งในบูชอนที่ยืมได้ ให้ส่งมาที่ห้องสมุด ${m} ไหมคะ ฟรีและถึงในวันทำการถัดไป`,
  r2:k=>`ในบูชอนไม่มี แต่มีที่ ${k} แห่งทั่วประเทศ Chaekbada ต้องสมัครแยกและให้บรรณารักษ์อนุมัติ จึงขอแทนทางโทรศัพท์ไม่ได้ ให้ส่งคำแนะนำทางข้อความไหมคะ`,
- r3:(m,k)=>`มี ${k} แห่งในบูชอนแต่ถูกยืมหมด ให้จองไว้แล้วส่งมาที่ห้องสมุด ${m} ทันทีที่ถูกคืนไหมคะ`,
- ask:'กรุณาตอบว่า ใช่ หรือ ไม่',askAgain:'ขอโทษค่ะ ไม่ได้ยิน กรุณาตอบว่า ใช่ หรือ ไม่',
- unk:'ไม่ได้ยินค่ะ กรุณาบอกชื่อหนังสือหรือผู้แต่งอีกครั้ง',unk2:'ไม่พบค่ะ ลองพูดเช่น ปาฏิหาริย์ร้านชำของคุณนามิยะ',
+ r3:(m,k)=>`มี ${k} แห่งในบูชอนแต่ถูกยืมหมด ถ้าจองไว้ก่อน เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามห้องสมุดเพื่อรับที่ห้องสมุด ${m} ได้ ให้จองไว้ไหมคะ`,
+ ask:'กรุณาตอบว่า ใช่ หรือ ไม่',asofSay:d=>`แจ้งตามข้อมูลที่ตรวจเมื่อ ${d} ค่ะ`,askAgain:'ขอโทษค่ะ ไม่ได้ยิน กรุณาตอบว่า ใช่ หรือ ไม่',
+ unk:'ไม่ได้ยินค่ะ กรุณาบอกชื่อหนังสือหรือผู้แต่งอีกครั้ง',unk2:'เดโมนี้ค้นได้เฉพาะหนังสือตัวอย่าง 5 เล่มค่ะ ลองพูดเช่น ปาฏิหาริย์ร้านชำของคุณนามิยะ',
  y0:'ส่งตำแหน่งหนังสือทางข้อความแล้วค่ะ',
- y1:m=>`รับเรื่องแล้วค่ะ เมื่อหนังสือมาถึงจะส่งข้อความแจ้ง กรุณารับที่ห้องสมุด ${m} ภายใน 3 วันหลังมาถึง หากต้องการยกเลิกก่อนจัดส่ง โทรมาที่หมายเลขนี้อีกครั้ง`,
+ y1:m=>`รับเรื่องแล้วค่ะ เมื่อหนังสือมาถึงจะส่งข้อความแจ้ง กรุณารับที่ห้องสมุด ${m} ภายใน 3 วัน นับรวมวันที่ถึง หากต้องการยกเลิกก่อนจัดส่ง โทรมาที่หมายเลขนี้อีกครั้ง`,
  y2:'ส่งคำแนะนำ Chaekbada ทางข้อความแล้วค่ะ บรรณารักษ์ที่เคาน์เตอร์ช่วยได้',
- y3:m=>`จองแล้วค่ะ เมื่อถูกคืนจะส่งมาที่ห้องสมุด ${m} และแจ้งทางข้อความ`,
+ y3:m=>`จองแล้วค่ะ เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามห้องสมุดเพื่อรับที่ห้องสมุด ${m} ได้ค่ะ`,
  no:'รับทราบค่ะ ไม่ได้ทำรายการ',bye:'ขอบคุณที่ใช้บริการค่ะ สวัสดีค่ะ',
  did0:'แปลงเสียงเป็นข้อความ → ระบุหนังสือ → ตรวจห้องสมุดประจำ → ตัดสินตามกฎว่าไม่ต้องขอ → แจ้งตำแหน่ง · คุณพูดแค่ประโยคเดียวและตอบใช่ครั้งเดียว',
  yes:'ใช่',noBtn:'ไม่',typePh:'พิมพ์แทนการพูด',send:'ส่ง',hang:'วางสาย',again:'โทรอีกครั้ง'},
@@ -3281,13 +3300,13 @@ ru:{num:'Библиотека Пучхона · Chaekiji',demo:'Демо · на
  r0:m=>`Эта книга сейчас есть в вашей библиотеке ${m}. Можно взять сразу, без межбиблиотечного запроса. Прислать вам место на полке сообщением?`,
  r1:(m,k)=>`В библиотеке ${m} книга на руках, но её могут выдать ${k} библиотек Пучхона. Доставить в библиотеку ${m}? Бесплатно, доставим на следующий рабочий день.`,
  r2:k=>`В Пучхоне книги нет, но она есть в ${k} библиотеках страны. Для Chaekbada нужна отдельная регистрация и одобрение библиотекаря, поэтому по телефону оформить нельзя. Прислать инструкцию сообщением?`,
- r3:(m,k)=>`Книга есть в ${k} библиотеках Пучхона, но все экземпляры выданы. Поставить в очередь и доставить в библиотеку ${m}, как только вернут?`,
- ask:'Скажите, пожалуйста, да или нет.',askAgain:'Извините, не расслышал. Скажите да или нет.',
- unk:'Не расслышал. Повторите название или автора.',unk2:'Не нашёл. Например, скажите: Чудеса магазинчика Намия.',
+ r3:(m,k)=>`Книга есть в ${k} библиотеках Пучхона, но все экземпляры выданы. Если забронировать заранее, после возврата книги бронь можно переоформить на межбиблиотечный заказ с получением в библиотеке ${m}. Забронировать?`,
+ ask:'Скажите, пожалуйста, да или нет.',asofSay:d=>`Сообщаю по данным на ${d}.`,askAgain:'Извините, не расслышал. Скажите да или нет.',
+ unk:'Не расслышал. Повторите название или автора.',unk2:'Демо находит только 5 книг-примеров. Например, скажите: Чудеса магазинчика Намия.',
  y0:'Я отправил место на полке сообщением.',
- y1:m=>`Принято. Когда книга придёт, пришлю сообщение. Заберите её в библиотеке ${m} в течение 3 дней; чтобы отменить до отправки, позвоните на этот номер снова.`,
+ y1:m=>`Принято. Когда книга придёт, пришлю сообщение. Заберите её в библиотеке ${m} в течение 3 дней, включая день прибытия; чтобы отменить до отправки, позвоните на этот номер снова.`,
  y2:'Инструкция по Chaekbada отправлена сообщением. Библиотекарь поможет вам на стойке.',
- y3:m=>`Очередь оформлена. После возврата отправлю книгу в библиотеку ${m} и пришлю сообщение.`,
+ y3:m=>`Очередь оформлена. После возврата книги бронь можно переоформить на межбиблиотечный заказ с получением в библиотеке ${m}.`,
  no:'Понял. Ничего не оформлено.',bye:'Спасибо за звонок. До свидания.',
  did0:'Речь в текст → книга определена → проверена ваша библиотека → по правилам запрос не нужен → место отправлено · вы сказали одну фразу и одно «да»',
  yes:'Да',noBtn:'Нет',typePh:'Ввести текст вместо речи',send:'Отправить',hang:'Завершить',again:'Позвонить снова'},
@@ -3298,13 +3317,13 @@ mn:{num:'Бүчон хотын номын сан · Chaekiji',demo:'Демо · 
  r0:m=>`Энэ ном таны байнга очдог ${m} номын санд одоо байна. Хоорондын зээлгүйгээр шууд авч болно. Байршлыг мессежээр илгээх үү?`,
  r1:(m,k)=>`${m} номын санд зээлэгдсэн ч Бүчоны ${k} номын сангаас авч болно. ${m} номын сан руу хүргүүлэх үү? Үнэгүй, дараагийн ажлын өдөр ирнэ.`,
  r2:k=>`Бүчонд байхгүй, улсын хэмжээнд ${k} номын санд байна. Chaekbada-д тусдаа бүртгэл, номын санчийн зөвшөөрөл хэрэгтэй тул утсаар оронд нь захиалж чадахгүй. Зааврыг мессежээр илгээх үү?`,
- r3:(m,k)=>`Бүчоны ${k} номын санд байгаа ч бүгд зээлэгдсэн. Захиалга үлдээж, буцаж ирмэгц ${m} номын сан руу хүргүүлэх үү?`,
- ask:'Тийм эсвэл үгүй гэж хэлнэ үү.',askAgain:'Уучлаарай, сонсогдсонгүй. Тийм эсвэл үгүй гэж хэлнэ үү.',
- unk:'Сонсогдсонгүй. Номын нэр эсвэл зохиолчийг дахин хэлнэ үү.',unk2:'Олдсонгүй. Жишээ нь: Намия дэлгүүрийн гайхамшиг гэж хэлнэ үү.',
+ r3:(m,k)=>`Бүчоны ${k} номын санд байгаа ч бүгд зээлэгдсэн. Эхлээд захиалж байвал ном буцаж ирэхэд ${m} номын сангаас авахаар хоорондын зээл рүү шилжүүлэх хүсэлт гаргаж болно. Захиалах уу?`,
+ ask:'Тийм эсвэл үгүй гэж хэлнэ үү.',asofSay:d=>`${d}-ны өгөгдлөөр хэлье.`,askAgain:'Уучлаарай, сонсогдсонгүй. Тийм эсвэл үгүй гэж хэлнэ үү.',
+ unk:'Сонсогдсонгүй. Номын нэр эсвэл зохиолчийг дахин хэлнэ үү.',unk2:'Жишээ хувилбар зөвхөн 5 жишээ ном хайж чадна. Жишээ нь: Намия дэлгүүрийн гайхамшиг гэж хэлнэ үү.',
  y0:'Байршлыг мессежээр илгээлээ.',
- y1:m=>`Хүлээн авлаа. Ном ирэхэд мессеж илгээнэ. Ирснээс хойш 3 хоногийн дотор ${m} номын сангаас аваарай; шилжүүлэхээс өмнө цуцлах бол энэ дугаарт дахин залгаарай.`,
+ y1:m=>`Хүлээн авлаа. Ном ирэхэд мессеж илгээнэ. Ирсэн өдрийг оролцуулан 3 хоногийн дотор ${m} номын сангаас аваарай; шилжүүлэхээс өмнө цуцлах бол энэ дугаарт дахин залгаарай.`,
  y2:'Chaekbada-ийн зааврыг мессежээр илгээлээ. Лангуун дээр номын санч тусална.',
- y3:m=>`Захиалга бүртгэлээ. Буцаж ирмэгц ${m} номын сан руу хүргэж, мессеж илгээнэ.`,
+ y3:m=>`Захиалга бүртгэлээ. Ном буцаж ирэхэд ${m} номын сангаас авахаар хоорондын зээл рүү шилжүүлэх хүсэлт гаргаж болно.`,
  no:'Ойлголоо. Юу ч захиалаагүй.',bye:'Залгасанд баярлалаа. Баяртай.',
  did0:'Яриаг текст болгосон → номыг тодорхойлсон → байнгын номын санг шалгасан → дүрмээр хүсэлт шаардлагагүй → байршил илгээсэн · та нэг өгүүлбэр, нэг «тийм» хэлсэн',
  yes:'Тийм',noBtn:'Үгүй',typePh:'Ярихын оронд бичих',send:'Илгээх',hang:'Таслах',again:'Дахин залгах'},
@@ -3315,13 +3334,13 @@ uz:{num:'Bucheon shahar kutubxonasi · Chaekiji',demo:'Demo · haqiqiy qo‘ng�
  r0:m=>`Bu kitob hozir siz doim boradigan ${m} kutubxonasida bor. Kutubxonalararo so‘rovsiz to‘g‘ridan-to‘g‘ri olishingiz mumkin. Joyini xabar bilan yuboraymi?`,
  r1:(m,k)=>`${m} kutubxonasida kitob berilgan, lekin Bucheondagi ${k} ta kutubxona bera oladi. ${m} kutubxonasiga yetkazaymi? Bepul, keyingi ish kunida yetib keladi.`,
  r2:k=>`Bucheonda yo‘q, lekin butun mamlakat bo‘yicha ${k} ta kutubxonada bor. Chaekbada uchun alohida ro‘yxat va kutubxonachi tasdig‘i kerak, shuning uchun telefon orqali so‘rov bera olmayman. Yo‘riqnomani xabar bilan yuboraymi?`,
- r3:(m,k)=>`Bucheondagi ${k} ta kutubxonada bor, lekin hammasi berilgan. Navbatga qo‘yib, qaytarilishi bilan ${m} kutubxonasiga yuboraymi?`,
- ask:'Ha yoki yo‘q deb ayting.',askAgain:'Kechirasiz, eshitmadim. Ha yoki yo‘q deb ayting.',
- unk:'Eshitmadim. Kitob nomi yoki muallifini qayta ayting.',unk2:'Topilmadi. Masalan: Namiya do‘konining mo‘jizalari, deb ayting.',
+ r3:(m,k)=>`Bucheondagi ${k} ta kutubxonada bor, lekin hammasi berilgan. Avval band qilsangiz, kitob qaytarilganda uni ${m} kutubxonasidan olish uchun kutubxonalararo so‘rovga o‘tkazishni so‘rashingiz mumkin. Band qilaymi?`,
+ ask:'Ha yoki yo‘q deb ayting.',asofSay:d=>`${d}dagi ma’lumot bo‘yicha aytaman.`,askAgain:'Kechirasiz, eshitmadim. Ha yoki yo‘q deb ayting.',
+ unk:'Eshitmadim. Kitob nomi yoki muallifini qayta ayting.',unk2:'Namoyish faqat 5 ta namuna kitobni topa oladi. Masalan: Namiya do‘konining mo‘jizalari, deb ayting.',
  y0:'Joyini xabar bilan yubordim.',
- y1:m=>`Qabul qilindi. Kitob kelganda xabar yuboraman. Kelganidan keyin 3 kun ichida ${m} kutubxonasidan oling; yuborishdan oldin bekor qilish uchun shu raqamga qayta qo‘ng‘iroq qiling.`,
+ y1:m=>`Qabul qilindi. Kitob kelganda xabar yuboraman. Kelgan kuni bilan 3 kun ichida ${m} kutubxonasidan oling; yuborishdan oldin bekor qilish uchun shu raqamga qayta qo‘ng‘iroq qiling.`,
  y2:'Chaekbada yo‘riqnomasini xabar bilan yubordim. Kutubxonachi peshtaxtada yordam beradi.',
- y3:m=>`Navbatga qo‘yildi. Qaytarilgach ${m} kutubxonasiga yuboraman va xabar beraman.`,
+ y3:m=>`Navbatga qo‘yildi. Kitob qaytarilganda uni ${m} kutubxonasidan olish uchun kutubxonalararo so‘rovga o‘tkazishni so‘rashingiz mumkin.`,
  no:'Tushunarli. Hech narsa so‘ralmadi.',bye:'Qo‘ng‘iroq uchun rahmat. Xayr.',
  did0:'Nutq matnga → kitob aniqlandi → doimiy kutubxona tekshirildi → qoidaga ko‘ra so‘rov kerak emas → joy yuborildi · siz bir gap va bir «ha» dedingiz',
  yes:'Ha',noBtn:'Yo‘q',typePh:'Gapirish o‘rniga yozing',send:'Yuborish',hang:'Tugatish',again:'Qayta qo‘ng‘iroq'},
@@ -3332,13 +3351,13 @@ id:{num:'Perpustakaan Kota Bucheon · Chaekiji',demo:'Demo · tidak ada panggila
  r0:m=>`Buku itu sekarang tersedia di perpustakaan langganan Anda, ${m}. Bisa langsung dipinjam tanpa pinjam antarperpustakaan. Mau saya kirim lokasinya lewat SMS?`,
  r1:(m,k)=>`Di Perpustakaan ${m} sedang dipinjam, tetapi ${k} perpustakaan di Bucheon bisa meminjamkan. Mau dikirim ke Perpustakaan ${m}? Gratis, tiba pada hari kerja berikutnya.`,
  r2:k=>`Tidak ada di Bucheon, tetapi ada di ${k} perpustakaan se-Korea. Chaekbada perlu pendaftaran terpisah dan persetujuan pustakawan, jadi tidak bisa saya ajukan lewat telepon. Mau saya kirim panduannya lewat SMS?`,
- r3:(m,k)=>`${k} perpustakaan di Bucheon memilikinya, tetapi semua sedang dipinjam. Mau saya pesankan dan kirim ke Perpustakaan ${m} begitu dikembalikan?`,
- ask:'Silakan jawab ya atau tidak.',askAgain:'Maaf, kurang jelas. Silakan jawab ya atau tidak.',
- unk:'Kurang jelas. Sebutkan lagi judul atau pengarangnya.',unk2:'Tidak ditemukan. Misalnya, ucapkan: Keajaiban Toko Kelontong Namiya.',
+ r3:(m,k)=>`${k} perpustakaan di Bucheon memilikinya, tetapi semua sedang dipinjam. Jika dipesan dulu, saat buku dikembalikan Anda bisa mengajukan peralihan ke pinjam antarperpustakaan untuk diambil di Perpustakaan ${m}. Mau saya pesankan?`,
+ ask:'Silakan jawab ya atau tidak.',asofSay:d=>`Saya sampaikan menurut data per ${d}.`,askAgain:'Maaf, kurang jelas. Silakan jawab ya atau tidak.',
+ unk:'Kurang jelas. Sebutkan lagi judul atau pengarangnya.',unk2:'Demo ini hanya bisa menemukan 5 buku contoh. Misalnya, ucapkan: Keajaiban Toko Kelontong Namiya.',
  y0:'Lokasi buku sudah saya kirim lewat SMS.',
- y1:m=>`Diterima. Saat buku tiba saya kirim SMS. Ambil di Perpustakaan ${m} dalam 3 hari setelah tiba; untuk membatalkan sebelum dikirim, telepon nomor ini lagi.`,
+ y1:m=>`Diterima. Saat buku tiba saya kirim SMS. Ambil di Perpustakaan ${m} dalam 3 hari, termasuk hari tiba; untuk membatalkan sebelum dikirim, telepon nomor ini lagi.`,
  y2:'Panduan Chaekbada sudah saya kirim lewat SMS. Pustakawan di meja layanan bisa membantu.',
- y3:m=>`Pesanan diterima. Begitu dikembalikan, saya kirim ke Perpustakaan ${m} dan beri tahu lewat SMS.`,
+ y3:m=>`Pesanan diterima. Saat buku dikembalikan, Anda bisa mengajukan peralihan ke pinjam antarperpustakaan untuk diambil di Perpustakaan ${m}.`,
  no:'Baik. Tidak ada yang diajukan.',bye:'Terima kasih sudah menelepon. Sampai jumpa.',
  did0:'Suara jadi teks → buku dikenali → perpustakaan langganan dicek → aturan: tak perlu pengajuan → lokasi dikirim · Anda hanya bicara satu kalimat dan satu “ya”',
  yes:'Ya',noBtn:'Tidak',typePh:'Ketik alih-alih bicara',send:'Kirim',hang:'Tutup',again:'Telepon lagi'}
@@ -3405,6 +3424,7 @@ function phHandle(kind, text, forced){
     else if(tier===1) msg=p.r1(m, V.okN);
     else if(tier===3) msg=p.r3(m, V.libs.filter(l=>l.s==='busy').length);
     else msg=p.r2(V.okN||6);
+    if(tier!==2) msg=p.asofSay(dayWords(c.asof || 기준일, phCode()))+' '+msg;   /* v1.12.7: 이 답이 쓴 자료의 조회일(오늘 자료를 받지 않았으면 8. 18. 실측) — 자료 흐름은 그대로 */
     const full=p.auth+' '+msg+' '+p.ask;
     phBubble('a', full); phState('talk'); phSpeak(full, ()=>phListen('yn')); return;
   }

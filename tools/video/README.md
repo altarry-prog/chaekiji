@@ -3,10 +3,14 @@
 챌린지 제출용 시연영상(약 5분 이내 mp4, 자막 설명)을 **명령 두 줄로 다시 만드는** 도구입니다. 영상 편집 프로그램을 쓰지 않고, 장면을 브라우저에 차례로 띄워 그 화면을 그대로 받아 적습니다.
 
 ```sh
-sh tools/video/fetch_fonts.sh          # 처음 한 번 — 글꼴(Pretendard·D2Coding, 둘 다 OFL)
-python3 tools/video/record.py          # 녹화(약 4분 15초) → tools/video/rec/
-python3 tools/video/build_video.py     # → tools/video/out/[시연영상]_부천시_책이지_초안.mp4 · .srt · _구성표.md
+sh tools/video/fetch_fonts.sh            # 처음 한 번 — 글꼴(Pretendard·D2Coding, 둘 다 OFL)
+python3 tools/video/capture.py           # 명령 창 출력 다시 받기 — 찍는 날 새벽 자료로 상동 기준 「관내 상호대차」·「바로 이용」 책을 고름 → t1~t4.txt · t_meta.json
+python3 tools/video/make_record_clip.py  # 흐름 2 클립 — 저장소의 공개 모델 실측 기록표(server/lab/out/)를 넘겨 보는 화면 → clips/model2.webm
+python3 tools/video/record.py            # 녹화(장면마다 내레이션 길이만큼 붙잡음, --mute면 자막만) → tools/video/rec/
+python3 tools/video/build_video.py       # → tools/video/out/[시연영상]_부천시_책이지_초안.mp4(음성 해설 포함) · .srt · _구성표.md
 ```
+
+**5판(2026. 10. 26., 입상 분석 5-2)** — 첫 장면을 실제 claude.ai 화면으로 열고(창구 질문을 그대로 → 판정·안내문, 1분 안에 「전일 기준·접수는 사서가」), 흐름 2의 자리 표시를 저장소 실측 기록표 화면으로 채웠다. 내레이션은 `narration/script/*.txt`를 고쳐 이 가지에 올리면 `tts.yml`이 MeloTTS(MIT)로 장면마다 세 번 만들고 받아쓰기(faster-whisper)로 가장 또렷한 것을 골라 `narration/audio/script/`에 올린다. 파일 이름 앞 두 자리가 `record.py`의 장면 번호다. 명령 창 장면의 책 이름·관 수는 찍는 날 자료로 바뀌므로 내레이션은 말하지 않고 화면 글이 `t_meta.json` 값을 그대로 쓴다.
 
 필요한 것: Python 3.9+, `pip install playwright`(Chromium), ffmpeg. 인증키·네트워크는 필요 없습니다(글꼴 받을 때만 인터넷).
 

@@ -26,6 +26,7 @@ ap.add_argument("--out", default=os.path.join(HERE, "rec"))
 ap.add_argument("--final", action="store_true", help="「초안」 표시를 뺀다")
 ap.add_argument("--badge", default=None, help="오른쪽 위 표시 글(기본: 초안 · 오늘 날짜)")
 ap.add_argument("--port", type=int, default=8805)
+ap.add_argument("--mute", action="store_true", help="내레이션 없이(자막만)")
 A = ap.parse_args()
 KST = datetime.timezone(datetime.timedelta(hours=9))
 TODAY = datetime.datetime.now(KST)
@@ -58,6 +59,15 @@ for _ in range(50):
 
 rd = lambda n: open(os.path.join(HERE, n), encoding="utf-8").read().rstrip("\n").split("\n")
 T1, T2, T3, T4 = rd("t1.txt"), rd("t2.txt"), rd("t3.txt"), rd("t4.txt")
+META = json.load(open(os.path.join(HERE, "t_meta.json"), encoding="utf-8"))   # capture.py — 찍은 날 고른 책·판정·조회일·시험 수
+# 장면별 내레이션(tts.yml이 만든 mp3와 길이) — 파일 이름 앞 두 자리가 장면 번호
+NARR_DIR = os.path.join(HERE, "narration", "audio", "script")
+NARR, NARR_EV, NARR_LEAD = {}, [], 0.4
+try:
+    for it in json.load(open(os.path.join(NARR_DIR, "기록.json"), encoding="utf-8"))["items"]:
+        NARR[it["file"][:2]] = (it["file"], float(it["seconds"]))
+except (OSError, ValueError, KeyError):
+    pass
 CUES, MARKS, FRAMES = [], [], []
 BASE = f"http://127.0.0.1:{PORT}"
 APP_URL = BASE + "/index.html"
@@ -172,26 +182,56 @@ async def main():
             return dur
 
         await ev(f"draft({'false' if A.final else 'true'}, {json.dumps(BADGE, ensure_ascii=False)})")
-        # ── 1. 제목 ──
-        mark("1 제목", "제목 카드")
+        scene_t = {}
+
+        def scene(key, name, screen=""):
+            # 장면 시작 — 내레이션이 있으면 이 시각(+NARR_LEAD)에 그 장면 음성을 얹는다(build_video.py)
+            mark(name, screen); scene_t[key] = time.time()
+            if key in NARR and not A.mute:
+                NARR_EV.append((round(now() + NARR_LEAD, 2), NARR[key][0], NARR[key][1]))
+
+        async def hold(key, pad=0.7):
+            # 내레이션이 다 끝날 때까지 장면을 붙잡아 둔다(음성이 다음 장면으로 넘치지 않게)
+            if key not in NARR or A.mute:
+                return
+            need = NARR_LEAD + NARR[key][1] + pad - (time.time() - scene_t[key])
+            if need > 0:
+                await W(int(need * 1000))
+
+        def share(key, fracs, mins):
+            # 내레이션 길이를 장면 안의 카드들에 나눠 준다(내레이션이 없으면 mins 그대로)
+            n = NARR.get(key, (None, 0))[1] if not A.mute else 0
+            return [int(max(m, f * n) * 1000) for f, m in zip(fracs, mins)]
+
+        # ── 0. 첫 화면: claude.ai 실제 화면(창구 질문을 그대로) ──
+        m = clip_meta("claude")
+        scene("00", "0 첫 화면(claude.ai 실제 화면)", "2026. 10. 20. 크롬 실제 화면 캡처 20초 — 창구 질문을 그대로 넣고 판정·안내문이 나오기까지(기다린 약 50초는 빨리 감음)")
+        await crumb("<b>책이지</b> · 창구에서 받는 질문을 그대로")
+        if m:
+            await play_clip(m)
+        else:
+            await slot("claude.ai에서 같은 문의를 넣는\n실제 화면(20초)", "clips/claude.webm이 없어 자리 표시를 둡니다")
+            await W(6000)
+        await hold("00")
+
+        # ── 1. 제목 · 왜 ──
+        scene("01", "1 제목·왜 만들었나", "제목 카드 → 상호대차 카드 두 장(정의·부천 규모, 신청 전 세 가지 확인)")
         await crumb("")
+        w1, w2, w3 = share("01", [0.30, 0.42, 0.28], [5.5, 6.5, 5.0])
         await card("경기도 부천시 상동도서관 · 2026 공공 AI 대전환 챌린지 세션1", "책이지 — 상호대차 상담 비서",
-                   "도서관 상호대차 절차를 대신하는 AI 에이전트\n시연영상(구동안내서의 흐름 1~3 순서)", [])
-        await W(7000)
-
-        # ── 2. 왜 ──
-        mark("2 왜 만들었나", "상호대차 카드 세 장 — 정의, 부천 규모, 신청 전 세 가지 확인")
+                   "도서관 상호대차 상담을 돕는 AI 에이전트\n검색 도구가 아니라 신청 요건을 판정·안내하는 상담 비서", [])
+        await W(w1)
         await crumb("<b>책이지</b> · 왜 만들었나")
-        # [10/19 담당자 승인] 상호대차를 모르는 심사위원용 — 국립중앙도서관 정의·부천 운영실적(2025. 12.)·만족도 조사(2025)
-        await card("왜 만들었나", "상호대차 서비스", "다른 도서관의 책을 가까운 도서관에서 빌려 보는 서비스", [])
-        await W(5200)
-        await card("왜 만들었나", "부천시립도서관 44개소", "2025년 한 해 320,140권 제공 · 이용자 만족도 96.6%", [])
-        await W(5200)
+        # [10/19 담당자 승인 카드를 두 장으로 — 10/26 입상 분석 5-2] 정의·운영실적(2025. 12.)·만족도(2025. 11. 조사, 586/607)
+        await card("왜 만들었나", "상호대차 서비스 · 부천시립도서관 44개소",
+                   "다른 도서관의 책을 가까운 도서관에서 빌려 보는 서비스\n2025년 한 해 320,140권 제공 · 이용자 만족도 96.5%", [])
+        await W(w2)
         await card("왜 만들었나", "신청 전에는 세 가지 확인이 필요합니다", "자료 확인 · 소장·대출 확인 · 신청 요건 확인", [])
-        await W(6400)
+        await W(w3)
+        await hold("01")
 
-        # ── 3. 어떻게 ──
-        mark("3 어떻게 푸나", "흐름도 네 칸 — 이용자의 말, 모델, 책이지 도구(MCP), 결과")
+        # ── 2. 어떻게 ──
+        scene("02", "2 어떻게 푸나", "흐름도 네 칸 — 이용자의 말, 모델, 책이지 도구(MCP), 결과")
         await crumb("<b>책이지</b> · 어떻게 푸나")
         await ev("fhead('어떻게 푸나','말은 AI가 알아듣고, 판정은 규칙이 합니다'); bar('',''); only('fh','flow')")
         await ev("""flow([{h:'이용자의 말',d:'「나미야 잡화점의 기적 빌리고 싶어요, 상동에서 받을게요」'},
@@ -205,103 +245,101 @@ async def main():
                  "책이지 도구(MCP): 책 찾기 · 16개관 소장·대출(정보나루) · 규정 7종",
                  "결과: 판정 · 이용자 안내문 · 접수 메모(접수는 사서가)"]
         for i in range(4):
-            await ev(f"flowStep({i})"); cue(steps[i]); await W(1800)
+            await ev(f"flowStep({i})"); cue(steps[i]); await W(2000)
         await ev("only('fh','flow','bar')")
-        await bar("모델을 바꿔도 판정은 같습니다", "MCP는 AI 모델이 외부 도구를 부르는 공통 규격입니다 · 접수는 사서가 현행 시스템에서 합니다")
-        await W(8200)
+        await bar("도구를 제대로 부르면, 모델을 바꿔도 판정은 같습니다",
+                  "MCP는 AI 모델이 외부 도구를 부르는 공통 규격입니다 · 대출 상태는 정보나루 전일 기준 · 접수는 사서가 현행 시스템에서 합니다")
+        await W(5000)
+        await hold("02")
 
-        # ── 4. 흐름 1 소개 ──
-        mark("4 흐름 1 소개", "연결 방법 카드 — 세 줄")
+        # ── 3. 흐름 1 소개 ──
+        scene("03", "3 흐름 1 소개", "연결 방법 카드 — 세 줄")
         await crumb("<b>흐름 1</b> / 3 · 창구·전화 상담(주 결과물)")
         L = ["claude.ai 「사용자 정의 → 커넥터」에서 「커스텀 커넥터 추가」",
              "주소 <b>chaekiji-relay.altarry2.workers.dev/mcp</b> 입력, 인증은 「로그인 없음」",
              "새 대화에서 커넥터를 켜고, 이용자의 말을 그대로 넣습니다"]
         await card("흐름 1 · 창구·전화 상담", "claude.ai에 주소 한 줄이면\n설치 없이 씁니다", "", L)
-        await lines(L, 3100, 2200, first=1200)
+        await lines(L, 3000, 1200, first=1000)
+        await hold("03")
 
-        # ── 5. claude.ai 실제 화면(담당자 녹화) 또는 자리 표시 ──
-        m = clip_meta("claude")
-        if m:
-            mark("5 claude.ai 실제 화면", "담당자가 녹화한 claude.ai 화면(커넥터 켜기 → 문의 → 도구 호출 → 답)")
-            await play_clip(m)
-        else:
-            mark("5 자리 표시(claude.ai)", "자리 표시 카드 — claude.ai 실제 화면(30초)이 들어갈 곳")
-            await slot("claude.ai에서 같은 문의를 넣는\n실제 화면(30초)",
-                       "담당자가 10. 19. 직접 녹화해 이 자리에 넣습니다\n이어서 같은 도구를 PC에서 직접 부른 실제 결과를 보입니다")
-            await W(7000)
-
-        # ── 6. 명령 창 1: 나미야 ──
-        mark("6 명령 창 1(나미야)", "명령 창(기록 재생) — 판정·근거 → 안내문·링크 → 접수 메모를 차례로 강조")
+        # ── 5. 명령 창 1: 관내 상호대차(찍는 날 자료로 고른 책 — capture.py) ──
+        A1 = META["t1"]
+        here1 = "대출 중" if re.search(r"수령관: 상동 \(현재 대출 중\)", "\n".join(T1)) else "없음"
+        rule1 = re.search(r"규정: (\d+)건 통과 · (\d+)건 불가 · (\d+)건 창구 확인", "\n".join(T1))
+        scene("05", "5 명령 창 1(관내 상호대차)", f"명령 창(기록 재생) — {A1['title']} · 상동 → 판정·근거 → 안내문·링크 → 접수 메모를 차례로 강조")
         await crumb("<b>흐름 1</b> / 3 · 같은 도구를 PC에서 직접 부르기")
         await ev("term('명령 창 · 상담 비서 도구를 한 번 부르기(server/lab/consult_cli.py)'); only('term','bar')")
         await bar("모델 없이 도구만 불러 봅니다", "claude.ai가 부르는 것과 같은 도구(consult_request)입니다")
-        await W(1300)
+        await W(1200)
         await ev("termComment('이 PC는 중계에 닿지 않아 오늘 새벽 자료로 실행(원격 판도 이 책은 같은 자료로 답함)')")
-        await W(1000)
-        await page.evaluate("t=>termType(t,24)", 'CHAEKIJI_MODE=snapshot python lab/consult_cli.py "나미야 잡화점의 기적 빌리고 싶어요" 상동')
-        await W(500)
-        await page.evaluate("l=>termOut(l,120)", T1)
         await W(900)
+        await page.evaluate("t=>termType(t,24)", f'CHAEKIJI_MODE=snapshot python lab/consult_cli.py "{A1["utterance"]}" 상동')
+        await W(400)
+        await page.evaluate("l=>termOut(l,110)", T1)
+        await W(700)
         await ev("termFocus(['◀ 판정','◀ 근거'])")
-        await bar("판정: 관내 상호대차", "상동은 대출 중, 꿈여울 등 7곳은 대출 가능 · 정보나루 2026. 10. 16. 조회(전일 기준)")
-        await W(9000)
+        await bar(f"판정: {A1['route']}",
+                  f"상동은 {here1}, {A1['available'][0]} 등 {len(A1['available'])}곳은 대출 가능 · 정보나루 {A1['asof']} 조회(전일 기준)")
+        await W(7500)
         await ev("termFocus(['◀ 안내문','◀ 링크'])")
         await bar("이용자에게 읽어 줄 안내문", "조회일과 공식 누리집의 그 책 화면 주소가 붙습니다")
-        await W(10000)
+        await W(8000)
         await ev("termFocus(['◀ 접수 메모','   도서:','   갈래:','   수령관:','   대출 가능 관:','   근거:','   규정:','   접수:'])")
-        await bar("사서가 옮겨 적는 접수 메모", "규정 2건 통과 · 5건 창구 확인 · 접수는 창구에서 사서가 합니다")
-        await W(9500)
+        rtxt = f"규정 {rule1.group(1)}건 통과 · {rule1.group(3)}건 창구 확인" if rule1 else "규정 확인"
+        await bar("사서가 옮겨 적는 접수 메모", f"{rtxt} · 접수는 창구에서 사서가 합니다")
+        await W(6500)
+        await hold("05")
 
-        # ── 7. 명령 창 2: 소년이 온다 ──
-        mark("7 명령 창 2(바로 이용)", "명령 창(기록 재생) — 소년이 온다 · 꿈빛 → 바로 이용")
-        await ev("term('명령 창 · 받을 도서관을 바꿔서'); only('term','bar')")
+        # ── 6. 명령 창 2: 바로 이용 ──
+        A2 = META["t2"]
+        scene("06", "6 명령 창 2(바로 이용)", f"명령 창(기록 재생) — {A2['title']} · 상동 → 바로 이용")
+        await ev("term('명령 창 · 다른 책으로'); only('term','bar')")
         await bar("받을 도서관 서가에 있으면", "상호대차 대신 「바로 이용」으로 안내합니다")
-        await W(700)
-        await page.evaluate("t=>termType(t,26)", 'CHAEKIJI_MODE=snapshot python lab/consult_cli.py "소년이 온다" 꿈빛')
-        await W(400)
-        await page.evaluate("l=>termOut(l,95)", T2)
         await W(600)
+        await page.evaluate("t=>termType(t,26)", f'CHAEKIJI_MODE=snapshot python lab/consult_cli.py "{A2["utterance"]}" 상동')
+        await W(400)
+        await page.evaluate("l=>termOut(l,90)", T2)
+        await W(500)
         await ev("termFocus(['◀ 판정','   수령관:'])")
-        await W(9500)
+        await W(5500)
+        await hold("06")
 
-        # ── 8. 명령 창 3: 정보나루가 끊긴 날 ──
-        mark("8 명령 창 3(조회 불가)", "명령 창(기록 재생) — 중계를 일부러 끊고 채식주의자 → 소장 확인 불가")
+        # ── 7. 명령 창 3: 정보나루가 끊긴 날 ──
+        scene("07", "7 명령 창 3(조회 불가)", "명령 창(기록 재생) — 중계를 일부러 끊고 채식주의자 → 소장 확인 불가")
         await ev("term('명령 창 · 정보나루에 닿지 못한 날'); only('term','bar')")
         await bar("자료에 닿지 못하면 「없다」고 하지 않습니다", "「창구에서 조회」로 넘깁니다(v0.3.5에서 고침)")
-        await W(700)
+        await W(600)
         await ev("termComment('중계가 끊긴 상황을 일부러 만듦(닿지 않는 주소)')")
-        await W(800)
+        await W(700)
         await page.evaluate("t=>termType(t,22)", 'CHAEKIJI_MODE=relay CHAEKIJI_RELAY=http://127.0.0.1:9 python lab/consult_cli.py "채식주의자 있나요?" 상동')
         await W(400)
-        await page.evaluate("l=>termOut(l,130)", T3)
-        await W(600)
+        await page.evaluate("l=>termOut(l,120)", T3)
+        await W(500)
         await ev("termFocus(['◀ 판정','◀ 안내문'],120)")
-        await W(9500)
+        await W(5500)
+        await hold("07")
 
-        # ── 9. 흐름 2: 공개 모델 ──
-        mark("9 흐름 2", "코랩 카드 — 세 줄")
+        # ── 8. 흐름 2: 공개 모델 — 저장소의 실측 기록표 ──
+        scene("08", "8 흐름 2(공개 모델)", "코랩 카드 → 저장소의 공개 모델 실측 기록표(2026. 10. 18. 깃허브 액션 실행, 글은 원문 그대로)")
         await crumb("<b>흐름 2</b> / 3 · 같은 상담을 공개 모델로")
         L = ["Ollama + <b>엑사원 3.5 2.4B</b> · <b>라마 3.2 3B</b>(공고에 나온 공통기반 지원 계열)",
              "같은 지시문 · 같은 문의 5건 · 같은 도구(consult_request)",
              "기록표에 문의별 판정·걸린 시간·실패까지 그대로 남깁니다"]
-        await card("흐름 2 · 모델을 바꿔도 같은 판정", "같은 상담을 공개 모델로\n코랩 「모두 실행」 한 번", "", L)
+        await card("흐름 2 · 같은 상담을 공개 모델로", "같은 상담을 공개 모델로\n코랩 「모두 실행」 한 번", "", L)
         await app.goto(APP_URL, wait_until="load")       # 다음 장면에 쓸 시연 웹을 미리 띄워 둔다(보이지 않는 동안)
-        await lines(L, 3100, 1800, first=1100)
-        m = clip_meta("colab")
+        await lines(L, 2500, 600, first=900)
+        m = clip_meta("model2")
         if m:
-            mark("9 코랩 실제 화면", "담당자가 녹화한 코랩 실행 화면과 기록표")
             await play_clip(m)
-            await acdp.send("Page.startScreencast", {"format": "jpeg", "quality": 90, "maxWidth": 468, "maxHeight": 948, "everyNthFrame": 1})
-            await W(1200)
         else:
-            mark("9 자리 표시(코랩)", "자리 표시 카드 — 코랩 실행 화면과 기록표가 들어갈 곳")
-            await slot("코랩 실행 화면과 기록표",
-                       "10. 19. 실행 뒤 이 자리에 넣습니다\n지금까지는 모의 Ollama로 두 방식(도구 호출·JSON) 시험 6건만 통과했습니다")
-            await acdp.send("Page.startScreencast", {"format": "jpeg", "quality": 90, "maxWidth": 468, "maxHeight": 948, "everyNthFrame": 1})
-            await W(7000)
+            await slot("공개 모델 실측 기록표", "clips/model2.webm이 없습니다 — make_record_clip.py")
+            await W(5000)
+        await acdp.send("Page.startScreencast", {"format": "jpeg", "quality": 90, "maxWidth": 468, "maxHeight": 948, "everyNthFrame": 1})
+        await hold("08", pad=0.3)
+        await W(900)
 
-        # ── 10. 흐름 3: 시민 음성 화면 ──
-        mark("10 흐름 3 시작", "왼쪽 설명 + 오른쪽 휴대폰(시연 웹 실제 조작)")
+        # ── 9. 흐름 3: 시민 음성 화면 ──
+        scene("09", "9 흐름 3 시작", "왼쪽 설명 + 오른쪽 휴대폰(시연 웹 실제 조작)")
         await crumb("<b>흐름 3</b> / 3 · 시민 음성 화면(2027 시범 운영 제안)")
         await ev("side('','','',''); only('side','phone')")
         await W(1200)
@@ -334,7 +372,7 @@ async def main():
                 await tapclick(g); await W(1500)
         except Exception as e:
             print("gate skipped", e)
-        mark("10 판정", "예시 ② 누름 → 처리 단계 → 판정 화면, 아래로 굴려 다른 분관까지")
+        mark("9 판정", "예시 ② 누름 → 처리 단계 → 판정 화면, 아래로 굴려 다른 분관까지")
         await tapclick(app.locator("text=나미야 잡화점의 기적 빌리고 싶어요").first)
         await side("판정", "상동은 대출 중이라\n다른 분관에서 보내 드립니다",
                    "이 예시 단추는 2026. 8. 18. 실측 장면입니다. 직접 말하거나 입력하면 오늘 새벽 자료로 찾습니다.",
@@ -344,12 +382,12 @@ async def main():
             await scroll_to(y, 1500)
         await W(1200)
         await scroll_to(0, 1200)
-        mark("10 신청 확인", "「상호대차 신청」 → 확인 시트")
+        mark("9 신청 확인", "「상호대차 신청」 → 확인 시트")
         await tapclick(app.locator("#apply"))
         await side("신청 확인", "대출관 · 수령관 · 소요 ·\n수령 기한 · 미수령 제한",
                    "화면을 읽어 주고, 「네」 한마디나 단추 한 번으로 확인합니다.", "※ 시연이며 실제 접수로 이어지지 않습니다")
         await W(6800)
-        mark("10 접수(시연)", "「네, 신청합니다」 → 접수(시연) 화면, 「책이지가 대신 한 일」까지 굴림")
+        mark("9 접수(시연)", "「네, 신청합니다」 → 접수(시연) 화면, 「책이지가 대신 한 일」까지 굴림")
         try:
             await tapclick(app.locator("#confirm")); await W(1300)
         except Exception as e:
@@ -360,7 +398,7 @@ async def main():
         await W(3600)
         await scroll_to(150, 1600)
         await W(3400)
-        mark("10 누구나", "처음 화면 → 큰글자 → 언어 선택(베트남어)")
+        mark("9 누구나", "처음 화면 → 큰글자 → 언어 선택(베트남어)")
         await ev("cover(true)"); await W(600)
         await app.goto(APP_URL + "?r=2", wait_until="load"); await W(900)
         await ev("cover(false)"); await W(400)
@@ -385,47 +423,54 @@ async def main():
                 await tapclick(vi); await W(3800)
         except Exception as e:
             print("lang skipped", e)
-        await W(1500)
+        await W(1200)
+        await hold("09", pad=0.4)
         await acdp.send("Page.stopScreencast")
 
-        # ── 11. 명령 창 4: 설치형 ──
-        mark("11 설치형", "명령 창(기록 재생) — sh server/run.sh → 「준비 완료 — 시험 85건」")
+
+        # ── 10. 명령 창 4: 설치형 ──
+        NT = META.get("tests") or 104
+        scene("10", "10 설치형", f"명령 창(기록 재생) — sh server/run.sh → 「준비 완료 — 시험 {NT}건」")
         await crumb("<b>설치형</b> · 명령 한 줄로 준비·시험")
         await ev("term('명령 창 · 설치형 참조 서버 준비·시험(Windows는 server\\\\run.bat을 두 번 누르기)'); only('term','bar')")
-        await bar("설치형: 명령 한 줄로 자동 시험 85건", "인증키·네트워크 없이 돌아갑니다(처음 한 번만 PyYAML 설치)")
-        await W(700)
+        await bar(f"설치형: 명령 한 줄로 자동 시험 {NT}건", "인증키·네트워크 없이 돌아갑니다(처음 한 번만 PyYAML 설치) · 전체 자동 시험은 193건(중계·원격·대조 포함)")
+        await W(600)
         await page.evaluate("t=>termType(t,45)", "sh server/run.sh")
         await W(300)
-        await page.evaluate("l=>termOut(l,90,x=>x.includes('✓')?'ok':(x.startsWith('[chaekiji-mcp]')?'c':''))", T4)
-        await W(500)
+        await page.evaluate("l=>termOut(l,70,x=>x.includes('✓')?'ok':(x.startsWith('[chaekiji-mcp]')?'c':''))", T4)
+        await W(400)
         await ev("termFocus(['준비 완료'],300)")
-        cue("준비 완료 — 시험 85건")
-        await W(5000)
+        cue(f"준비 완료 — 시험 {NT}건")
+        await W(2500)
+        await hold("10")
 
-        # ── 12. 어디까지 진짜인가 ──
-        mark("12 어디까지 진짜인가", "정직 카드 — 네 줄")
+        # ── 11. 어디까지 진짜인가 ──
+        scene("11", "11 어디까지 진짜인가", "정직 카드 — 네 줄")
         await crumb("<b>책이지</b> · 어디까지 진짜인가")
         L = ["<b>지금</b> 사서가 창구·전화에서 쓰는 판정 도구입니다. 접수는 현행 시스템에서 합니다",
              "<b>다음(2027 시범)</b> 시민 음성 화면, 도서관리시스템과 연결해 접수까지",
              "<b>다른 도시</b> 설정 파일 하나로 적용합니다(정보나루는 전국 공통 자료)",
              "<b>정직 고지</b> 대출 상태는 정보나루 전일 기준이고, 시연 웹의 신청은 실제 접수가 아닙니다"]
         await card("어디까지 진짜인가", "판정까지는 지금, 접수는 연동 뒤", "", L)
-        await lines([re.sub(r"<b>(.*?)</b> ", r"\1: ", x) for x in L], 3700, 1600, first=1100)
+        await lines([re.sub(r"<b>(.*?)</b> ", r"\1: ", x) for x in L], 3500, 1200, first=1000)
+        await hold("11")
 
-        # ── 13. 끝 ──
-        mark("13 끝", "끝 카드 — 주소·팀")
+        # ── 12. 끝 ──
+        scene("12", "12 끝", "끝 카드 — 주소·팀")
         await crumb("")
         await card("책이지 · 상호대차 상담 비서", "말 한마디로 내 손안에 책이",
-                   "시연 웹 altarry-prog.github.io/chaekiji\n소스 공공 GitLab(참가신청서의 링크) · github.com/altarry-prog/chaekiji\n팀 책이지 · 경기도 부천시 상동도서관", [])
-        await W(8000)
+                   "시연 웹 altarry-prog.github.io/chaekiji\n소스 공공 GitLab gitlab.aigov.go.kr/altarry/chaekiji-challenge\n깃허브 github.com/altarry-prog/chaekiji\n팀 책이지 · 경기도 부천시 상동도서관" + ("\n음성 해설: AI 합성(MeloTTS)" if NARR and not A.mute else ""), [])
+        await W(5000)
+        await hold("12", pad=1.2)
         t_end = now(); mark("종료")
         await W(300)
         await cdp.send("Page.stopScreencast")
         await W(300)
         await actx.close(); await ctx.close(); await b.close()
         json.dump({"t0": t0, "end": t_end, "badge": None if A.final else BADGE, "cues": CUES, "marks": MARKS, "errors": errs,
+                   "narr": NARR_EV, "narr_dir": os.path.relpath(NARR_DIR, HERE),
                    "frames": [(a, c, os.path.basename(f)) for a, c, f in FRAMES]},
                   open(os.path.join(A.out, "captions.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-        print("frames", len(FRAMES), "cues", len(CUES), "errors", errs[:3])
+        print("frames", len(FRAMES), "cues", len(CUES), "narr", len(NARR_EV), "errors", errs[:3])
 
 asyncio.run(main())

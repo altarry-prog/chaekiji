@@ -52,6 +52,23 @@ if not A.no_video:
                     "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-profile:v", "high",
                     "-movflags", "+faststart", "-metadata", f"title={title}", base + ".mp4"], check=True)
     print("영상", base + ".mp4", f"{os.path.getsize(base + '.mp4') / 1e6:.1f}MB")
+    # 1-2) 내레이션 — 장면 시작 시각(record.py의 narr)에 그 장면 음성을 얹는다. 장면끼리 겹치지 않으므로 그대로 더한다
+    narr = J.get("narr") or []
+    if narr:
+        ndir = os.path.join(HERE, J.get("narr_dir", os.path.join("narration", "audio", "script")))
+        mute = base + "_무음.mp4"
+        os.replace(base + ".mp4", mute)
+        cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", mute]
+        flt = []
+        for i, (t, f, _sec) in enumerate(narr):
+            cmd += ["-i", os.path.join(ndir, f)]
+            flt.append(f"[{i + 1}:a]aresample=48000,aformat=channel_layouts=mono,adelay={int(max(t, 0) * 1000)}:all=1[a{i}]")
+        flt.append("".join(f"[a{i}]" for i in range(len(narr))) + f"amix=inputs={len(narr)}:normalize=0:dropout_transition=0,apad[aout]")
+        cmd += ["-filter_complex", ";".join(flt), "-map", "0:v", "-map", "[aout]", "-c:v", "copy", "-c:a", "aac", "-b:a", "160k",
+                "-shortest", "-movflags", "+faststart", base + ".mp4"]
+        subprocess.run(cmd, check=True)
+        os.remove(mute)
+        print("음성", len(narr), "장면 · 합계", round(sum(x[2] for x in narr), 1), "초")
 
 
 # 2) SRT — 한 줄 40자 안팎, 끝줄이 짧게 남지 않게 고르게 나눈다
@@ -113,7 +130,7 @@ for i, m in enumerate(marks):
     rows.append(f"| {mm(t)} | {name.split(' ', 1)[1]} | {screen} | {'<br>'.join(said)} |")
 md = [f"# 시연영상 구성표{' (초안)' if draft else ''}",
       "",
-      f"길이 {int(total // 60)}분 {round(total % 60)}초 · 1920×1080 · 30fps · 자막만(무음)" + (f" · 화면 오른쪽 위 「{J['badge']}」 표시" if draft else ""),
+      f"길이 {int(total // 60)}분 {round(total % 60)}초 · 1920×1080 · 30fps · " + ("음성 해설(AI 합성, MeloTTS)·자막" if J.get("narr") else "자막만(무음)") + (f" · 화면 오른쪽 위 「{J['badge']}」 표시" if draft else ""),
       "",
       "| 시각 | 장면 | 화면 | 화면 글(자막과 같음) |",
       "|---|---|---|---|"] + rows

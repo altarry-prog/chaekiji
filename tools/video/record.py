@@ -190,7 +190,7 @@ async def main():
             if key in NARR and not A.mute:
                 NARR_EV.append((round(now() + NARR_LEAD, 2), NARR[key][0], NARR[key][1]))
 
-        async def hold(key, pad=0.7):
+        async def hold(key, pad=0.5):
             # 내레이션이 다 끝날 때까지 장면을 붙잡아 둔다(음성이 다음 장면으로 넘치지 않게)
             if key not in NARR or A.mute:
                 return
@@ -301,7 +301,7 @@ async def main():
         await page.evaluate("l=>termOut(l,90)", T2)
         await W(500)
         await ev("termFocus(['◀ 판정','   수령관:'])")
-        await W(5500)
+        await W(4500)
         await hold("06")
 
         # ── 7. 명령 창 3: 정보나루가 끊긴 날 ──
@@ -316,7 +316,7 @@ async def main():
         await page.evaluate("l=>termOut(l,120)", T3)
         await W(500)
         await ev("termFocus(['◀ 판정','◀ 안내문'],120)")
-        await W(5500)
+        await W(4800)
         await hold("07")
 
         # ── 8. 흐름 2: 공개 모델 — 저장소의 실측 기록표 ──
@@ -327,7 +327,7 @@ async def main():
              "기록표에 문의별 판정·걸린 시간·실패까지 그대로 남깁니다"]
         await card("흐름 2 · 같은 상담을 공개 모델로", "같은 상담을 공개 모델로\n코랩 「모두 실행」 한 번", "", L)
         await app.goto(APP_URL, wait_until="load")       # 다음 장면에 쓸 시연 웹을 미리 띄워 둔다(보이지 않는 동안)
-        await lines(L, 2500, 600, first=900)
+        await lines(L, 2100, 500, first=800)
         m = clip_meta("model2")
         if m:
             await play_clip(m)
@@ -336,7 +336,6 @@ async def main():
             await W(5000)
         await acdp.send("Page.startScreencast", {"format": "jpeg", "quality": 90, "maxWidth": 468, "maxHeight": 948, "everyNthFrame": 1})
         await hold("08", pad=0.3)
-        await W(900)
 
         # ── 9. 흐름 3: 시민 음성 화면 ──
         scene("09", "9 흐름 3 시작", "왼쪽 설명 + 오른쪽 휴대폰(시연 웹 실제 조작)")
@@ -365,7 +364,7 @@ async def main():
         await side("흐름 3 · 시민 음성 화면", "같은 판정을 시민이 직접\n(2027 시범 운영 제안)",
                    "휴대폰 인터넷 창에서 열고 「눌러서 시작하기」를 누릅니다. 예시 단추로 음성 없이도 흐름을 볼 수 있습니다.",
                    "시연 웹 altarry-prog.github.io/chaekiji")
-        await W(4600)
+        await W(3800)
         try:
             g = app.locator("#gateGo")
             if await g.count() and await g.is_visible():
@@ -377,7 +376,7 @@ async def main():
         await side("판정", "상동은 대출 중이라\n다른 분관에서 보내 드립니다",
                    "이 예시 단추는 2026. 8. 18. 실측 장면입니다. 직접 말하거나 입력하면 오늘 새벽 자료로 찾습니다.",
                    "대출 상태는 정보나루 전일 기준")
-        await W(7000)
+        await W(6000)
         for y in (200, 400):
             await scroll_to(y, 1500)
         await W(1200)
@@ -386,7 +385,7 @@ async def main():
         await tapclick(app.locator("#apply"))
         await side("신청 확인", "대출관 · 수령관 · 소요 ·\n수령 기한 · 미수령 제한",
                    "화면을 읽어 주고, 「네」 한마디나 단추 한 번으로 확인합니다.", "※ 시연이며 실제 접수로 이어지지 않습니다")
-        await W(6800)
+        await W(6000)
         mark("9 접수(시연)", "「네, 신청합니다」 → 접수(시연) 화면, 「책이지가 대신 한 일」까지 굴림")
         try:
             await tapclick(app.locator("#confirm")); await W(1300)
@@ -397,7 +396,7 @@ async def main():
                    "※ 시연이며 실제 접수로 이어지지 않습니다")
         await W(3600)
         await scroll_to(150, 1600)
-        await W(3400)
+        await W(2600)
         mark("9 누구나", "처음 화면 → 큰글자 → 언어 선택(베트남어)")
         await ev("cover(true)"); await W(600)
         await app.goto(APP_URL + "?r=2", wait_until="load"); await W(900)
@@ -413,14 +412,14 @@ async def main():
         except Exception as e:
             print("gateNo skipped", e)
         try:
-            await tapclick(app.locator("#bigbtn")); await W(3400)
+            await tapclick(app.locator("#bigbtn")); await W(2800)
         except Exception as e:
             print("big skipped", e)
         try:
             await tapclick(app.locator("#langbtn")); await W(1700)
             vi = app.locator("text=Tiếng Việt").first
             if await vi.count():
-                await tapclick(vi); await W(3800)
+                await tapclick(vi); await W(3200)
         except Exception as e:
             print("lang skipped", e)
         await W(1200)
@@ -447,9 +446,9 @@ async def main():
         # ── 11. 어디까지 진짜인가 ──
         scene("11", "11 어디까지 진짜인가", "정직 카드 — 네 줄")
         await crumb("<b>책이지</b> · 어디까지 진짜인가")
-        L = ["<b>지금</b> 사서가 창구·전화에서 쓰는 판정 도구입니다. 접수는 현행 시스템에서 합니다",
+        L = ["<b>지금</b> 사서가 창구·전화에서 쓰도록 만든 판정 도구입니다. 접수는 현행 시스템에서 합니다",
              "<b>다음(2027 시범)</b> 시민 음성 화면, 도서관리시스템과 연결해 접수까지",
-             "<b>다른 도시</b> 설정 파일 하나로 적용합니다(정보나루는 전국 공통 자료)",
+             "<b>다른 도시</b> 도서관 코드·규정을 설정하면 같은 방식으로(정보나루는 전국 공통 자료)",
              "<b>정직 고지</b> 대출 상태는 정보나루 전일 기준이고, 시연 웹의 신청은 실제 접수가 아닙니다"]
         await card("어디까지 진짜인가", "판정까지는 지금, 접수는 연동 뒤", "", L)
         await lines([re.sub(r"<b>(.*?)</b> ", r"\1: ", x) for x in L], 3500, 1200, first=1000)
@@ -461,7 +460,7 @@ async def main():
         await card("책이지 · 상호대차 상담 비서", "말 한마디로 내 손안에 책이",
                    "시연 웹 altarry-prog.github.io/chaekiji\n소스 공공 GitLab gitlab.aigov.go.kr/altarry/chaekiji-challenge\n깃허브 github.com/altarry-prog/chaekiji\n팀 책이지 · 경기도 부천시 상동도서관" + ("\n음성 해설: AI 합성(MeloTTS)" if NARR and not A.mute else ""), [])
         await W(5000)
-        await hold("12", pad=1.2)
+        await hold("12", pad=0.9)
         t_end = now(); mark("종료")
         await W(300)
         await cdp.send("Page.stopScreencast")

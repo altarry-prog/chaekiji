@@ -1,0 +1,129 @@
+{
+ "first": "2026-10-16",
+ "last": "2026-10-26",
+ "snapshots": 11,
+ "pairs": 10,
+ "ok_total": 556,
+ "ok_kept": 548,
+ "ok_kept_pct": 98.6,
+ "held_total": 740,
+ "held_changed": 15,
+ "held_changed_pct": 2.0,
+ "rows": [
+  {
+   "from": "2026-10-16",
+   "to": "2026-10-17",
+   "ok": 56,
+   "ok_kept": 55,
+   "held": 74,
+   "held_changed": 1,
+   "changes": [
+    "9788936434120 상동 ok→busy"
+   ]
+  },
+  {
+   "from": "2026-10-17",
+   "to": "2026-10-18",
+   "ok": 55,
+   "ok_kept": 55,
+   "held": 74,
+   "held_changed": 1,
+   "changes": [
+    "9791195794799 오정 busy→ok"
+   ]
+  },
+  {
+   "from": "2026-10-18",
+   "to": "2026-10-19",
+   "ok": 56,
+   "ok_kept": 54,
+   "held": 74,
+   "held_changed": 3,
+   "changes": [
+    "9788936434120 상동 busy→ok",
+    "9791161571188 꿈빛 ok→busy",
+    "9791195794799 송내 ok→busy"
+   ]
+  },
+  {
+   "from": "2026-10-19",
+   "to": "2026-10-20",
+   "ok": 55,
+   "ok_kept": 54,
+   "held": 74,
+   "held_changed": 1,
+   "changes": [
+    "9791195794799 오정 ok→busy"
+   ]
+  },
+  {
+   "from": "2026-10-20",
+   "to": "2026-10-21",
+   "ok": 54,
+   "ok_kept": 54,
+   "held": 74,
+   "held_changed": 1,
+   "changes": [
+    "9788936434120 북부 busy→ok"
+   ]
+  },
+  {
+   "from": "2026-10-21",
+   "to": "2026-10-22",
+   "ok": 55,
+   "ok_kept": 55,
+   "held": 74,
+   "held_changed": 2,
+   "changes": [
+    "9788972756194 상동 busy→ok",
+    "9791161571188 꿈빛 busy→ok"
+   ]
+  },
+  {
+   "from": "2026-10-22",
+   "to": "2026-10-23",
+   "ok": 57,
+   "ok_kept": 56,
+   "held": 74,
+   "held_changed": 2,
+   "changes": [
+    "9788936434120 별빛마루 ok→busy",
+    "9791195794799 심곡 busy→ok"
+   ]
+  },
+  {
+   "from": "2026-10-23",
+   "to": "2026-10-24",
+   "ok": 57,
+   "ok_kept": 56,
+   "held": 74,
+   "held_changed": 1,
+   "changes": [
+    "9791161571188 북부 ok→busy"
+   ]
+  },
+  {
+   "from": "2026-10-24",
+   "to": "2026-10-25",
+   "ok": 56,
+   "ok_kept": 55,
+   "held": 74,
+   "held_changed": 1,
+   "changes": [
+    "9791161571188 꿈빛 ok→busy"
+   ]
+  },
+  {
+   "from": "2026-10-25",
+   "to": "2026-10-26",
+   "ok": 55,
+   "ok_kept": 54,
+   "held": 74,
+   "held_changed": 2,
+   "changes": [
+    "9788936434120 상동 ok→busy",
+    "9791195794799 오정 busy→ok"
+   ]
+  }
+ ]
+}

@@ -86,10 +86,10 @@ try{ LASTBOOT = JSON.parse(localStorage.getItem('chaekiji.boot') || 'null'); }ca
 try{ DIAGRUN = localStorage.getItem('chaekiji.diagRun'); }catch(e){}
 if(!LASTBOOT) row('o', '지난번 시연 웹', '기록 없음(v1.12.12부터 기록)', '');
 else if(LASTBOOT.st === 'ok') row('o', '지난번 시연 웹', '끝까지 열림 · ' + hm(LASTBOOT.t) + (LASTBOOT.safe ? ' · 간단 모드' : ''), 'ok');
-else { row('o', '지난번 시연 웹', '중간에 멈춤 — 마지막 단계: ' + (STAGE[LASTBOOT.at] || LASTBOOT.at || '?') + ' · ' + hm(LASTBOOT.t) + (LASTBOOT.safe ? ' · 간단 모드' : ''), 'bad'); R.stopped = true; }
+else { row('o', '지난번 시연 웹', '중간에 멈춤, 마지막 단계: ' + (STAGE[LASTBOOT.at] || LASTBOOT.at || '?') + ' · ' + hm(LASTBOOT.t) + (LASTBOOT.safe ? ' · 간단 모드' : ''), 'bad'); R.stopped = true; }
 var SU = 0; try{ SU = +(localStorage.getItem('chaekiji.safeUntil') || 0); }catch(e){}
-row('o', '간단 모드', SU > Date.now() ? '켜짐(' + hm(SU) + '까지 — 다음에 열면 간단 모드)' : '꺼짐', SU > Date.now() ? 'warn' : '');
-if(DIAGRUN && /^start/.test(DIAGRUN)){ row('o', '지난번 점검 페이지', '「시연 웹 띄워 보기」 중에 멈춤 — 이 휴대폰에서 시연 웹이 탭을 멈추게 함', 'bad'); R.diagStopped = true; }
+row('o', '간단 모드', SU > Date.now() ? '켜짐(' + hm(SU) + '까지, 다음에 열면 간단 모드)' : '꺼짐', SU > Date.now() ? 'warn' : '');
+if(DIAGRUN && /^start/.test(DIAGRUN)){ row('o', '지난번 점검 페이지', '「시연 웹 띄워 보기」 중에 멈춤(이 휴대폰에서 시연 웹이 탭을 멈추게 함)', 'bad'); R.diagStopped = true; }
 try{ localStorage.removeItem('chaekiji.diagRun'); }catch(e){}
 
 /* 1. 브라우저 */
@@ -108,12 +108,12 @@ row('b', 'UA', ua);
 /* 2. 기능 */
 function syn(code){ try{ new Function(code); return true; }catch(e){ return false; } }
 var es2017 = syn('async function a(){ await 1; } var [x, y] = [1, 2]; var f = (z = 1) => `${z}`; class K { m(){ return 1; } }');
-row('f', '새 문법(2017년판)', es2017 ? '됨' : '안 됨 — 시연 웹이 아예 돌지 않음', es2017 ? 'ok' : 'bad');
+row('f', '새 문법(2017년판)', es2017 ? '됨' : '안 됨(시연 웹이 아예 돌지 않음)', es2017 ? 'ok' : 'bad');
 row('f', 'fetch·Promise', (window.fetch && window.Promise) ? '됨' : '안 됨', (window.fetch && window.Promise) ? 'ok' : 'bad');
-var ls = '됨'; try{ localStorage.setItem('chaekiji.diag', '1'); localStorage.removeItem('chaekiji.diag'); }catch(e){ ls = '막힘(' + (e && e.name) + ') — 설정 기억만 안 됨'; }
+var ls = '됨'; try{ localStorage.setItem('chaekiji.diag', '1'); localStorage.removeItem('chaekiji.diag'); }catch(e){ ls = '막힘(' + (e && e.name) + '), 설정 기억만 안 됨'; }
 row('f', '저장공간', ls, ls === '됨' ? 'ok' : 'warn');
-row('f', '음성 안내(읽어 주기)', window.speechSynthesis ? '있음' : '없음 — 글자로만 안내', window.speechSynthesis ? 'ok' : 'warn');
-row('f', '음성 인식(마이크)', (window.SpeechRecognition || window.webkitSpeechRecognition) ? '있음' : '없음 — 입력·예시 단추로', (window.SpeechRecognition || window.webkitSpeechRecognition) ? 'ok' : 'warn');
+row('f', '음성 안내(읽어 주기)', window.speechSynthesis ? '있음' : '없음(글자로만 안내)', window.speechSynthesis ? 'ok' : 'warn');
+row('f', '음성 인식(마이크)', (window.SpeechRecognition || window.webkitSpeechRecognition) ? '있음' : '없음(입력·예시 단추로)', (window.SpeechRecognition || window.webkitSpeechRecognition) ? 'ok' : 'warn');
 row('f', '보안 연결(https)', (window.isSecureContext !== false) ? '예' : '아니오', (window.isSecureContext !== false) ? 'ok' : 'warn');
 var rmq = false; try{ rmq = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
 row('f', '동작 줄이기(애니메이션 줄이기)', rmq ? '켜짐' : '꺼짐', '');
@@ -247,7 +247,7 @@ function verdict(){
   var v = $('verdict');
   if(bad.length){ v.className = 'bad'; v.textContent = bad.join(' / '); }
   else if(W.result === true){ v.className = 'ok'; v.textContent = '이 휴대폰에서 시연 웹이 정상으로 돕니다. 그래도 안 열리면 주소를 다시 확인하고(altarry-prog.github.io/chaekiji), 브라우저의 방문 기록·캐시를 지운 뒤 열어 보세요.'; }
-  else if(W.result === null && !W.started){ v.className = ''; v.textContent = '기본 점검 끝 — 「4. 시연 웹 띄워 보기」를 누르면 더 볼 수 있습니다.'; }
+  else if(W.result === null && !W.started){ v.className = ''; v.textContent = '기본 점검 끝. 「4. 시연 웹 띄워 보기」를 누르면 더 볼 수 있습니다.'; }
   else { v.className = ''; v.textContent = '점검 중…'; }
   draw();
 }
@@ -262,7 +262,7 @@ $('wipe').onclick = function(){
   try{ if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){ jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); })); } }catch(e){}
   try{ if(window.caches){ jobs.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); })); } }catch(e){}
   Promise.all(jobs).then(function(){ $('wipeMsg').textContent = '지웠습니다. 「새로 열기」를 누르세요.'; $('wipeMsg').className = 'ok'; $('fresh').href = 'index.html?fresh=' + Date.now(); })
-    .catch(function(e){ $('wipeMsg').textContent = '지우지 못함(' + (e && e.message) + ') — 삼성 인터넷 설정 → 개인정보 → 인터넷 사용 기록 삭제에서 캐시를 지워 주세요.'; $('wipeMsg').className = 'bad'; });
+    .catch(function(e){ $('wipeMsg').textContent = '지우지 못함(' + (e && e.message) + '). 삼성 인터넷 설정 → 개인정보 → 인터넷 사용 기록 삭제에서 캐시를 지워 주세요.'; $('wipeMsg').className = 'bad'; });
 };
 </script>
 </body>

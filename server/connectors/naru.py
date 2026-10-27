@@ -167,7 +167,7 @@ def _relay_search(utterance=None, isbn13=None):
     docs = r.get("docs", [])
     for x in docs:
         if x.get("isbn13"): _BIB_CACHE[x["isbn13"]] = {**x, "type": "일반", "new_arrival": False,
-                                                       "basis": "정보나루 srchBooks(중계) — 자료유형·신착은 미제공(판정 보류)"}
+                                                       "basis": "정보나루 srchBooks(중계): 자료유형·신착은 미제공(판정 보류)"}
     return docs
 
 # ── 계측 ──────────────────────────────────────────────────────────
@@ -193,7 +193,7 @@ def search(utterance: str, mode="demo"):
                 fx["evidence"] = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 중계로 오늘 조회"
                 return fx
         return pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
-                           unavailable_reason=f"중계 응답 없음 — 픽스처 5종에도 없는 도서(검색어 「{title}」)")
+                           unavailable_reason=f"중계 응답 없음: 픽스처 5종에도 없는 도서(검색어 「{title}」)")
     q = _norm(utterance)
     best = None
     for b in _cat["books"]:
@@ -201,7 +201,7 @@ def search(utterance: str, mode="demo"):
         if score and (best is None or score > best[0]):
             best = (score, b)
     if not best:
-        return {"found": False, "reason": "픽스처에 없는 도서(모의 모드 한계) — live 모드에서는 전국 서지 검색"}
+        return {"found": False, "reason": "픽스처에 없는 도서(모의 모드 한계). live 모드에서는 전국 서지 검색"}
     b = best[1]
     return {"found": True, "isbn13": b["isbn13"], "title": b["title"], "author": b["author"],
             "publisher": b["publisher"], "year": b["year"], "candidates": [b["isbn13"]],
@@ -235,7 +235,7 @@ def _bib_from_doc(d):
     return {"isbn13": d.get("isbn13"), "title": d.get("bookname"), "author": d.get("authors"),
             "publisher": d.get("publisher"), "year": d.get("publication_year"),
             "type": "일반", "new_arrival": False,
-            "basis": "정보나루 srchBooks(live) — 자료유형·신착은 미제공(판정 보류)"}
+            "basis": "정보나루 srchBooks(live): 자료유형·신착은 미제공(판정 보류)"}
 
 def availability_nation(isbn13: str, mode="demo"):
     yday = (datetime.datetime.now(KST).date() - datetime.timedelta(days=1)).isoformat()
@@ -265,7 +265,7 @@ def _unknown(libraries: dict, why: str) -> dict:
     정보나루가 안 되는데 그 책이 픽스처에도 없으면, 예전처럼 「미소장」(none)으로 채우면 「16곳에 없음 → 책바다」라는
     틀린 안내가 나간다(2026. 10. 16. 독립 검토에서 발견). 모르면 모른다고 하고 창구 조회로 넘긴다."""
     global LAST_META
-    LAST_META = {"basis": f"관내: {why} — 소장·대출 상태 확인 불가", "asof": _today(),
+    LAST_META = {"basis": f"관내: {why}, 소장·대출 상태 확인 불가", "asof": _today(),
                  "holding_count": None, "calls": 0, "cached": False, "unavailable": True}
     return {name: "unknown" for name in libraries}
 
@@ -314,7 +314,7 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
         h = _hold.get("holdings", {}).get(isbn13, {})
         out = {name: h.get(name, "none") for name in libraries}
         ex = isbn13 in _hold.get("_examples", [])          # 실측이 아닌 예시 장면용 값
-        LAST_META = {"basis": ("관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면 — 이 책의 실제 소장과 다를 수 있음)" if ex
+        LAST_META = {"basis": ("관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면, 이 책의 실제 소장과 다를 수 있음)" if ex
                                else "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 전일 기준)"), "asof": FIX_ASOF,
                      "holding_count": sum(1 for v in out.values() if v != "none"), "calls": 0, "cached": False, "example": ex}
         return out
@@ -347,7 +347,7 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
 # ── live 모드 ─────────────────────────────────────────────────────
 def _key():
     k = os.environ.get("NARU_KEY")
-    if not k: raise RuntimeError("live 모드에는 NARU_KEY 환경변수(정보나루 인증키)가 필요합니다 — read -s NARU_KEY; export NARU_KEY")
+    if not k: raise RuntimeError("live 모드에는 NARU_KEY 환경변수(정보나루 인증키)가 필요합니다(read -s NARU_KEY; export NARU_KEY)")
     return k
 
 def _get(api, **params):
@@ -539,9 +539,9 @@ def pick_search(title, search_fn, evidence, unavailable_reason=None):
         return res
     if saw_docs:
         cands = [_book_of(p["d"]) for p in pool[:3]]
-        return {"found": False, "reason": f"정보나루 서지 검색에서 문의와 맞는 책을 고르지 못함(검색어 「{title}」) — 저자·권차·출판사를 더 알려 주세요",
+        return {"found": False, "reason": f"정보나루 서지 검색에서 문의와 맞는 책을 고르지 못함(검색어 「{title}」). 저자·권차·출판사를 더 알려 주세요",
                 "candidates": [b["isbn13"] for b in cands], "candidate_books": cands, "query": title}
-    return {"found": False, "reason": f"정보나루 서지 검색 결과 없음(검색어 「{title}」) — 제목·저자를 더 알려 주세요",
+    return {"found": False, "reason": f"정보나루 서지 검색 결과 없음(검색어 「{title}」). 제목·저자를 더 알려 주세요",
             "candidates": [], "query": title}
 
 def _live_nation(isbn13):

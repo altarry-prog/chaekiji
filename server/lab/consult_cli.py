@@ -5,7 +5,7 @@
 무엇을 하나: server.py를 띄워 MCP 요청(initialize → tools/call consult_request)을 보내고, 돌아온 결과를 사람이 읽는 모양으로 찍는다.
             claude.ai·클로드 데스크톱·공개 모델 호스트가 부르는 것과 같은 도구, 같은 요청이다(모델이 하는 말 다듬기만 빠진다).
 데이터: 환경변수 CHAEKIJI_MODE(기본 auto — 중계 → 2일 이내 매일 갱신 파일 → 8/18 실측 자료). 인증키 불필요.
-실행: python lab/consult_cli.py "나미야 잡화점의 기적 빌리고 싶어요" 상동
+실행: python lab/consult_cli.py "한강 소년이 온다 빌리고 싶어요" 역곡
       python lab/consult_cli.py "소년이 온다" 꿈빛 --json      (결과 원문 JSON까지)
 보이는 모양: 안내문 속 누리집 주소는 「(아래 링크)」로 두고 「◀ 링크:」 줄에 한글을 풀어 보인다(%로 바뀐 글자를 되돌린 같은 주소).
             도구가 돌려준 원문 그대로는 --json으로 본다.
@@ -44,7 +44,7 @@ def main():
     if res.get("isError"):
         print("◀ 오류: " + text); sys.exit(1)
     o = json.loads(text)
-    print(f"◀ 판정: {o['route_label']}" + (f" — 소장관 {o['from_lib']}" if o.get("route") == "ill" else ""))
+    print(f"◀ 판정: {o['route_label']}" + (f"(소장관 {o['from_lib']})" if o.get("route") == "ill" else ""))
     if o.get("book"):
         b = o["book"]; print(f"◀ 책: 『{b['title']}』 {b.get('author') or ''} · ISBN {b['isbn13']}")
     av = o.get("availability") or {}

@@ -1,4 +1,4 @@
-책이지 시연 웹 v1.11 (2026. 10. 15.) — 매일 갱신 파일 읽기 · 캐시 v25
+책이지 시연 웹 v1.11 (2026. 10. 15.): 매일 갱신 파일 읽기 · 캐시 v25
 
 [index.html]
 - todayHoldings(c): 같은 출처의 data/holdings-today.json(깃허브 액션 refresh.yml이 새벽마다 커밋)을 읽어 해당 ISBN의 16개관 상태를 쓴다. asof가 2일 넘게 묵었으면 무시.

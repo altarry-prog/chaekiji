@@ -124,13 +124,13 @@ def mcp_tools():
 
 
 CHECKS = [
-    ("시연 웹 — 배포된 캐시 번호가 저장소와 같음", web_cache),
-    ("시연 웹 — 첫 화면이 저장소와 같음", web_index),
-    (f"시연 웹 — 새벽 자료가 {MAX_DAYS}일 이내", web_daily),
-    ("중계 — 상태 확인(/health)", relay_health),
-    ("원격 상담 비서 — 인터넷 창으로 열면 안내 화면", mcp_page),
-    ("원격 상담 비서 — 프로그램의 GET은 405", mcp_get),
-    ("원격 상담 비서 — 초기화·도구 목록·판 번호", mcp_tools),
+    ("시연 웹: 배포된 캐시 번호가 저장소와 같음", web_cache),
+    ("시연 웹: 첫 화면이 저장소와 같음", web_index),
+    (f"시연 웹: 새벽 자료가 {MAX_DAYS}일 이내", web_daily),
+    ("중계: 상태 확인(/health)", relay_health),
+    ("원격 상담 비서: 인터넷 창으로 열면 안내 화면", mcp_page),
+    ("원격 상담 비서: 프로그램의 GET은 405", mcp_get),
+    ("원격 상담 비서: 초기화·도구 목록·판 번호", mcp_tools),
 ]
 
 
@@ -143,9 +143,9 @@ def main():
         except Exception as e:                                           # 응답 모양이 다르면 실패로 적는다
             ok, detail = False, f"{type(e).__name__}: {e}"
         rows.append((name, bool(ok), detail))
-        print(("✓ " if ok else "✗ ") + name + " — " + detail)
+        print(("✓ " if ok else "✗ ") + name + " · " + detail)
     passed = sum(1 for _, ok, _ in rows if ok)
-    line = f"운영 점검 {now} KST — {passed}/{len(rows)} 통과 (정보나루 호출 0건)"
+    line = f"운영 점검 {now} KST: {passed}/{len(rows)} 통과 (정보나루 호출 0건)"
     print("\n" + line)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:

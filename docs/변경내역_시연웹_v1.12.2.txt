@@ -1,4 +1,4 @@
-책이지 시연 웹 v1.12.2 (2026. 10. 16.) — 정보나루 중계 연결 · 오늘 새벽 파일 먼저 · 캐시 v28
+책이지 시연 웹 v1.12.2 (2026. 10. 16.): 정보나루 중계 연결 · 오늘 새벽 파일 먼저 · 캐시 v28
 
 왜: 중계(relay/worker.js)를 Cloudflare Workers에 처음 배포했다. 행정망 PC에서는 Cloudflare 화면이 막혀 있어 깃허브 액션 deploy-relay.yml이 대신 올렸다.
  17:49 확인 기록(relay/last_deploy.json)에서 /health·/holdings·/search·/nation이 모두 200이었다. 시연 웹 출처의 CORS 허용도 확인했다.

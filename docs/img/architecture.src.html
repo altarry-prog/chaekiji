@@ -2,34 +2,35 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>책이지 구조 — 네 층</title>
-<!-- docs/img/architecture.png의 원본. 2026. 10. 16. 다시 그림 — 휴대폰에서 글자가 읽히게(가로 1080 기준 본문 44px 이상),
-     한글이 낱말 중간에서 줄바꿈되지 않게(word-break: keep-all), 색만으로 구분하지 않게(층 이름·표시를 글자로).
-     README에서는 <img width="560">으로 넣는다(PC 560px · 휴대폰은 화면 폭). 찍기: Playwright로 1080px 폭, 배율 2, 64색 PNG. -->
+<title>책이지 구조: 네 층</title>
+<!-- docs/img/architecture.png의 원본. 2026. 10. 27. 다시 그림: 담당자 「구조 그림이 갑자기 커져서 가독성이 떨어진다」.
+     PC에서 README 글자와 비슷한 크기로 보이게 폭을 900으로 줄이고 여백을 좁힘(README에서 <img width="420">, 그림 속 본문이 약 17px).
+     휴대폰은 화면 폭에 맞춰 줄어들어 본문이 약 14px. 한글이 낱말 중간에서 줄바꿈되지 않게(word-break: keep-all),
+     색만으로 구분하지 않게(층 이름·표시를 글자로). 긴줄표 대신 쌍점. 찍기: Playwright로 900px 폭, 배율 2, 64색 PNG. -->
 <style>
   :root { --ink:#16201c; --sub:#3d4a44; --line:#c9d4cf; --green:#1b5a4b; --mint:#e8f2ee; --sand:#f4efe6; --gray:#eef0f2; }
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { width:1080px; background:#fff; color:var(--ink); padding:56px 52px 48px;
+  body { width:900px; background:#fff; color:var(--ink); padding:40px 40px 36px;
          font-family:"Noto Sans CJK KR","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-         word-break:keep-all; overflow-wrap:break-word; line-height:1.4; }
-  h1 { font-size:64px; font-weight:800; letter-spacing:-1px; }
-  .lead { font-size:40px; color:var(--sub); margin-top:14px; }
-  .layer { border-radius:28px; padding:34px 38px 36px; margin-top:34px; border:3px solid transparent; }
+         word-break:keep-all; overflow-wrap:break-word; line-height:1.36; }
+  h1 { font-size:48px; font-weight:800; letter-spacing:-1px; }
+  .lead { font-size:31px; color:var(--sub); margin-top:6px; }
+  .layer { border-radius:22px; padding:22px 28px 22px; margin-top:22px; border:3px solid transparent; }
   .layer.l1 { background:var(--gray); } .layer.l2 { background:var(--sand); }
   .layer.l3 { background:var(--mint); border-color:var(--green); } .layer.l4 { background:var(--gray); }
-  .head { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
-  .no { font-size:50px; font-weight:800; color:var(--green); }
-  .name { font-size:54px; font-weight:800; }
-  .tag { font-size:32px; font-weight:700; padding:6px 18px; border-radius:999px; background:#fff; color:var(--green); border:2px solid var(--green); }
+  .head { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .no { font-size:40px; font-weight:800; color:var(--green); }
+  .name { font-size:42px; font-weight:800; }
+  .tag { font-size:26px; font-weight:700; padding:4px 14px; border-radius:999px; background:#fff; color:var(--green); border:2px solid var(--green); }
   .tag.me { background:var(--green); color:#fff; }
-  ul { list-style:none; margin-top:18px; }
-  li { font-size:44px; line-height:1.38; padding:10px 0 10px 40px; position:relative; }
-  li::before { content:""; position:absolute; left:6px; top:32px; width:16px; height:16px; border-radius:50%; background:var(--green); }
+  ul { list-style:none; margin-top:10px; }
+  li { font-size:35px; line-height:1.34; padding:5px 0 5px 32px; position:relative; }
+  li::before { content:""; position:absolute; left:5px; top:24px; width:13px; height:13px; border-radius:50%; background:var(--green); }
   li b { font-weight:800; }
   li .s { color:var(--sub); }
-  .arrow { text-align:center; font-size:38px; color:var(--sub); margin-top:22px; }
+  .arrow { text-align:center; font-size:29px; color:var(--sub); margin-top:14px; }
   .arrow::before { content:"▼  "; color:var(--green); }
-  .foot { margin-top:40px; font-size:40px; line-height:1.45; padding:28px 34px; border-radius:24px; background:#fff; border:3px dashed var(--line); }
+  .foot { margin-top:26px; font-size:31px; line-height:1.42; padding:20px 26px; border-radius:20px; background:#fff; border:3px dashed var(--line); }
   .foot b { color:var(--green); }
 </style>
 </head>
@@ -40,8 +41,8 @@
   <section class="layer l1">
     <div class="head"><span class="no">①</span><span class="name">입구</span><span class="tag">바꿔 끼움</span></div>
     <ul>
-      <li><b>사서 창구</b> <span class="s">— claude.ai · 클로드 앱</span></li>
-      <li><b>시민</b> <span class="s">— 음성 화면 · 전화 모드</span></li>
+      <li><b>사서 창구:</b> <span class="s">claude.ai · 클로드 앱</span></li>
+      <li><b>시민:</b> <span class="s">음성 화면 · 전화 모드</span></li>
     </ul>
   </section>
   <p class="arrow">이용자의 말 한 문장</p>
@@ -67,8 +68,8 @@
   <section class="layer l4">
     <div class="head"><span class="no">④</span><span class="name">데이터</span><span class="tag">실제와 모의를 구분</span></div>
     <ul>
-      <li><b>도서관 정보나루</b> <span class="s">— 실제 공개 데이터 · 대출 상태는 전일 기준</span></li>
-      <li><b>도서관리시스템</b> <span class="s">— 모의 · 연동 명세 함수 7개</span></li>
+      <li><b>도서관 정보나루:</b> <span class="s">실제 공개 데이터 · 대출 상태는 전일 기준</span></li>
+      <li><b>도서관리시스템:</b> <span class="s">모의 · 연동 명세 함수 7개</span></li>
     </ul>
   </section>
 

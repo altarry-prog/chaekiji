@@ -39,11 +39,11 @@ TOOLS = [
                                    "client_ref": {"type": "string"}},
                     "required": ["user", "isbn13", "from_lib", "pickup"]})},
  {"name": "track_request",
-  "description": "[v0.3] 신청 추적 — 접수 이후의 생애주기(접수→확보→이송→도착·보관기한→대출/실패/취소)를 본인에 한해 조회한다.",
+  "description": "[v0.3] 신청 추적: 접수 이후의 생애주기(접수→확보→이송→도착·보관기한→대출/실패/취소)를 본인에 한해 조회한다.",
   "inputSchema": S({"properties": {"user": {"type": "string"}, "request_no": {"type": "string"}},
                     "required": ["user", "request_no"]})},
  {"name": "cancel_request",
-  "description": "[v0.3] 신청 취소 — 본인 신청만, 대출 완료 전까지. 취소 즉시 한도가 복원된다.",
+  "description": "[v0.3] 신청 취소: 본인 신청만, 대출 완료 전까지. 취소 즉시 한도가 복원된다.",
   "inputSchema": S({"properties": {"user": {"type": "string"}, "request_no": {"type": "string"}},
                     "required": ["user", "request_no"]})},
  {"name": "find_alternative",
@@ -60,7 +60,7 @@ TOOLS = [
   "inputSchema": S({"properties": {"user": {"type": "string"}, "count": {"type": "integer"}},
                     "required": []})},
  {"name": "manage_mandate",
-  "description": "[확장 v0.2] 사전 위임장(책이지 패스) 관리 — create(범위 명시 동의 1회)/status/revoke. 범위 안 신청은 확인 없이, 범위 밖은 확인으로 — 이용자 통제 장치.",
+  "description": "[확장 v0.2] 사전 위임장(책이지 패스) 관리: create(범위 명시 동의 1회)/status/revoke. 범위 안 신청은 확인 없이, 범위 밖은 확인으로 받는 이용자 통제 장치.",
   "inputSchema": S({"properties": {"user": {"type": "string"},
                                    "op": {"type": "string", "enum": ["create", "status", "revoke"]},
                                    "pickup": {"type": "string"}},
@@ -76,7 +76,7 @@ TOOLS = [
 PROMPT_FILE = Path(__file__).resolve().parent / "prompts" / "상담비서-지시문.md"
 PROMPTS = [
  {"name": "consult",
-  "description": "상담 비서 — 창구·전화 문의를 받아 책을 찾고 소장·대출 상태와 상호대차 가능 여부를 판정해 사서가 읽어 줄 안내문을 만든다(접수는 사서가).",
+  "description": "상담 비서: 창구·전화 문의를 받아 책을 찾고 소장·대출 상태와 상호대차 가능 여부를 판정해 사서가 읽어 줄 안내문을 만든다(접수는 사서가).",
   "arguments": [{"name": "pickup", "description": "받을 도서관(기본 상동)", "required": False},
                 {"name": "lang", "description": "이용자 언어 코드(기본 ko)", "required": False}]},
 ]

@@ -1,4 +1,4 @@
-# AGENTS.md — AI 코딩 도구를 위한 이 저장소의 규칙
+# AGENTS.md: AI 코딩 도구를 위한 이 저장소의 규칙
 
 이 파일은 Codex CLI · GitHub Copilot · Claude 등 AGENTS.md를 읽는 모든 AI 코딩 도구에 적용된다.
 사람이 읽어도 그대로 유효한 작업 규칙이다.
@@ -6,10 +6,10 @@
 ## 이 저장소는 무엇인가
 부천시립도서관 상호대차 AI 에이전트 「책이지」의 **표준 도구 계층 참조 서버**(MCP, stdio JSON-RPC).
 도구 11종(`server.py` TOOLS)과 규정 판정 7종(`policy.py`), 지역 고유값은 전부 `config/*.yaml`.
-운영 서비스가 아니다 — 시연·검증용이며 실제 접수는 일어나지 않는다.
+운영 서비스가 아니다. 시연·검증용이며 실제 접수는 일어나지 않는다.
 
 ## 실행·시험
-- 한 번에: `run.bat`(윈도우) · `sh run.sh` — 시험 104건(적합성 50 · 실험실 14 · 중계 모드 30 · 공개 모델 호스트 10)
+- 한 번에: `run.bat`(윈도우) · `sh run.sh`. 시험 104건(적합성 50 · 실험실 14 · 중계 모드 30 · 공개 모델 호스트 10)
 - 적합성 시험(50건 전부 통과 유지): `python3 tests/run_scenarios.py`
 - 실험실 점검 시험: `python3 lab/check_store.py`
 - 중계·원격 상담 비서(저장소 루트에서): `node relay/test_worker.mjs` · `node relay/test_mcp.mjs` · `python3 relay/test_mcp_parity.py` · `python3 relay/build_mcp_data.py --check`
@@ -22,8 +22,8 @@
 3. 개인정보를 만들거나 넣지 않는다. 회원은 `fixtures/members.json`의 가상 인물뿐. 내부망 주소·시스템 구조·화면 구성을 코드·주석·문서에 적지 않는다.
 4. 정직 고지를 지운다·약화하지 않는다: 「전일 기준」(정보나루 대출 가능 여부), 「모의」(알파스·회원·추천·대체자료), 「실제 접수 없음」.
 5. 기존 시험의 판정 기준을 바꾸거나 시험을 지우지 않는다(약하게 만들지 않는다). 새 시험은 더해도 되며, 더하면 시험 수를 README·CHANGELOG·CI 이름에 함께 고친다(2026. 10. 기준 적합성 50건).
-   원격 상담 비서(`relay/mcp.js`)는 이 서버의 relay 모드와 같은 답을 내야 한다 — `tools.py`·`policy.py`·`connectors/naru.py`의 판정·안내문을 고치면 `relay/mcp.js`도 같이 고치고 `relay/test_mcp_parity.py`로 대조한다. 설정·픽스처·지시문을 고치면 `python3 relay/build_mcp_data.py`.
-6. 지역 규정 숫자·도서관 코드를 코드에 쓰지 않는다 — `config/*.yaml`에만.
+   원격 상담 비서(`relay/mcp.js`)는 이 서버의 relay 모드와 같은 답을 내야 한다. `tools.py`·`policy.py`·`connectors/naru.py`의 판정·안내문을 고치면 `relay/mcp.js`도 같이 고치고 `relay/test_mcp_parity.py`로 대조한다. 설정·픽스처·지시문을 고치면 `python3 relay/build_mcp_data.py`.
+6. 지역 규정 숫자·도서관 코드를 코드에 쓰지 않는다(`config/*.yaml`에만).
 7. 파일 삭제·외부 접속·발송처럼 영향이 큰 동작은 실행 전에 사람에게 묻는다.
 
 ## 코드 규칙

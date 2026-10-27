@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.13 (2026. 10. 27.) · 캐시 chaekiji-v39 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.14 (2026. 10. 27.) · 캐시 chaekiji-v40 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -904,7 +904,7 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
       <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>예시 장면은 2026. 8. 18. 조회 · 직접 찾으면 매일 새벽 받은 자료(없으면 그 자리에서 조회) · 대출 상태는 전일 기준</small></span></div>
       <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">예시 단추는 8. 18. 실측 장면 그대로 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 어제 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)</span></div>
-      <div class="kv i"><span class="k">성격</span><span class="v">실현가능성 검증용 시연 모델<small>실제 신청이 접수되지 않습니다 · 2026. 8. 부천시립도서관 상동도서관</small></span></div>
+      <div class="kv i"><span class="k">성격</span><span class="v">실현가능성 검증용 시연 모델<small>실제 신청이 접수되지 않습니다 · 2026. 8. 부천시립상동도서관</small></span></div>
       <button class="cta ghost" onclick="document.getElementById('isheet').classList.remove('on')">닫기</button>
     </div>
   </div>
@@ -1002,6 +1002,7 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    탭이 강제 종료될 수 있음(Electron이 같은 문제를 고친 기록).
    담당자 15:43 「원인마다 해결 방법」: 광고 차단이 단순 배치로도 화면 틀을 숨기면 틀의 이름을 바꿔 피함(.cjx), 10초 안에 다 받지 못하면
    연결 알림(다시 불러오기 · 휴대폰 데이터 · 그림으로 둘러보기, 다 받으면 지움). 판정·자료 흐름은 그대로 */
+/* v1.12.14(2026. 10. 27., 캐시 v40): 담당자 17:58 「부천시립상동도서관으로」에 따라 「성격」 칸의 기관 표기만 바꿈(동작 그대로). */
 /* v1.12.13(2026. 10. 27., 캐시 v39): 담당자 16:10 「심사위원이 검색하는 책을 한강 소년이 온다로」에 따라 입력 칸 예시(10개 언어)와
    「예시 5권만」 안내의 첫 책을 소년이 온다로 바꿈. 15:56 「날짜가 틀린 곳」: 전화 모드가 직접 말하거나 입력한 책도 늘 8. 18. 자료로 답하던 것을
    화면과 같은 규칙(예시 단추는 8. 18. 실측 장면, 말하거나 입력하면 오늘 새벽 자료)으로 고침. WebMCP check_availability도 같은 자료와 조회일(asof). */

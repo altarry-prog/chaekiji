@@ -36,6 +36,14 @@ iframe{width:390px;height:844px;border:0}
 <div class="card"><h2>2. 기능</h2><div id="f"></div></div>
 <div class="card"><h2>3. 연결</h2><div id="n"></div></div>
 <div class="card"><h2>4. 시연 웹 실제로 띄워 보기</h2><div id="w"></div></div>
+<div class="card"><h2>5. 이 휴대폰에 저장된 시연 웹 지우기</h2>
+<p style="margin:0 0 8px;font-size:14px;color:var(--ink2)">예전에 연 시연 웹이 휴대폰에 남아 흰 화면이 될 때가 있습니다. 눌러서 지운 뒤 아래 「새로 열기」를 누르세요. 개인정보와는 관계없습니다.</p>
+<button id="wipe" type="button" style="font:inherit;padding:10px 14px;border-radius:10px;border:1px solid #0d6e5f;background:#0d6e5f;color:#fff">저장된 시연 웹 지우기</button>
+<a id="fresh" href="index.html" style="display:inline-block;margin-left:10px;color:#0d6e5f">새로 열기 ›</a>
+<div id="wipeMsg" style="margin-top:8px;font-size:14px"></div></div>
+<div class="card"><h2>6. 이 휴대폰에서 보이는 모습(작게)</h2>
+<div style="width:215px;height:465px;overflow:hidden;border:1px solid var(--line);border-radius:10px"><iframe id="peek" title="시연 웹 미리보기" style="width:390px;height:844px;transform:scale(.55);transform-origin:0 0;border:0"></iframe></div>
+<p style="margin:6px 0 0;font-size:13px;color:var(--ink2)">여기도 하얗게만 보이면 그 모습 그대로 캡처해 주세요.</p></div>
 <div class="card"><h2>보낼 내용(캡처가 어려우면 길게 눌러 복사)</h2><pre id="dump"></pre></div>
 <div id="frameBox"></div>
 </main>
@@ -84,6 +92,8 @@ row('f', '음성 안내(읽어 주기)', window.speechSynthesis ? '있음' : '�
 row('f', '음성 인식(마이크)', (window.SpeechRecognition || window.webkitSpeechRecognition) ? '있음' : '없음 — 입력·예시 단추로', (window.SpeechRecognition || window.webkitSpeechRecognition) ? 'ok' : 'warn');
 row('f', '보안 연결(https)', (window.isSecureContext !== false) ? '예' : '아니오', (window.isSecureContext !== false) ? 'ok' : 'warn');
 row('f', '서비스워커', ('serviceWorker' in navigator) ? '있음' : '없음', '');
+try{ if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){ navigator.serviceWorker.getRegistrations().then(function(rs){ row('f', '저장된 시연 웹(서비스워커)', rs.length + '개' + (navigator.serviceWorker.controller ? ' · 이 페이지에 붙어 있음' : ''), ''); }); } }catch(e){}
+try{ if(window.caches){ caches.keys().then(function(ks){ row('f', '저장된 캐시', ks.length ? ks.join(', ') : '없음', ''); }); } }catch(e){}
 
 /* 3. 연결 */
 function timed(url, label, opt){
@@ -95,7 +105,12 @@ function timed(url, label, opt){
     return r.ok ? r.text() : null;
   }).catch(function(e){ if(done) return; done = true; clearTimeout(to); row('n', label, '연결 안 됨(' + (e && e.message || e) + ')', 'bad'); verdict(); });
 }
-timed('index.html?diag=' + Date.now(), '시연 웹 파일(이 사이트)');
+timed('index.html?diag=' + Date.now(), '시연 웹 파일(이 사이트)').then(function(t){
+  if(t == null) return;
+  var v = /v1\.12\.\d+/.exec(t);
+  row('n', '받은 시연 웹 파일', Math.round(t.length / 1000) + "천 자 · " + (v ? v[0] : '판 표시 없음'), (t.length > 100000 && v) ? "ok" : "bad");
+  if(!(t.length > 100000 && v)) R.blankFile = true;
+});
 timed('data/holdings-today.json?diag=' + Date.now(), '새벽 자료(이 사이트)').then(function(t){
   try{ var j = JSON.parse(t); row('n', '새벽 자료 날짜', j.asof || '없음', ''); }catch(e){}
 });
@@ -130,6 +145,13 @@ function inspect(f){
   var g = d.getElementById('ttsgate');
   var gateOn = !!(g && g.classList.contains('on'));
   row('w', '「눌러서 시작하기」 화면', gateOn ? '떠 있음' : '없음(음성 안내 없이 바로)', '');
+  try{
+    var top = d.querySelector('.top'); row('w', '머리(초록 띠)', (top && top.offsetHeight > 0) ? '보임 · 높이 ' + top.offsetHeight + 'px' : '안 보임', (top && top.offsetHeight > 0) ? 'ok' : 'bad');
+    if(gateOn){ var gi = g.querySelector('.gate-in'), rc = gi ? gi.getBoundingClientRect() : null;
+      row('w', '시작 카드', (rc && rc.width > 0 && rc.height > 0) ? '보임 · ' + Math.round(rc.width) + '×' + Math.round(rc.height) + ' 위치 ' + Math.round(rc.top) : '안 보임', (rc && rc.width > 0) ? 'ok' : 'bad'); }
+    var el = d.elementFromPoint(Math.round(w.innerWidth / 2), Math.round(w.innerHeight / 2));
+    row('w', '화면 가운데에 있는 것', el ? (el.id ? '#' + el.id : (el.className ? '.' + String(el.className).split(' ')[0] : el.tagName)) : '없음', '');
+  }catch(e){ row('w', '화면 들여다보기', '실패(' + e.message + ')', 'warn'); }
   if(gateOn){ try{ d.getElementById('gateNo').click(); }catch(e){} }
   setTimeout(function(){
     try{
@@ -150,6 +172,7 @@ function verdict(){
   var bad = [];
   if(!es2017) bad.push('브라우저가 오래되어 시연 웹의 문법을 읽지 못합니다 → 삼성 인터넷·크롬을 업데이트하거나 다른 브라우저로 열기');
   R.n.forEach(function(x){ if(x[2] === 'bad' && /이 사이트/.test(x[0])) bad.push('이 와이파이·망에서 github.io가 막힌 것으로 보입니다 → 휴대폰 데이터로 다시 열어 보기'); });
+  if(R.blankFile) bad.push('이 망에서 받은 시연 웹 파일이 비었거나 다릅니다 → 와이파이가 중간에서 바꾸거나 막는 것으로 보입니다. 휴대폰 데이터로 다시 열어 보기');
   if(inApp || wv) bad.push('앱 안 화면에서 열렸습니다 → 오른쪽 위·아래 메뉴에서 「다른 브라우저로 열기」');
   if(W.errs.length) bad.push('시연 웹 오류: ' + W.errs[0]);
   if(W.result === false) bad.push('예시 검색이 결과 화면까지 가지 못했습니다');
@@ -162,6 +185,15 @@ function verdict(){
 }
 draw();
 setTimeout(probeFrame, 300);
+setTimeout(function(){ $('peek').src = 'index.html?peek=' + Date.now(); }, 600);
+$('fresh').href = 'index.html?fresh=' + Date.now();
+$('wipe').onclick = function(){
+  var jobs = [];
+  try{ if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){ jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){ return Promise.all(rs.map(function(r){ return r.unregister(); })); })); } }catch(e){}
+  try{ if(window.caches){ jobs.push(caches.keys().then(function(ks){ return Promise.all(ks.map(function(k){ return caches.delete(k); })); })); } }catch(e){}
+  Promise.all(jobs).then(function(){ $('wipeMsg').textContent = '지웠습니다. 「새로 열기」를 누르세요.'; $('wipeMsg').className = 'ok'; $('fresh').href = 'index.html?fresh=' + Date.now(); })
+    .catch(function(e){ $('wipeMsg').textContent = '지우지 못함(' + (e && e.message) + ') — 삼성 인터넷 설정 → 개인정보 → 인터넷 사용 기록 삭제에서 캐시를 지워 주세요.'; $('wipeMsg').className = 'bad'; });
+};
 </script>
 </body>
 </html>

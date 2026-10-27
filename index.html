@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.8 (2026. 10. 26.) · 캐시 chaekiji-v34 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.9 (2026. 10. 27.) · 캐시 chaekiji-v35 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>책이지 — 말 한마디면 끝나는 상호대차 (시안)</title>
 <link rel="manifest" href="./manifest.webmanifest">
@@ -947,6 +947,8 @@ const 기준일 = "2026. 8. 18.";
    v1.12.2: 중계 주소 연결(2026. 10. 16. Cloudflare Workers 첫 배포). 순서는 오늘 새벽 매일 갱신 파일 → (그 파일이 오늘 것이 아니거나 그 책이 없을 때만) 중계 → 2일 이내 파일 → 8/18.
    정보나루 대출 상태는 어차피 전일 기준이라 낮에 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않고 하루 호출 한도를 아낀다(서버 auto 모드와 같은 규칙) */
 const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
+/* v1.12.9(2026. 10. 27., 캐시 v35): 담당자 승인 두 가지 — 전화 모드 두 번째 답(r1)도 받을 도서관에 그 책이 없으면 「없지만」(결과 요약 sum1과 같은 기준, 10개 언어),
+   한국어 결과 음성에서만 요약의 「(조회일 기준 대출 가능)」을 뺌(바로 뒤 「○월 ○일 조회 자료로는 대출 가능합니다」와 겹침). 화면 글·맞추기·판정·자료 흐름은 그대로 */
 /* v1.12.8(2026. 10. 26., 캐시 v34): 남은 정직 표시 문구 — 담당자 승인. 결과 요약·갈래 설명·전화 r0의 「지금」을 빼고 「조회일 기준」,
    관내 상호대차 요약 「대출 중이지만」(받을 도서관에 없으면 「없지만」), 방문 안내 화면·음성에 그 판정이 쓴 자료의 조회일,
    책바다는 문자를 보낸다고 하지 않음(확인 시트·완료 제목·본문·다음 단계·대신 한 일·완료 음성·전화 r2·y2), AI 책큐 완료 음성 끝에 시연 문장,
@@ -2424,7 +2426,8 @@ function result(){
     else {
       const plain = document.createElement('div'); plain.innerHTML = h;
       const sum = plain.querySelector('.sumline');
-      const sumTx = sum ? sum.textContent.replace(/\s+/g,' ').trim() : '';
+      let sumTx = sum ? sum.textContent.replace(/\s+/g,' ').trim() : '';
+      if(t === 0) sumTx = sumTx.replace(/\s*\(조회일 기준 대출 가능\)/, '');   /* v1.12.9: 음성에서만 괄호를 뺌 — 바로 뒤 안내가 조회일과 「대출 가능」을 말하므로 겹치지 않게(화면 글은 그대로) */
       let guide;
       if(t === 0)      guide = `${btName}에 있고, ${dW} 조회 자료로는 대출 가능합니다. 상호대차 신청은 필요 없습니다. ${G_().hint}`;
       else if(t === 1) guide = passReady(t) ? `추천 도서관은 ${btName}입니다. ${P_().resP}` : `추천 도서관은 ${btName}입니다. 신청하시려면 화면 가운데의 상호대차 신청 단추를 눌러 주세요.`;
@@ -3204,7 +3207,7 @@ ko:{num:'부천시립도서관 책이지',demo:'시연 · 실제 전화는 연�
  hi:'안녕하세요, 부천시립도서관 책이지입니다. 찾으시는 책을 말씀해 주세요.',
  auth:'등록된 번호로 거셨네요. 홍 님, 확인됐습니다.',
  r0:m=>`말씀하신 책은 자주 가시는 ${m}도서관에 있습니다. 상호대차 없이 바로 빌리실 수 있어요. 자료 위치를 문자로 보내 드릴까요?`,
- r1:(m,k)=>`${m}도서관은 지금 대출 중이지만, 관내 ${k}개 도서관에서 빌릴 수 있습니다. ${m}도서관으로 받아보시겠어요? 무료이고 평일에는 다음 날 도착합니다.`,
+ r1:(m,k,n)=>`${m}도서관${n ? '에는 없지만' : '은 대출 중이지만'}, 관내 ${k}개 도서관에서 빌릴 수 있습니다. ${m}도서관으로 받아보시겠어요? 무료이고 평일에는 다음 날 도착합니다.`,
  r2:k=>`부천 안에는 없고 전국 ${k}개 도서관에 있습니다. 책바다는 별도 가입과 사서 승인이 필요해서 전화로는 신청을 대신할 수 없어요. 신청 방법을 안내해 드릴까요?`,
  r3:(m,k)=>`관내 ${k}곳이 갖고 있지만 지금은 모두 대출 중입니다. 먼저 예약해 두시면 책이 반납될 때 ${m}도서관으로 받는 상호대차로 바꿔 신청할 수 있습니다. 예약해 드릴까요?`,
  ask:'예, 아니오로 말씀해 주세요.',asofSay:d=>`${d} 조회한 자료로 안내합니다.`,askAgain:'죄송해요, 잘 못 들었어요. 예 또는 아니오로 말씀해 주세요.',
@@ -3221,7 +3224,7 @@ en:{num:'Bucheon City Library · Chaekiji',demo:'Demo · no real call is placed'
  hi:'Hello, this is Chaekiji at Bucheon City Library. Which book are you looking for?',
  auth:'You are calling from a registered number. Verified, Mr. or Ms. Hong.',
  r0:m=>`That book is available at your usual library, ${m}. You can borrow it directly, no interlibrary request needed. Shall I text you where it is?`,
- r1:(m,k)=>`${m} Library has it out on loan, but ${k} libraries in Bucheon can lend it. Shall I have it sent to ${m} Library? It is free and arrives the next working day.`,
+ r1:(m,k,n)=>`${m} Library ${n ? "doesn't have it" : 'has it out on loan'}, but ${k} libraries in Bucheon can lend it. Shall I have it sent to ${m} Library? It is free and arrives the next working day.`,
  r2:k=>`It is not held in Bucheon, but ${k} libraries nationwide have it. Chaekbada needs a separate sign-up and librarian approval, so I cannot request it by phone. Shall I tell you how to request it?`,
  r3:(m,k)=>`${k} libraries in Bucheon hold it, but every copy is out. If you place a hold first, you can ask to switch it to an interlibrary loan to ${m} Library when it is returned. Shall I place a hold?`,
  ask:'Please say yes or no.',asofSay:d=>`This is based on data checked on ${d}.`,askAgain:'Sorry, I did not catch that. Please say yes or no.',
@@ -3238,7 +3241,7 @@ zh:{num:'富川市立图书馆 책이지',demo:'演示 · 不会真正拨打电�
  hi:'您好，这里是富川市立图书馆 책이지。请说出您要找的书。',
  auth:'您使用的是已登记的号码。洪先生/女士，已确认。',
  r0:m=>`这本书在您常去的${m}图书馆。无需馆际互借，可直接借阅。要把位置发短信给您吗？`,
- r1:(m,k)=>`${m}图书馆已借出，但富川市内有${k}个图书馆可以借。要送到${m}图书馆吗？免费，工作日次日到馆。`,
+ r1:(m,k,n)=>`${m}图书馆${n ? '没有此书' : '已借出'}，但富川市内有${k}个图书馆可以借。要送到${m}图书馆吗？免费，工作日次日到馆。`,
  r2:k=>`富川市内没有，全国有${k}个图书馆有。책바다需要另行注册和馆员审核，电话无法代为申请。要为您说明申请方法吗？`,
  r3:(m,k)=>`市内有${k}个馆收藏，但目前全部借出。先预约的话，图书归还时可以申请改为馆际互借，在${m}图书馆领取。要帮您预约吗？`,
  ask:'请回答“是”或“不是”。',asofSay:d=>`以下按${d}查询的数据为您说明。`,askAgain:'抱歉没听清，请说“是”或“不是”。',
@@ -3255,7 +3258,7 @@ ja:{num:'富川市立図書館 책이지',demo:'デモ · 実際の電話はか�
  hi:'こんにちは、富川市立図書館の책이지です。お探しの本をお話しください。',
  auth:'登録済みの番号からのお電話ですね。ホン様、確認できました。',
  r0:m=>`その本はいつもの${m}図書館にあります。相互貸借なしでそのまま借りられます。場所をメッセージで送りましょうか。`,
- r1:(m,k)=>`${m}図書館は貸出中ですが、市内${k}館で借りられます。${m}図書館で受け取りますか。無料で、平日なら翌日に届きます。`,
+ r1:(m,k,n)=>`${m}図書館${n ? 'には所蔵がありませんが' : 'は貸出中ですが'}、市内${k}館で借りられます。${m}図書館で受け取りますか。無料で、平日なら翌日に届きます。`,
  r2:k=>`富川市内にはなく、全国${k}館にあります。책바다は別途登録と司書の承認が必要なため、電話では代わりに申し込めません。申請方法をご案内しましょうか。`,
  r3:(m,k)=>`市内${k}館が所蔵していますが、今はすべて貸出中です。先に予約しておけば、返却されたときに相互貸借に切り替えて${m}図書館で受け取る申請ができます。予約しましょうか。`,
  ask:'「はい」か「いいえ」でお答えください。',asofSay:d=>`${d}に照会したデータでご案内します。`,askAgain:'すみません、聞き取れませんでした。「はい」か「いいえ」でお答えください。',
@@ -3272,7 +3275,7 @@ vi:{num:'Thư viện TP Bucheon · Chaekiji',demo:'Demo · không thực hiện 
  hi:'Xin chào, đây là Chaekiji của Thư viện TP Bucheon. Bạn muốn tìm sách gì?',
  auth:'Bạn gọi từ số đã đăng ký. Đã xác nhận, anh/chị Hong.',
  r0:m=>`Sách này có tại thư viện ${m} bạn hay đến. Bạn có thể mượn ngay, không cần mượn liên thư viện. Tôi nhắn vị trí sách cho bạn nhé?`,
- r1:(m,k)=>`Thư viện ${m} đã cho mượn, nhưng ${k} thư viện trong Bucheon có thể cho mượn. Gửi về thư viện ${m} nhé? Miễn phí, đến vào ngày làm việc tiếp theo.`,
+ r1:(m,k,n)=>`Thư viện ${m} ${n ? 'không có sách này' : 'đã cho mượn'}, nhưng ${k} thư viện trong Bucheon có thể cho mượn. Gửi về thư viện ${m} nhé? Miễn phí, đến vào ngày làm việc tiếp theo.`,
  r2:k=>`Trong Bucheon không có, nhưng ${k} thư viện toàn quốc có. Chaekbada cần đăng ký riêng và thủ thư phê duyệt nên tôi không thể đăng ký hộ qua điện thoại. Tôi hướng dẫn cách đăng ký cho bạn nhé?`,
  r3:(m,k)=>`${k} thư viện trong Bucheon có sách nhưng tất cả đang được mượn. Nếu đặt trước, khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại thư viện ${m}. Tôi đặt trước giúp bạn nhé?`,
  ask:'Bạn trả lời có hoặc không nhé.',asofSay:d=>`Thông tin sau theo dữ liệu tra cứu ${d}.`,askAgain:'Xin lỗi, tôi chưa nghe rõ. Bạn nói có hoặc không nhé.',
@@ -3289,7 +3292,7 @@ th:{num:'ห้องสมุดเมืองบูชอน · Chaekiji',dem
  hi:'สวัสดีค่ะ นี่คือ Chaekiji ห้องสมุดเมืองบูชอน ต้องการหาหนังสือเล่มไหนคะ',
  auth:'โทรจากหมายเลขที่ลงทะเบียนไว้ ยืนยันตัวตนคุณฮงแล้วค่ะ',
  r0:m=>`หนังสือเล่มนี้มีอยู่ที่ห้องสมุด ${m} ที่คุณไปประจำ ยืมได้เลยโดยไม่ต้องขอยืมข้ามห้องสมุด ให้ส่งตำแหน่งหนังสือทางข้อความไหมคะ`,
- r1:(m,k)=>`ห้องสมุด ${m} ถูกยืมอยู่ แต่มี ${k} แห่งในบูชอนที่ยืมได้ ให้ส่งมาที่ห้องสมุด ${m} ไหมคะ ฟรีและถึงในวันทำการถัดไป`,
+ r1:(m,k,n)=>`ห้องสมุด ${m} ${n ? 'ไม่มีเล่มนี้' : 'ถูกยืมอยู่'} แต่มี ${k} แห่งในบูชอนที่ยืมได้ ให้ส่งมาที่ห้องสมุด ${m} ไหมคะ ฟรีและถึงในวันทำการถัดไป`,
  r2:k=>`ในบูชอนไม่มี แต่มีที่ ${k} แห่งทั่วประเทศ Chaekbada ต้องสมัครแยกและให้บรรณารักษ์อนุมัติ จึงขอแทนทางโทรศัพท์ไม่ได้ ให้แนะนำวิธีขอไหมคะ`,
  r3:(m,k)=>`มี ${k} แห่งในบูชอนแต่ถูกยืมหมด ถ้าจองไว้ก่อน เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามห้องสมุดเพื่อรับที่ห้องสมุด ${m} ได้ ให้จองไว้ไหมคะ`,
  ask:'กรุณาตอบว่า ใช่ หรือ ไม่',asofSay:d=>`แจ้งตามข้อมูลที่ตรวจเมื่อ ${d} ค่ะ`,askAgain:'ขอโทษค่ะ ไม่ได้ยิน กรุณาตอบว่า ใช่ หรือ ไม่',
@@ -3306,7 +3309,7 @@ ru:{num:'Библиотека Пучхона · Chaekiji',demo:'Демо · на
  hi:'Здравствуйте, это Chaekiji, городская библиотека Пучхона. Какую книгу вы ищете?',
  auth:'Вы звоните с зарегистрированного номера. Подтверждено, господин или госпожа Хон.',
  r0:m=>`Эта книга есть в вашей библиотеке ${m}. Можно взять сразу, без межбиблиотечного запроса. Прислать вам место на полке сообщением?`,
- r1:(m,k)=>`В библиотеке ${m} книга на руках, но её могут выдать ${k} библиотек Пучхона. Доставить в библиотеку ${m}? Бесплатно, доставим на следующий рабочий день.`,
+ r1:(m,k,n)=>`В библиотеке ${m} ${n ? 'этой книги нет' : 'книга на руках'}, но её могут выдать ${k} библиотек Пучхона. Доставить в библиотеку ${m}? Бесплатно, доставим на следующий рабочий день.`,
  r2:k=>`В Пучхоне книги нет, но она есть в ${k} библиотеках страны. Для Chaekbada нужна отдельная регистрация и одобрение библиотекаря, поэтому по телефону оформить нельзя. Рассказать, как оформить заявку?`,
  r3:(m,k)=>`Книга есть в ${k} библиотеках Пучхона, но все экземпляры выданы. Если забронировать заранее, после возврата книги бронь можно переоформить на межбиблиотечный заказ с получением в библиотеке ${m}. Забронировать?`,
  ask:'Скажите, пожалуйста, да или нет.',asofSay:d=>`Сообщаю по данным на ${d}.`,askAgain:'Извините, не расслышал. Скажите да или нет.',
@@ -3323,7 +3326,7 @@ mn:{num:'Бүчон хотын номын сан · Chaekiji',demo:'Демо · 
  hi:'Сайн байна уу, Бүчон хотын номын сангийн Chaekiji байна. Ямар ном хайж байна вэ?',
  auth:'Бүртгэлтэй дугаараас залгасан байна. Хон таныг баталгаажууллаа.',
  r0:m=>`Энэ ном таны байнга очдог ${m} номын санд байна. Хоорондын зээлгүйгээр шууд авч болно. Байршлыг мессежээр илгээх үү?`,
- r1:(m,k)=>`${m} номын санд зээлэгдсэн ч Бүчоны ${k} номын сангаас авч болно. ${m} номын сан руу хүргүүлэх үү? Үнэгүй, дараагийн ажлын өдөр ирнэ.`,
+ r1:(m,k,n)=>`${m} номын санд ${n ? 'энэ ном байхгүй' : 'зээлэгдсэн'} ч Бүчоны ${k} номын сангаас авч болно. ${m} номын сан руу хүргүүлэх үү? Үнэгүй, дараагийн ажлын өдөр ирнэ.`,
  r2:k=>`Бүчонд байхгүй, улсын хэмжээнд ${k} номын санд байна. Chaekbada-д тусдаа бүртгэл, номын санчийн зөвшөөрөл хэрэгтэй тул утсаар оронд нь захиалж чадахгүй. Хүсэх аргыг тайлбарлаж өгөх үү?`,
  r3:(m,k)=>`Бүчоны ${k} номын санд байгаа ч бүгд зээлэгдсэн. Эхлээд захиалж байвал ном буцаж ирэхэд ${m} номын сангаас авахаар хоорондын зээл рүү шилжүүлэх хүсэлт гаргаж болно. Захиалах уу?`,
  ask:'Тийм эсвэл үгүй гэж хэлнэ үү.',asofSay:d=>`${d}-ны өгөгдлөөр хэлье.`,askAgain:'Уучлаарай, сонсогдсонгүй. Тийм эсвэл үгүй гэж хэлнэ үү.',
@@ -3340,7 +3343,7 @@ uz:{num:'Bucheon shahar kutubxonasi · Chaekiji',demo:'Demo · haqiqiy qo‘ng�
  hi:'Assalomu alaykum, bu Bucheon shahar kutubxonasining Chaekiji. Qaysi kitobni qidiryapsiz?',
  auth:'Ro‘yxatdan o‘tgan raqamdan qo‘ng‘iroq qilyapsiz. Tasdiqlandi, Hong janob/xonim.',
  r0:m=>`Bu kitob siz doim boradigan ${m} kutubxonasida bor. Kutubxonalararo so‘rovsiz to‘g‘ridan-to‘g‘ri olishingiz mumkin. Joyini xabar bilan yuboraymi?`,
- r1:(m,k)=>`${m} kutubxonasida kitob berilgan, lekin Bucheondagi ${k} ta kutubxona bera oladi. ${m} kutubxonasiga yetkazaymi? Bepul, keyingi ish kunida yetib keladi.`,
+ r1:(m,k,n)=>`${m} kutubxonasida ${n ? 'bu kitob yo‘q' : 'kitob berilgan'}, lekin Bucheondagi ${k} ta kutubxona bera oladi. ${m} kutubxonasiga yetkazaymi? Bepul, keyingi ish kunida yetib keladi.`,
  r2:k=>`Bucheonda yo‘q, lekin butun mamlakat bo‘yicha ${k} ta kutubxonada bor. Chaekbada uchun alohida ro‘yxat va kutubxonachi tasdig‘i kerak, shuning uchun telefon orqali so‘rov bera olmayman. So‘rash tartibini aytib beraymi?`,
  r3:(m,k)=>`Bucheondagi ${k} ta kutubxonada bor, lekin hammasi berilgan. Avval band qilsangiz, kitob qaytarilganda uni ${m} kutubxonasidan olish uchun kutubxonalararo so‘rovga o‘tkazishni so‘rashingiz mumkin. Band qilaymi?`,
  ask:'Ha yoki yo‘q deb ayting.',asofSay:d=>`${d}dagi ma’lumot bo‘yicha aytaman.`,askAgain:'Kechirasiz, eshitmadim. Ha yoki yo‘q deb ayting.',
@@ -3357,7 +3360,7 @@ id:{num:'Perpustakaan Kota Bucheon · Chaekiji',demo:'Demo · tidak ada panggila
  hi:'Halo, ini Chaekiji dari Perpustakaan Kota Bucheon. Buku apa yang Anda cari?',
  auth:'Anda menelepon dari nomor terdaftar. Terverifikasi, Bapak/Ibu Hong.',
  r0:m=>`Buku itu tersedia di perpustakaan langganan Anda, ${m}. Bisa langsung dipinjam tanpa pinjam antarperpustakaan. Mau saya kirim lokasinya lewat SMS?`,
- r1:(m,k)=>`Di Perpustakaan ${m} sedang dipinjam, tetapi ${k} perpustakaan di Bucheon bisa meminjamkan. Mau dikirim ke Perpustakaan ${m}? Gratis, tiba pada hari kerja berikutnya.`,
+ r1:(m,k,n)=>`${n ? 'Perpustakaan ' + m + ' tidak punya buku ini' : 'Di Perpustakaan ' + m + ' sedang dipinjam'}, tetapi ${k} perpustakaan di Bucheon bisa meminjamkan. Mau dikirim ke Perpustakaan ${m}? Gratis, tiba pada hari kerja berikutnya.`,
  r2:k=>`Tidak ada di Bucheon, tetapi ada di ${k} perpustakaan se-Korea. Chaekbada perlu pendaftaran terpisah dan persetujuan pustakawan, jadi tidak bisa saya ajukan lewat telepon. Mau saya jelaskan cara mengajukannya?`,
  r3:(m,k)=>`${k} perpustakaan di Bucheon memilikinya, tetapi semua sedang dipinjam. Jika dipesan dulu, saat buku dikembalikan Anda bisa mengajukan peralihan ke pinjam antarperpustakaan untuk diambil di Perpustakaan ${m}. Mau saya pesankan?`,
  ask:'Silakan jawab ya atau tidak.',asofSay:d=>`Saya sampaikan menurut data per ${d}.`,askAgain:'Maaf, kurang jelas. Silakan jawab ya atau tidak.',
@@ -3429,7 +3432,7 @@ function phHandle(kind, text, forced){
     PH.c=CASES[i]; const c=PH.c, V=view(c), tier=eff(c), m=내관; PH.tier=tier;
     let msg;
     if(tier===0) msg=p.r0(m);
-    else if(tier===1) msg=p.r1(m, V.okN);
+    else if(tier===1) msg=p.r1(m, V.okN, V.mine !== 'busy');   /* v1.12.9: 받을 도서관이 그 책을 갖고 있지 않으면 「없지만」(결과 요약 sum1과 같은 기준) */
     else if(tier===3) msg=p.r3(m, V.libs.filter(l=>l.s==='busy').length);
     else msg=p.r2(V.okN||6);
     if(!c.real) msg=u.exSay+' '+msg;   /* v1.12.8: 예시 책(③)은 어느 갈래든 답 앞에 「예시 장면입니다」 — 예시 자료라 조회일은 말하지 않음 */

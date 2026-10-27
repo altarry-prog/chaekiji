@@ -2,8 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.10 (2026. 10. 27.) · 캐시 chaekiji-v36 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.11 (2026. 10. 27.) · 캐시 chaekiji-v37 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
+<script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
+window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>책이지 — 말 한마디면 끝나는 상호대차 (시안)</title>
 <link rel="manifest" href="./manifest.webmanifest">
@@ -37,7 +40,7 @@ body{
 /* 데스크톱에서는 폰 프레임 */
 .phone{
   width:100%;max-width:430px;background:var(--card);min-height:100vh;height:100vh;height:100dvh;
-  position:relative;overflow:hidden;display:flex;flex-direction:column;
+  position:relative;overflow:hidden;display:flex;flex-direction:column;flex-shrink:0;   /* v1.12.11: 본문에 다른 요소가 끼어도 폭이 줄지 않게 */
 }
 @media (min-width:600px){
   body{padding:26px 12px;align-items:center}
@@ -85,7 +88,7 @@ body{
 
 /* ── v1.9: 음성 시작 화면 — 헤더 아래만 덮는다(🔊·🌏 단추는 그대로 누를 수 있게) ── */
 .gate{position:absolute;left:0;right:0;bottom:0;top:0;z-index:15;display:none;align-items:center;justify-content:center;
-  padding:18px 20px;background:rgba(247,249,248,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+  padding:18px 20px;background:rgba(247,249,248,.88)}   /* v1.12.11: 흐림 효과(backdrop-filter) 뺌 — 그래픽이 못 그리는 휴대폰에서 화면 전체가 비지 않게, 대신 배경을 조금 더 덮음 */
 .gate.on{display:flex;animation:fade .25s both}
 .gate.off{opacity:0;transition:opacity .3s}
 .gate-in{background:#fff;border:1.5px solid var(--line);border-radius:22px;padding:22px 18px 12px;width:100%;max-width:300px;
@@ -103,10 +106,19 @@ body.bigmode .gate h3{font-size:22px}body.bigmode .gate .cta{font-size:18px}body
 #s-idle.on{display:flex;flex-direction:column;flex:1;min-height:0}
 .screen.on{display:block;animation:fade .32s ease both}
 @keyframes fade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+/* v1.12.11: 시작 안전장치 — 흰 화면 대신 띄우는 안내 띠 */
+.bootfail{position:fixed;left:12px;right:12px;top:12px;z-index:99;background:#fff;border:2px solid var(--demo);border-radius:14px;
+  padding:12px 14px;box-shadow:0 8px 28px rgba(0,0,0,.18);font-size:14.5px;line-height:1.6;color:var(--ink);word-break:keep-all}
+.bootfail b{display:block;margin-bottom:2px}.bootfail a{color:var(--brand-d);font-weight:700}
+.bootfail small{display:block;margin-top:4px;color:var(--ink3);font-size:12px;word-break:break-all}
 /* v1.12.10: 화면이 애니메이션에 기대지 않게 — 기기가 애니메이션을 멈춰 두면(갤럭시의 「애니메이션 제거」·절전 설정 등) 첫 화면이 투명한 채 남아
    초록 머리 띠 아래가 흰 화면으로 보였다. 아래 점검(animGuard)이 그런 기기를 알아채 html.noanim을 붙이면 애니메이션 없이 원래 모습으로 보인다.
    「동작 줄이기」를 켠 기기도 같은 모습(접근성) */
 html.noanim *,html.noanim *::before,html.noanim *::after{animation:none!important;transition:none!important}
+/* v1.12.11: 화면 틀 점검이 붙이는 단순 배치 — 화면 틀이 숨겨졌거나 크기가 0이거나 화면 밖일 때 */
+html.safelayout body{display:block!important;padding:0!important;min-height:0!important}
+html.safelayout .phone{display:flex!important;visibility:visible!important;opacity:1!important;position:relative!important;left:auto!important;top:auto!important;transform:none!important;
+  width:100%!important;max-width:430px!important;margin:0 auto!important;height:auto!important;min-height:640px!important;flex:none!important}
 html.noanim .scanrow{opacity:1}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -630,6 +642,7 @@ body.bigmode .foot button{font-size:12.5px}
 </style>
 </head>
 <body>
+<noscript><div class="bootfail" role="alert"><b>이 브라우저에서 자바스크립트가 꺼져 있어 시연 화면이 움직이지 않습니다.</b>설정에서 켜거나 크롬·사파리로 열어 주세요. · <a href="https://github.com/altarry-prog/chaekiji/blob/main/docs/%EC%8B%9C%EC%97%B0%EC%9B%B9-%EA%B8%B0%EB%8A%A5-%EC%83%81%EC%84%B8.md">그림으로 둘러보기</a></div></noscript>
 <div class="phone">
 
   <div class="top">
@@ -957,6 +970,10 @@ const 기준일 = "2026. 8. 18.";
    v1.12.2: 중계 주소 연결(2026. 10. 16. Cloudflare Workers 첫 배포). 순서는 오늘 새벽 매일 갱신 파일 → (그 파일이 오늘 것이 아니거나 그 책이 없을 때만) 중계 → 2일 이내 파일 → 8/18.
    정보나루 대출 상태는 어차피 전일 기준이라 낮에 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않고 하루 호출 한도를 아낀다(서버 auto 모드와 같은 규칙) */
 const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
+/* v1.12.11(2026. 10. 27., 캐시 v37): 담당자 승인 — ① 동결을 10. 30.(금) 18시로 앞당겨 심사 기간 고정 자료 날짜를 10. 30.로(서버·원격 상담 비서·운영 점검과 같은 값)
+   ② 시작 안전장치: 스크립트가 끝까지 돌지 못하면 흰 화면 대신 안내 띠(크롬·사파리로 열기·그림으로 둘러보기·점검), 자바스크립트가 꺼진 기기에도 안내
+   ③ 예약 갈래의 「지금은 모두 대출 중」에서 「지금」 뺌(해당 언어) ④ 전화 모드 마지막 답(바로 이용·관내 상호대차·예약) 끝에 그 언어의 시연 문장. 판정·자료 흐름은 그대로
+   ⑤ 갤럭시 캡처(14:39, 머리 띠도 없이 배경색만)에 대비: 시작 화면 흐림 효과 뺌 · 화면 틀이 줄지 않게 · 화면 틀 점검(숨겨졌거나 크기 0·화면 밖이면 단순 배치, 그래도 안 보이면 안내 띠) */
 /* v1.12.10(2026. 10. 27., 캐시 v36): 갤럭시(삼성 인터넷)에서 초록 머리 띠 아래가 흰 화면으로 남던 것 — 첫 화면이 애니메이션(투명 → 보임)에 기대고 있어,
    기기가 애니메이션을 멈춰 두면 투명한 채 남았다. 0.9초·2.5초 뒤 첫 화면이 아직 투명하면 애니메이션을 끄고(html.noanim) 원래 모습으로 보인다.
    「동작 줄이기」를 켠 기기는 처음부터 애니메이션 없이. 화면 글·맞추기·판정·자료 흐름은 그대로 */
@@ -979,8 +996,8 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    확인 시트 「시연이라 실제로 접수되지는 않아요」, 예시 장면(③) 음성 앞머리, 바로 이용 음성·전화 모드에 그 답이 쓴 자료의 조회일, 「이해했습니다」 줄은 들은 말 그대로,
    못 찾음 「시연 화면은 예시 5권만」, 예약 갈래 배지, 「신청 규정 확인(한도·연체는 창구에서)」, 접수번호 DEMO, 전화 모드 「도착한 날을 포함해 3일」, 로/으로,
    회색 글자 대비, 2단계 「무슨 책인지 맞춰 보기」 — 10개 언어 같은 뜻. 맞추기·판정·자료 흐름은 그대로 */
-/* v1.12.6: 심사 기간 고정 자료 — 2026. 11. 8. 18시 동결 뒤 새벽 갱신이 멈추므로, 11. 8. 이후 날짜의 새벽 자료는 11. 26.까지 오늘 자료처럼 쓴다
-   (시연 도서는 중계·정보나루를 부르지 않고, 바닥글·결과의 조회일은 그대로 「11. 8.」). 평소 규칙(오늘 파일 → 중계 → 2.5일 이내 파일)은 그대로. 결선 뒤 지움.
+/* v1.12.6: 심사 기간 고정 자료 — 동결 뒤 새벽 갱신이 멈추므로, 동결일 이후 날짜의 새벽 자료는 11. 26.까지 오늘 자료처럼 쓴다(v1.12.11: 동결일 11. 8. → 10. 30.)
+   (시연 도서는 중계·정보나루를 부르지 않고, 바닥글·결과의 조회일은 그대로 「10. 30.」). 평소 규칙(오늘 파일 → 중계 → 2.5일 이내 파일)은 그대로. 결선 뒤 지움.
    큰글자 모드에서 마이크 단추와 둘레 고리는 보통 크기 그대로(고리가 안내 글을 가로지르던 것) — 10/17 고침안, 10/19 승인 */
 /* v1.12.5: 「공식 누리집에서 이 책 보기」 링크를 제목 검색 → ISBN 검색으로 — 그 판본 화면까지 바로 열림(2026. 10. 18. 담당자가 자료검색에서 확인).
    ISBN이 없을 때만 제목 검색. 화면 글자는 그대로 */
@@ -1017,8 +1034,9 @@ function dayWords(s, code){ const m = /(\d{4})\D+(\d{1,2})\D+(\d{1,2})/.exec(Str
 function ro(w){ const c = String(w || '').trim().slice(-1).charCodeAt(0) - 0xAC00;
   if(!(c >= 0 && c <= 11171)) return '(으)로'; const j = c % 28; return (j === 0 || j === 8) ? '로' : '으로'; }
 function kstToday(){ return new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); }
-/* v1.12.6: 심사 기간 고정 자료 — 서버 naru.snapshot_ok·원격 상담 비서 snapshotOk와 같은 규칙 */
-const FROZEN_FROM = '2026-11-08', FROZEN_UNTIL = '2026-11-26';
+/* v1.12.6: 심사 기간 고정 자료 — 서버 naru.snapshot_ok·원격 상담 비서 snapshotOk와 같은 규칙
+   v1.12.11: 동결을 10. 30. 18시로 앞당김(담당자 결정 10. 27.) → 10. 30. 이후 새벽 자료를 11. 26.까지 오늘 자료처럼 */
+const FROZEN_FROM = '2026-10-30', FROZEN_UNTIL = '2026-11-26';
 function frozenOk(asof){ const t = kstToday(); return typeof asof === 'string' && asof >= FROZEN_FROM && asof <= t && t <= FROZEN_UNTIL; }
 function dailyJson(){
   return fetch('data/holdings-today.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null);
@@ -1028,7 +1046,7 @@ dailyJson().then(j => { if(!j || !j.asof) return; const age = (Date.now() - new 
   const el = document.getElementById('footSrc'); if(el && ((age >= 0 && age <= 2.5) || frozenOk(j.asof))) el.textContent = `정보나루 Open API ${asofText(j.asof)} 갱신`; });
 function useDaily(c, j, todayOnly){
   if(!j || !j.holdings || !j.holdings[c.book.isbn] || !j.asof) return false;
-  if(todayOnly){ if(j.asof !== kstToday() && !frozenOk(j.asof)) return false; }   /* v1.12.6: 심사 기간엔 11/8 자료를 오늘 자료처럼 */
+  if(todayOnly){ if(j.asof !== kstToday() && !frozenOk(j.asof)) return false; }   /* v1.12.6: 심사 기간엔 동결일(v1.12.11부터 10/30) 자료를 오늘 자료처럼 */
   else { const age = (Date.now() - new Date(j.asof + 'T00:00:00')) / 864e5; if(!(age >= 0 && age <= 2.5) && !frozenOk(j.asof)) return false; }
   const bx = {}; Object.keys(LIB).forEach(n => { bx[n] = j.holdings[c.book.isbn][n] || 'none'; });
   c.bx = bx; c.asof = asofText(j.asof); return true;
@@ -1589,11 +1607,11 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  tier:{0:['관내 보유','바로 이용','상동도서관에 있습니다','방문 안내 보기','무료','오늘 바로'],
        1:['2단계','관내 상호대차','시립도서관 16개관 간 이동','상호대차 신청','무료','평일 다음 날'],
        2:['3단계','책바다','전국 상호대차 · 별도 가입·사서 승인','책바다 안내 받기','실비','5~7일'],
-       3:['예약','관내 예약 대기','관내 소장 있음 · 지금은 모두 대출 중','예약 신청','무료','반납 뒤 전환 신청']},
+       3:['예약','관내 예약 대기','관내 소장 있음 · 모두 대출 중','예약 신청','무료','반납 뒤 전환 신청']},
  sum0:(m,k)=>`자주 가시는 <b>${m}도서관에 있습니다</b>(조회일 기준 대출 가능). 상호대차 없이 바로 빌리실 수 있어요. <span class="s2">관내에서는 ${k}곳이 대출 가능합니다.</span>`,
  sum1:(m,k,n)=>`<b>${m}도서관${n ? '에는 없지만' : '은 대출 중이지만'}</b>, 가까운 <b>${k}개 분관</b>에서 빌려서 ${m}도서관으로 <span class=nw>보내드릴 수 있어요.</span>`,
  sum2:k=>`부천 관내에는 없어서 <b>전국에서 ${k}곳</b>을 찾았어요. 책바다는 별도 가입과 사서 승인이 필요해서, 신청 대신 안내를 드릴게요.`,
- sum3:(m,k)=>`관내 <b>${k}곳</b>이 갖고 있지만 지금은 모두 대출 중이에요. 먼저 예약해 두시면, 책이 반납될 때 <b>${m}도서관</b>으로 받는 상호대차로 바꿔 신청할 수 있어요.`,
+ sum3:(m,k)=>`관내 <b>${k}곳</b>이 갖고 있지만 모두 대출 중이에요. 먼저 예약해 두시면, 책이 반납될 때 <b>${m}도서관</b>으로 받는 상호대차로 바꿔 신청할 수 있어요.`,
  rec:'추천',tag0:'바로 이용',tag1:'가장 빠름',tag2:'가장 가까움',also:'여기도 가능합니다',
  fold:n=>`그 외 ${n}곳 현황 보기 ＋`,foldC:'접기 －',bOk:'대출 가능',bBusy:'대출 중',bNone:'미소장',
  my:'자주 가는 곳',code:'도서관코드',others:n=>`그 밖 ${n}개 분관`,again:'다시 검색',
@@ -1622,7 +1640,7 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  tier:{0:['On site','Use right away','Available at your library','Visit info','Free','Today'],
        1:['Step 2','Bucheon interlibrary loan','Between 16 Bucheon branches','Request interlibrary loan','Free','1 working day'],
        2:['Step 3','Chaekbada (national)','Nationwide · separate sign-up & librarian approval','Get Chaekbada guidance','Fee','5–7 days'],
-       3:['Hold','Place a hold','Held in Bucheon · all copies out now','Place a hold','Free','Request after return']},
+       3:['Hold','Place a hold','Held in Bucheon · all copies out','Place a hold','Free','Request after return']},
  sum0:(m,k)=>`<b>It's at ${m} Library</b> (available as of the check date). No loan needed — just walk in. <span class="s2">${k} branches have it available.</span>`,
  sum1:(m,k,n)=>`<b>${m} Library${n ? " doesn't have it" : "'s copy is checked out"}</b>, but <b>${k} branches</b> have it available — we'll bring it to <span class=nw>${m} for you.</span>`,
  sum2:k=>`Not in Bucheon, but <b>found at ${k} libraries nationwide</b>. Chaekbada needs a separate sign-up and librarian approval, so we'll guide you instead of requesting for you.`,
@@ -1655,11 +1673,11 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  tier:{0:['在馆','立即使用','您常去的图书馆有此书','到馆指引','免费','今天'],
        1:['第2步','市内馆际互借','富川16个分馆之间调拨','申请馆际互借','免费','1个工作日'],
        2:['第3步','Chaekbada(全国)','全国互借 · 需另行注册与馆员审核','获取申请指引','自费','5~7天'],
-       3:['预约','馆内预约等待','市内有藏 · 目前全部借出','申请预约','免费','归还后申请互借']},
+       3:['预约','馆内预约等待','市内有藏 · 全部借出','申请预约','免费','归还后申请互借']},
  sum0:(m,k)=>`<b>${m}图书馆有这本书</b>（以查询日为准可借）。无需互借，直接去借即可。<span class="s2">市内共有${k}馆可借。</span>`,
  sum1:(m,k,n)=>`<b>${m}图书馆${n ? '没有此书' : '此书已借出'}</b>，但<b>${k}个分馆</b>可借出并<span class=nw>送到${m}图书馆。</span>`,
  sum2:k=>`富川市内没有，但<b>全国${k}个图书馆</b>有藏。Chaekbada需另行注册并经馆员审核，因此我们提供申请指引。`,
- sum3:(m,k)=>`市内<b>${k}个馆</b>有藏，但目前全部借出。先预约的话，图书归还时可以申请改为馆际互借，在<b>${m}图书馆</b>领取。`,
+ sum3:(m,k)=>`市内<b>${k}个馆</b>有藏，但全部借出。先预约的话，图书归还时可以申请改为馆际互借，在<b>${m}图书馆</b>领取。`,
  rec:'推荐',tag0:'立即使用',tag1:'最快',tag2:'最近',also:'这些馆也可以',
  fold:n=>`查看其余${n}馆 ＋`,foldC:'收起 －',bOk:'可借',bBusy:'已借出',bNone:'无馆藏',
  my:'常去',code:'图书馆代码',others:n=>`其余${n}个分馆`,again:'重新搜索',
@@ -1688,11 +1706,11 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  tier:{0:['所蔵中','すぐ利用','いつもの図書館にあります','来館案内を見る','無料','本日'],
        1:['第2段階','市内相互貸借','富川16館の間で取り寄せ','相互貸借を申請','無料','1営業日'],
        2:['第3段階','チェクバダ(全国)','全国相互貸借 · 別途登録・司書承認','申請案内を受ける','実費','5~7日'],
-       3:['予約','館内予約待ち','市内に所蔵 · 現在すべて貸出中','予約する','無料','返却後に切替申請']},
+       3:['予約','館内予約待ち','市内に所蔵 · すべて貸出中','予約する','無料','返却後に切替申請']},
  sum0:(m,k)=>`<b>${m}図書館にあります</b>（照会日基準で貸出可）。取り寄せ不要、そのまま借りられます。<span class="s2">市内では${k}館で貸出可能です。</span>`,
  sum1:(m,k,n)=>`<b>${m}図書館${n ? 'には所蔵がありませんが' : 'では貸出中ですが'}</b>、<b>${k}分館</b>から取り寄せて${m}図書館へ<span class=nw>お届けできます。</span>`,
  sum2:k=>`富川市内にはありませんが、<b>全国${k}館</b>で見つかりました。チェクバダは別途登録と司書承認が必要なため、申請の代わりにご案内します。`,
- sum3:(m,k)=>`市内<b>${k}館</b>に所蔵がありますが、現在すべて貸出中です。先に予約しておけば、返却時に相互貸借に切り替えて<b>${m}図書館</b>で受け取る申請ができます。`,
+ sum3:(m,k)=>`市内<b>${k}館</b>に所蔵がありますが、すべて貸出中です。先に予約しておけば、返却時に相互貸借に切り替えて<b>${m}図書館</b>で受け取る申請ができます。`,
  rec:'おすすめ',tag0:'すぐ利用',tag1:'最速',tag2:'最寄り',also:'こちらでも可能',
  fold:n=>`他${n}館を見る ＋`,foldC:'閉じる －',bOk:'貸出可',bBusy:'貸出中',bNone:'所蔵なし',
  my:'いつもの',code:'図書館コード',others:n=>`その他${n}分館`,again:'再検索',
@@ -1721,11 +1739,11 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  tier:{0:['Có sẵn','Dùng ngay','Thư viện quen thuộc có sách','Xem hướng dẫn đến mượn','Miễn phí','Hôm nay'],
        1:['Bước 2','Mượn liên thư viện Bucheon','Giữa 16 chi nhánh Bucheon','Đăng ký mượn liên thư viện','Miễn phí','1 ngày làm việc'],
        2:['Bước 3','Chaekbada (toàn quốc)','Toàn quốc · đăng ký riêng & thủ thư duyệt','Nhận hướng dẫn Chaekbada','Có phí','5–7 ngày'],
-       3:['Đặt trước','Chờ đặt trước trong thành phố','Có trong Bucheon · hiện đều đang mượn','Đặt trước','Miễn phí','Đăng ký sau khi trả']},
+       3:['Đặt trước','Chờ đặt trước trong thành phố','Có trong Bucheon · tất cả đang được mượn','Đặt trước','Miễn phí','Đăng ký sau khi trả']},
  sum0:(m,k)=>`<b>Thư viện ${m} có sách</b> (mượn được, tính theo ngày tra cứu). Không cần mượn liên thư viện — đến lấy ngay. <span class="s2">${k} chi nhánh đang có thể cho mượn.</span>`,
  sum1:(m,k,n)=>`<b>Thư viện ${m} ${n ? 'không có sách này' : 'đang cho mượn sách này'}</b>, nhưng <b>${k} chi nhánh</b> có thể cho mượn và chuyển về <span class=nw>${m} cho bạn.</span>`,
  sum2:k=>`Bucheon không có, nhưng <b>tìm thấy ở ${k} thư viện toàn quốc</b>. Chaekbada cần đăng ký riêng và thủ thư duyệt, nên chúng tôi sẽ hướng dẫn thay vì đăng ký hộ.`,
- sum3:(m,k)=>`<b>${k} chi nhánh</b> trong Bucheon có sách nhưng hiện đều đang mượn. Nếu đặt trước, khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại <b>Thư viện ${m}</b>.`,
+ sum3:(m,k)=>`<b>${k} chi nhánh</b> trong Bucheon có sách nhưng tất cả đang được mượn. Nếu đặt trước, khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại <b>Thư viện ${m}</b>.`,
  rec:'Đề xuất',tag0:'Dùng ngay',tag1:'Nhanh nhất',tag2:'Gần nhất',also:'Những nơi này cũng được',
  fold:n=>`Xem thêm ${n} chi nhánh ＋`,foldC:'Thu gọn －',bOk:'Mượn được',bBusy:'Đang cho mượn',bNone:'Không có',
  my:'quen thuộc',code:'Mã thư viện',others:n=>`${n} chi nhánh khác`,again:'Tìm lại',
@@ -1754,11 +1772,11 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  tier:{0:['มีเล่มอยู่','ใช้ได้เลย','ห้องสมุดประจำของคุณมีเล่มนี้','ดูคำแนะนำการไปยืม','ฟรี','วันนี้'],
        1:['ขั้นที่ 2','ยืมข้ามสาขาบูชอน','ระหว่าง 16 สาขาในบูชอน','ขอยืมข้ามสาขา','ฟรี','1 วันทำการ'],
        2:['ขั้นที่ 3','แชกบาดา (ทั่วประเทศ)','ทั่วประเทศ · สมัครแยกและบรรณารักษ์อนุมัติ','รับคำแนะนำแชกบาดา','มีค่าใช้จ่าย','5–7 วัน'],
-       3:['จอง','จองในเมือง','มีในบูชอน · ตอนนี้ถูกยืมหมด','จองหนังสือ','ฟรี','ขอเปลี่ยนหลังคืน']},
+       3:['จอง','จองในเมือง','มีในบูชอน · ถูกยืมหมด','จองหนังสือ','ฟรี','ขอเปลี่ยนหลังคืน']},
  sum0:(m,k)=>`<b>ห้องสมุด${m}มีเล่มนี้</b> (ยืมได้ ตามข้อมูล ณ วันที่ตรวจ) ไม่ต้องยืมข้ามสาขา ไปรับได้เลย <span class="s2">ในเมืองยืมได้ ${k} แห่ง</span>`,
  sum1:(m,k,n)=>`<b>${n ? 'ห้องสมุด' + m + 'ไม่มีเล่มนี้' : 'เล่มที่ห้องสมุด' + m + 'ถูกยืมอยู่'}</b> แต่<b> ${k} สาขา</b>ให้ยืมได้ และจะส่งมาที่${m}<span class=nw>ให้คุณ</span>`,
  sum2:k=>`ในบูชอนไม่มี แต่<b>พบที่ ${k} ห้องสมุดทั่วประเทศ</b> แชกบาดาต้องสมัครแยกและให้บรรณารักษ์อนุมัติ จึงขอแนะนำวิธีแทนการขอให้`,
- sum3:(m,k)=>`มีที่ <b>${k} สาขา</b>ในบูชอน แต่ตอนนี้ถูกยืมหมด ถ้าจองไว้ก่อน เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามสาขาเพื่อรับที่<b>ห้องสมุด${m}</b>ได้`,
+ sum3:(m,k)=>`มีที่ <b>${k} สาขา</b>ในบูชอน แต่ถูกยืมหมด ถ้าจองไว้ก่อน เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามสาขาเพื่อรับที่<b>ห้องสมุด${m}</b>ได้`,
  rec:'แนะนำ',tag0:'ใช้ได้เลย',tag1:'เร็วที่สุด',tag2:'ใกล้ที่สุด',also:'ที่นี่ก็ได้เช่นกัน',
  fold:n=>`ดูอีก ${n} สาขา ＋`,foldC:'ย่อ －',bOk:'ยืมได้',bBusy:'ถูกยืมอยู่',bNone:'ไม่มี',
  my:'ประจำ',code:'รหัสห้องสมุด',others:n=>`อีก ${n} สาขา`,again:'ค้นหาใหม่',
@@ -1787,7 +1805,7 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  tier:{0:['На месте','Взять сразу','Есть в вашей библиотеке','Как пройти','Бесплатно','Сегодня'],
        1:['Шаг 2','Обмен внутри Пучхона','Между 16 филиалами','Заказать обмен','Бесплатно','1 рабочий день'],
        2:['Шаг 3','Чекпада (по стране)','По стране · отдельная регистрация и одобрение библиотекаря','Получить инструкцию','Платно','5–7 дней'],
-       3:['Бронь','Ожидание в городе','Есть в Пучхоне · сейчас все выданы','Забронировать','Бесплатно','МБА после возврата']},
+       3:['Бронь','Ожидание в городе','Есть в Пучхоне · все выданы','Забронировать','Бесплатно','МБА после возврата']},
  sum0:(m,k)=>`<b>Книга есть в библиотеке ${m}</b> (доступна по состоянию на дату запроса). Обмен не нужен — просто приходите. <span class="s2">Доступна в ${k} филиалах.</span>`,
  sum1:(m,k,n)=>`<b>В библиотеке ${m} ${n ? 'этой книги нет' : 'книга выдана'}</b>, но <b>${k} филиалов</b> могут выдать — <span class=nw>доставим в ${m}.</span>`,
  sum2:k=>`В Пучхоне нет, но <b>найдена в ${k} библиотеках страны</b>. Для Чекпады нужна отдельная регистрация и одобрение библиотекаря, поэтому мы подскажем, как оформить.`,
@@ -1820,11 +1838,11 @@ mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үнд
  tier:{0:['Байгаа','Шууд ашиглах','Таны номын санд байна','Очих заавар','Үнэгүй','Өнөөдөр'],
        1:['2-р алхам','Бүчон доторх солилцоо','16 салбарын хооронд','Солилцоо хүсэх','Үнэгүй','1 ажлын өдөр'],
        2:['3-р алхам','Чекпада (улс даяар)','Улс даяар · тусдаа бүртгэл, номын санчийн зөвшөөрөл','Чекпада заавар авах','Төлбөртэй','5–7 хоног'],
-       3:['Захиалга','Хот дотор хүлээх','Бүчонд бий · одоо бүгд зээлэгдсэн','Захиалах','Үнэгүй','Буцсаны дараа хүсэлт']},
+       3:['Захиалга','Хот дотор хүлээх','Бүчонд бий · бүгд зээлэгдсэн','Захиалах','Үнэгүй','Буцсаны дараа хүсэлт']},
  sum0:(m,k)=>`<b>${m} номын санд байна</b> (шалгасан өдрийн байдлаар авах боломжтой). Солилцоо хэрэггүй — очоод аваарай. <span class="s2">${k} салбарт боломжтой.</span>`,
  sum1:(m,k,n)=>`<b>${m} номын санд ${n ? 'энэ ном байхгүй' : 'энэ ном зээлэгдсэн'}</b> ч <b>${k} салбараас</b> зээлж ${m} руу <span class=nw>хүргэж өгнө.</span>`,
  sum2:k=>`Бүчонд байхгүй ч <b>улс даяар ${k} газраас</b> олдлоо. Чекпада тусдаа бүртгэл, номын санчийн зөвшөөрөл шаарддаг тул хүсэлтийн оронд зааварчилгаа өгье.`,
- sum3:(m,k)=>`Бүчоны <b>${k} салбарт</b> бий ч одоо бүгд зээлэгдсэн. Эхлээд захиалж байвал ном буцаж ирэхэд <b>${m} номын сан</b>гаас авахаар солилцоо руу шилжүүлэх хүсэлт гаргаж болно.`,
+ sum3:(m,k)=>`Бүчоны <b>${k} салбарт</b> бий ч бүгд зээлэгдсэн. Эхлээд захиалж байвал ном буцаж ирэхэд <b>${m} номын сан</b>гаас авахаар солилцоо руу шилжүүлэх хүсэлт гаргаж болно.`,
  rec:'Санал болгож буй',tag0:'Шууд',tag1:'Хамгийн хурдан',tag2:'Хамгийн ойр',also:'Эндээс ч болно',
  fold:n=>`Өөр ${n} салбар үзэх ＋`,foldC:'Хаах －',bOk:'Боломжтой',bBusy:'Зээлэгдсэн',bNone:'Байхгүй',
  my:'байнгын',code:'Номын сангийн код',others:n=>`бусад ${n} салбар`,again:'Дахин хайх',
@@ -1853,11 +1871,11 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
  tier:{0:['Joyida','Darhol olish','Doimiy kutubxonangizda bor','Borish yo‘riqnomasi','Bepul','Bugun'],
        1:['2-qadam','Bucheon ichida almashish','16 filial orasida','Almashishga buyurtma','Bepul','1 ish kuni'],
        2:['3-qadam','Chaekbada (mamlakat)',"Mamlakat bo'ylab · alohida ro'yxat va kutubxonachi tasdig'i",'Chaekbada yo‘riqnomasi','Pullik','5–7 kun'],
-       3:['Band qilish','Shahar ichida kutish','Bucheonda bor · hozir hammasi berilgan','Band qilish','Bepul',"Qaytgach so'rov"]},
+       3:['Band qilish','Shahar ichida kutish','Bucheonda bor · hammasi berilgan','Band qilish','Bepul',"Qaytgach so'rov"]},
  sum0:(m,k)=>`<b>${m} kutubxonasida bor</b> (tekshirilgan kun holatiga ko‘ra olsa bo‘ladi). Almashish shart emas — borib oling. <span class="s2">${k} filialda mavjud.</span>`,
  sum1:(m,k,n)=>`<b>${m} kutubxonasida ${n ? 'bu kitob yo‘q' : 'kitob berilgan'}</b>, lekin <b>${k} filial</b> berib, <span class=nw>${m}ga yetkazamiz.</span>`,
  sum2:k=>`Bucheonda yo'q, lekin <b>mamlakat bo'ylab ${k} kutubxonada</b> topildi. Chaekbada alohida ro'yxat va kutubxonachi tasdig'ini talab qiladi, shuning uchun buyurtma o'rniga yo'riqnoma beramiz.`,
- sum3:(m,k)=>`Bucheondagi <b>${k} filialda</b> bor, lekin hozir hammasi berilgan. Avval band qilsangiz, kitob qaytarilganda uni <b>${m} kutubxonasi</b>da olish uchun almashuvga o'tkazishni so'rashingiz mumkin.`,
+ sum3:(m,k)=>`Bucheondagi <b>${k} filialda</b> bor, lekin hammasi berilgan. Avval band qilsangiz, kitob qaytarilganda uni <b>${m} kutubxonasi</b>da olish uchun almashuvga o'tkazishni so'rashingiz mumkin.`,
  rec:'Tavsiya',tag0:'Darhol',tag1:'Eng tez',tag2:'Eng yaqin',also:'Bu yerlarda ham bor',
  fold:n=>`Yana ${n} filialni ko'rish ＋`,foldC:'Yopish －',bOk:'Mavjud',bBusy:'Berilgan',bNone:"Yo'q",
  my:'doimiy',code:'Kutubxona kodi',others:n=>`yana ${n} filial`,again:'Qayta qidirish',
@@ -3155,6 +3173,7 @@ document.querySelectorAll('.chip').forEach(b => {
 });
 $('tgo').onclick = () => { const v = $('tinput').value.trim(); $('tinput').blur(); if(v) run(v, true); };
 $('tinput').addEventListener('keydown', e => { if(e.key === 'Enter') $('tgo').click(); });
+window.__CJ_OK0 = true;   /* v1.12.11: 시작 안전장치 — 첫 스크립트가 끝까지 돎 */
 </script>
 <script>
 /* ══════════ 전화 한 통 모드 — 통화 흐름 시연 (v1.3) ══════════
@@ -3231,7 +3250,7 @@ ko:{num:'부천시립도서관 책이지',demo:'시연 · 실제 전화는 연�
  r0:m=>`말씀하신 책은 자주 가시는 ${m}도서관에 있습니다. 상호대차 없이 바로 빌리실 수 있어요. 자료 위치를 문자로 보내 드릴까요?`,
  r1:(m,k,n)=>`${m}도서관${n ? '에는 없지만' : '은 대출 중이지만'}, 관내 ${k}개 도서관에서 빌릴 수 있습니다. ${m}도서관으로 받아보시겠어요? 무료이고 평일에는 다음 날 도착합니다.`,
  r2:k=>`부천 안에는 없고 전국 ${k}개 도서관에 있습니다. 책바다는 별도 가입과 사서 승인이 필요해서 전화로는 신청을 대신할 수 없어요. 신청 방법을 안내해 드릴까요?`,
- r3:(m,k)=>`관내 ${k}곳이 갖고 있지만 지금은 모두 대출 중입니다. 먼저 예약해 두시면 책이 반납될 때 ${m}도서관으로 받는 상호대차로 바꿔 신청할 수 있습니다. 예약해 드릴까요?`,
+ r3:(m,k)=>`관내 ${k}곳이 갖고 있지만 모두 대출 중입니다. 먼저 예약해 두시면 책이 반납될 때 ${m}도서관으로 받는 상호대차로 바꿔 신청할 수 있습니다. 예약해 드릴까요?`,
  ask:'예, 아니오로 말씀해 주세요.',asofSay:d=>`${d} 조회한 자료로 안내합니다.`,askAgain:'죄송해요, 잘 못 들었어요. 예 또는 아니오로 말씀해 주세요.',
  unk:'잘 못 들었어요. 책 제목이나 지은이를 다시 말씀해 주세요.',unk2:'시연 화면은 예시 5권만 찾을 수 있어요. 나미야 잡화점의 기적, 소년이 온다, 불편한 편의점, 설민석의 한국사 대모험, 지구 끝의 온실 가운데 하나를 말씀해 주세요.',
  y0:'자료 위치를 문자로 보내 드렸습니다.',
@@ -3265,7 +3284,7 @@ zh:{num:'富川市立图书馆 책이지',demo:'演示 · 不会真正拨打电�
  r0:m=>`这本书在您常去的${m}图书馆。无需馆际互借，可直接借阅。要把位置发短信给您吗？`,
  r1:(m,k,n)=>`${m}图书馆${n ? '没有此书' : '已借出'}，但富川市内有${k}个图书馆可以借。要送到${m}图书馆吗？免费，工作日次日到馆。`,
  r2:k=>`富川市内没有，全国有${k}个图书馆有。책바다需要另行注册和馆员审核，电话无法代为申请。要为您说明申请方法吗？`,
- r3:(m,k)=>`市内有${k}个馆收藏，但目前全部借出。先预约的话，图书归还时可以申请改为馆际互借，在${m}图书馆领取。要帮您预约吗？`,
+ r3:(m,k)=>`市内有${k}个馆收藏，但全部借出。先预约的话，图书归还时可以申请改为馆际互借，在${m}图书馆领取。要帮您预约吗？`,
  ask:'请回答“是”或“不是”。',asofSay:d=>`以下按${d}查询的数据为您说明。`,askAgain:'抱歉没听清，请说“是”或“不是”。',
  unk:'没听清，请再说一次书名或作者。',unk2:'演示版只能查找5本示例图书。例如可以说：解忧杂货店。',
  y0:'已把位置发短信给您。',
@@ -3282,7 +3301,7 @@ ja:{num:'富川市立図書館 책이지',demo:'デモ · 実際の電話はか�
  r0:m=>`その本はいつもの${m}図書館にあります。相互貸借なしでそのまま借りられます。場所をメッセージで送りましょうか。`,
  r1:(m,k,n)=>`${m}図書館${n ? 'には所蔵がありませんが' : 'は貸出中ですが'}、市内${k}館で借りられます。${m}図書館で受け取りますか。無料で、平日なら翌日に届きます。`,
  r2:k=>`富川市内にはなく、全国${k}館にあります。책바다は別途登録と司書の承認が必要なため、電話では代わりに申し込めません。申請方法をご案内しましょうか。`,
- r3:(m,k)=>`市内${k}館が所蔵していますが、今はすべて貸出中です。先に予約しておけば、返却されたときに相互貸借に切り替えて${m}図書館で受け取る申請ができます。予約しましょうか。`,
+ r3:(m,k)=>`市内${k}館が所蔵していますが、すべて貸出中です。先に予約しておけば、返却されたときに相互貸借に切り替えて${m}図書館で受け取る申請ができます。予約しましょうか。`,
  ask:'「はい」か「いいえ」でお答えください。',asofSay:d=>`${d}に照会したデータでご案内します。`,askAgain:'すみません、聞き取れませんでした。「はい」か「いいえ」でお答えください。',
  unk:'聞き取れませんでした。書名か著者名をもう一度お話しください。',unk2:'デモでは例の5冊しか探せません。例えば「ナミヤ雑貨店の奇蹟」のようにお話しください。',
  y0:'場所をメッセージで送りました。',
@@ -3466,7 +3485,9 @@ function phHandle(kind, text, forced){
   const yn=(forced===undefined)?phYN(text):forced;
   if(yn===null){ phBubble('a', p.askAgain); phState('talk'); phSpeak(p.askAgain, ()=>phListen('yn')); return; }
   const t=PH.tier;
-  const msg= yn ? (t===0?p.y0 : t===1?p.y1(내관) : t===3?p.y3(내관) : p.y2) : p.no;
+  let msg= yn ? (t===0?p.y0 : t===1?p.y1(내관) : t===3?p.y3(내관) : p.y2) : p.no;
+  if(yn && t!==2){ const dm = (t===0 ? u.shP2 : u.shP), lc = phCode();   /* v1.12.11: 「보내 드렸습니다·접수됐습니다」로 끝나지 않게 — 화면 흐름의 완료 음성처럼 끝에 시연 문장(확인 시트와 같은 글 · 책바다 y2는 절차 안내라 그대로) */
+    msg += ' ' + dm + (/[.。!?！？]$/.test(dm) ? '' : (lc==='zh' || lc==='ja') ? '。' : lc==='th' ? '' : '.'); }   /* 확인 시트 글에는 마침표가 없어 말풍선에서는 그 언어의 마침표를 붙임(타이어는 붙이지 않음) */
   phBubble('a', msg); phState('talk');
   phSpeak(msg, ()=>{
     if(!PH.on) return;
@@ -3511,6 +3532,22 @@ $('pcGo').onclick=()=>{ const v=$('pcIn').value.trim(); if(v){ $('pcIn').value='
 $('pcRelisten').onclick=()=>{ if(PH.on && PH.kind){ PH.retry=0; phListen(PH.kind); } };
 $('pcIn').addEventListener('keydown', e=>{ if(e.key==='Enter') $('pcGo').click(); });
 phSheetLang();
+window.__CJ_OK1 = true;   /* v1.12.11: 시작 안전장치 — 둘째 스크립트가 끝까지 돎 */
+</script>
+<script>/* v1.12.11: 시작 안전장치 ② — 위 두 스크립트가 끝까지 돌지 못하면(오래된 브라우저·이 브라우저에서만 나는 오류) 흰 화면이나 멈춘 화면 대신 안내 띠. 옛 문법만 */
+(function(){try{if(window.__CJ_OK0&&window.__CJ_OK1)return;var e=(window.__CJ_ERR||[])[0];var d=document.createElement('div');d.className='bootfail';d.id='bootfail';d.setAttribute('role','alert');
+d.innerHTML='<b>이 브라우저에서 시연 화면을 다 띄우지 못했습니다.</b>크롬(안드로이드)이나 사파리(아이폰)로 열어 주세요. · <a href="https://github.com/altarry-prog/chaekiji/blob/main/docs/%EC%8B%9C%EC%97%B0%EC%9B%B9-%EA%B8%B0%EB%8A%A5-%EC%83%81%EC%84%B8.md">그림으로 둘러보기</a> · <a href="diag.html">점검</a>'+(e?'<small>오류: '+String(e).replace(/[<>&]/g,'')+'</small>':'');
+document.body.appendChild(d);}catch(x){}})();
+</script>
+<script>/* v1.12.11: 화면 틀 점검 — 불러온 뒤 화면 틀(.phone)이 숨겨졌거나 크기가 0이거나 화면 밖이면 단순한 배치(safelayout)로 다시 놓고,
+   그래도 안 보이면 안내 띠. 평소에는 아무것도 바꾸지 않는다. 옛 문법만 */
+(function(){function vis(){try{var ph=document.querySelector('.phone');if(!ph)return false;var cs=getComputedStyle(ph),r=ph.getBoundingClientRect(),W=window.innerWidth||document.documentElement.clientWidth,H=window.innerHeight||document.documentElement.clientHeight;
+return cs.display!=='none'&&cs.visibility!=='hidden'&&parseFloat(cs.opacity)>0.1&&r.width>=120&&r.height>=120&&r.right>0&&r.bottom>0&&r.left<W&&r.top<H;}catch(x){return true;}}
+function warn(){try{if(document.getElementById('bootfail'))return;var d=document.createElement('div');d.className='bootfail';d.id='bootfail';d.setAttribute('role','alert');
+d.innerHTML='<b>이 브라우저에서 시연 화면이 보이지 않습니다.</b>크롬(안드로이드)이나 사파리(아이폰)로 열어 주세요. 광고 차단 기능이 켜져 있다면 끄고 다시 열어 주세요. · <a href="https://github.com/altarry-prog/chaekiji/blob/main/docs/%EC%8B%9C%EC%97%B0%EC%9B%B9-%EA%B8%B0%EB%8A%A5-%EC%83%81%EC%84%B8.md">그림으로 둘러보기</a> · <a href="diag.html">점검</a>';
+document.body.appendChild(d);}catch(x){}}
+function check(){if(vis())return;var h=document.documentElement;if(!/(^| )safelayout( |$)/.test(h.className)){h.className+=' safelayout';setTimeout(function(){if(!vis())warn();},400);}else warn();}
+setTimeout(check,1200);setTimeout(check,3500);})();
 </script>
 </body>
 

@@ -16,8 +16,9 @@ const PROTOCOLS = ["2025-06-18", "2025-03-26", "2024-11-05"];     // 앞이 최�
 export const SNAPSHOT_URL = "https://altarry-prog.github.io/chaekiji/data/holdings-today.json";
 const FIX_ASOF = "2026-08-18";
 const SNAPSHOT_MAX_DAYS = 2;
-// [10/19] 심사 기간 고정 자료 — 11. 8. 18시 동결 뒤 새벽 갱신이 멈추므로 11. 8. 이후 자료는 11. 26.까지 신선한 것으로 본다(naru.snapshot_ok와 같은 규칙). 결선 뒤 지움
-const FROZEN_FROM = "2026-11-08", FROZEN_UNTIL = "2026-11-26";
+// [10/19] 심사 기간 고정 자료 — 동결 뒤 새벽 갱신이 멈추므로 동결일 이후 자료는 11. 26.까지 신선한 것으로 본다(naru.snapshot_ok와 같은 규칙). 결선 뒤 지움
+// [10/27] 동결을 10. 30. 18시로 앞당김(담당자 결정) → 10. 30. 이후 자료
+const FROZEN_FROM = "2026-10-30", FROZEN_UNTIL = "2026-11-26";
 const SNAP_CACHE_MS = 10 * 60 * 1000;
 const ROUTE_LABEL = { visit: "바로 이용(수령관 서가에 있음)", ill: "관내 상호대차", reserve: "예약 권장(관내 소장분 전부 대출 중)",
                       sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정", check: "소장 확인 불가(창구에서 조회)" };

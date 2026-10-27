@@ -13,7 +13,7 @@
 <p>
   <a href="https://altarry-prog.github.io/chaekiji/"><img src="https://img.shields.io/badge/시연%20웹-바로%20열기-1b5a4b" alt="시연 웹 바로 열기"></a>
   <a href="https://github.com/altarry-prog/chaekiji/actions/workflows/tests.yml"><img src="https://img.shields.io/badge/자동%20시험-193건%20통과-2ea44f" alt="자동 시험 193건 통과"></a>
-  <img src="https://img.shields.io/badge/AI%20연결%20표준-MCP-555" alt="AI 연결 표준 MCP">
+  <a href="#5-구조-네-층-바꿔-끼울-수-있게"><img src="https://img.shields.io/badge/AI%20연결%20표준-MCP-555" alt="AI 연결 표준 MCP"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/라이선스-MIT-green" alt="MIT 라이선스"></a>
 </p>
 
@@ -153,7 +153,7 @@
 
        python server/lab/consult_cli.py "한강 소년이 온다 빌리고 싶어요" 역곡
 
-3. **클로드 데스크톱**: `server/claude_desktop_config.example.json`대로 등록하고 프롬프트 **consult**를 고릅니다.
+3. **클로드 데스크톱**: [`server/claude_desktop_config.example.json`](server/claude_desktop_config.example.json)대로 등록하고 프롬프트 **consult**를 고릅니다.
 4. **공개 모델(Ollama)**: Ollama를 설치하고 모델을 받은 뒤 같은 서버를 돌립니다. 상담 도구 하나만 보이고 받을 도서관을 고정합니다(macOS·Linux는 `python3`).
 
        ollama pull exaone3.5:2.4b
@@ -166,19 +166,19 @@
 <p align="center"><img src="docs/img/architecture.png" width="420" alt="책이지 구조: ① 입구(사서 창구·시민 화면) ② AI 모델(클로드·엑사원·라마) ③ 책이지 도구(찾기·소장 확인·규정 판정·안내문) ④ 데이터(정보나루 실제, 도서관리시스템 모의). 위의 두 층은 바꿔 끼울 수 있다"></p>
 
 - **입구와 모델은 바꿔 끼울 수 있습니다.** 도구와 데이터 연결은 그대로입니다.
-- **규정 숫자는 코드가 아니라 설정 파일에** 있습니다(`server/config/*.yaml`).
+- **규정 숫자는 코드가 아니라 설정 파일에** 있습니다([`server/config/*.yaml`](server/config/)).
 - **AI 연결 표준(MCP)** 은 AI 모델이 외부 도구를 부르는 공통 방식입니다. 클로드, 엑사원, 라마가 같은 도구를 부릅니다.
 
 <details>
 <summary>폴더별로 무엇이 있나</summary>
 
-- `index.html` · `sw.js`: 시민용 음성 화면(설치형 웹 앱)
-- `server/`: 상담 비서(MCP 참조 서버, 파이썬) · 시험 · 설정 · 지시문
-- `server/lab/out/`: 실측 기록(처리 시간, 공개 모델 2종, 전일 기준 유지율)
-- `relay/`: 정보나루 중계와 인터넷용 상담 비서(Cloudflare Workers)
-- `data/`: 매일 새벽 갱신 자료
-- `docs/`: 사진, 구조 그림, 시민 화면 기능 상세
-- `mcp.html` · `console.html`: 확산 모델 설계도, 도구 호출 콘솔
+- [`index.html`](index.html) · [`sw.js`](sw.js): 시민용 음성 화면(설치형 웹 앱)
+- [`server/`](server/): 상담 비서(MCP 참조 서버, 파이썬) · 시험 · 설정 · 지시문
+- [`server/lab/out/`](server/lab/out/): 실측 기록(처리 시간, 공개 모델 2종, 전일 기준 유지율)
+- [`relay/`](relay/): 정보나루 중계와 인터넷용 상담 비서(Cloudflare Workers)
+- [`data/`](data/): 매일 새벽 갱신 자료
+- [`docs/`](docs/): 사진, 구조 그림, 시민 화면 기능 상세
+- [`mcp.html`](https://altarry-prog.github.io/chaekiji/mcp.html) · [`console.html`](https://altarry-prog.github.io/chaekiji/console.html): 확산 모델 설계도, 도구 호출 콘솔(누르면 그 화면이 열림)
 
 </details>
 
@@ -186,7 +186,7 @@
 
 책이지는 국립중앙도서관이 제공하는 전국 공통 데이터(도서관 정보나루)를 활용하므로, 다른 지자체도 도서관 코드와 상호대차 규정(신청 한도·보관 기간 등)을 설정하면 같은 방식으로 적용할 수 있습니다.
 
-- **상담 비서(파이썬 참조 서버)**: 도서관 코드와 규정 숫자를 담은 설정 파일 하나만 새로 쓰면 됩니다(반나절, 추정). 인터넷용 원격 상담 비서는 중계(`relay/worker.js`)의 도서관 코드 표도 바꾸고 그 도시의 인증키로 중계를 따로 올려야 하며, 시민 화면은 `index.html`의 도서관 코드 표를 바꿉니다. 2026년 9월에 다른 지자체 다섯 곳(서울 강남구·광진구, 청주시, 부산시, 용인시)의 공개 안내를 견줘 보니 1인 한도(2\~5권), 보관 기간(2\~3일), 미수령 제재(1주\~30일), 도착 시각이 곳마다 달랐습니다(광진구는 도착 시각만 확인). 한도·보관 기간·도착 안내·제외 자료는 지금도 설정 값으로 바꿀 수 있고, 휴관일을 뺀 보관일 계산과 미수령 누적 기준은 다음 판 설정 초안에 넣었습니다(자세히는 [v0.4 로드맵](server/docs/ROADMAP-v0.4.md)).
+- **상담 비서(파이썬 참조 서버)**: 도서관 코드와 규정 숫자를 담은 설정 파일 하나만 새로 쓰면 됩니다(반나절, 추정). 인터넷용 원격 상담 비서는 중계([`relay/worker.js`](relay/worker.js))의 도서관 코드 표도 바꾸고 그 도시의 인증키로 중계를 따로 올려야 하며, 시민 화면은 [`index.html`](index.html)의 도서관 코드 표를 바꿉니다. 2026년 9월에 다른 지자체 다섯 곳(서울 강남구·광진구, 청주시, 부산시, 용인시)의 공개 안내를 견줘 보니 1인 한도(2\~5권), 보관 기간(2\~3일), 미수령 제재(1주\~30일), 도착 시각이 곳마다 달랐습니다(광진구는 도착 시각만 확인). 한도·보관 기간·도착 안내·제외 자료는 지금도 설정 값으로 바꿀 수 있고, 휴관일을 뺀 보관일 계산과 미수령 누적 기준은 다음 판 설정 초안에 넣었습니다(자세히는 [v0.4 로드맵](server/docs/ROADMAP-v0.4.md)).
 - **접수까지 자동으로**: 도서관리시스템 종류마다 연결 부품(커넥터)을 하나씩 만듭니다. 개발량은 도시 수가 아니라 시스템 종류의 수만큼 늘어납니다.
 - **화면은 바꿔 끼우기**: 창구 PC, 도서관 누리집, 키오스크가 같은 도구를 부르면 됩니다.
 
@@ -242,7 +242,7 @@
 © 2026 이완재 · 부천시립도서관 상동도서관
 
 - **저장소 전체(시연 웹·중계·참조 서버)**: 다른 도서관이 그대로 가져다 쓰고 고쳐 쓸 수 있도록 **MIT 라이선스**로 공개합니다([LICENSE](LICENSE)). 시연 웹은 실현 가능성을 검증하는 시연 모델이며, 신청은 실제 접수로 이어지지 않습니다.
-- **함께 쓰는 남의 것**: 정보나루에서 받은 소장·대출 자료(`data/`, `server/fixtures/`)는 국립중앙도서관 도서관 정보나루의 이용 조건(출처 표시)을 따릅니다. 설계도·콘솔 화면이 불러 쓰는 웹 글꼴(IBM Plex)은 SIL 오픈 폰트 라이선스(OFL)를 따릅니다.
+- **함께 쓰는 남의 것**: 정보나루에서 받은 소장·대출 자료([`data/`](data/), [`server/fixtures/`](server/fixtures/))는 국립중앙도서관 도서관 정보나루의 이용 조건(출처 표시)을 따릅니다. 설계도·콘솔 화면이 불러 쓰는 웹 글꼴(IBM Plex)은 SIL 오픈 폰트 라이선스(OFL)를 따릅니다.
 
 문의: 부천시립도서관 상동도서관 이완재 (altarry@korea.kr)
 행정안전부 「AI 정부 실험실」 과제 · 부천시립도서관 AI 서비스 도입 TF

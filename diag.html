@@ -43,12 +43,15 @@ iframe{width:390px;height:844px;border:0}
 <div id="wipeMsg" style="margin-top:8px;font-size:14px"></div></div>
 <div class="card"><h2>6. 이 휴대폰에서 보이는 모습(작게)</h2>
 <div style="width:215px;height:465px;overflow:hidden;border:1px solid var(--line);border-radius:10px"><iframe id="peek" title="시연 웹 미리보기" style="width:390px;height:844px;transform:scale(.55);transform-origin:0 0;border:0"></iframe></div>
-<p style="margin:6px 0 0;font-size:13px;color:var(--ink2)">여기도 하얗게만 보이면 그 모습 그대로 캡처해 주세요.</p></div>
+<p style="margin:6px 0 0;font-size:13px;color:var(--ink2)">여기도 하얗게만 보이면 그 모습 그대로 캡처해 주세요.</p>
+<h2 style="margin-top:12px">6-2. 움직임·흐림 효과를 모두 끈 모습(작게)</h2>
+<div style="width:215px;height:465px;overflow:hidden;border:1px solid var(--line);border-radius:10px"><div id="peek2box" style="width:390px;height:844px;transform:scale(.55);transform-origin:0 0"></div></div>
+<p style="margin:6px 0 0;font-size:13px;color:var(--ink2)">6은 비고 6-2만 보이면 이 휴대폰의 그래픽이 효과를 못 그리는 것입니다.</p></div>
 <div class="card"><h2>보낼 내용(캡처가 어려우면 길게 눌러 복사)</h2><pre id="dump"></pre></div>
 <div id="frameBox"></div>
 </main>
 <script>
-/* 책이지 시연 웹 점검(diag.html) — 2026. 10. 27.
+/* 책이지 시연 웹 점검(diag.html) — 2026. 10. 27.(14:50 보강: 광고 차단 흔적 · 화면 높이 단위 · 흐림 효과 · 화면 틀 · 효과를 끈 미리보기)
    일부러 오래된 문법(var·function·then)만 써서, 시연 웹이 못 도는 브라우저에서도 이 페이지는 돌게 했다.
    하는 일: 브라우저 정보 · 기능 유무 · 연결(같은 사이트의 새벽 자료, 중계 /health) · 시연 웹을 안 보이는 틀(iframe)에 띄워
    오류를 모으고, 예시 검색(나미야 잡화점의 기적 — 새벽 자료에 있는 책이라 정보나루 호출 0) 한 번이 결과 화면까지 가는지 본다. */
@@ -96,6 +99,33 @@ row('f', '동작 줄이기(애니메이션 줄이기)', rmq ? '켜짐' : '꺼짐
 row('f', '서비스워커', ('serviceWorker' in navigator) ? '있음' : '없음', '');
 try{ if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){ navigator.serviceWorker.getRegistrations().then(function(rs){ row('f', '저장된 시연 웹(서비스워커)', rs.length + '개' + (navigator.serviceWorker.controller ? ' · 이 페이지에 붙어 있음' : ''), ''); }); } }catch(e){}
 try{ if(window.caches){ caches.keys().then(function(ks){ row('f', '저장된 캐시', ks.length ? ks.join(', ') : '없음', ''); }); } }catch(e){}
+/* v2(10. 27. 14:50): 갤럭시 캡처 — 머리 띠도 없이 배경색만 보임. ① 광고 차단(애드온)이 시연 웹의 화면 틀 이름(.phone 등)을 숨기는지
+   ② 화면 높이 단위(vh·dvh)를 0으로 잡는지 ③ 흐림 효과(backdrop-filter) 지원 — 시연 웹이 쓰는 이름 그대로 시험 상자를 만들어 잰다 */
+var CLS = ['phone','top','row','logo','sub','body','screen','hi','micwrap','mic','tin','orsplit','chips','chip','lbl','quick','bqcard','inst','gate','gate-in','demo-tag','atools','bookcard','tierbar','sumline','sheet','pcall'];
+var hidden = null;
+function adProbe(){
+  var box = document.createElement('div'); box.setAttribute('aria-hidden', 'true');
+  box.style.cssText = 'position:absolute;left:-9999px;top:0;width:50px;overflow:hidden';
+  CLS.forEach(function(c){ var e = document.createElement('div'); e.className = c; e.textContent = 'x'; e.style.cssText = 'display:block;visibility:visible;height:10px;width:10px;opacity:1;position:static'; box.appendChild(e); });
+  document.body.appendChild(box);
+  return box;
+}
+var adBox = adProbe();
+function adCheck(final){
+  var h = [];
+  for(var i = 0; i < adBox.children.length; i++){ var e = adBox.children[i], cs = getComputedStyle(e);
+    if(cs.display === 'none' || cs.visibility === 'hidden' || e.offsetHeight === 0 || parseFloat(cs.opacity) === 0) h.push('.' + e.className); }
+  if(final){ hidden = h; row('f', '광고 차단 흔적(시연 웹 이름 ' + CLS.length + '개 시험)', h.length ? '숨겨짐: ' + h.join(' ') : '없음', h.length ? 'bad' : 'ok'); verdict(); }
+  return h;
+}
+setTimeout(function(){ adCheck(true); }, 3500);
+function unitPx(v){ var e = document.createElement('div'); e.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:' + v; document.body.appendChild(e); var h = e.offsetHeight; document.body.removeChild(e); return h; }
+var vhPx = unitPx('100vh'), dvhOk = false; try{ dvhOk = !!(window.CSS && CSS.supports && CSS.supports('height', '100dvh')); }catch(e){}
+var dvhPx = dvhOk ? unitPx('100dvh') : -1;
+R.vh0 = (vhPx === 0 || dvhPx === 0);
+row('f', '화면 높이 단위', '100vh = ' + vhPx + 'px' + (dvhOk ? ' · 100dvh = ' + dvhPx + 'px' : ' · dvh 없음') + ' · 창 높이 ' + window.innerHeight + 'px', R.vh0 ? 'bad' : 'ok');
+var bdf = false; try{ bdf = !!(window.CSS && CSS.supports && (CSS.supports('backdrop-filter', 'blur(2px)') || CSS.supports('-webkit-backdrop-filter', 'blur(2px)'))); }catch(e){}
+row('f', '흐림 효과(backdrop-filter)', bdf ? '있음' : '없음', '');
 
 /* 3. 연결 */
 function timed(url, label, opt){
@@ -131,6 +161,9 @@ function probeFrame(){
       'window.addEventListener("error",function(e){s(e.message||"오류",e.lineno)});' +
       'window.addEventListener("unhandledrejection",function(e){s("약속 실패: "+(e.reason&&e.reason.message||e.reason))});})();<\/script>';
     html = html.replace(/<head>/i, '<head>' + cap);
+    try{ var f2 = document.createElement('iframe'); f2.setAttribute('title', '효과를 끈 미리보기'); f2.style.cssText = 'width:390px;height:844px;border:0';
+      f2.srcdoc = html.replace(/<head>/i, '<head><style>*,*::before,*::after{animation:none!important;transition:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}</style>');
+      $('peek2box').appendChild(f2); }catch(e){}
     var f = document.createElement('iframe');
     f.setAttribute('title', '시연 웹 점검용');
     f.srcdoc = html;
@@ -150,6 +183,9 @@ function inspect(f){
   var gateOn = !!(g && g.classList.contains('on'));
   row('w', '「눌러서 시작하기」 화면', gateOn ? '떠 있음' : '없음(음성 안내 없이 바로)', '');
   try{
+    var ph = d.querySelector('.phone');
+    if(ph){ var pcs = w.getComputedStyle(ph); W.phoneHidden = (pcs.display === 'none' || pcs.visibility === 'hidden' || ph.offsetHeight === 0);
+      row('w', '화면 틀(.phone)', 'display ' + pcs.display + ' · visibility ' + pcs.visibility + ' · ' + ph.offsetWidth + '×' + ph.offsetHeight + 'px', W.phoneHidden ? 'bad' : 'ok'); }
     var top = d.querySelector('.top'); row('w', '머리(초록 띠)', (top && top.offsetHeight > 0) ? '보임 · 높이 ' + top.offsetHeight + 'px' : '안 보임', (top && top.offsetHeight > 0) ? 'ok' : 'bad');
     if(gateOn){ var gi = g.querySelector('.gate-in'), rc = gi ? gi.getBoundingClientRect() : null;
       row('w', '시작 카드', (rc && rc.width > 0 && rc.height > 0) ? '보임 · ' + Math.round(rc.width) + '×' + Math.round(rc.height) + ' 위치 ' + Math.round(rc.top) : '안 보임', (rc && rc.width > 0) ? 'ok' : 'bad'); }
@@ -178,6 +214,9 @@ function verdict(){
   R.n.forEach(function(x){ if(x[2] === 'bad' && /이 사이트/.test(x[0])) bad.push('이 와이파이·망에서 github.io가 막힌 것으로 보입니다 → 휴대폰 데이터로 다시 열어 보기'); });
   if(R.blankFile) bad.push('이 망에서 받은 시연 웹 파일이 비었거나 다릅니다 → 와이파이가 중간에서 바꾸거나 막는 것으로 보입니다. 휴대폰 데이터로 다시 열어 보기');
   if(inApp || wv) bad.push('앱 안 화면에서 열렸습니다 → 오른쪽 위·아래 메뉴에서 「다른 브라우저로 열기」');
+  if(hidden && hidden.length) bad.push('광고 차단(애드온·콘텐츠 차단기)이 시연 웹 화면을 숨기는 것으로 보입니다(' + hidden.slice(0, 3).join(' ') + ') → 삼성 인터넷 메뉴 → 광고 차단에서 끄거나 크롬으로 열기');
+  else if(W.phoneHidden) bad.push('시연 웹의 화면 틀이 숨겨져 있습니다 → 광고 차단·확장 기능을 끄거나 크롬으로 열기');
+  if(R.vh0) bad.push('이 브라우저가 화면 높이를 0으로 잡습니다 → 화면을 한 번 돌리거나 새로 고침, 또는 크롬으로 열기');
   if(W.errs.length) bad.push('시연 웹 오류: ' + W.errs[0]);
   if(W.result === false) bad.push('예시 검색이 결과 화면까지 가지 못했습니다');
   bad = bad.filter(function(x, i){ return bad.indexOf(x) === i; });

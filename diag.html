@@ -91,6 +91,8 @@ row('f', '저장공간', ls, ls === '됨' ? 'ok' : 'warn');
 row('f', '음성 안내(읽어 주기)', window.speechSynthesis ? '있음' : '없음 — 글자로만 안내', window.speechSynthesis ? 'ok' : 'warn');
 row('f', '음성 인식(마이크)', (window.SpeechRecognition || window.webkitSpeechRecognition) ? '있음' : '없음 — 입력·예시 단추로', (window.SpeechRecognition || window.webkitSpeechRecognition) ? 'ok' : 'warn');
 row('f', '보안 연결(https)', (window.isSecureContext !== false) ? '예' : '아니오', (window.isSecureContext !== false) ? 'ok' : 'warn');
+var rmq = false; try{ rmq = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
+row('f', '동작 줄이기(애니메이션 줄이기)', rmq ? '켜짐' : '꺼짐', '');
 row('f', '서비스워커', ('serviceWorker' in navigator) ? '있음' : '없음', '');
 try{ if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){ navigator.serviceWorker.getRegistrations().then(function(rs){ row('f', '저장된 시연 웹(서비스워커)', rs.length + '개' + (navigator.serviceWorker.controller ? ' · 이 페이지에 붙어 있음' : ''), ''); }); } }catch(e){}
 try{ if(window.caches){ caches.keys().then(function(ks){ row('f', '저장된 캐시', ks.length ? ks.join(', ') : '없음', ''); }); } }catch(e){}
@@ -142,6 +144,8 @@ function inspect(f){
   try{ d = f.contentDocument; w = f.contentWindow; }catch(e){ row('w', '시연 웹 들여다보기', '막힘(' + e.message + ')', 'warn'); verdict(); return; }
   var on = d.querySelector('.screen.on');
   row('w', '처음 화면', on ? (on.id + ' 보임') : '어느 화면도 켜지지 않음', on ? 'ok' : 'bad');
+  try{ var o = on ? parseFloat(w.getComputedStyle(on).opacity) : -1; var na = d.documentElement.classList.contains('noanim');
+    row('w', '처음 화면 투명도', o + (na ? ' · 애니메이션 멈춘 기기로 알아채 끔(v1.12.10)' : ''), o >= 0.99 ? 'ok' : 'bad'); }catch(e){}
   var g = d.getElementById('ttsgate');
   var gateOn = !!(g && g.classList.contains('on'));
   row('w', '「눌러서 시작하기」 화면', gateOn ? '떠 있음' : '없음(음성 안내 없이 바로)', '');

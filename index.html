@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.9 (2026. 10. 27.) · 캐시 chaekiji-v35 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.10 (2026. 10. 27.) · 캐시 chaekiji-v36 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>책이지 — 말 한마디면 끝나는 상호대차 (시안)</title>
 <link rel="manifest" href="./manifest.webmanifest">
@@ -102,6 +103,15 @@ body.bigmode .gate h3{font-size:22px}body.bigmode .gate .cta{font-size:18px}body
 #s-idle.on{display:flex;flex-direction:column;flex:1;min-height:0}
 .screen.on{display:block;animation:fade .32s ease both}
 @keyframes fade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+/* v1.12.10: 화면이 애니메이션에 기대지 않게 — 기기가 애니메이션을 멈춰 두면(갤럭시의 「애니메이션 제거」·절전 설정 등) 첫 화면이 투명한 채 남아
+   초록 머리 띠 아래가 흰 화면으로 보였다. 아래 점검(animGuard)이 그런 기기를 알아채 html.noanim을 붙이면 애니메이션 없이 원래 모습으로 보인다.
+   「동작 줄이기」를 켠 기기도 같은 모습(접근성) */
+html.noanim *,html.noanim *::before,html.noanim *::after{animation:none!important;transition:none!important}
+html.noanim .scanrow{opacity:1}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .scanrow{opacity:1}
+}
 
 /* ── 대기 ── */
 .hi{text-align:center;padding:4px 0 0}
@@ -947,6 +957,18 @@ const 기준일 = "2026. 8. 18.";
    v1.12.2: 중계 주소 연결(2026. 10. 16. Cloudflare Workers 첫 배포). 순서는 오늘 새벽 매일 갱신 파일 → (그 파일이 오늘 것이 아니거나 그 책이 없을 때만) 중계 → 2일 이내 파일 → 8/18.
    정보나루 대출 상태는 어차피 전일 기준이라 낮에 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않고 하루 호출 한도를 아낀다(서버 auto 모드와 같은 규칙) */
 const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
+/* v1.12.10(2026. 10. 27., 캐시 v36): 갤럭시(삼성 인터넷)에서 초록 머리 띠 아래가 흰 화면으로 남던 것 — 첫 화면이 애니메이션(투명 → 보임)에 기대고 있어,
+   기기가 애니메이션을 멈춰 두면 투명한 채 남았다. 0.9초·2.5초 뒤 첫 화면이 아직 투명하면 애니메이션을 끄고(html.noanim) 원래 모습으로 보인다.
+   「동작 줄이기」를 켠 기기는 처음부터 애니메이션 없이. 화면 글·맞추기·판정·자료 흐름은 그대로 */
+(function animGuard(){
+  function check(){
+    try{
+      var s = document.querySelector('.screen.on');
+      if(s && parseFloat(getComputedStyle(s).opacity) < 0.5) document.documentElement.classList.add('noanim');
+    }catch(e){}
+  }
+  setTimeout(check, 900); setTimeout(check, 2500);
+})();
 /* v1.12.9(2026. 10. 27., 캐시 v35): 담당자 승인 두 가지 — 전화 모드 두 번째 답(r1)도 받을 도서관에 그 책이 없으면 「없지만」(결과 요약 sum1과 같은 기준, 10개 언어),
    한국어 결과 음성에서만 요약의 「(조회일 기준 대출 가능)」을 뺌(바로 뒤 「○월 ○일 조회 자료로는 대출 가능합니다」와 겹침). 화면 글·맞추기·판정·자료 흐름은 그대로 */
 /* v1.12.8(2026. 10. 26., 캐시 v34): 남은 정직 표시 문구 — 담당자 승인. 결과 요약·갈래 설명·전화 r0의 「지금」을 빼고 「조회일 기준」,

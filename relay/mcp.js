@@ -539,7 +539,7 @@ export async function consultRequest(args, deps, ctx) {
   if (alt.length) {
     const altWhere = b => {
       const ed = [b.publisher || "", b.year ? `${b.year}년` : ""].filter(x => x).join(" ") || `ISBN ${b.isbn13}`;
-      if (b.available_at.includes(pickup)) return `${ed} 판은 ${pickup}도서관 서가에 있습니다`;
+      if (b.available_at.includes(pickup)) return `${ed} 판은 ${pickup}도서관에 대출 가능 상태로 있습니다`;   // [10/28 저녁] 전일 기준(파이썬 판과 같은 글)
       if (b.available_at.length) return `${ed} 판은 ${b.available_at[0]}도서관 등 ${b.available_at.length}곳에 대출 가능합니다`;
       return `${ed} 판은 ${b.loaned_at.length}곳이 소장하고 있지만 모두 대출 중입니다`;
     };

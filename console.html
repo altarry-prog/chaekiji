@@ -162,8 +162,8 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
 <p class="note"><b>정직 고지</b>: 이 콘솔은 파이썬 참조 서버 <span style="font-family:'IBM Plex Mono',monospace">chaekiji-mcp</span>의
 규칙 엔진·금고·실측 픽스처(2026. 8. 18. 정보나루 bookExist 64건)를 브라우저에 그대로 이식한 것입니다.
 실제 MCP 전송(stdio JSON-RPC)의 검증은 참조 서버의 적합성 시험(2026. 8. 30. v0.3 기준 33건)이 담당하며, 이 화면은 그 동작을 사람이 볼 수 있게 만든 창입니다.
-규정 판정은 부천 고시 4종에 도서관계 일반 3종(연체·정지, 제외 자료, 중복 신청)을 더한 7종이고, 신청 이후의 상태 전이·취소·재시도 중복 방지까지 같은 논리로 재현합니다.
-회원은 가상 인물, 대체자료·전국 소장 수·상태 전이 시간은 예시 데이터입니다. · 2026. 9. 부천시립도서관 책이지 프로젝트</p>
+규정 판정은 부천 누리집 안내 4종(한도 3종·수령관 비치)에 도서관계 일반 3종(연체·정지, 제외 자료, 중복 신청)을 더한 7종이고, 신청 이후의 상태 전이·취소·재시도 중복 방지까지 같은 논리로 재현합니다.
+회원은 가상 인물, 대체자료·전국 소장 수·상태 전이 시간은 예시 데이터입니다. · 2026. 9. 부천시립상동도서관 책이지 프로젝트</p>
 </div>
 <script>
 /* ── 참조 서버(v0.3) 이식: 픽스처 · 금고 · 규정 엔진(7종) · 도구 10종 ─────────── */
@@ -217,13 +217,13 @@ const TOOLS={
    const ok=Object.keys(h).filter(k=>h[k]==="ok").sort();
    const busy=Object.keys(h).filter(k=>h[k]==="busy").sort();
    const res={city:"부천", home_library:c.home, home_status:h[c.home]||"none",
-              available_at:ok, loaned_at:busy, basis:"관내: 정보나루 2026. 8. 18. 실측(전일 기준)"};
+              available_at:ok, loaned_at:busy, basis: Object.keys(h).length ? "관내: 정보나루 2026. 8. 18. 실측(전일 기준)" : "관내: (예시) 관내에 없다고 가정 · 실제로는 부천 관내 소장"};
    /* 다음 갈래 — 자주 가는 곳에 있으면 방문 · 관내 다른 곳에 있으면 관내 상호대차 ·
       관내 소장은 있으나 전부 대출 중이면 예약(책바다는 관내 미소장 자료가 대상) · 관내 미소장이면 책바다 안내 */
    if(res.home_status==="ok") res.next_step="visit";
    else if(ok.length) res.next_step="ill";
    else if(busy.length) res.next_step="reserve";
-   else { res.next_step="chaekbada_guide"; res.nation={basis:"전일 기준 · 정보나루", found_count:6, note:"전국 참여도서관(예시 데이터) · 별도 가입·사서 승인 필요(대행이 아니라 안내)"}; }
+   else { res.next_step="chaekbada_guide"; res.nation={basis:"예시 데이터", found_count:6, note:"전국 참여도서관(예시 데이터) · 별도 가입·사서 승인 필요(대행이 아니라 안내)"}; }
    return res;
  },
  check_policy(a){
@@ -351,10 +351,10 @@ function callTool(name,args,sayFn){
 const STEPS = {
  1(){ const b=callTool("search_item",{utterance:"그 왜 나미야 잡화점인가 하는 책",lang:"ko"},
       o=>`『${o.title}』(${o.author})으로 찾았어요.`); lastISBN=b.isbn13; },
- 2(){ callTool("check_availability",{isbn13:lastISBN,realtime:true},
-      o=>o.next_step==="visit"?`상동도서관에 지금 있어요. 상호대차 없이 바로 빌리실 수 있어요.`:
-         o.next_step==="ill"?`상동 책은 지금 대출 중이에요. 관내 ${o.available_at.length}곳에서 빌릴 수 있어요.`:
-         o.next_step==="reserve"?`관내 ${o.loaned_at.length}곳이 갖고 있지만 모두 대출 중이에요. 예약해 두면 반납되는 대로 보내드려요.`:
+ 2(){ callTool("check_availability",{isbn13:lastISBN},
+      o=>o.next_step==="visit"?`상동도서관에 있어요(8. 18. 조회 자료). 상호대차 없이 바로 빌리실 수 있어요.`:
+         o.next_step==="ill"?`상동 책은 대출 중이에요(8. 18. 조회 자료). 관내 ${o.available_at.length}곳에서 빌릴 수 있어요.`:
+         o.next_step==="reserve"?`관내 ${o.loaned_at.length}곳이 갖고 있지만 모두 대출 중이에요(8. 18. 조회 자료). 예약을 권해 드려요.`:
          `관내에는 없어서 전국을 찾아봤어요.`); },
  3(){ callTool("check_policy",{user:"tok_kimsj",isbn13:lastISBN,pickup:CFG[cfgKey].home==="상동"?"상동":"중앙"},
       o=>o.allowed?`규정 확인 끝. 신청하실 수 있어요.`:`지금은 규정상 신청이 어려워요. 사유를 위에 표시했어요.`); },
@@ -374,8 +374,8 @@ const STEPS = {
  6(){ callTool("find_alternative",{isbn13:BOOK.sonyeon.isbn13,user:"tok_kimsj"},
       o=>o.audiobook?`이 책은 오디오북으로도 있어요. 책나래 우편 수령으로 받아보실 수 있어요.`:`대체자료는 아직 없네요.`); },
  7(){ const keep=lastISBN; lastISBN=BOOK.onsil.isbn13;
-      callTool("check_availability",{isbn13:BOOK.onsil.isbn13,realtime:true},
-      o=>`부천 관내에는 없고, 전국 ${o.nation.found_count}곳에 있어요(${o.nation.basis}). 책바다는 별도 가입과 사서 승인이 필요해서, 신청 대신 안내를 드릴게요.`);
+      callTool("check_availability",{isbn13:BOOK.onsil.isbn13},
+      o=>`(예시 장면) 부천 관내에 없다고 가정하면 전국 ${o.nation.found_count}곳에 있어요(${o.nation.basis}). 책바다는 별도 가입과 사서 승인이 필요해서, 신청 대신 안내를 드릴게요.`);
       lastISBN=keep; },
  8(trackOnly){ const r=lastReceipt();
       if(!r){ card("err","MCP 서버","mcp","추적할 신청이 없습니다",esc("먼저 ④에서 신청을 접수해 주세요")); return; }

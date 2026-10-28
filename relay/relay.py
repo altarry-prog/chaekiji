@@ -6,7 +6,7 @@ worker.js와 같은 경로·같은 응답 모양. 인증키는 환경변수 NARU
 실행:  set NARU_KEY=...   (윈도우)  /  export NARU_KEY=...  (리눅스)
        python relay.py            → http://127.0.0.1:8787
 점검:  curl http://127.0.0.1:8787/health
-경로:  /holdings?isbn=  /search?q=|isbn=  /nation?isbn=  /health   (worker.js와 같다)
+경로:  /holdings?isbn=  /search?q=|isbn=  /nation?isbn=  /health   (worker.js와 같은 경로. 10. 16. 뒤의 보강은 worker.js에만)
 """
 import os, sys, json, time, re, urllib.request, urllib.parse, urllib.error, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer

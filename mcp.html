@@ -366,7 +366,7 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
 <div class="tblwrap"><table>
 <tr><th>도구</th><th>받는 것</th><th>돌려주는 것</th><th>부천에서의 실제 동작</th><th>상태</th></tr>
 <tr><td><code>search_item</code></td><td>일상어 발화, 언어</td><td>ISBN·서지·확신도·근거</td><td>정보나루 srchBooks (exactMatch + 판본 보정)</td><td><span class="chip done">구현</span></td></tr>
-<tr><td><code>check_availability</code></td><td>ISBN, 범위, 실시간 여부</td><td>기관별 상태 목록 + 다음 갈래(방문·관내 신청·예약·책바다 안내)</td><td>알파스 실시간 → 실패 시 정보나루(전일) 폴백. 관내 소장은 있으나 전부 대출 중이면 전국이 아니라 <b>예약</b>으로</td><td><span class="chip done">구현*</span></td></tr>
+<tr><td><code>check_availability</code></td><td>ISBN, 범위, 실시간 여부</td><td>기관별 상태 목록 + 다음 갈래(방문·관내 신청·예약·책바다 안내)</td><td>알파스 실시간 → 실패 시 정보나루(전일) 폴백. 관내 소장은 있으나 전부 대출 중이면 전국이 아니라 <b>예약</b>으로</td><td><span class="chip done">구현*(관내 실시간은 모의)</span></td></tr>
 <tr><td><code>check_policy</code></td><td>이용자 토큰, ISBN, 수령관</td><td>가능 여부 + 규정별 판정 근거</td><td>7개 규정을 설정 파일 기준으로 검사 (4장)</td><td><span class="chip done">구현</span></td></tr>
 <tr><td><code>request_service</code></td><td>판정 통과 신청서 + <b>이용자 확인</b> + 요청 고유번호</td><td>접수번호, 예상 소요</td><td>알파스에 상호대차 트랜잭션 생성 · 실행 직전 재판정 · 같은 고유번호가 다시 오면 기존 접수번호 반환(재시도 중복 방지)</td><td><span class="chip part">규격 검증*</span></td></tr>
 <tr><td><code>track_request</code></td><td>이용자 토큰, 접수번호</td><td>현재 상태·이력</td><td>접수 → 자료 확보 → 이송 → 도착·수령 대기 → 대출 완료 (예외: 실패·취소). 실패 시 한도 즉시 복원</td><td><span class="chip done">구현(모의 상태 전이)</span></td></tr>
@@ -418,7 +418,7 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
       rule(f<span class="s">"도서관별 {RULES.per_lib_limit}권"</span>,
            member.loans_at(pickup) &lt; RULES.per_lib_limit),
       rule(<span class="s">"연체·정지 회원 불가"</span>,
-           <span class="k">not</span> member.suspended <span class="k">and</span> member.overdue == 0),   <span class="d"># 부천 고시 4종 + 도서관계 일반 3종 = 7종</span>
+           <span class="k">not</span> member.suspended <span class="k">and</span> member.overdue == 0),   <span class="d"># 부천 누리집 안내 4종 + 도서관계 일반 3종 = 7종</span>
       rule(<span class="s">"상호대차 제외 자료 아님"</span>,
            material(isbn13).kind <span class="k">not in</span> RULES.excluded),  <span class="d"># 신착·참고자료 등(세부값은 기관이 확정)</span>
       rule(<span class="s">"동일 도서 중복 신청 아님"</span>,
@@ -434,7 +434,7 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
 
 <p>위 코드에 부천의 "5권·20권·5권"이 한 글자도 없다는 점을 봐 주세요.
 숫자는 전부 설정 파일에 삽니다. 이 한 수가 6장의 확산을 가능하게 만듭니다.
-부천이 고시한 4종 뒤에 붙은 3종(연체·정지, 제외 자료, 중복 신청)은 도서관계에서 일반적인 조건이라
+부천 누리집 안내의 4종 뒤에 붙은 3종(연체·정지, 제외 자료, 중복 신청)은 도서관계에서 일반적인 조건이라
 설정 파일에 예시값으로만 두고 도입 기관이 확정합니다.</p>
 
 <div class="codebox"><div class="tab">config/bucheon.yaml: 부천의 모든 지역 고유값</div>

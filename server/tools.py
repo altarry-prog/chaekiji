@@ -332,7 +332,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     if alt:
         def _alt_where(b):
             ed = " ".join(x for x in (b.get("publisher") or "", f"{b['year']}년" if b.get("year") else "") if x) or f"ISBN {b['isbn13']}"
-            if pickup in b["available_at"]: return f"{ed} 판은 {pickup}도서관 서가에 있습니다"
+            if pickup in b["available_at"]: return f"{ed} 판은 {pickup}도서관에 대출 가능 상태로 있습니다"   # [10/28 저녁] 「서가에 있습니다」는 전일 기준 자료와 맞지 않음(바로 이용 안내문과 같은 말)
             if b["available_at"]: return f"{ed} 판은 {b['available_at'][0]}도서관 등 {len(b['available_at'])}곳에 대출 가능합니다"
             return f"{ed} 판은 {len(b['loaned_at'])}곳이 소장하고 있지만 모두 대출 중입니다"
         lk = alt[0]["official_link"]

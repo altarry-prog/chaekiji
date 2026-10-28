@@ -165,7 +165,7 @@ ok(s1.found && s1.book.isbn13 === "9788998441012" && s1.availability.at_pickup =
 s1 = await call2("consult_request", { utterance: "문헌정보학개론 김수경", pickup: "상동" }, 509);
 const s1e = await call2("consult_request", { utterance: "해리 포터와 마법사의 돌", pickup: "원미" }, 510);
 ok(s1.route === "sea" && s1.book.isbn13 === "9791187268512" && (s1.other_editions || []).length === 1 && s1.other_editions[0].isbn13 === "9791187268758" &&
-   s1.notice.includes("같은 책의 다른 판은 관내에 있습니다") && s1.notice.includes("상동도서관 서가에") && s1.desk_memo.includes("다른 판 관내:") &&
+   s1.notice.includes("같은 책의 다른 판은 관내에 있습니다") && s1.notice.includes("상동도서관에 대출 가능 상태로") && s1.desk_memo.includes("다른 판 관내:") &&
    s1.official_link === null && String(s1.other_editions[0].official_link).endsWith("9791187268758") && !("other_editions" in s1e) &&
    s1.notice.startsWith("『문헌정보학개론』은") && s1.desk_memo.startsWith("도서: 문헌정보학개론 ("),
    "[10/19 밤] 판본 보정 — 고른 판(2021)이 관내에 없으면 같은 작품의 다른 판(2024)을 확인해 알림·갈래(책바다)는 그대로 · 관내에 있는 책은 다른 판을 보지 않음 · 정보나루 서명 끝 빈칸은 안내문·메모에서 뗌(「은(는)」 방지)");

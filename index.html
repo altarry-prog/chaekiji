@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.14 (2026. 10. 27.) · 캐시 chaekiji-v40 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.15 (2026. 10. 28.) · 캐시 chaekiji-v41 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -723,13 +723,13 @@ body.bigmode .foot button{font-size:12.5px}
       </div>
       <div class="chips">
         <div class="lbl" id="chiplbl">눌러서 바로 보기</div>
-        <button class="chip" data-case="0">
-          “<b>한강 소년이 온다</b> 찾아주세요”
-          <span class="m">① 상동도서관에 있음 → 바로 이용<em class="lv">실데이터</em></span>
-        </button>
         <button class="chip" data-case="1">
           “<b>나미야 잡화점의 기적</b> 빌리고 싶어요”
-          <span class="m">② 상동은 대출 중 → 관내 상호대차<em class="lv">실데이터</em></span>
+          <span class="m">① 상동은 대출 중 → 관내 상호대차<em class="lv">실데이터</em></span>
+        </button>
+        <button class="chip" data-case="0">
+          “<b>한강 소년이 온다</b> 찾아주세요”
+          <span class="m">② 상동도서관에 있음 → 바로 이용<em class="lv">실데이터</em></span>
         </button>
         <button class="chip" data-case="2">
           “<b>지구 끝의 온실</b> 찾아주세요”
@@ -1002,6 +1002,7 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    탭이 강제 종료될 수 있음(Electron이 같은 문제를 고친 기록).
    담당자 15:43 「원인마다 해결 방법」: 광고 차단이 단순 배치로도 화면 틀을 숨기면 틀의 이름을 바꿔 피함(.cjx), 10초 안에 다 받지 못하면
    연결 알림(다시 불러오기 · 휴대폰 데이터 · 그림으로 둘러보기, 다 받으면 지움). 판정·자료 흐름은 그대로 */
+/* v1.12.15(2026. 10. 28., 캐시 v41): 담당자 13:15 요청 — 예시 단추 순서만 바꿈. ① 나미야 잡화점의 기적(상동 대출 중, 관내 상호대차) ② 한강 소년이 온다(상동에 있음, 바로 이용). 판정은 8. 18. 실측 그대로, 10개 언어·전화 모드 같은 순서. */
 /* v1.12.14(2026. 10. 27., 캐시 v40): 담당자 17:58 「부천시립상동도서관으로」에 따라 「성격」 칸의 기관 표기만 바꿈(동작 그대로). */
 /* v1.12.13(2026. 10. 27., 캐시 v39): 담당자 16:10 「심사위원이 검색하는 책을 한강 소년이 온다로」에 따라 입력 칸 예시(10개 언어)와
    「예시 5권만」 안내의 첫 책을 소년이 온다로 바꿈. 15:56 「날짜가 틀린 곳」: 전화 모드가 직접 말하거나 입력한 책도 늘 8. 18. 자료로 답하던 것을
@@ -1273,53 +1274,53 @@ const LANGS = {
 const EXTAG = {ko:'예시', en:'sample', zh:'示例', ja:'例', vi:'mẫu', th:'ตัวอย่าง', ru:'пример', mn:'жишээ', uz:'namuna', id:'contoh'};
 const CHIPS_L = {
   ko:{c:[
-    ['“<b>한강 소년이 온다</b> 찾아주세요”','① 상동도서관에 있음 → 바로 이용','실데이터'],
-    ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','② 상동은 대출 중 → 관내 상호대차','실데이터'],
+    ['“<b>한강 소년이 온다</b> 찾아주세요”','② 상동도서관에 있음 → 바로 이용','실데이터'],
+    ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','① 상동은 대출 중 → 관내 상호대차','실데이터'],
     ['“<b>지구 끝의 온실</b> 찾아주세요”','③ 관내에 없음 → 책바다(전국)',null]],
     note:'예시 단추는 8. 18. 실측 장면 그대로 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 어제 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)'},
   en:{c:[
-    ['“Find <b>Human Acts</b> by Han Kang”','① At Sangdong Library → use right away','real data'],
-    ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','② Checked out at Sangdong → loan within Bucheon','real data'],
+    ['“Find <b>Human Acts</b> by Han Kang”','② At Sangdong Library → use right away','real data'],
+    ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','① Checked out at Sangdong → loan within Bucheon','real data'],
     ['“Find <b>The Greenhouse at the End of the Earth</b>”','③ Not in Bucheon → nationwide (Chaekbada)',null]],
     note:'Example buttons replay fixed scenes (Aug 18 data) · speak or type a title to check with yesterday\'s Data4Library data (③ The Greenhouse at the End of the Earth stays a sample scene even when you search for it)'},
   zh:{c:[
-    ['“帮我找韩江的<b>《少年来了》</b>”','① 上洞图书馆有藏 → 直接借阅','实测数据'],
-    ['“我想借<b>《解忧杂货店》</b>”','② 上洞馆已借出 → 市内馆际互借','实测数据'],
+    ['“帮我找韩江的<b>《少年来了》</b>”','② 上洞图书馆有藏 → 直接借阅','实测数据'],
+    ['“我想借<b>《解忧杂货店》</b>”','① 上洞馆已借出 → 市内馆际互借','实测数据'],
     ['“帮我找<b>《地球尽头的温室》</b>”','③ 富川市内没有 → 全国服务',null]],
     note:'示例按钮为固定场景（8月18日实测）· 直接说出或输入书名，将按前一天的图书馆数据判定（③《地球尽头的温室》直接搜索也只显示示例场景）'},
   ja:{c:[
-    ['「ハン・ガンの<b>『少年が来る』</b>を探して」','① 上洞図書館に所蔵 → すぐ利用','実データ'],
-    ['「<b>『ナミヤ雑貨店の奇蹟』</b>を借りたい」','② 上洞館は貸出中 → 市内の相互貸借','実データ'],
+    ['「ハン・ガンの<b>『少年が来る』</b>を探して」','② 上洞図書館に所蔵 → すぐ利用','実データ'],
+    ['「<b>『ナミヤ雑貨店の奇蹟』</b>を借りたい」','① 上洞館は貸出中 → 市内の相互貸借','実データ'],
     ['「<b>『地球の果ての温室』</b>を探して」','③ 富川市内に無し → 全国サービス',null]],
     note:'例のボタンは固定の場面（8/18実測）· 話すか入力すると前日基準のデータで判定します（③『地球の果ての温室』は直接探しても例の場面です）'},
   vi:{c:[
-    ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','① Có tại TV Sangdong → dùng ngay','dữ liệu thực'],
-    ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','② Sangdong đã cho mượn → mượn trong Bucheon','dữ liệu thực'],
+    ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','② Có tại TV Sangdong → dùng ngay','dữ liệu thực'],
+    ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','① Sangdong đã cho mượn → mượn trong Bucheon','dữ liệu thực'],
     ['“Tìm giúp tôi <b>Nhà kính ở tận cùng Trái Đất</b>”','③ Không có ở Bucheon → toàn quốc',null]],
     note:'Nút ví dụ là cảnh cố định (dữ liệu 18/8) · nói hoặc nhập tên sách để kiểm tra theo dữ liệu hôm qua (③ Nhà kính ở tận cùng Trái Đất vẫn là cảnh minh họa dù bạn tự tìm)'},
   th:{c:[
-    ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','① มีที่ห้องสมุดซังดง → ใช้ได้เลย','ข้อมูลจริง'],
-    ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','② ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน','ข้อมูลจริง'],
+    ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','② มีที่ห้องสมุดซังดง → ใช้ได้เลย','ข้อมูลจริง'],
+    ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','① ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน','ข้อมูลจริง'],
     ['“ช่วยหา <b>เรือนกระจกที่สุดขอบโลก</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null]],
     note:'ปุ่มตัวอย่างเป็นฉากคงที่ (ข้อมูล 18 ส.ค.) · พูดหรือพิมพ์ชื่อหนังสือเพื่อตรวจด้วยข้อมูลของเมื่อวาน (③ เรือนกระจกที่สุดขอบโลก แม้ค้นเองก็ยังเป็นฉากตัวอย่าง)'},
   ru:{c:[
-    ['«Найди <b>Человеческие поступки</b> Хан Ган»','① Есть в библиотеке Сандон → сразу читать','реальные данные'],
-    ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','② В Сандоне выдана → обмен внутри Пучхона','реальные данные'],
+    ['«Найди <b>Человеческие поступки</b> Хан Ган»','② Есть в библиотеке Сандон → сразу читать','реальные данные'],
+    ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','① В Сандоне выдана → обмен внутри Пучхона','реальные данные'],
     ['«Найди <b>Теплицу на краю Земли</b>»','③ Нет в Пучхоне → по всей стране',null]],
     note:'Кнопки-примеры: фиксированные сцены (данные 18 авг.) · скажите или введите название, проверим по вчерашним данным (③ «Теплица на краю Земли» и при поиске показывается как пример)'},
   mn:{c:[
-    ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','① Сандон номын санд байгаа → шууд ашиглах','бодит өгөгдөл'],
-    ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','② Сандонд зээлэгдсэн → Бүчон доторх солилцоо','бодит өгөгдөл'],
+    ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','② Сандон номын санд байгаа → шууд ашиглах','бодит өгөгдөл'],
+    ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','① Сандонд зээлэгдсэн → Бүчон доторх солилцоо','бодит өгөгдөл'],
     ['“<b>Дэлхийн захын хүлэмж</b>-ийг олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null]],
     note:'Жишээ товч нь тогтмол үзэгдэл (8/18-ны өгөгдөл) · номын нэрийг хэлж эсвэл бичвэл өчигдрийн өгөгдлөөр шалгана (③ Дэлхийн захын хүлэмж-ийг өөрөө хайсан ч жишээ үзэгдэл хэвээр)'},
   uz:{c:[
-    ['“Han Kangning <b>Human Acts</b> kitobini toping”','① Sangdon kutubxonasida bor → darhol foydalaning','haqiqiy ma\'lumot'],
-    ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','② Sangdonda band → Bucheon ichida almashish','haqiqiy ma\'lumot'],
+    ['“Han Kangning <b>Human Acts</b> kitobini toping”','② Sangdon kutubxonasida bor → darhol foydalaning','haqiqiy ma\'lumot'],
+    ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','① Sangdonda band → Bucheon ichida almashish','haqiqiy ma\'lumot'],
     ['“<b>Yer chekkasidagi issiqxona</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null]],
     note:'Misol tugmalari qat\'iy sahnalar (18-avgust ma\'lumoti) · kitob nomini ayting yoki yozing, kechagi ma\'lumot bilan tekshiramiz (③ Yer chekkasidagi issiqxona o\'zingiz qidirsangiz ham namuna sahna bo\'lib qoladi)'},
   id:{c:[
-    ['“Carikan <b>Mata Malam</b> karya Han Kang”','① Ada di Perpustakaan Sangdong → langsung pakai','data nyata'],
-    ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','② Dipinjam di Sangdong → pinjam antar-cabang Bucheon','data nyata'],
+    ['“Carikan <b>Mata Malam</b> karya Han Kang”','② Ada di Perpustakaan Sangdong → langsung pakai','data nyata'],
+    ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','① Dipinjam di Sangdong → pinjam antar-cabang Bucheon','data nyata'],
     ['“Carikan <b>Rumah Kaca di Ujung Bumi</b>”','③ Tidak ada di Bucheon → seluruh negeri',null]],
     note:'Tombol contoh adalah adegan tetap (data 18 Agu) · ucapkan atau ketik judul untuk cek dengan data kemarin (③ Rumah Kaca di Ujung Bumi tetap adegan contoh walau dicari sendiri)'},
 };
@@ -2026,7 +2027,7 @@ function applyLang(code){
   $('cancelBtn').textContent = u.no;
   const CL = CHIPS_L[code] || CHIPS_L.ko;
   document.querySelectorAll('.chip').forEach((b, i) => {
-    let [q, m, lv] = CL.c[i] || CL.c[0];
+    let [q, m, lv] = CL.c[+b.dataset.case] || CL.c[0];   /* v1.12.15: 단추 순서를 바꿔도 문구는 장면 번호를 따른다 */
     const ex = (CASES[+b.dataset.case] && CASES[+b.dataset.case].real === false);
     if(내관 !== '상동'){ const ci = +b.dataset.case; const tt = U().tier[eff(CASES[ci])]; m = '→ ' + (tt ? tt[1] : ''); }
     if(ex && !lv) lv = EXTAG[code] || EXTAG.ko;
@@ -3565,7 +3566,7 @@ function phStart(){
   PH.on=true; PH.tries=0; PH.c=null; PH.kind=null; PH.tier=1;
   phLabels(); $('pcState').textContent=p.connecting; $('pcHang').classList.remove('re'); $('pcIn').value='';
   const CL=CHIPS_L[code]||CHIPS_L.ko; $('pcChips').innerHTML='';
-  [0,1,2].forEach(i=>{ const b=document.createElement('button'); const q=(CL.c[i]||CL.c[0])[0].replace(/<[^>]+>/g,'').replace(/[“”"]/g,'');
+  [1,0,2].forEach(i=>{ const b=document.createElement('button'); const q=(CL.c[i]||CL.c[0])[0].replace(/<[^>]+>/g,'').replace(/[“”"]/g,'');
     b.textContent=q; b.onclick=()=>phHandle('book', q, undefined, true); $('pcChips').appendChild(b); });
   PH.t0=Date.now(); clearInterval(PH.timer); $('pcTimer').textContent='00:00';
   PH.timer=setInterval(()=>{ const s=Math.floor((Date.now()-PH.t0)/1000); $('pcTimer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);

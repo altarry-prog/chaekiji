@@ -504,17 +504,17 @@ async def main():
         except Exception as e:
             print("gateNo skipped", e)
         try:
-            await tapclick(app.locator("#bigbtn")); await W(2100)
+            await tapclick(app.locator("#bigbtn")); await W(1700)
         except Exception as e:
             print("big skipped", e)
         try:
             await tapclick(app.locator("#langbtn")); await W(1200)
             vi = app.locator("text=Tiếng Việt").first
             if await vi.count():
-                await tapclick(vi); await W(2500)
+                await tapclick(vi); await W(1300)
         except Exception as e:
             print("lang skipped", e)
-        await W(500)
+        # [10/28 표지를 넣으며] 이 장면은 내레이션보다 화면이 3.5초 길었다. 끝의 기다림을 2초쯤 줄여 5분 안 여유를 둔다(내레이션은 hold가 끝까지 지킴)
         await hold("09", pad=0.3)
         await acdp.send("Page.stopScreencast")
         await ev("dsteps([])")

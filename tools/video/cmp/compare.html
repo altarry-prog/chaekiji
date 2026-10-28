@@ -58,8 +58,8 @@ html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;
 #bsteps div::before{content:attr(data-n);position:absolute;left:10px;top:7px;width:26px;height:26px;border-radius:50%;background:rgba(127,240,200,.25);color:#e9fff7;font-size:15px;font-weight:700;text-align:center;line-height:26px}
 #bsteps div.on{background:rgba(127,240,200,.16);color:#fff}
 #bsteps div.on::before{background:var(--mint);color:var(--ink);content:'✓'}
-#stamp{position:absolute;left:236px;top:246px;font-size:27px;font-weight:800;color:var(--ink);background:var(--sun);border-radius:30px;padding:8px 20px;opacity:0;transform:scale(.6) rotate(-4deg);transition:opacity .25s,transform .35s cubic-bezier(.2,1.6,.4,1)}
-#stamp.on{opacity:1;transform:scale(1) rotate(-2deg)}
+#stamp{position:absolute;left:236px;top:246px;font-size:27px;font-weight:800;color:var(--ink);background:var(--sun);border-radius:30px;padding:8px 20px;opacity:0;transform:scale(.6);transition:opacity .25s,transform .35s cubic-bezier(.2,1.6,.4,1)}
+#stamp.on{opacity:1;transform:scale(1)}
 #pb .meter{position:absolute;left:232px;right:22px;bottom:16px;display:flex;gap:12px}
 #pb .m{flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(127,240,200,.35);border-radius:14px;padding:6px 16px 4px;display:flex;flex-direction:column;align-items:flex-start}
 #pb .m .v{font-size:50px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--mint);letter-spacing:-1px;line-height:1.1}

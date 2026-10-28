@@ -76,7 +76,7 @@ TOOLS = [
 PROMPT_FILE = Path(__file__).resolve().parent / "prompts" / "상담비서-지시문.md"
 PROMPTS = [
  {"name": "consult",
-  "description": "상담 비서: 창구·전화 문의를 받아 책을 찾고 소장·대출 상태와 상호대차 가능 여부를 판정해 사서가 읽어 줄 안내문을 만든다(접수는 사서가).",
+  "description": "창구·전화 상담: 문의를 받아 책을 찾고 소장·대출 상태와 상호대차 가능 여부를 판정해 사서가 읽어 줄 안내문을 만든다(접수는 사서가).",
   "arguments": [{"name": "pickup", "description": "받을 도서관(기본 상동)", "required": False},
                 {"name": "lang", "description": "이용자 언어 코드(기본 ko)", "required": False}]},
 ]

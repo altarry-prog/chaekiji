@@ -47,7 +47,7 @@ def _local_holdings(isbn13: str):
         rt = naru.holdings_local(isbn13, CFG["libraries"], CFG["region_code"], mode=MODE)
         return rt, naru.LAST_META.get("basis", "관내: 정보나루(전일 기준)")
     if isbn13 in naru._hold.get("_examples", []):        # 실측이 아닌 예시 장면용 값
-        return alpas.holdings_realtime(isbn13), "관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면, 이 책의 실제 소장과 다를 수 있음)"
+        return alpas.holdings_realtime(isbn13), "관내: 예시 데이터(관내에 없는 책의 흐름을 보이려고 꾸민 값, 이 책의 실제 소장과 다름)"
     # demo: 도서관리시스템 실시간 연동을 흉내 낸 모의 커넥터 — 값은 픽스처(정보나루 실측)이므로 안내문의 조회일과 같은 출처를 밝힌다
     y, m, d = naru.FIX_ASOF.split("-")
     return alpas.holdings_realtime(isbn13), f"관내: 도서관리시스템 실시간 연동 모의(값은 {y}. {int(m)}. {int(d)}. 정보나루 실측)"
@@ -286,8 +286,8 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     disp = f"{naru._main_title(title)} {naru.vol_label(found['vol'])}" if found.get("vol") else str(title).strip()   # [10/19] 권차가 있으면 「흔한남매 1권」처럼 · 서명 끝 빈칸은 뗀다
     t_ = f"『{disp}』{_eun(disp)}"
     if route == "visit":
-        notice = (f"{t_} 지금 {pickup}도서관 서가에 있어 바로 대출하실 수 있습니다. "
-                  f"받으실 도서관에 있는 자료는 상호대차 신청 대상이 아니니 방문해 주세요.")
+        notice = (f"{t_} {pickup}도서관에 대출 가능 상태로 있어 방문하시면 바로 대출하실 수 있습니다. "   # [10/28] 「지금 … 서가에 있어」는 전일 기준 자료와 맞지 않음
+                  f"받으실 도서관에 있는 자료는 상호대차 신청 대상이 아닙니다.")
     elif route == "ill" and is_point:                # [10/18] 작은도서관에서 받기 — 그곳 소장 여부는 말하지 않는다(모름)
         notice = (f"{t_} {from_lib}도서관 등 {CFG['city']}시립도서관 {n_ok}곳에 대출 가능 상태입니다. "
                   + _ill_terms(pickup, eta, hold, point=True))
@@ -296,7 +296,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         notice = (f"{t_} {pickup}도서관에는 {where}지만 {from_lib}도서관 등 {CFG['city']}시립도서관 {n_ok}곳에 대출 가능 상태입니다. "
                   + _ill_terms(pickup, eta, hold))
     elif route == "reserve":
-        notice = (f"{t_} {CFG['city']}시립도서관 {n_busy}곳이 소장하고 있지만 지금은 모두 대출 중입니다. "
+        notice = (f"{t_} {CFG['city']}시립도서관 {n_busy}곳이 소장하고 있지만 모두 대출 중입니다. "
                   + ("먼저 예약해 두시면, 책이 반납될 때 상호대차로 바꿔 신청할 수 있습니다" if CFG.get("reserve_converts_to_ill")
                      else "상호대차 대신 예약을 권해 드립니다")
                   + "(책바다는 관내에 없는 자료가 대상입니다).")
@@ -311,7 +311,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     if route == "check":                              # 조회한 자료가 없으므로 날짜를 찍지 않는다
         pass
     elif example:                                     # 실측이 아닌 예시 장면 — 날짜 대신 그렇게 밝힌다
-        notice += " (예시 데이터, 이 책의 실제 소장·대출과 다를 수 있습니다)"
+        notice += " (예시 데이터: 관내에 없는 책의 흐름을 보이려고 꾸민 값이라 이 책의 실제 소장·대출과 다릅니다)"
     else:
         notice += f" (대출 상태는 정보나루 {asof_k} 조회, 전일 기준)"
     if pol["pending"]:
@@ -349,7 +349,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     memo_lines = [f"도서: {str(title).strip()}" + (f" [{naru.vol_label(found['vol'])}]" if found.get("vol") else "") + f" ({found.get('author') or ''}) ISBN {isbn}" + (f" · 같은 제목 다른 책 {len(others)}건, 저자 확인" if others else ""),
                   f"갈래: {_ROUTE_LABEL[route]}" + (f" · 소장관 {from_lib}" if from_lib else ""),
                   (f"수령관: {pickup}도서관 (작은도서관: 서가 비치·도착일·보관 기한은 창구 확인)" if is_point else
-                   f"수령관: {pickup} (현재 {'서가 비치' if at_pickup == 'ok' else '대출 중' if at_pickup == 'busy' else '확인 불가' if unknown else '미소장'})"),
+                   f"수령관: {pickup} ({'조회일 기준 서가 비치' if at_pickup == 'ok' else '조회일 기준 대출 중' if at_pickup == 'busy' else '확인 불가' if unknown else '조회일 기준 미소장'})"),
                   ("대출 가능 관: 확인 불가 / 대출 중: 확인 불가" if unknown else
                    f"대출 가능 관: {', '.join(avail['available_at']) or '없음'} / 대출 중: {', '.join(avail['loaned_at']) or '없음'}"),
                   f"근거: {avail['basis']}",

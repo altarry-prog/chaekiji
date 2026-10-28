@@ -41,7 +41,7 @@ echo == 공개 모델 호스트 시험(10건, 모의 Ollama) ==
 %PY% tests\run_host.py
 if errorlevel 1 goto fail
 echo.
-echo [chaekiji-mcp] 준비 완료: 시험 104건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts\ollama_host.py 를 보세요.
+echo [chaekiji-mcp] 준비 완료: 시험 104건. 다음 순서는 저장소 README의 '4. 해 보기 · 설치형' 절에 있습니다. 모델 없이 결과 보기는 lab\consult_cli.py, 공개 모델은 hosts\ollama_host.py 입니다.
 pause
 exit /b 0
 

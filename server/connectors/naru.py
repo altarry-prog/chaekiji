@@ -314,7 +314,7 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
         h = _hold.get("holdings", {}).get(isbn13, {})
         out = {name: h.get(name, "none") for name in libraries}
         ex = isbn13 in _hold.get("_examples", [])          # 실측이 아닌 예시 장면용 값
-        LAST_META = {"basis": ("관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면, 이 책의 실제 소장과 다를 수 있음)" if ex
+        LAST_META = {"basis": ("관내: 예시 데이터(관내에 없는 책의 흐름을 보이려고 꾸민 값, 이 책의 실제 소장과 다름)" if ex
                                else "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 전일 기준)"), "asof": FIX_ASOF,
                      "holding_count": sum(1 for v in out.values() if v != "none"), "calls": 0, "cached": False, "example": ex}
         return out

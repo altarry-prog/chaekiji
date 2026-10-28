@@ -324,7 +324,7 @@ export const TOOLS = [
 export const PROMPTS = [
  {
   "name": "consult",
-  "description": "상담 비서: 창구·전화 문의를 받아 책을 찾고 소장·대출 상태와 상호대차 가능 여부를 판정해 사서가 읽어 줄 안내문을 만든다(접수는 사서가).",
+  "description": "창구·전화 상담: 문의를 받아 책을 찾고 소장·대출 상태와 상호대차 가능 여부를 판정해 사서가 읽어 줄 안내문을 만든다(접수는 사서가).",
   "arguments": [
    {
     "name": "pickup",

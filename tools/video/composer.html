@@ -178,6 +178,16 @@ html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;
 #endc .qr{position:absolute;right:120px;top:190px;width:250px;text-align:center}
 #endc .qr img{width:230px;height:230px;background:#fff;border-radius:16px;padding:10px;box-sizing:content-box}
 #endc .qr div{font-size:17px;color:#d9ece5;margin-top:12px}
+/* 표지(첫 장이자 썸네일): 끝 칸과 같은 글꼴, QR 자리에 시연 웹 첫 화면을 크게 */
+#cov .tt{position:absolute;left:110px;top:0;height:720px;width:640px;display:flex;flex-direction:column;justify-content:center}
+#cov .tt .k{font-size:24px;color:var(--mint2);font-weight:600}
+#cov .tt .t{font-size:68px;font-weight:700;letter-spacing:-1px;margin-top:14px;line-height:1.16}
+#cov .tt .team{margin-top:40px;font-size:22px;color:#fff;font-weight:600}
+#cov .tt .sm{margin-top:8px;font-size:17px;color:#c4d6cf}
+#cov .glow{position:absolute;left:733px;top:78px;width:560px;height:560px;border-radius:50%;background:radial-gradient(closest-side,rgba(127,240,200,.20),rgba(127,240,200,0));pointer-events:none}
+#cov .ph{position:absolute;left:860px;top:58px;width:306px;height:600px;border-radius:42px;background:#0b0f0e;padding:10px;box-sizing:border-box;box-shadow:0 34px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08)}
+#cov .ph img{display:block;width:286px;height:580px;border-radius:33px;background:#fff;object-fit:cover;object-position:top}
+#cov .cap{position:absolute;left:860px;top:672px;width:306px;text-align:center;font-size:16px;color:#d9ece5}
 /* 비교 장면(별도 파일을 화면 가득) */
 #cmpf{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;background:#0f3d33}
 /* 시민 화면 단계 표시 */
@@ -205,6 +215,7 @@ html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;
   <div id="nums" class="fade hide"><div class="ih"><div class="k" id="nk"></div><div class="t" id="nt"></div></div><div class="tiles" id="ntiles"></div><div class="note rv" id="nnote"></div></div>
   <div id="two" class="fade hide"><div class="ih"><div class="k" id="wk"></div><div class="t" id="wt"></div></div><div class="cols" id="wcols"></div><div class="foot rv" id="wfoot"></div></div>
   <div id="endc" class="fade hide"><div class="tt"><div class="k" id="ek"></div><div class="t" id="et"></div><div class="ln" id="eln"></div><div class="team" id="eteam"></div><div class="sm" id="esm"></div></div><div class="qr" id="eqr"></div></div>
+  <div id="cov" class="fade hide"><div class="tt"><div class="k" id="vk"></div><div class="t" id="vt"></div><div class="team" id="vteam"></div><div class="sm" id="vsm"></div></div><div class="glow"></div><div class="ph"><img id="vimg" alt=""></div><div class="cap" id="vcap"></div></div>
   <iframe id="cmpf" class="fade hide" title="비교 장면"></iframe>
   <div id="tap"></div>
   <div id="bar" class="fade hide"></div>
@@ -220,7 +231,7 @@ const vis=(id,on)=>$(id).classList.toggle('hide',!on);
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 window.crumb=html=>{$('crumb').innerHTML=html||'';};
 window.draft=(on,text)=>{if(text)$('draft').textContent=text;vis('draft',on);};
-window.only=(...ids)=>{for(const id of ['card','fh','flow','term','clip','slot','side','phone','bar','hero','stats','flow2','steps3','read','nums','two','endc','cmpf']){ $(id).style.opacity=''; vis(id, ids.includes(id)); }};
+window.only=(...ids)=>{for(const id of ['card','fh','flow','term','clip','slot','side','phone','bar','hero','stats','flow2','steps3','read','nums','two','endc','cov','cmpf']){ $(id).style.opacity=''; vis(id, ids.includes(id)); }};
 window.card=(k,t,s,lines)=>{$('ck').textContent=k||'';$('ct').textContent=t||'';$('cs').textContent=s||'';
   $('cl').innerHTML=(lines||[]).map(x=>`<li>${x}</li>`).join('');};
 window.cardLine=i=>{const li=$('cl').children[i]; if(li) li.classList.add('on');};
@@ -291,6 +302,9 @@ window.twoFoot=()=>{$('wfoot').classList.add('on');};
 window.endc=(k,t,lines,team,sm,qr,qrl)=>{$('ek').textContent=k||'';$('et').innerHTML=t||'';
   $('eln').innerHTML=lines.map(x=>`<div><b>${x[0]}</b>${x[1]}</div>`).join('');$('eteam').textContent=team||'';$('esm').textContent=sm||'';
   $('eqr').innerHTML=qr?`<img src="${qr}" alt=""><div>${qrl||''}</div>`:'';};
+/* 표지: 그림이 다 읽힌 뒤에 끝나야 녹화 첫 장이 비지 않는다(약속을 돌려줌) */
+window.cov=(k,t,team,sm,img,cap)=>{$('vk').textContent=k||'';$('vt').innerHTML=t||'';$('vteam').textContent=team||'';$('vsm').textContent=sm||'';$('vcap').textContent=cap||'';
+  const im=$('vimg');return new Promise(r=>{im.onload=()=>r(true);im.onerror=()=>r(false);im.src=img||'';});};
 window.dsteps=list=>{$('dsteps').innerHTML=(list||[]).map(x=>`<span>${x}</span>`).join('');};
 window.dstep=i=>{[...$('dsteps').children].forEach((x,j)=>{x.classList.toggle('on',j===i);x.classList.toggle('done',j<i);});};
 /* 비교 장면: 따로 만든 화면(cmp/compare.html)을 불러 spd배속으로 재생, 끝나면 돌아옴 */

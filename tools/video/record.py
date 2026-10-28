@@ -7,6 +7,7 @@
   python3 tools/video/build_video.py         # → out/[시연영상]_부천시_책이지(_초안).mp4 · .srt · 구성표.md
 
 무엇을 보이나
+- 표지: 녹화를 시작하기 전에 시연 웹 첫 화면을 받아 끝 칸과 같은 모양의 표지에 넣는다(영상 첫 장이자 썸네일, 소리 없음).
 - 명령 창 장면: 실제로 돌린 명령의 출력(t1~t4.txt)을 그대로 다시 보인다. 화면에 「실제 실행 결과(기록 재생)」라고 적힌다.
   t1~t3은 server/lab/consult_cli.py, t4는 sh server/run.sh의 출력(capture.sh로 다시 받는다).
 - 시연 웹 장면: 저장소의 index.html을 별도 브라우저 창(390x790)에 실제로 띄워 조작하고, 그 화면을 휴대폰 틀에 그대로 비춘다.
@@ -107,6 +108,28 @@ async def main():
         app = await actx.new_page()
         app.on("pageerror", lambda e: errs.append("app: " + str(e)))
 
+        # 표지(영상 첫 장이자 썸네일): 찍는 날의 시연 웹 첫 화면을 선명하게 받아 휴대폰 틀에 넣고, 녹화를 시작하기 전에 다 그려 둔다
+        try:
+            cctx = await b.new_context(viewport={"width": 390, "height": 790}, device_scale_factor=2.4, locale="ko-KR",
+                                       has_touch=True, service_workers="block")
+            await cctx.route("**/*workers.dev*", lambda r: r.abort())
+            cpg = await cctx.new_page()
+            await cpg.goto(APP_URL, wait_until="load"); await cpg.wait_for_timeout(1200)
+            g = cpg.locator("#gateNo")
+            if await g.count() and await g.is_visible():
+                await g.click(); await cpg.wait_for_timeout(900)
+            cover_src = "data:image/png;base64," + base64.b64encode(await cpg.screenshot(type="png")).decode()
+            await cctx.close()
+        except Exception as e:
+            print("cover shot skipped", e); cover_src = "/tools/video/cmp/app_home.png"
+        COVER = ["책이지: 상호대차 AI 에이전트", "말 한마디로<br>내 손안에 책이", "팀 책이지 · 부천시립상동도서관",
+                 "2026 공공 AI 대전환 챌린지 세션1 · 시연 영상", cover_src, "시연 웹 첫 화면"]
+        await page.evaluate(f"draft({'false' if A.final else 'true'}, {json.dumps(BADGE, ensure_ascii=False)})")
+        if not await page.evaluate("(a)=>cov(...a)", COVER):
+            errs.append("composer: 표지 그림을 읽지 못함")
+        await page.evaluate("only('cov')")
+        await W(900)
+
         cdp = await ctx.new_cdp_session(page)
         acdp = await actx.new_cdp_session(app)
         n = [0]
@@ -184,7 +207,6 @@ async def main():
             await W(500)
             return dur
 
-        await ev(f"draft({'false' if A.final else 'true'}, {json.dumps(BADGE, ensure_ascii=False)})")
         scene_t = {}
 
         def scene(key, name, screen=""):
@@ -205,6 +227,11 @@ async def main():
             # 내레이션 길이를 장면 안의 카드들에 나눠 준다(내레이션이 없으면 mins 그대로)
             n = NARR.get(key, (None, 0))[1] if not A.mute else 0
             return [int(max(m, f * n) * 1000) for f, m in zip(fracs, mins)]
+
+        # ── 표지: 끝 칸과 같은 모양, QR 자리에 시연 웹 첫 화면(녹화 전에 다 그려 둔 그대로, 소리 없이) ──
+        scene("CV", "· 표지", "끝 칸과 같은 모양(과제명·한 줄 표어·팀·챌린지 이름)에 찍는 날의 시연 웹 첫 화면을 휴대폰 틀로 크게, 소리 없이 약 2.4초")
+        cue(COVER[0], "말 한마디로 내 손안에 책이 · " + COVER[2] + " · " + COVER[3])
+        await W(2400)
 
         # ── 0. 첫 화면: claude.ai 실제 화면(창구 질문을 그대로) ──
         m = clip_meta("claude")

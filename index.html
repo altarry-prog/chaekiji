@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.18 (2026. 10. 28.) · 캐시 chaekiji-v44 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.19 (2026. 10. 28.) · 캐시 chaekiji-v45 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -541,7 +541,7 @@ body.bigmode .bqitems{font-size:15.5px}
 }
 .chip .lv.ex{background:#eef1f4;color:#5b6472}   /* v1.12.1: 예시 장면 표시 */
 .nw,.did span.nw{display:inline;white-space:nowrap}
-.sumline,.done p,.donenote,.sheet .p,.kv .k,.kv .v,.kv small,.kv .vs,.tierbar .td,.src,.axrow,.did span{word-break:keep-all;overflow-wrap:anywhere}   /* v1.12.18: 낱말 가운데서 끊기거나 마지막 줄에 「다.」 한 글자만 남는 것을 막음(390px 점검) */   /* v1.12.8: 바꾼 글의 끝 두세 낱말을 한 덩어리로 — 마지막 줄에 한두 글자만 남지 않게(.did span의 block을 덮음) */
+.sumline,.done p,.donenote,.sheet .p,.kv .k,.kv .v,.kv small,.kv .vs,.tierbar .td,.src,.axrow,.did span,.rule,.bookcard .au{word-break:keep-all;overflow-wrap:anywhere}   /* v1.12.18: 낱말 가운데서 끊기거나 마지막 줄에 「다.」 한 글자만 남는 것을 막음(390px 점검) */   /* v1.12.8: 바꾼 글의 끝 두세 낱말을 한 덩어리로 — 마지막 줄에 한두 글자만 남지 않게(.did span의 block을 덮음) */
 
 /* ── 모바일 1화면 최적화 ── */
 .bookcard{padding:12px 13px;gap:11px;margin-bottom:11px}
@@ -857,7 +857,7 @@ body.bigmode .foot button{font-size:12.5px}
     <div class="screen" id="s-done">
       <div class="done">
         <div class="check">✓</div>
-        <h2 id="doneT">신청이 접수됐습니다</h2>
+        <h2 id="doneT">신청이 접수됐습니다(시연)</h2>
         <p class="donenote" id="doneNote" hidden></p>
         <p id="donetx"></p>
         <div class="psvia" id="psVia" hidden><b></b><span></span></div>
@@ -882,7 +882,7 @@ body.bigmode .foot button{font-size:12.5px}
 
   <div class="foot">
     <button id="infobtn" onclick="document.getElementById('isheet').classList.add('on')" aria-label="책이지 안내 열기">
-      <b>ⓘ 안내</b> · <span id="footSrc">정보나루 Open API 2026. 8. 18. 기준</span> · 시연 모델
+      <b>ⓘ 안내</b> · <span id="footSrc">자료 2026. 8. 18. 기준</span> · 시연 모델
     </button>
   </div>
 
@@ -904,7 +904,7 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="kv i"><span class="k">전화 한 통</span><span class="v">대표번호로 같은 상담·신청, 화면 없이<small>헤더의 📞 단추에서 통화 흐름을 체험할 수 있습니다 (전화망 연결은 운영 단계 과제)</small></span></div>
       <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
       <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>예시 단추 ①②는 2026. 8. 18. 조회(실측), ③은 예시 장면 · 직접 찾으면 매일 새벽 받은 자료(없으면 그 자리에서 조회) · 대출 상태는 전일 기준</small></span></div>
-      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">예시 단추 ①②는 8. 18. 실측 장면, ③은 예시 장면 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 전일 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)</span></div>
+      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 전일 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)</span></div>
       <div class="kv i"><span class="k">성격</span><span class="v">실현 가능성 검증용 시연 모델<small>실제 신청이 접수되지 않습니다 · 2026. 8. 부천시립상동도서관</small></span></div>
       <button class="cta ghost" onclick="document.getElementById('isheet').classList.remove('on')">닫기</button>
     </div>
@@ -914,7 +914,7 @@ body.bigmode .foot button{font-size:12.5px}
   <div class="sheet" id="psheet">
     <div class="sheet-in">
       <h3 id="phsT">📞 전화 한 통 모드</h3>
-      <p class="p" id="phsP">스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마칩니다.</p>
+      <p class="p" id="phsP">스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마치도록 설계했습니다.</p>
       <div class="kv i"><span class="k" id="phsK1">본인 확인</span><span class="v"><span id="phsV1">등록된 번호로 걸었는지 확인</span><small id="phsS1">이름은 첫 글자만 부르고, 회원번호는 어디에도 나오지 않습니다</small></span></div>
       <div class="kv i"><span class="k" id="phsK2">하는 일</span><span class="v"><span id="phsV2">소장 확인 · 관내 상호대차 신청 · 예약 · 위임 해지</span><small id="phsS2">무료이고 취소할 수 있는 일만 전화로 대신합니다</small></span></div>
       <div class="kv i"><span class="k" id="phsK3">안 하는 일</span><span class="v"><span id="phsV3">책바다(실비) 신청 · 회원정보 변경 · 결제</span><small id="phsS3">위험한 일일수록 문을 세게: 앱(재인증)이나 창구로 안내합니다</small></span></div>
@@ -962,7 +962,7 @@ body.bigmode .foot button{font-size:12.5px}
   <div class="sheet" id="lsheet">
     <div class="sheet-in">
       <h3>언어 선택 · Language</h3>
-      <p class="p">음성 인식·안내와 주요 화면 문구가 바뀝니다(ⓘ 안내 창은 한국어) · 도서명·도서관명은 원어로 표시됩니다</p>
+      <p class="p">음성 인식·안내와 주요 화면 문구가 바뀝니다(ⓘ 안내 창은 대부분 한국어) · 도서명·도서관명은 원어로 표시됩니다</p>
       <div class="langgrid" id="langgrid"></div>
       <button class="cta ghost" onclick="document.getElementById('lsheet').classList.remove('on')">닫기</button>
     </div>
@@ -1224,55 +1224,55 @@ const LANGS = {
          l1:'Listening…', l2:'Speak naturally', st:'Stop'},
       m:{on:()=>`Voice guidance is on. I will read the results aloud.`, sw:()=>`Language switched to English.`, mid:(t)=>`I understood ${t}. Checking nearby libraries.`,
          res:(t,l)=>`Search result: ${t}. Recommended library: ${l}. Tap the green button to request an interlibrary loan.`,
-         sh:(t,l)=>`Please confirm. Book ${t}, from ${l}. Tap Yes to submit.`, dn:()=>`Your request has been submitted.`, dn2:()=>`Here is how to request via Chaekbada. The library will help with sign-up and approval.`}},
+         sh:(t,l)=>`Please confirm. Book ${t}, from ${l}. Tap Yes to submit.`, res2:(t)=>`Search result: ${t}. Chaekbada needs a separate sign-up and librarian approval. Tap the green button for guidance.`, sh2:(y)=>`Chaekbada needs a separate sign-up and librarian approval. To get guidance, tap ${y}.`, dn:()=>`Here is what the request would look like.`, dn2:()=>`Here is how to request via Chaekbada. The library will help with sign-up and approval.`}},
   zh:{n:'中文',     rec:'zh-CN', tts:'zh-CN',
       s:{h1:'想找什么书？', h2:'书名不必完全准确', or:'或直接输入', ph:'例：韩江《少年来了》',
          go:'搜索', lbl:'点击查看示例', l1:'正在听…', l2:'请自然地说', st:'停止'},
       m:{on:()=>`语音引导已开启，我会为您朗读结果。`, sw:()=>`已切换为中文。`, mid:(t)=>`已识别为《${t}》，正在查询附近的图书馆。`,
          res:(t,l)=>`搜索结果：${t}。推荐图书馆：${l}。点击绿色按钮申请馆际互借。`,
-         sh:(t,l)=>`请确认申请内容。图书 ${t}，从 ${l} 借出。`, dn:()=>`申请已受理。`, dn2:()=>`为您说明Chaekbada申请方法。注册与审核由图书馆协助。`}},
+         sh:(t,l)=>`请确认申请内容。图书 ${t}，从 ${l} 借出。`, res2:(t)=>`搜索结果：${t}。Chaekbada需要另行注册并经馆员审核。点击绿色按钮查看指引。`, sh2:(y)=>`Chaekbada需要另行注册并经馆员审核。如需申请指引，请点击「${y}」。`, dn:()=>`这是申请完成后的画面示意。`, dn2:()=>`为您说明Chaekbada申请方法。注册与审核由图书馆协助。`}},
   ja:{n:'日本語',   rec:'ja-JP', tts:'ja-JP',
       s:{h1:'どんな本をお探しですか？', h2:'正確なタイトルでなくても大丈夫', or:'または入力', ph:'例：ハン・ガン『少年が来る』',
          go:'検索', lbl:'例を見る', l1:'聞いています…', l2:'自然に話してください', st:'停止'},
       m:{on:()=>`音声ガイドをオンにしました。結果を読み上げます。`, sw:()=>`日本語に切り替えました。`, mid:(t)=>`「${t}」ですね。近くの図書館を確認しています。`,
          res:(t,l)=>`検索結果：${t}。おすすめの図書館：${l}。緑のボタンで相互貸借を申請できます。`,
-         sh:(t,l)=>`申請内容をご確認ください。${t}、${l}から取り寄せます。`, dn:()=>`申請を受け付けました。`, dn2:()=>`チェクバダの申請方法をご案内します。登録と承認は図書館がお手伝いします。`}},
+         sh:(t,l)=>`申請内容をご確認ください。${t}、${l}から取り寄せます。`, res2:(t)=>`検索結果：${t}。チェクバダは別途登録と司書の承認が必要です。緑のボタンで案内を確認できます。`, sh2:(y)=>`チェクバダは別途登録と司書の承認が必要です。申請方法の案内を受けるには「${y}」を押してください。`, dn:()=>`申請した場面です。`, dn2:()=>`チェクバダの申請方法をご案内します。登録と承認は図書館がお手伝いします。`}},
   vi:{n:'Tiếng Việt', rec:'vi-VN', tts:'vi-VN',
       s:{h1:'Bạn tìm sách gì?', h2:'Không cần nói chính xác tên sách', or:'hoặc nhập',
          ph:'VD: Bản chất của người (Han Kang)', go:'Tìm', lbl:'Chạm để xem ví dụ', l1:'Đang nghe…', l2:'Hãy nói tự nhiên', st:'Dừng'},
       m:{on:()=>`Đã bật hướng dẫn bằng giọng nói. Tôi sẽ đọc kết quả cho bạn.`, sw:()=>`Đã chuyển sang tiếng Việt.`, mid:(t)=>`Tôi hiểu là ${t}. Đang kiểm tra các thư viện gần bạn.`,
          res:(t,l)=>`Kết quả: ${t}. Thư viện đề xuất: ${l}. Nhấn nút xanh để đăng ký mượn liên thư viện.`,
-         sh:(t,l)=>`Vui lòng xác nhận. Sách ${t}, từ ${l}.`, dn:()=>`Đã tiếp nhận yêu cầu.`, dn2:()=>`Đây là cách đăng ký Chaekbada. Thư viện sẽ hỗ trợ đăng ký và duyệt.`}},
+         sh:(t,l)=>`Vui lòng xác nhận. Sách ${t}, từ ${l}.`, res2:(t)=>`Kết quả: ${t}. Chaekbada cần đăng ký riêng và thủ thư phê duyệt. Nhấn nút xanh để xem hướng dẫn.`, sh2:(y)=>`Chaekbada cần đăng ký riêng và thủ thư phê duyệt. Để nhận hướng dẫn, nhấn ${y}.`, dn:()=>`Đây là cảnh sau khi đăng ký.`, dn2:()=>`Đây là cách đăng ký Chaekbada. Thư viện sẽ hỗ trợ đăng ký và duyệt.`}},
   th:{n:'ไทย',      rec:'th-TH', tts:'th-TH',
       s:{h1:'หาหนังสือเล่มไหนคะ?', h2:'ชื่อหนังสือไม่ต้องเป๊ะก็ได้', or:'หรือพิมพ์', ph:'เช่น หนังสือของฮันคัง',
          go:'ค้นหา', lbl:'แตะเพื่อดูตัวอย่าง', l1:'กำลังฟัง…', l2:'พูดได้ตามสบาย', st:'หยุด'},
       m:{on:()=>`เปิดเสียงแนะนำแล้ว ฉันจะอ่านผลลัพธ์ให้ฟัง`, sw:()=>`เปลี่ยนเป็นภาษาไทยแล้ว`, mid:(t)=>`เข้าใจว่า ${t} กำลังตรวจสอบห้องสมุดใกล้เคียง`,
          res:(t,l)=>`ผลการค้นหา: ${t} ห้องสมุดแนะนำ: ${l} กดปุ่มสีเขียวเพื่อยืมระหว่างห้องสมุด`,
-         sh:(t,l)=>`โปรดยืนยัน: ${t} จาก ${l}`, dn:()=>`รับคำขอแล้ว`, dn2:()=>`นี่คือวิธีขอผ่านแชกบาดา ห้องสมุดจะช่วยสมัครและอนุมัติ`}},
+         sh:(t,l)=>`โปรดยืนยัน: ${t} จาก ${l}`, res2:(t)=>`ผลการค้นหา: ${t} แชกบาดาต้องสมัครแยกและให้บรรณารักษ์อนุมัติ กดปุ่มสีเขียวเพื่อดูคำแนะนำ`, sh2:(y)=>`แชกบาดาต้องสมัครแยกและให้บรรณารักษ์อนุมัติ หากต้องการคำแนะนำ กด ${y}`, dn:()=>`นี่คือฉากหลังการขอ`, dn2:()=>`นี่คือวิธีขอผ่านแชกบาดา ห้องสมุดจะช่วยสมัครและอนุมัติ`}},
   ru:{n:'Русский',  rec:'ru-RU', tts:'ru-RU',
       s:{h1:'Какую книгу ищете?', h2:'Название может быть неточным', or:'или введите',
          ph:'Напр.: Хан Ган «Человеческие поступки»', go:'Поиск', lbl:'Примеры', l1:'Слушаю…', l2:'Говорите свободно', st:'Стоп'},
       m:{on:()=>`Голосовые подсказки включены. Я озвучу результаты.`, sw:()=>`Язык переключён на русский.`, mid:(t)=>`Понял: ${t}. Проверяю ближайшие библиотеки.`,
          res:(t,l)=>`Результат: ${t}. Рекомендуемая библиотека: ${l}. Нажмите зелёную кнопку для заказа.`,
-         sh:(t,l)=>`Подтвердите: ${t}, из ${l}.`, dn:()=>`Заявка принята.`, dn2:()=>`Вот как оформить заявку в Чекпаде. Библиотека поможет с регистрацией и одобрением.`}},
+         sh:(t,l)=>`Подтвердите: ${t}, из ${l}.`, res2:(t)=>`Результат: ${t}. Для Чекпады нужны отдельная регистрация и одобрение библиотекаря. Нажмите зелёную кнопку, чтобы получить инструкцию.`, sh2:(y)=>`Для Чекпады нужны отдельная регистрация и одобрение библиотекаря. Чтобы получить инструкцию, нажмите «${y}».`, dn:()=>`Так выглядела бы оформленная заявка.`, dn2:()=>`Вот как оформить заявку в Чекпаде. Библиотека поможет с регистрацией и одобрением.`}},
   mn:{n:'Монгол',   rec:'mn-MN', tts:'mn-MN',
       s:{h1:'Ямар ном хайж байна?', h2:'Нэр нь яг таг байх шаардлагагүй', or:'эсвэл бичнэ үү',
          ph:'Ж: Хан Ган «Хөвгүүн ирлээ»', go:'Хайх', lbl:'Жишээ үзэх', l1:'Сонсож байна…', l2:'Чөлөөтэй ярина уу', st:'Зогсоох'},
       m:{on:()=>`Дуут заавар асаалаа. Үр дүнг уншиж өгнө.`, sw:()=>`Монгол хэл рүү шилжлээ.`, mid:(t)=>`${t} гэж ойлголоо. Ойролцоох номын сангуудыг шалгаж байна.`,
          res:(t,l)=>`Хайлтын үр дүн: ${t}. Санал болгох номын сан: ${l}. Ногоон товчийг дарна уу.`,
-         sh:(t,l)=>`Баталгаажуулна уу: ${t}, ${l}-аас.`, dn:()=>`Хүсэлт хүлээн авлаа.`, dn2:()=>`Чекпадагаар хүсэх аргыг зааварлая. Бүртгэл, зөвшөөрөлд номын сан туслана.`}},
+         sh:(t,l)=>`Баталгаажуулна уу: ${t}, ${l}-аас.`, res2:(t)=>`Хайлтын үр дүн: ${t}. Чекпадад тусдаа бүртгэл, номын санчийн зөвшөөрөл хэрэгтэй. Заавар авахын тулд ногоон товчийг дарна уу.`, sh2:(y)=>`Чекпадад тусдаа бүртгэл, номын санчийн зөвшөөрөл хэрэгтэй. Заавар авах бол «${y}» товчийг дарна уу.`, dn:()=>`Хүсэлт илгээсний дараах демо үзэгдэл.`, dn2:()=>`Чекпадагаар хүсэх аргыг зааварлая. Бүртгэл, зөвшөөрөлд номын сан туслана.`}},
   uz:{n:"O'zbekcha", rec:'uz-UZ', tts:'uz-UZ',
       s:{h1:"Qaysi kitobni qidiryapsiz?", h2:"Nomi aniq bo'lishi shart emas", or:'yoki yozing',
          ph:"Masalan: Xan Kang kitobi", go:'Qidirish', lbl:'Namunalar', l1:'Eshityapman…', l2:'Bemalol gapiring', st:"To'xtatish"},
       m:{on:()=>`Ovozli yo'riqnoma yoqildi. Natijalarni o'qib beraman.`, sw:()=>`O'zbek tiliga o'tildi.`, mid:(t)=>`${t} deb tushundim. Yaqin kutubxonalarni tekshiryapman.`,
          res:(t,l)=>`Natija: ${t}. Tavsiya etilgan kutubxona: ${l}. Yashil tugmani bosing.`,
-         sh:(t,l)=>`Tasdiqlang: ${t}, ${l}dan.`, dn:()=>`So'rov qabul qilindi.`, dn2:()=>`Chaekbada orqali so'rash usuli quyidagicha. Ro'yxat va tasdiqda kutubxona yordam beradi.`}},
+         sh:(t,l)=>`Tasdiqlang: ${t}, ${l}dan.`, res2:(t)=>`Natija: ${t}. Chaekbada uchun alohida ro‘yxatdan o‘tish va kutubxonachi tasdig‘i kerak. Yo‘riqnoma uchun yashil tugmani bosing.`, sh2:(y)=>`Chaekbada uchun alohida ro‘yxatdan o‘tish va kutubxonachi tasdig‘i kerak. Yo‘riqnoma olish uchun «${y}» tugmasini bosing.`, dn:()=>`Buyurtma berilgandan keyingi ko‘rinish.`, dn2:()=>`Chaekbada orqali so'rash usuli quyidagicha. Ro'yxat va tasdiqda kutubxona yordam beradi.`}},
   id:{n:'Bahasa Indonesia', rec:'id-ID', tts:'id-ID',
       s:{h1:'Cari buku apa?', h2:'Judul tidak harus persis', or:'atau ketik',
          ph:'cth: Mata Malam karya Han Kang', go:'Cari', lbl:'Ketuk untuk contoh', l1:'Mendengarkan…', l2:'Bicara saja dengan santai', st:'Berhenti'},
       m:{on:()=>`Panduan suara aktif. Saya akan membacakan hasilnya.`, sw:()=>`Bahasa diganti ke Bahasa Indonesia.`, mid:(t)=>`Saya mengerti ${t}. Memeriksa perpustakaan terdekat.`,
          res:(t,l)=>`Hasil: ${t}. Perpustakaan yang disarankan: ${l}. Tekan tombol hijau untuk meminjam.`,
-         sh:(t,l)=>`Mohon konfirmasi: ${t}, dari ${l}.`, dn:()=>`Permintaan diterima.`, dn2:()=>`Berikut cara mengajukan lewat Chaekbada. Perpustakaan akan membantu pendaftaran dan persetujuan.`}},
+         sh:(t,l)=>`Mohon konfirmasi: ${t}, dari ${l}.`, res2:(t)=>`Hasil: ${t}. Chaekbada perlu pendaftaran terpisah dan persetujuan pustakawan. Tekan tombol hijau untuk panduan.`, sh2:(y)=>`Chaekbada perlu pendaftaran terpisah dan persetujuan pustakawan. Untuk mendapat panduan, tekan ${y}.`, dn:()=>`Beginilah tampilan setelah pengajuan.`, dn2:()=>`Berikut cara mengajukan lewat Chaekbada. Perpustakaan akan membantu pendaftaran dan persetujuan.`}},
 };
 /* v1.12.1: ③은 관내에 없는 책의 흐름을 보이는 예시 장면 — 실측이 아님을 단추에 적는다 */
 const EXTAG = {ko:'예시', en:'sample', zh:'示例', ja:'例', vi:'mẫu', th:'ตัวอย่าง', ru:'пример', mn:'жишээ', uz:'namuna', id:'contoh'};
@@ -1281,7 +1281,7 @@ const CHIPS_L = {
     ['“<b>한강 소년이 온다</b> 찾아주세요”','② 상동도서관에 있음 → 바로 이용','8. 18. 실측'],
     ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','① 상동은 대출 중 → 관내 상호대차','8. 18. 실측'],
     ['“<b>지구 끝의 온실</b> 찾아주세요”','③ 관내에 없음 → 책바다(전국)',null]],
-    note:'예시 단추 ①②는 8. 18. 실측 장면, ③은 예시 장면 · 직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 전일 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)'},
+    note:'직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 전일 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)'},
   en:{c:[
     ['“Find <b>Human Acts</b> by Han Kang”','② At Sangdong Library → use right away','Aug 18 data'],
     ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','① Checked out at Sangdong → loan within Bucheon','Aug 18 data'],
@@ -1547,7 +1547,7 @@ ko:{entry:'AI 책큐 추천, 한 번에 처리',entryd:'추천 도서를 자주 
  badge:'AI 책큐 연계 · 시연',title:'이번 주 추천 도서 5권',sub:'어디서 빌릴 수 있는지 확인하고 있어요…',
  got:'확인이 끝났어요. 아래 계획을 봐 주세요.',perm:'이대로 진행할까요?',
  gNow:'자주 가는 도서관에 있음 → 바로 이용 (신청 없음)',gIll:m=>`관내 상호대차로 ${m}에 모으기`,gSea:'관내에 없음 → 전국(책바다)',
- seaNote:'실비 발생 · 별도 한도(1인 3권) · 선택하면 함께 진행합니다',
+ seaNote:'실비 발생 · 별도 한도(1인 3권) · 선택하면 신청 방법을 함께 안내합니다',
  rNow:'상동에 있음',rIll:k=>`관내 ${k}곳 → 배송`,rSea:'관내 없음',
  gauge:n=>`상호대차 한도 5권 중 ${n}권 사용`,go:n=>`좋아요, ${n}권 진행`,
  doneT:'모두 처리했어요',dNow:k=>`${k}권 · 자주 가는 도서관에 있어 바로 이용 (신청 없음)`,dIll:k=>`${k}권 · 상호대차 접수`,dSea:'1권 · 책바다 신청 경로 안내',
@@ -1658,7 +1658,7 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  my:'자주 가는 곳',code:'도서관코드',others:n=>`그 밖 ${n}곳`,again:'다시 검색',
  caution:'시연 화면입니다. 실제 신청은 이루어지지 않습니다.',
  srcR:d=>`정보나루 실데이터 · ${d} 조회 · 16개관 전수 확인<br><span class="s2">대출 상태는 조회일 <b>전일</b> 기준입니다 (Open API 사양)</span>`,
- srcD:'예시 장면 · 관내에 없는 책일 때의 흐름을 보이려고 꾸민 장면입니다.<br>이 책은 실제로는 부천 관내에 있습니다.',exSay:'예시 장면입니다. 이 책은 실제로는 부천 관내에 있습니다.',
+ srcD:'예시 장면 · 관내에 없는 책일 때의 흐름을 보이려고 꾸민 장면입니다.<br>이 책은 실제로는 부천 관내에 있습니다.',exSay:'예시 장면입니다. 이 책은 실제로는 부천 관내에 있지만, 여기서는 관내에 없다고 가정하고 안내합니다.',
  rule:m=>`규정상 <b>받을 도서관(${m}도서관) 서가에 같은 책이 있으면 상호대차를 신청할 수 없습니다.</b> 불필요한 신청을 만들지 않도록 미리 걸러냈습니다.`,
  ax:['이용자 조건에 따른 입구 · 확장 설계','🎧 대체자료 함께 찾기: 오디오북·점자·큰활자 (국가서지 대체자료목록 연계)','🚚 책나래 우편 수령: 거동불편·장애 이용자는 자택 배송으로 분기','📞 전화 한 통 모드: 대표번호로 같은 상담·신청 (화면 불필요)','🌏 다국어 음성: 10개 언어 인식·안내 <b>(동작, 헤더 🌏 단추)</b>'],
  shT:'상호대차를 신청할까요?',shP:'시연이라 실제로 접수되지는 않아요',
@@ -1668,8 +1668,8 @@ ko:{ bq:BQ.ko, instT:'휴대폰에 설치할 수 있어요', instD:'홈 화면�
  kUser:'신청자',user:'홍○○(가상 회원)',yes:'네, 신청합니다',no:'취소',
  dT:'신청이 접수됐습니다(시연)',
   d1:(md,l,m)=>`<b>${md}</b>${ro(md)} 신청한 장면입니다.<br>실제 서비스라면 <b>${l}</b>의 자료가 <b>${m}도서관</b>으로 옮겨지고, 도착하면 문자로 <span class=nw>알려 드립니다.</span>`,
- innerBusy:k=>`${k}곳 소장 · 모두 대출 중`,tag3:'반납 대기',shT2:'책바다 신청 안내를 받을까요?',shT3:'예약을 신청할까요?',yes2:'네, 안내 받을게요',kProc:'절차',procV:'책바다 가입 → 사서 승인 → 배송비 결제',procS:'왕복 5,800원 · 별도 시스템이라 직접 신청은 안내로 대신합니다',kHold:'수령 기한',holdV:'도착일 포함 3일 안에 방문',holdS:'기한 내 미수령 시 자동 반납 · 7일간 신청 제한',kCancel:'취소',cancelV:'접수 상태에서만 가능 · 이송이 시작되면 도서관에 문의',didT:'책이지가 대신 한 일',didV:'말을 글로 옮김 → 무슨 책인지 확정 → 16개관 소장·대출 확인 → 신청 규정 확인(한도·연체는 창구에서) → 접수(시연) · 이용자는 말 한마디, 확인 한 번',kNext:'다음 단계',nextV:'책바다 가입 → <span class=nw>도서관에서 승인</span>',d2:m=>`책바다 신청 방법을 알려 드립니다.<br>가입과 승인은 <b>${m}도서관</b>에서 도와 드립니다.`,d3:(l,m)=>`예약이 접수되었습니다.<br>책이 반납되면 <b>${m}도서관</b>으로 받는<br>상호대차로 바꿔 신청할 수 있습니다.`,
- shP2:'시연 화면입니다 · 실제 신청은 이루어지지 않아요',dT2:'안내 내용입니다',didV2:'말을 글로 옮김 → 무슨 책인지 확정 → 관내 16개관·전국 확인 → 신청 경로 판정 → 신청 방법 안내 · 이용자는 말 한마디, <span class=nw>확인 한 번</span>',
+ innerBusy:k=>`${k}곳 소장 · 모두 대출 중`,tag3:'반납 대기',shT2:'책바다 신청 안내를 받을까요?',shT3:'예약을 신청할까요?',yes2:'네, 안내 받을게요',kProc:'절차',procV:'책바다 가입 → 사서 승인 → 배송비 결제',procS:'왕복 5,800원 · 별도 시스템이라 직접 신청은 안내로 대신합니다',kHold:'수령 기한',holdV:'도착일 포함 3일 안에 방문',holdS:'기한 내 미수령 시 자동 반납 · 7일간 신청 제한',kCancel:'취소',cancelV:'접수 상태에서만 가능 · 이송이 시작되면 도서관에 문의',didT:'책이지가 대신 한 일',didV:'말을 글로 옮김 → 무슨 책인지 확정 → 16개관 소장·대출 확인 → 신청 규정 확인(한도·연체는 창구에서) → 접수(시연) · 이용자는 말 한마디, 확인 한 번',kNext:'다음 단계',nextV:'책바다 가입 → <span class=nw>도서관에서 승인</span>',d2:m=>`책바다 신청 방법을 알려 드립니다.<br>가입과 승인은 <b>${m}도서관</b>에서 도와 드립니다.`,d3:(l,m)=>`예약을 신청한 장면입니다.<br>실제 서비스라면 책이 반납될 때 <b>${m}도서관</b>으로 받는<br>상호대차로 바꿔 신청할 수 있습니다.`,
+ shP2:'시연 화면입니다 · 실제 신청은 이루어지지 않아요',smsDemo:'시연이라 실제로 문자는 보내지 않아요',dT2:'안내 내용입니다',didV2:'말을 글로 옮김 → 무슨 책인지 확정 → 관내 16개관·전국 확인 → 신청 경로 판정 → 신청 방법 안내 · 이용자는 말 한마디, <span class=nw>확인 한 번</span>',
  kArr:'예상 도착',kNum:'접수번호',home:'처음으로' },
 en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home screen. It opens like an app and works offline.', instY:'Install', instN:'Later', instIOS:'Tap Share (or ••• → Share), then scroll down and choose “Add to Home Screen”.', instAOS:'Open the browser menu (⋮) and tap “Install app” or “Add to Home screen”.', instIOSother:'On iPhone, open this page in Safari to install. In Safari: Share (or ••• → Share) → “Add to Home Screen”.', NM:n=>`${n} Library`,
  st1:'Transcribing your words',st1d:'Turning speech into text',st2:'Matching the book',st2d:'Searching the 5 sample books',
@@ -1683,7 +1683,7 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
        2:['Step 3','Chaekbada (national)','Nationwide · separate sign-up & librarian approval','Get Chaekbada guidance','Fee','5–7 days'],
        3:['Hold','Place a hold','Held in Bucheon · all copies out','Place a hold','Free','Request after return']},
  sum0:(m,k)=>`<b>It's at ${m} Library</b> (available as of the check date). No loan needed, just walk in. <span class="s2">${k} branches have it available.</span>`,
- sum1:(m,k,n)=>`<b>${m} Library${n ? " doesn't have it" : "'s copy is checked out"}</b>, but <b>${k} branches</b> have it available. We'll bring it to <span class=nw>${m} for you.</span>`,
+ sum1:(m,k,n)=>`<b>${m} Library${n ? " doesn't have it" : "'s copy is checked out"}</b>, but <b>${k} branches</b> have it available. One of them can send it to <span class=nw>${m} for you.</span>`,
  sum2:k=>`Not in Bucheon, but <b>found at ${k} libraries nationwide</b>. Chaekbada needs a separate sign-up and librarian approval, so we'll guide you instead of requesting for you.`,
  sum3:(m,k)=>`<b>${k} Bucheon branches</b> hold it, but every copy is out. If you place a hold first, you can ask to switch it to an interlibrary loan to <b>${m} Library</b> when the book is returned.`,
  rec:'Recommended',tag0:'Use now',tag1:'Suggested',tag2:'Suggested',also:'Also available here',
@@ -1691,7 +1691,7 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  my:'your usual',code:'Library code',others:n=>`${n} other branches`,again:'Search again',
  caution:'Demo screen. No real request is made.',
  srcR:d=>`Real data from Data4Library · queried ${d} · all 16 branches<br><span class="s2">Availability is as of the <b>previous day</b> (API spec)</span>`,
- srcD:'Sample scene · staged to show what happens when a book is not held in Bucheon.<br>In reality, this title is held in Bucheon libraries.',exSay:'This is a sample scene. In reality, this title is held in Bucheon libraries.',
+ srcD:'Sample scene · staged to show what happens when a book is not held in Bucheon.<br>In reality, this title is held in Bucheon libraries.',exSay:'This is a sample scene. This title is actually held in Bucheon libraries, but here we assume it is not.',
  rule:m=>`By policy, <b>interlibrary loan cannot be requested when ${m} Library holds the item.</b> We filtered that out for you.`,
  ax:['Doors that fit each user · extended design','🎧 Alternative formats: audiobook·braille·large print (national bibliography)','🚚 Chaeknarae home delivery: for users with mobility limits','📞 Phone-call mode: same service by voice call, no screen','🌏 Multilingual voice: 10 languages <b>(working, 🌏 button)</b>'],
  shT:'Request this interlibrary loan?',shP:'This is a demo, so nothing is actually submitted',
@@ -1701,8 +1701,8 @@ en:{ bq:BQ.en, instT:'You can install this app', instD:'Add it to your home scre
  kUser:'Applicant',user:'Hong ○○ (fictional member)',yes:'Yes, request it',no:'Cancel',
  dT:'Request submitted (demo)',
   d1:(md,l,m)=>`This shows a request via <b>${md}</b>.<br>In the real service, the item would move from <b>${l}</b> to <b>${m} Library</b>,<br>and we would text you when it arrives.`,
- innerBusy:k=>`held at ${k} · all out`,tag3:'Waiting for return',shT2:'Get guidance for Chaekbada?',shT3:'Place a hold?',yes2:'Yes, guide me',kProc:'Steps',procV:'Sign up for Chaekbada → librarian approval → pay shipping',procS:'KRW 5,800 round trip · separate system, so we guide rather than request',kHold:'Pickup window',holdV:'Within 3 days, counting the arrival day',holdS:'Not picked up in time → returned automatically, requests blocked for 7 days',kCancel:'Cancel',cancelV:'Only while “received” · once in transit, contact the library',didT:'What Chaekiji did for you',didV:'Transcribed → identified the book → checked 16 branches → checked request rules (limits and overdues are checked at the desk) → submitted (demo) · You: one sentence, one tap',kNext:'Next step',nextV:'Sign up for Chaekbada → <span class=nw>the library approves</span>',d2:m=>`Here is how to request via Chaekbada.<br><b>${m} Library</b> will help with sign-up and approval.`,d3:(l,m)=>`Your hold is placed.<br>When the book is returned, you can ask to switch it to an interlibrary loan to <b>${m} Library</b>.`,
- shP2:'This is a demo screen · no request is actually made',dT2:'Here is the guidance',didV2:'Transcribed → identified the book → checked 16 branches & nationwide → determined the route → explained how to request · You: one sentence, <span class=nw>one tap</span>',
+ innerBusy:k=>`held at ${k} · all out`,tag3:'Waiting for return',shT2:'Get guidance for Chaekbada?',shT3:'Place a hold?',yes2:'Yes, guide me',kProc:'Steps',procV:'Sign up for Chaekbada → librarian approval → pay shipping',procS:'KRW 5,800 round trip · separate system, so we guide rather than request',kHold:'Pickup window',holdV:'Within 3 days, counting the arrival day',holdS:'Not picked up in time → returned automatically, requests blocked for 7 days',kCancel:'Cancel',cancelV:'Only while “received” · once in transit, contact the library',didT:'What Chaekiji did for you',didV:'Transcribed → identified the book → checked 16 branches → checked request rules (limits and overdues are checked at the desk) → submitted (demo) · You: one sentence, one tap',kNext:'Next step',nextV:'Sign up for Chaekbada → <span class=nw>the library approves</span>',d2:m=>`Here is how to request via Chaekbada.<br><b>${m} Library</b> will help with sign-up and approval.`,d3:(l,m)=>`This shows a hold request.<br>In the real service, when the book is returned, you could ask to switch it to an interlibrary loan to <b>${m} Library</b>.`,
+ shP2:'This is a demo screen · no request is actually made',smsDemo:'This is a demo, so no text message is actually sent',dT2:'Here is the guidance',didV2:'Transcribed → identified the book → checked 16 branches & nationwide → determined the route → explained how to request · You: one sentence, <span class=nw>one tap</span>',
  kArr:'Expected arrival',kNum:'Reference no.',home:'Start over' },
 zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，像应用一样打开，断网也能使用。', instY:'安装', instN:'以后再说', instIOS:'点击「分享」（或「•••」→「分享」），向下滑动并选择“添加到主屏幕”。', instAOS:'打开浏览器菜单（⋮），点击“安装应用”或“添加到主屏幕”。', instIOSother:'iPhone 请用 Safari 打开才能安装。在 Safari 中：分享（或「•••」→ 分享）→“添加到主屏幕”。', NM:n=>`${n}图书馆`,
  st1:'转写您的话',st1d:'把语音变成文字',st2:'匹配图书',st2d:'在5本示例图书中查找',
@@ -1724,7 +1724,7 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  my:'常去',code:'图书馆代码',others:n=>`其余${n}个分馆`,again:'重新搜索',
  caution:'演示页面，不会产生真实申请。',
  srcR:d=>`Data4Library 实测数据 · ${d} 查询 · 16个分馆全部确认<br><span class="s2">借阅状态为查询日<b>前一天</b>的数据（API规范）</span>`,
- srcD:'示例场景 · 为展示市内无馆藏时的流程而设置。<br>实际上本书在富川市内有馆藏。',exSay:'这是示例场景。实际上本书在富川市内有馆藏。',
+ srcD:'示例场景 · 为展示市内无馆藏时的流程而设置。<br>实际上本书在富川市内有馆藏。',exSay:'这是示例场景。本书实际上在富川市内有馆藏，这里假设市内没有来进行说明。',
  rule:m=>`按规定，<b>${m}图书馆有馆藏时不能申请馆际互借。</b>系统已提前为您过滤。`,
  ax:['按用户条件提供的入口 · 扩展设计','🎧 替代资料查找：有声书·盲文·大字本','🚚 Chaeknarae 邮寄到家：行动不便·残障用户','📞 电话模式：打电话即可办理，无需屏幕','🌏 多语言语音：10种语言 <b>(已实现)</b>'],
  shT:'要申请馆际互借吗？',shP:'这是演示，不会实际受理',
@@ -1734,8 +1734,8 @@ zh:{ bq:BQ.zh, instT:'可以安装到手机上', instD:'添加到主屏幕后，
  kUser:'申请人',user:'洪○○（虚拟会员）',yes:'是，申请',no:'取消',
  dT:'申请已受理（演示）',
   d1:(md,l,m)=>`这是通过<b>${md}</b>申请的演示画面。<br>实际服务中，图书会从<b>${l}</b>调往<b>${m}图书馆</b>，<br>到馆后以短信通知您。`,
- innerBusy:k=>`${k}馆有藏 · 全部借出`,tag3:'等待归还',shT2:'要获取Chaekbada申请指引吗？',shT3:'要申请预约吗？',yes2:'是，获取指引',kProc:'流程',procV:'注册Chaekbada → 馆员审核 → 支付运费',procS:'往返5,800韩元 · 属另一系统，故以指引代替代办',kHold:'取书期限',holdV:'到馆当天起3天内',holdS:'逾期未取 → 自动归还，7天内不能申请',kCancel:'取消',cancelV:'仅受理状态可取消 · 开始调拨后请联系图书馆',didT:'Chaekiji替您完成的事',didV:'转写 → 确定图书 → 查询16馆 → 核对申请规定（借阅上限、逾期在柜台确认）→ 受理（演示）· 您只说了一句话、点了一次确认',kNext:'下一步',nextV:'注册Chaekbada → <span class=nw>图书馆审核</span>',d2:m=>`为您说明Chaekbada申请方法。<br>注册与审核由<b>${m}图书馆</b>协助。`,d3:(l,m)=>`预约已受理。<br>图书归还后，可以申请改为馆际互借，<br>在<b>${m}图书馆</b>领取。`,
- shP2:'这是演示画面 · 不会实际提交申请',dT2:'以下是申请指引',didV2:'转写 → 确定图书 → 查询16馆及全国 → 判定申请路径 → 说明申请方法 · 您只说了一句话、<span class=nw>点了一次确认</span>',
+ innerBusy:k=>`${k}馆有藏 · 全部借出`,tag3:'等待归还',shT2:'要获取Chaekbada申请指引吗？',shT3:'要申请预约吗？',yes2:'是，获取指引',kProc:'流程',procV:'注册Chaekbada → 馆员审核 → 支付运费',procS:'往返5,800韩元 · 属另一系统，故以指引代替代办',kHold:'取书期限',holdV:'到馆当天起3天内',holdS:'逾期未取 → 自动归还，7天内不能申请',kCancel:'取消',cancelV:'仅受理状态可取消 · 开始调拨后请联系图书馆',didT:'Chaekiji替您完成的事',didV:'转写 → 确定图书 → 查询16馆 → 核对申请规定（借阅上限、逾期在柜台确认）→ 受理（演示）· 您只说了一句话、点了一次确认',kNext:'下一步',nextV:'注册Chaekbada → <span class=nw>图书馆审核</span>',d2:m=>`为您说明Chaekbada申请方法。<br>注册与审核由<b>${m}图书馆</b>协助。`,d3:(l,m)=>`这是预约申请的演示画面。<br>实际服务中，图书归还后，可以申请改为馆际互借，<br>在<b>${m}图书馆</b>领取。`,
+ shP2:'这是演示画面 · 不会实际提交申请',smsDemo:'这是演示，不会实际发送短信',dT2:'以下是申请指引',didV2:'转写 → 确定图书 → 查询16馆及全国 → 判定申请路径 → 说明申请方法 · 您只说了一句话、<span class=nw>点了一次确认</span>',
  kArr:'预计到达',kNum:'受理编号',home:'返回首页' },
 ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に置くとアプリのように開き、オフラインでも使えます。', instY:'インストール', instN:'あとで', instIOS:'「共有」ボタン（または「•••」→「共有」）を押し、下にスクロールして「ホーム画面に追加」を選んでください。', instAOS:'ブラウザのメニュー（⋮）から「アプリをインストール」または「ホーム画面に追加」を押してください。', instIOSother:'iPhone は Safari で開くと設置できます。Safari で「共有」（または「•••」→「共有」）→「ホーム画面に追加」。', NM:n=>`${n}図書館`,
  st1:'発話の書き起こし',st1d:'音声を文字にします',st2:'書名を照合',st2d:'例の5冊の中から探します',
@@ -1757,7 +1757,7 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  my:'いつもの',code:'図書館コード',others:n=>`その他${n}分館`,again:'再検索',
  caution:'デモ画面です。実際の申請は行われません。',
  srcR:d=>`情報ナル実データ · ${d} 照会 · 16分館すべて確認<br><span class="s2">貸出状態は照会日の<b>前日</b>基準です（API仕様）</span>`,
- srcD:'例の場面 · 市内に所蔵がない本の流れを見せるための設定です。<br>実際にはこの本は富川市内に所蔵があります。',exSay:'これは例の場面です。実際にはこの本は富川市内に所蔵があります。',
+ srcD:'例の場面 · 市内に所蔵がない本の流れを見せるための設定です。<br>実際にはこの本は富川市内に所蔵があります。',exSay:'これは例の場面です。この本は実際には富川市内に所蔵がありますが、ここでは所蔵がないと仮定して案内します。',
  rule:m=>`規定により、<b>${m}図書館に資料がある場合は相互貸借を申請できません。</b>不要な申請を事前に除外しました。`,
  ax:['利用者に合わせた入口 · 拡張設計','🎧 代替資料も検索：オーディオブック·点字·大活字','🚚 チェクナレ郵送：来館が難しい方へ自宅配送','📞 電話モード：電話一本で同じ手続き','🌏 多言語音声：10言語 <b>(実装済み)</b>'],
  shT:'相互貸借を申請しますか？',shP:'デモのため、実際には受け付けられません',
@@ -1767,8 +1767,8 @@ ja:{ bq:BQ.ja, instT:'スマホに設置できます', instD:'ホーム画面に
  kUser:'申請者',user:'洪○○（架空の会員）',yes:'はい、申請します',no:'キャンセル',
  dT:'申請を受け付けました（デモ）',
   d1:(md,l,m)=>`<b>${md}</b>で申請した場面です。<br>実際のサービスでは、資料が<b>${l}</b>から<b>${m}図書館</b>へ移され、<br>到着したらメッセージでお知らせします。`,
- innerBusy:k=>`${k}館所蔵 · すべて貸出中`,tag3:'返却待ち',shT2:'チェクバダの申請案内を受けますか？',shT3:'予約を申請しますか？',yes2:'はい、案内を受けます',kProc:'手順',procV:'チェクバダ登録 → 司書承認 → 送料決済',procS:'往復5,800ウォン · 別システムのため代行ではなく案内',kHold:'受取期限',holdV:'到着日を含め3日以内',holdS:'期限内に受け取らないと自動返却・7日間申請不可',kCancel:'キャンセル',cancelV:'受付中のみ可能 · 移送開始後は図書館へ',didT:'Chaekijiが代わりにしたこと',didV:'文字起こし → 本を特定 → 16館確認 → 申請規定を確認（上限・延滞は窓口で確認）→ 受付（デモ）· あなたは一言と確認一回',kNext:'次のステップ',nextV:'チェクバダ登録 → <span class=nw>図書館が承認</span>',d2:m=>`チェクバダの申請方法をご案内します。<br>登録と承認は<b>${m}図書館</b>がお手伝いします。`,d3:(l,m)=>`予約を受け付けました。<br>返却されたら、相互貸借に切り替えて<b>${m}図書館</b>で受け取る申請ができます。`,
- shP2:'デモ画面です · 実際の申請は行われません',dT2:'案内の内容です',didV2:'文字起こし → 本を特定 → 16館と全国を確認 → 経路を判定 → 申請方法を案内 · あなたは<span class=nw>一言と確認一回</span>',
+ innerBusy:k=>`${k}館所蔵 · すべて貸出中`,tag3:'返却待ち',shT2:'チェクバダの申請案内を受けますか？',shT3:'予約を申請しますか？',yes2:'はい、案内を受けます',kProc:'手順',procV:'チェクバダ登録 → 司書承認 → 送料決済',procS:'往復5,800ウォン · 別システムのため代行ではなく案内',kHold:'受取期限',holdV:'到着日を含め3日以内',holdS:'期限内に受け取らないと自動返却・7日間申請不可',kCancel:'キャンセル',cancelV:'受付中のみ可能 · 移送開始後は図書館へ',didT:'Chaekijiが代わりにしたこと',didV:'文字起こし → 本を特定 → 16館確認 → 申請規定を確認（上限・延滞は窓口で確認）→ 受付（デモ）· あなたは一言と確認一回',kNext:'次のステップ',nextV:'チェクバダ登録 → <span class=nw>図書館が承認</span>',d2:m=>`チェクバダの申請方法をご案内します。<br>登録と承認は<b>${m}図書館</b>がお手伝いします。`,d3:(l,m)=>`予約を申請した場面です。<br>実際のサービスでは、返却されたら、相互貸借に切り替えて<b>${m}図書館</b>で受け取る申請ができます。`,
+ shP2:'デモ画面です · 実際の申請は行われません',smsDemo:'デモのため、実際にはSMSを送りません',dT2:'案内の内容です',didV2:'文字起こし → 本を特定 → 16館と全国を確認 → 経路を判定 → 申請方法を案内 · あなたは<span class=nw>一言と確認一回</span>',
  kArr:'到着予定',kNum:'受付番号',home:'最初に戻る' },
 vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào màn hình chính để mở như ứng dụng, dùng được cả khi mất mạng.', instY:'Cài đặt', instN:'Để sau', instIOS:'Nhấn nút Chia sẻ (hoặc ••• → Chia sẻ), kéo xuống và chọn “Thêm vào MH chính”.', instAOS:'Mở menu trình duyệt (⋮) rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào MH chính”.', instIOSother:'Trên iPhone, hãy mở bằng Safari để cài. Trong Safari: Chia sẻ (hoặc ••• → Chia sẻ) → “Thêm vào MH chính”.', NM:n=>`Thư viện ${n}`,
  st1:'Ghi lại lời bạn nói',st1d:'Chuyển giọng nói thành chữ',st2:'Đối chiếu tên sách',st2d:'Tìm trong 5 cuốn sách mẫu',
@@ -1790,7 +1790,7 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  my:'quen thuộc',code:'Mã thư viện',others:n=>`${n} chi nhánh khác`,again:'Tìm lại',
  caution:'Màn hình demo. Không có yêu cầu thật nào được gửi.',
  srcR:d=>`Dữ liệu thực Data4Library · tra cứu ${d} · đủ 16 chi nhánh<br><span class="s2">Tình trạng mượn tính đến <b>ngày hôm trước</b> (theo API)</span>`,
- srcD:'Cảnh minh họa · dựng để cho thấy cách xử lý khi Bucheon không có sách.<br>Thực tế, sách này có tại thư viện Bucheon.',exSay:'Đây là cảnh minh họa. Thực tế, sách này có tại thư viện Bucheon.',
+ srcD:'Cảnh minh họa · dựng để cho thấy cách xử lý khi Bucheon không có sách.<br>Thực tế, sách này có tại thư viện Bucheon.',exSay:'Đây là cảnh minh họa. Thực tế sách này có tại thư viện Bucheon, nhưng ở đây giả định là không có.',
  rule:m=>`Theo quy định, <b>không thể đăng ký khi Thư viện ${m} đang có sách.</b> Hệ thống đã lọc giúp bạn.`,
  ax:['Cửa vào phù hợp từng người · thiết kế mở rộng','🎧 Tìm cả bản thay thế: sách nói·chữ nổi·chữ to','🚚 Giao tận nhà Chaeknarae: cho người khó di chuyển','📞 Chế độ gọi điện: làm mọi thứ qua một cuộc gọi','🌏 Giọng nói đa ngôn ngữ: 10 thứ tiếng <b>(đang hoạt động)</b>'],
  shT:'Đăng ký mượn liên thư viện?',shP:'Đây là bản demo, yêu cầu sẽ không được gửi thật',
@@ -1800,8 +1800,8 @@ vi:{ bq:BQ.vi, instT:'Có thể cài vào điện thoại', instD:'Thêm vào m�
  kUser:'Người đăng ký',user:'Hong ○○ (hội viên giả định)',yes:'Có, đăng ký',no:'Hủy',
  dT:'Đã tiếp nhận yêu cầu (demo)',
   d1:(md,l,m)=>`Đây là cảnh đăng ký qua <b>${md}</b>.<br>Trong dịch vụ thật, sách sẽ được chuyển từ <b>${l}</b> đến <b>Thư viện ${m}</b>,<br>và bạn sẽ nhận tin nhắn khi sách đến.`,
- innerBusy:k=>`${k} nơi có · đều đang mượn`,tag3:'Chờ trả',shT2:'Nhận hướng dẫn Chaekbada?',shT3:'Đặt trước cuốn này?',yes2:'Có, hướng dẫn tôi',kProc:'Các bước',procV:'Đăng ký Chaekbada → thủ thư duyệt → trả phí vận chuyển',procS:'5.800 won khứ hồi · hệ thống riêng nên chỉ hướng dẫn',kHold:'Hạn nhận',holdV:'Trong 3 ngày, tính cả ngày sách đến',holdS:'Không nhận đúng hạn → tự động trả lại, khóa đăng ký 7 ngày',kCancel:'Hủy',cancelV:'Chỉ khi còn “đã tiếp nhận” · đã vận chuyển thì liên hệ thư viện',didT:'Chaekiji đã làm thay bạn',didV:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh → xét quy định đăng ký (hạn mức, quá hạn kiểm tra tại quầy) → tiếp nhận (demo) · Bạn: một câu, một lần chạm',kNext:'Bước tiếp',nextV:'Đăng ký Chaekbada → <span class=nw>thư viện duyệt</span>',d2:m=>`Đây là cách đăng ký Chaekbada.<br><b>Thư viện ${m}</b> sẽ hỗ trợ đăng ký và duyệt.`,d3:(l,m)=>`Đã đặt trước.<br>Khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại <b>Thư viện ${m}</b>.`,
- shP2:'Đây là màn hình demo · không có yêu cầu nào được gửi thật',dT2:'Nội dung hướng dẫn',didV2:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh & toàn quốc → xác định lộ trình → hướng dẫn cách đăng ký · Bạn: một câu, <span class=nw>một lần chạm</span>',
+ innerBusy:k=>`${k} nơi có · đều đang mượn`,tag3:'Chờ trả',shT2:'Nhận hướng dẫn Chaekbada?',shT3:'Đặt trước cuốn này?',yes2:'Có, hướng dẫn tôi',kProc:'Các bước',procV:'Đăng ký Chaekbada → thủ thư duyệt → trả phí vận chuyển',procS:'5.800 won khứ hồi · hệ thống riêng nên chỉ hướng dẫn',kHold:'Hạn nhận',holdV:'Trong 3 ngày, tính cả ngày sách đến',holdS:'Không nhận đúng hạn → tự động trả lại, khóa đăng ký 7 ngày',kCancel:'Hủy',cancelV:'Chỉ khi còn “đã tiếp nhận” · đã vận chuyển thì liên hệ thư viện',didT:'Chaekiji đã làm thay bạn',didV:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh → xét quy định đăng ký (hạn mức, quá hạn kiểm tra tại quầy) → tiếp nhận (demo) · Bạn: một câu, một lần chạm',kNext:'Bước tiếp',nextV:'Đăng ký Chaekbada → <span class=nw>thư viện duyệt</span>',d2:m=>`Đây là cách đăng ký Chaekbada.<br><b>Thư viện ${m}</b> sẽ hỗ trợ đăng ký và duyệt.`,d3:(l,m)=>`Đây là cảnh đặt trước.<br>Trong dịch vụ thật, khi sách được trả, bạn có thể đăng ký chuyển sang mượn liên thư viện để nhận tại <b>Thư viện ${m}</b>.`,
+ shP2:'Đây là màn hình demo · không có yêu cầu nào được gửi thật',smsDemo:'Đây là bản demo, tin nhắn sẽ không được gửi thật',dT2:'Nội dung hướng dẫn',didV2:'Chuyển giọng nói → xác định sách → kiểm tra 16 chi nhánh & toàn quốc → xác định lộ trình → hướng dẫn cách đăng ký · Bạn: một câu, <span class=nw>một lần chạm</span>',
  kArr:'Dự kiến đến',kNum:'Số tiếp nhận',home:'Về đầu' },
 th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', instD:'เพิ่มไปหน้าจอหลัก เปิดได้เหมือนแอป และใช้ได้แม้ไม่มีเน็ต', instY:'ติดตั้ง', instN:'ไว้ทีหลัง', instIOS:'แตะปุ่มแชร์ (หรือ ••• → แชร์) เลื่อนลงแล้วเลือก “เพิ่มไปยังหน้าจอโฮม”', instAOS:'เปิดเมนูเบราว์เซอร์ (⋮) แล้วแตะ “ติดตั้งแอป” หรือ “เพิ่มไปยังหน้าจอโฮม”', instIOSother:'บน iPhone ต้องเปิดด้วย Safari จึงจะติดตั้งได้ ใน Safari: แชร์ (หรือ ••• → แชร์) → “เพิ่มไปยังหน้าจอโฮม”', NM:n=>`ห้องสมุด${n}`,
  st1:'ถอดคำพูดของคุณ',st1d:'เปลี่ยนเสียงเป็นข้อความ',st2:'จับคู่ชื่อหนังสือ',st2d:'ค้นจากหนังสือตัวอย่าง 5 เล่ม',
@@ -1815,7 +1815,7 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
        2:['ขั้นที่ 3','แชกบาดา (ทั่วประเทศ)','ทั่วประเทศ · สมัครแยกและบรรณารักษ์อนุมัติ','รับคำแนะนำแชกบาดา','มีค่าใช้จ่าย','5–7 วัน'],
        3:['จอง','จองในเมือง','มีในบูชอน · ถูกยืมหมด','จองหนังสือ','ฟรี','ขอเปลี่ยนหลังคืน']},
  sum0:(m,k)=>`<b>ห้องสมุด${m}มีเล่มนี้</b> (ยืมได้ ตามข้อมูล ณ วันที่ตรวจ) ไม่ต้องยืมข้ามสาขา ไปรับได้เลย <span class="s2">ในเมืองยืมได้ ${k} แห่ง</span>`,
- sum1:(m,k,n)=>`<b>${n ? 'ห้องสมุด' + m + 'ไม่มีเล่มนี้' : 'เล่มที่ห้องสมุด' + m + 'ถูกยืมอยู่'}</b> แต่<b> ${k} สาขา</b>ให้ยืมได้ และจะส่งมาที่${m}<span class=nw>ให้คุณ</span>`,
+ sum1:(m,k,n)=>`<b>${n ? 'ห้องสมุด' + m + 'ไม่มีเล่มนี้' : 'เล่มที่ห้องสมุด' + m + 'ถูกยืมอยู่'}</b> แต่<b> ${k} สาขา</b>ให้ยืมได้ และส่งมาที่${m}<span class=nw>ให้คุณได้</span>`,
  sum2:k=>`ในบูชอนไม่มี แต่<b>พบที่ ${k} ห้องสมุดทั่วประเทศ</b> แชกบาดาต้องสมัครแยกและให้บรรณารักษ์อนุมัติ จึงขอแนะนำวิธีแทนการขอให้`,
  sum3:(m,k)=>`มีที่ <b>${k} สาขา</b>ในบูชอน แต่ถูกยืมหมด ถ้าจองไว้ก่อน เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามสาขาเพื่อรับที่<b>ห้องสมุด${m}</b>ได้`,
  rec:'แนะนำ',tag0:'ใช้ได้เลย',tag1:'แนะนำ',tag2:'แนะนำ',also:'ที่นี่ก็ได้เช่นกัน',
@@ -1823,7 +1823,7 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  my:'ประจำ',code:'รหัสห้องสมุด',others:n=>`อีก ${n} สาขา`,again:'ค้นหาใหม่',
  caution:'หน้าจอสาธิต ไม่มีการส่งคำขอจริง',
  srcR:d=>`ข้อมูลจริง Data4Library · สืบค้น ${d} · ครบ 16 สาขา<br><span class="s2">สถานะการยืมเป็นของ<b>วันก่อนหน้า</b> (ตามสเปค API)</span>`,
- srcD:'ฉากตัวอย่าง · จัดขึ้นเพื่อแสดงขั้นตอนเมื่อห้องสมุดบูชอนไม่มีหนังสือ<br>ความจริงเล่มนี้มีอยู่ในห้องสมุดบูชอน',exSay:'นี่เป็นฉากตัวอย่าง ความจริงเล่มนี้มีอยู่ในห้องสมุดบูชอน',
+ srcD:'ฉากตัวอย่าง · จัดขึ้นเพื่อแสดงขั้นตอนเมื่อห้องสมุดบูชอนไม่มีหนังสือ<br>ความจริงเล่มนี้มีอยู่ในห้องสมุดบูชอน',exSay:'นี่เป็นฉากตัวอย่าง ความจริงเล่มนี้มีอยู่ในห้องสมุดบูชอน แต่ในที่นี้สมมติว่าไม่มี',
  rule:m=>`ตามระเบียบ <b>ขอยืมข้ามสาขาไม่ได้เมื่อห้องสมุด${m}มีเล่มอยู่</b> ระบบกรองให้แล้ว`,
  ax:['ทางเข้าที่เหมาะกับแต่ละคน · ส่วนขยาย','🎧 ค้นสื่อทางเลือก: หนังสือเสียง·อักษรเบรลล์·ตัวใหญ่','🚚 ส่งถึงบ้าน Chaeknarae: สำหรับผู้เดินทางลำบาก','📞 โหมดโทรศัพท์: จัดการได้ด้วยสายเดียว','🌏 เสียงหลายภาษา: 10 ภาษา <b>(ใช้งานได้)</b>'],
  shT:'ยืนยันการขอยืมข้ามสาขา?',shP:'นี่เป็นการสาธิต จะไม่มีการรับเรื่องจริง',
@@ -1833,8 +1833,8 @@ th:{ bq:BQ.th, instT:'ติดตั้งลงมือถือได้', i
  kUser:'ผู้ขอ',user:'ฮง ○○ (สมาชิกสมมติ)',yes:'ใช่ ขอยืม',no:'ยกเลิก',
  dT:'รับคำขอแล้ว (สาธิต)',
   d1:(md,l,m)=>`นี่คือฉากการขอผ่าน<b>${md}</b><br>ในบริการจริง หนังสือจะย้ายจาก<b>${l}</b>ไปยัง<b>ห้องสมุด${m}</b><br>และจะส่งข้อความแจ้งเมื่อถึง`,
- innerBusy:k=>`มี ${k} แห่ง · ถูกยืมหมด`,tag3:'รอคืน',shT2:'รับคำแนะนำแชกบาดาไหม?',shT3:'จองเล่มนี้ไหม?',yes2:'ใช่ ขอคำแนะนำ',kProc:'ขั้นตอน',procV:'สมัครแชกบาดา → บรรณารักษ์อนุมัติ → ชำระค่าส่ง',procS:'ไป-กลับ 5,800 วอน · เป็นระบบแยก จึงแนะนำแทนการขอให้',kHold:'กำหนดรับ',holdV:'ภายใน 3 วัน นับรวมวันที่ถึง',holdS:'ไม่มารับตามกำหนด → คืนอัตโนมัติ ระงับการขอ 7 วัน',kCancel:'ยกเลิก',cancelV:'ทำได้เฉพาะสถานะรับเรื่อง · เริ่มขนส่งแล้วให้ติดต่อห้องสมุด',didT:'สิ่งที่ Chaekiji ทำแทนคุณ',didV:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขา → ตรวจกฎการขอ (โควตาและการค้างส่งตรวจที่เคาน์เตอร์) → รับเรื่อง (สาธิต) · คุณพูดหนึ่งประโยค กดหนึ่งครั้ง',kNext:'ขั้นต่อไป',nextV:'สมัครแชกบาดา → <span class=nw>ห้องสมุดอนุมัติ</span>',d2:m=>`นี่คือวิธีขอผ่านแชกบาดา<br><b>ห้องสมุด${m}</b>จะช่วยสมัครและอนุมัติ`,d3:(l,m)=>`จองแล้ว<br>เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามสาขาเพื่อรับที่<b>ห้องสมุด${m}</b>ได้`,
- shP2:'นี่เป็นหน้าจอสาธิต · จะไม่มีการยื่นคำขอจริง',dT2:'นี่คือคำแนะนำ',didV2:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขาและทั่วประเทศ → ตัดสินเส้นทาง → แนะนำวิธีขอ · คุณพูดหนึ่งประโยค <span class=nw>กดหนึ่งครั้ง</span>',
+ innerBusy:k=>`มี ${k} แห่ง · ถูกยืมหมด`,tag3:'รอคืน',shT2:'รับคำแนะนำแชกบาดาไหม?',shT3:'จองเล่มนี้ไหม?',yes2:'ใช่ ขอคำแนะนำ',kProc:'ขั้นตอน',procV:'สมัครแชกบาดา → บรรณารักษ์อนุมัติ → ชำระค่าส่ง',procS:'ไป-กลับ 5,800 วอน · เป็นระบบแยก จึงแนะนำแทนการขอให้',kHold:'กำหนดรับ',holdV:'ภายใน 3 วัน นับรวมวันที่ถึง',holdS:'ไม่มารับตามกำหนด → คืนอัตโนมัติ ระงับการขอ 7 วัน',kCancel:'ยกเลิก',cancelV:'ทำได้เฉพาะสถานะรับเรื่อง · เริ่มขนส่งแล้วให้ติดต่อห้องสมุด',didT:'สิ่งที่ Chaekiji ทำแทนคุณ',didV:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขา → ตรวจกฎการขอ (โควตาและการค้างส่งตรวจที่เคาน์เตอร์) → รับเรื่อง (สาธิต) · คุณพูดหนึ่งประโยค กดหนึ่งครั้ง',kNext:'ขั้นต่อไป',nextV:'สมัครแชกบาดา → <span class=nw>ห้องสมุดอนุมัติ</span>',d2:m=>`นี่คือวิธีขอผ่านแชกบาดา<br><b>ห้องสมุด${m}</b>จะช่วยสมัครและอนุมัติ`,d3:(l,m)=>`นี่คือฉากการจอง<br>ในบริการจริง เมื่อหนังสือถูกคืน คุณขอเปลี่ยนเป็นยืมข้ามสาขาเพื่อรับที่<b>ห้องสมุด${m}</b>ได้`,
+ shP2:'นี่เป็นหน้าจอสาธิต · จะไม่มีการยื่นคำขอจริง',smsDemo:'นี่เป็นการสาธิต จะไม่มีการส่ง SMS จริง',dT2:'นี่คือคำแนะนำ',didV2:'ถอดเสียง → ระบุหนังสือ → เช็ก 16 สาขาและทั่วประเทศ → ตัดสินเส้นทาง → แนะนำวิธีขอ · คุณพูดหนึ่งประโยค <span class=nw>กดหนึ่งครั้ง</span>',
  kArr:'คาดว่าถึง',kNum:'เลขที่รับเรื่อง',home:'กลับหน้าแรก' },
 ru:{ bq:BQ.ru, instT:'Можно установить на телефон', instD:'Добавьте на главный экран. Откроется как приложение и работает без интернета.', instY:'Установить', instN:'Позже', instIOS:'Нажмите «Поделиться» (или ••• → «Поделиться»), пролистайте вниз и выберите «На экран «Домой»».', instAOS:'Откройте меню браузера (⋮) и нажмите «Установить приложение» или «Добавить на главный экран».', instIOSother:'На iPhone установка возможна только в Safari. В Safari: «Поделиться» (или ••• → «Поделиться») → «На экран «Домой»».', NM:n=>`Библиотека ${n}`,
  st1:'Записываю вашу речь',st1d:'Превращаю голос в текст',st2:'Сопоставляю книгу',st2d:'Ищу среди 5 книг-примеров',
@@ -1848,7 +1848,7 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
        2:['Шаг 3','Чекпада (по стране)','По стране · отдельная регистрация и одобрение библиотекаря','Получить инструкцию','Платно','5–7 дней'],
        3:['Бронь','Ожидание в городе','Есть в Пучхоне · все выданы','Забронировать','Бесплатно','МБА после возврата']},
  sum0:(m,k)=>`<b>Книга есть в библиотеке ${m}</b> (доступна по состоянию на дату запроса). Обмен не нужен, просто приходите. <span class="s2">Доступна в ${k} филиалах.</span>`,
- sum1:(m,k,n)=>`<b>В библиотеке ${m} ${n ? 'этой книги нет' : 'книга выдана'}</b>, но <b>${k} филиалов</b> могут выдать. <span class=nw>Доставим в ${m}.</span>`,
+ sum1:(m,k,n)=>`<b>В библиотеке ${m} ${n ? 'этой книги нет' : 'книга выдана'}</b>, но <b>${k} филиалов</b> могут выдать. Её можно <span class=nw>доставить в ${m}.</span>`,
  sum2:k=>`В Пучхоне нет, но <b>найдена в ${k} библиотеках страны</b>. Для Чекпады нужна отдельная регистрация и одобрение библиотекаря, поэтому мы подскажем, как оформить.`,
  sum3:(m,k)=>`Есть в <b>${k} филиалах</b> Пучхона, но все экземпляры выданы. Если забронировать заранее, после возврата книги бронь можно переоформить на МБА с получением в <b>библиотеке ${m}</b>.`,
  rec:'Рекомендуем',tag0:'Взять сразу',tag1:'Предлагаем',tag2:'Предлагаем',also:'Также доступна здесь',
@@ -1856,7 +1856,7 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  my:'обычная',code:'Код библиотеки',others:n=>`ещё ${n} филиалов`,again:'Искать снова',
  caution:'Демо-экран. Реальный заказ не отправляется.',
  srcR:d=>`Реальные данные Data4Library · запрос ${d} · все 16 филиалов<br><span class="s2">Статус выдачи: на <b>предыдущий день</b> (по API)</span>`,
- srcD:'Пример · показывает, что делаем, если книги нет в Пучхоне.<br>На самом деле эта книга есть в библиотеках Пучхона.',exSay:'Это пример. На самом деле эта книга есть в библиотеках Пучхона.',
+ srcD:'Пример · показывает, что делаем, если книги нет в Пучхоне.<br>На самом деле эта книга есть в библиотеках Пучхона.',exSay:'Это пример. На самом деле эта книга есть в библиотеках Пучхона, но здесь мы предполагаем, что её нет.',
  rule:m=>`По правилам <b>заказ невозможен, если книга есть в библиотеке ${m}.</b> Мы отфильтровали это заранее.`,
  ax:['Вход, подходящий каждому · расширение','🎧 Альтернативные форматы: аудио·Брайль·крупный шрифт','🚚 Доставка на дом Chaeknarae: для маломобильных','📞 Режим звонка: всё по одному звонку','🌏 Голос на 10 языках <b>(работает)</b>'],
  shT:'Оформить заказ?',shP:'Это демо: реальная заявка не отправляется',
@@ -1866,8 +1866,8 @@ ru:{ bq:BQ.ru, instT:'Можно установить на телефон', inst
  kUser:'Заявитель',user:'Хон ○○ (вымышленный читатель)',yes:'Да, заказать',no:'Отмена',
  dT:'Заявка принята (демо)',
   d1:(md,l,m)=>`Это пример заявки через <b>${md}</b>.<br>В настоящем сервисе книга поехала бы из <b>${l}</b> в <b>библиотеку ${m}</b>,<br>а о прибытии пришло бы сообщение.`,
- innerBusy:k=>`есть в ${k} · все выданы`,tag3:'Ждём возврата',shT2:'Получить инструкцию по Чекпаде?',shT3:'Забронировать?',yes2:'Да, подскажите',kProc:'Порядок',procV:'Регистрация в Чекпаде → одобрение библиотекаря → оплата доставки',procS:'5 800 вон туда-обратно · отдельная система, поэтому только подсказываем',kHold:'Срок получения',holdV:'В течение 3 дней, включая день прибытия',holdS:'Не забрали вовремя → автоматический возврат, заказы закрыты на 7 дней',kCancel:'Отмена',cancelV:'Только пока заявка «принята» · после отправки: через библиотеку',didT:'Что сделал Chaekiji за вас',didV:'Распознал речь → определил книгу → проверил 16 филиалов → сверил правила заявки (лимит и задолженности проверяют в библиотеке) → оформил (демо) · Вы: одна фраза, одно касание',kNext:'Далее',nextV:'Регистрация в Чекпаде → <span class=nw>библиотека одобряет</span>',d2:m=>`Вот как оформить заявку в Чекпаде.<br><b>Библиотека ${m}</b> поможет с регистрацией и одобрением.`,d3:(l,m)=>`Бронь оформлена.<br>После возврата книги её можно переоформить на МБА с получением в <b>библиотеке ${m}</b>.`,
- shP2:'Это демо-экран · реальная заявка не подаётся',dT2:'Вот инструкция',didV2:'Распознал речь → определил книгу → проверил 16 филиалов и страну → выбрал маршрут → объяснил, как оформить · Вы: одна фраза, <span class=nw>одно касание</span>',
+ innerBusy:k=>`есть в ${k} · все выданы`,tag3:'Ждём возврата',shT2:'Получить инструкцию по Чекпаде?',shT3:'Забронировать?',yes2:'Да, подскажите',kProc:'Порядок',procV:'Регистрация в Чекпаде → одобрение библиотекаря → оплата доставки',procS:'5 800 вон туда-обратно · отдельная система, поэтому только подсказываем',kHold:'Срок получения',holdV:'В течение 3 дней, включая день прибытия',holdS:'Не забрали вовремя → автоматический возврат, заказы закрыты на 7 дней',kCancel:'Отмена',cancelV:'Только пока заявка «принята» · после отправки: через библиотеку',didT:'Что сделал Chaekiji за вас',didV:'Распознал речь → определил книгу → проверил 16 филиалов → сверил правила заявки (лимит и задолженности проверяют в библиотеке) → оформил (демо) · Вы: одна фраза, одно касание',kNext:'Далее',nextV:'Регистрация в Чекпаде → <span class=nw>библиотека одобряет</span>',d2:m=>`Вот как оформить заявку в Чекпаде.<br><b>Библиотека ${m}</b> поможет с регистрацией и одобрением.`,d3:(l,m)=>`Это пример брони.<br>В настоящем сервисе после возврата книги её можно было бы переоформить на МБА с получением в <b>библиотеке ${m}</b>.`,
+ shP2:'Это демо-экран · реальная заявка не подаётся',smsDemo:'Это демо: SMS на самом деле не отправляется',dT2:'Вот инструкция',didV2:'Распознал речь → определил книгу → проверил 16 филиалов и страну → выбрал маршрут → объяснил, как оформить · Вы: одна фраза, <span class=nw>одно касание</span>',
  kArr:'Ожидаемое прибытие',kNum:'Номер заявки',home:'В начало' },
 mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үндсэн дэлгэц дээр нэмбэл апп шиг нээгдэж, интернэтгүй ч ажиллана.', instY:'Суулгах', instN:'Дараа', instIOS:'«Хуваалцах» товч (эсвэл ••• → «Хуваалцах») дараад, доош гүйлгэж «Үндсэн дэлгэцэд нэмэх»-ийг сонгоно уу.', instAOS:'Хөтчийн цэс (⋮)-г нээж «Апп суулгах» эсвэл «Үндсэн дэлгэцэд нэмэх» дарна уу.', instIOSother:'iPhone дээр Safari-гаар нээж суулгана. Safari дээр: «Хуваалцах» (эсвэл ••• → «Хуваалцах») → «Үндсэн дэлгэцэд нэмэх».', NM:n=>`${n} номын сан`,
  st1:'Таны яриаг буулгаж байна',st1d:'Дуу хоолойг текст болгоно',st2:'Номыг тулгаж байна',st2d:'5 жишээ номоос хайна',
@@ -1881,26 +1881,26 @@ mn:{ bq:BQ.mn, instT:'Утсандаа суулгаж болно', instD:'Үнд
        2:['3-р алхам','Чекпада (улс даяар)','Улс даяар · тусдаа бүртгэл, номын санчийн зөвшөөрөл','Чекпада заавар авах','Төлбөртэй','5–7 хоног'],
        3:['Захиалга','Хот дотор хүлээх','Бүчонд бий · бүгд зээлэгдсэн','Захиалах','Үнэгүй','Буцсаны дараа хүсэлт']},
  sum0:(m,k)=>`<b>${m} номын санд байна</b> (шалгасан өдрийн байдлаар авах боломжтой). Солилцоо хэрэггүй, очоод аваарай. <span class="s2">${k} салбарт боломжтой.</span>`,
- sum1:(m,k,n)=>`<b>${m} номын санд ${n ? 'энэ ном байхгүй' : 'энэ ном зээлэгдсэн'}</b> ч <b>${k} салбараас</b> зээлж ${m} руу <span class=nw>хүргэж өгнө.</span>`,
+ sum1:(m,k,n)=>`<b>${m} номын санд ${n ? 'энэ ном байхгүй' : 'энэ ном зээлэгдсэн'}</b> ч <b>${k} салбараас</b> зээлж ${m} руу <span class=nw>хүргэж өгч болно.</span>`,
  sum2:k=>`Бүчонд байхгүй ч <b>улс даяар ${k} газраас</b> олдлоо. Чекпада тусдаа бүртгэл, номын санчийн зөвшөөрөл шаарддаг тул хүсэлтийн оронд зааварчилгаа өгье.`,
  sum3:(m,k)=>`Бүчоны <b>${k} салбарт</b> бий ч бүгд зээлэгдсэн. Эхлээд захиалж байвал ном буцаж ирэхэд <b>${m} номын сан</b>гаас авахаар солилцоо руу шилжүүлэх хүсэлт гаргаж болно.`,
  rec:'Санал болгож буй',tag0:'Шууд',tag1:'Санал болгох',tag2:'Санал болгох',also:'Эндээс ч болно',
  fold:n=>`Өөр ${n} салбар үзэх ＋`,foldC:'Хаах －',bOk:'Боломжтой',bBusy:'Зээлэгдсэн',bNone:'Байхгүй',
  my:'байнгын',code:'Номын сангийн код',others:n=>`бусад ${n} салбар`,again:'Дахин хайх',
- caution:'Жишээ дэлгэц. Бодит хүсэлт илгээгдэхгүй.',
+ caution:'Демо дэлгэц. Бодит хүсэлт илгээгдэхгүй.',
  srcR:d=>`Data4Library бодит өгөгдөл · ${d} шалгасан · 16 салбар бүрэн<br><span class="s2">Зээлийн байдал <b>өмнөх өдрийн</b> мэдээлэл (API)</span>`,
- srcD:'Жишээ үзэгдэл · Бүчонд байхгүй номын үед юу болохыг харуулах зорилгоор зохиосон.<br>Бодит байдалд энэ ном Бүчоны номын санд байгаа.',exSay:'Энэ бол жишээ үзэгдэл. Бодит байдалд энэ ном Бүчоны номын санд байгаа.',
+ srcD:'Жишээ үзэгдэл · Бүчонд байхгүй номын үед юу болохыг харуулах зорилгоор зохиосон.<br>Бодит байдалд энэ ном Бүчоны номын санд байгаа.',exSay:'Энэ бол жишээ үзэгдэл. Бодит байдалд энэ ном Бүчоны номын санд байгаа ч энд байхгүй гэж үзэж зааварлана.',
  rule:m=>`Журмаар <b>${m} номын санд ном байгаа үед солилцоо хүсэх боломжгүй.</b> Урьдчилан шүүлээ.`,
  ax:['Хүн бүрд тохирсон хаалга · өргөтгөл','🎧 Орлуулах хувилбар: аудио·брайл·том үсэг','🚚 Гэрт хүргэх Chaeknarae: хөдөлгөөн хязгаарлагдмал хүмүүст','📞 Утасны горим: нэг дуудлагаар бүгд','🌏 10 хэлний дуу хоолой <b>(ажиллаж байна)</b>'],
- shT:'Солилцоо хүсэх үү?',shP:'Жишээ тул бодит хүсэлт илгээгдэхгүй',
+ shT:'Солилцоо хүсэх үү?',shP:'Демо тул бодит хүсэлт илгээгдэхгүй',
  kBook:'Ном',kMode:'Хэлбэр',kFrom:'Зээлдүүлэгч сан',kTo:'Хүлээн авах газар',kTime:'Хугацаа',
  kRecv:'Хүлээн авах',recvV:m=>`${m} номын санд очих`,recvS:'Хөгжлийн бэрхшээлтэй бол гэрт хүргүүлж болно (өргөтгөл)',
  kPath:'Боловсруулах зам',pathV:'Номын сангийн системийн холбогч (MCP)',pathS:'Ижил системтэй сангууд дахин ашиглана',
  kUser:'Хүсэлт гаргагч',user:'Хон ○○ (зохиомол гишүүн)',yes:'Тийм, хүсье',no:'Цуцлах',
- dT:'Хүсэлт хүлээн авлаа (жишээ)',
-  d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээх жишээ үзэгдэл.<br>Бодит үйлчилгээнд ном <b>${l}</b>-аас <b>${m} номын сан</b> руу очиж,<br>ирэхэд мессеж илгээнэ.`,
- innerBusy:k=>`${k} газарт бий · бүгд зээлэгдсэн`,tag3:'Буцаахыг хүлээж байна',shT2:'Чекпада заавар авах уу?',shT3:'Захиалах уу?',yes2:'Тийм, зааварчилна уу',kProc:'Дараалал',procV:'Чекпадад бүртгүүлэх → номын санч зөвшөөрөх → хүргэлтийн төлбөр',procS:'Хоёр тийш 5,800 вон · тусдаа систем тул зөвхөн зааварчилна',kHold:'Авах хугацаа',holdV:'Ирсэн өдрийг оролцуулан 3 хоногт',holdS:'Хугацаандаа аваагүй бол автоматаар буцаагдаж, 7 хоног хүсэлт хориглоно',kCancel:'Цуцлах',cancelV:'Зөвхөн хүлээн авсан үед · тээвэрлэж эхэлбэл номын сантай холбогдоно',didT:'Chaekiji таны өмнөөс хийсэн зүйл',didV:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар шалгасан → хүсэлтийн дүрэм шалгасан (хязгаар, хугацаа хэтрэлтийг лангуунд шалгана) → хүлээн авсан (жишээ) · Та нэг үг, нэг товшилт',kNext:'Дараагийн алхам',nextV:'Чекпадад бүртгүүлэх → <span class=nw>номын сан зөвшөөрнө</span>',d2:m=>`Чекпадагаар хүсэх аргыг зааварлая.<br>Бүртгэл, зөвшөөрлийг <b>${m} номын сан</b> туслана.`,d3:(l,m)=>`Захиалга хүлээн авлаа.<br>Ном буцаж ирэхэд <b>${m} номын сан</b>гаас авахаар солилцоо руу шилжүүлэх хүсэлт гаргаж болно.`,
- shP2:'Энэ бол жишээ дэлгэц · бодит хүсэлт илгээгдэхгүй',dT2:'Зааврын агуулга',didV2:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар, улс даяар шалгасан → замыг тогтоосон → хүсэх аргыг зааварласан · Та нэг үг, <span class=nw>нэг товшилт</span>',
+ dT:'Хүсэлт хүлээн авлаа (демо)',
+  d1:(md,l,m)=>`<b>${md}</b>-аар хүсэлт илгээх демо үзэгдэл.<br>Бодит үйлчилгээнд ном <b>${l}</b>-аас <b>${m} номын сан</b> руу очиж,<br>ирэхэд мессеж илгээнэ.`,
+ innerBusy:k=>`${k} газарт бий · бүгд зээлэгдсэн`,tag3:'Буцаахыг хүлээж байна',shT2:'Чекпада заавар авах уу?',shT3:'Захиалах уу?',yes2:'Тийм, зааварчилна уу',kProc:'Дараалал',procV:'Чекпадад бүртгүүлэх → номын санч зөвшөөрөх → хүргэлтийн төлбөр',procS:'Хоёр тийш 5,800 вон · тусдаа систем тул зөвхөн зааварчилна',kHold:'Авах хугацаа',holdV:'Ирсэн өдрийг оролцуулан 3 хоногт',holdS:'Хугацаандаа аваагүй бол автоматаар буцаагдаж, 7 хоног хүсэлт хориглоно',kCancel:'Цуцлах',cancelV:'Зөвхөн хүлээн авсан үед · тээвэрлэж эхэлбэл номын сантай холбогдоно',didT:'Chaekiji таны өмнөөс хийсэн зүйл',didV:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар шалгасан → хүсэлтийн дүрэм шалгасан (хязгаар, хугацаа хэтрэлтийг лангуунд шалгана) → хүлээн авсан (демо) · Та нэг үг, нэг товшилт',kNext:'Дараагийн алхам',nextV:'Чекпадад бүртгүүлэх → <span class=nw>номын сан зөвшөөрнө</span>',d2:m=>`Чекпадагаар хүсэх аргыг зааварлая.<br>Бүртгэл, зөвшөөрлийг <b>${m} номын сан</b> туслана.`,d3:(l,m)=>`Захиалга өгөх демо үзэгдэл.<br>Бодит үйлчилгээнд ном буцаж ирэхэд <b>${m} номын сан</b>гаас авахаар солилцоо руу шилжүүлэх хүсэлт гаргаж болно.`,
+ shP2:'Энэ бол демо дэлгэц · бодит хүсэлт илгээгдэхгүй',smsDemo:'Демо тул бодит мессеж илгээгдэхгүй',dT2:'Зааврын агуулга',didV2:'Яриаг бичсэн → номыг тодорхойлсон → 16 салбар, улс даяар шалгасан → замыг тогтоосон → хүсэх аргыг зааварласан · Та нэг үг, <span class=nw>нэг товшилт</span>',
  kArr:'Ирэх хугацаа',kNum:'Бүртгэлийн дугаар',home:'Эхлэл рүү' },
 uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo‘shsangiz, ilova kabi ochiladi va internetsiz ham ishlaydi.', instY:'O‘rnatish', instN:'Keyinroq', instIOS:"«Ulashish» tugmasini (yoki ••• → «Ulashish») bosing, pastga suring va «Bosh ekranga qo‘shish»ni tanlang.", instAOS:"Brauzer menyusini (⋮) oching va «Ilovani o‘rnatish» yoki «Bosh ekranga qo‘shish»ni bosing.", instIOSother:"iPhone’da o‘rnatish uchun Safari’da oching. Safari’da: «Ulashish» (yoki ••• → «Ulashish») → «Bosh ekranga qo‘shish».", NM:n=>`${n} kutubxonasi`,
  st1:"So'zingizni yozib olyapman",st1d:"Ovozni matnga aylantiraman",st2:'Kitob nomini solishtiradi',st2d:'5 ta namuna kitob ichidan qidiradi',
@@ -1914,7 +1914,7 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
        2:['3-qadam','Chaekbada (mamlakat)',"Mamlakat bo'ylab · alohida ro'yxat va kutubxonachi tasdig'i",'Chaekbada yo‘riqnomasi','Pullik','5–7 kun'],
        3:['Band qilish','Shahar ichida kutish','Bucheonda bor · hammasi berilgan','Band qilish','Bepul',"Qaytgach so'rov"]},
  sum0:(m,k)=>`<b>${m} kutubxonasida bor</b> (tekshirilgan kun holatiga ko‘ra olsa bo‘ladi). Almashish shart emas, borib oling. <span class="s2">${k} filialda mavjud.</span>`,
- sum1:(m,k,n)=>`<b>${m} kutubxonasida ${n ? 'bu kitob yo‘q' : 'kitob berilgan'}</b>, lekin <b>${k} filial</b> berib, <span class=nw>${m}ga yetkazamiz.</span>`,
+ sum1:(m,k,n)=>`<b>${m} kutubxonasida ${n ? 'bu kitob yo‘q' : 'kitob berilgan'}</b>, lekin <b>${k} filial</b> berib, <span class=nw>${m}ga yetkazish mumkin.</span>`,
  sum2:k=>`Bucheonda yo'q, lekin <b>mamlakat bo'ylab ${k} kutubxonada</b> topildi. Chaekbada alohida ro'yxat va kutubxonachi tasdig'ini talab qiladi, shuning uchun buyurtma o'rniga yo'riqnoma beramiz.`,
  sum3:(m,k)=>`Bucheondagi <b>${k} filialda</b> bor, lekin hammasi berilgan. Avval band qilsangiz, kitob qaytarilganda uni <b>${m} kutubxonasi</b>da olish uchun almashuvga o'tkazishni so'rashingiz mumkin.`,
  rec:'Tavsiya',tag0:'Darhol',tag1:'Tavsiya',tag2:'Tavsiya',also:'Bu yerlarda ham bor',
@@ -1922,18 +1922,18 @@ uz:{ bq:BQ.uz, instT:'Telefoningizga o‘rnatish mumkin', instD:'Bosh ekranga qo
  my:'doimiy',code:'Kutubxona kodi',others:n=>`yana ${n} filial`,again:'Qayta qidirish',
  caution:"Namoyish ekrani. Haqiqiy so'rov yuborilmaydi.",
  srcR:d=>`Data4Library haqiqiy ma'lumot · ${d} so'ralgan · 16 filial to'liq<br><span class="s2">Holat <b>oldingi kun</b> bo'yicha (API)</span>`,
- srcD:"Namuna sahna · kitob Bucheonda bo'lmaganda nima bo'lishini ko'rsatish uchun tuzilgan.<br>Aslida bu kitob Bucheon kutubxonalarida bor.",exSay:'Bu namuna sahna. Aslida bu kitob Bucheon kutubxonalarida bor.',
+ srcD:"Namuna sahna · kitob Bucheonda bo'lmaganda nima bo'lishini ko'rsatish uchun tuzilgan.<br>Aslida bu kitob Bucheon kutubxonalarida bor.",exSay:'Bu namuna sahna. Aslida bu kitob Bucheon kutubxonalarida bor, lekin bu yerda yo‘q deb faraz qilamiz.',
  rule:m=>`Qoidaga ko'ra <b>${m} kutubxonasida kitob bo'lsa, almashish so'rab bo'lmaydi.</b> Oldindan filtrladik.`,
  ax:["Har kimga mos eshik · kengaytma","🎧 Muqobil formatlar: audio·brayl·yirik shrift","🚚 Chaeknarae uyga yetkazish: harakati cheklanganlarga","📞 Telefon rejimi: bitta qo'ng'iroq bilan","🌏 10 tilda ovoz <b>(ishlaydi)</b>"],
  shT:"Almashishga buyurtma berilsinmi?",shP:"Bu namoyish, haqiqiy so'rov yuborilmaydi",
  kBook:'Kitob',kMode:'Usul',kFrom:'Beruvchi kutubxona',kTo:'Olish joyi',kTime:'Taxminiy vaqt',
  kRecv:'Olish usuli',recvV:m=>`${m} kutubxonasiga borish`,recvS:"Nogironligi borlar uyga yetkazishni tanlashi mumkin (kengaytma)",
  kPath:'Ishlov yo\'li',pathV:'Kutubxona tizimi ulagichi (MCP)',pathS:'Bir xil tizimdagi kutubxonalar qayta ishlatadi',
- kUser:'Ariza beruvchi',user:'Hong ○○ (namunaviy a‘zo)',yes:'Ha, buyurtma',no:'Bekor',
+ kUser:'Ariza beruvchi',user:'Hong ○○ (xayoliy a‘zo)',yes:'Ha, buyurtma',no:'Bekor',
  dT:"So'rov qabul qilindi (namoyish)",
   d1:(md,l,m)=>`Bu <b>${md}</b> orqali buyurtma berish namunasi.<br>Haqiqiy xizmatda kitob <b>${l}</b>dan <b>${m} kutubxonasi</b>ga yetkaziladi,<br>yetib kelganda xabar yuboriladi.`,
- innerBusy:k=>`${k} joyda bor · hammasi berilgan`,tag3:'Qaytarilishini kutmoqda',shT2:"Chaekbada yo'riqnomasini olasizmi?",shT3:'Band qilinsinmi?',yes2:"Ha, yo'riqnoma",kProc:'Tartib',procV:"Chaekbadaga ro'yxat → kutubxonachi tasdig'i → yetkazib berish to'lovi",procS:"Borib-kelish 5 800 von · alohida tizim, shuning uchun faqat yo'riqnoma",kHold:'Olish muddati',holdV:'Kelgan kuni bilan 3 kun ichida',holdS:"O'z vaqtida olinmasa → avtomatik qaytariladi, 7 kun buyurtma yopiladi",kCancel:'Bekor qilish',cancelV:"Faqat “qabul qilindi” holatida · yo'lga chiqqach kutubxonaga murojaat",didT:'Chaekiji siz uchun qilgan ishlar',didV:"Nutqni yozdi → kitobni aniqladi → 16 filialni tekshirdi → so'rov qoidalarini ko'rdi (limit va qarzdorlikni peshtaxtada tekshiradi) → qabul qildi (namoyish) · Siz: bir jumla, bir bosish",kNext:'Keyingi qadam',nextV:"Chaekbadaga ro'yxatdan o'ting → <span class=nw>kutubxona tasdiqlaydi</span>",d2:m=>`Chaekbada orqali so'rash usuli quyidagicha.<br>Ro'yxat va tasdiqda <b>${m} kutubxonasi</b> yordam beradi.`,d3:(l,m)=>`Band qilindi.<br>Kitob qaytarilganda uni <b>${m} kutubxonasi</b>da olish uchun almashuvga o'tkazishni so'rashingiz mumkin.`,
- shP2:"Bu namoyish ekrani · haqiqiy so'rov yuborilmaydi",dT2:'Yo‘riqnoma mazmuni',didV2:"Nutqni yozdi → kitobni aniqladi → 16 filial va mamlakatni tekshirdi → yo'lni belgiladi → so'rash usulini tushuntirdi · Siz: bir jumla, <span class=nw>bir bosish</span>",
+ innerBusy:k=>`${k} joyda bor · hammasi berilgan`,tag3:'Qaytarilishini kutmoqda',shT2:"Chaekbada yo'riqnomasini olasizmi?",shT3:'Band qilinsinmi?',yes2:"Ha, yo'riqnoma",kProc:'Tartib',procV:"Chaekbadaga ro'yxat → kutubxonachi tasdig'i → yetkazib berish to'lovi",procS:"Borib-kelish 5 800 von · alohida tizim, shuning uchun faqat yo'riqnoma",kHold:'Olish muddati',holdV:'Kelgan kuni bilan 3 kun ichida',holdS:"O'z vaqtida olinmasa → avtomatik qaytariladi, 7 kun buyurtma yopiladi",kCancel:'Bekor qilish',cancelV:"Faqat “qabul qilindi” holatida · yo'lga chiqqach kutubxonaga murojaat",didT:'Chaekiji siz uchun qilgan ishlar',didV:"Nutqni yozdi → kitobni aniqladi → 16 filialni tekshirdi → so'rov qoidalarini ko'rdi (limit va qarzdorlikni peshtaxtada tekshiradi) → qabul qildi (namoyish) · Siz: bir jumla, bir bosish",kNext:'Keyingi qadam',nextV:"Chaekbadaga ro'yxatdan o'ting → <span class=nw>kutubxona tasdiqlaydi</span>",d2:m=>`Chaekbada orqali so'rash usuli quyidagicha.<br>Ro'yxat va tasdiqda <b>${m} kutubxonasi</b> yordam beradi.`,d3:(l,m)=>`Bu band qilish namunasi.<br>Haqiqiy xizmatda kitob qaytarilganda uni <b>${m} kutubxonasi</b>da olish uchun almashuvga o'tkazishni so'rashingiz mumkin.`,
+ shP2:"Bu namoyish ekrani · haqiqiy so'rov yuborilmaydi",smsDemo:'Bu namoyish, SMS aslida yuborilmaydi',dT2:'Yo‘riqnoma mazmuni',didV2:"Nutqni yozdi → kitobni aniqladi → 16 filial va mamlakatni tekshirdi → yo'lni belgiladi → so'rash usulini tushuntirdi · Siz: bir jumla, <span class=nw>bir bosish</span>",
  kArr:'Yetib kelishi',kNum:'Qabul raqami',home:'Boshiga' },
 id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama. Terbuka seperti aplikasi dan tetap jalan tanpa internet.', instY:'Pasang', instN:'Nanti', instIOS:'Ketuk tombol Bagikan (atau ••• → Bagikan), gulir ke bawah lalu pilih “Tambahkan ke Layar Utama”.', instAOS:'Buka menu browser (⋮) lalu ketuk “Instal aplikasi” atau “Tambahkan ke Layar Utama”.', instIOSother:'Di iPhone, buka lewat Safari untuk memasang. Di Safari: Bagikan (atau ••• → Bagikan) → “Tambahkan ke Layar Utama”.', NM:n=>`Perpustakaan ${n}`,
  st1:'Mencatat ucapan Anda',st1d:'Mengubah suara jadi teks',st2:'Mencocokkan buku',st2d:'Mencari di antara 5 buku contoh',
@@ -1955,7 +1955,7 @@ id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama.
  my:'langganan',code:'Kode perpustakaan',others:n=>`${n} cabang lain`,again:'Cari lagi',
  caution:'Layar demo. Tidak ada permintaan sungguhan.',
  srcR:d=>`Data nyata Data4Library · ditanya ${d} · lengkap 16 cabang<br><span class="s2">Status pinjam per <b>hari sebelumnya</b> (spek API)</span>`,
- srcD:'Adegan contoh · disusun untuk menunjukkan alur bila buku tidak ada di Bucheon.<br>Sebenarnya buku ini ada di perpustakaan Bucheon.',exSay:'Ini adegan contoh. Sebenarnya buku ini ada di perpustakaan Bucheon.',
+ srcD:'Adegan contoh · disusun untuk menunjukkan alur bila buku tidak ada di Bucheon.<br>Sebenarnya buku ini ada di perpustakaan Bucheon.',exSay:'Ini adegan contoh. Sebenarnya buku ini ada di perpustakaan Bucheon, tetapi di sini dianggap tidak ada.',
  rule:m=>`Sesuai aturan, <b>tidak bisa mengajukan bila Perpustakaan ${m} memiliki bukunya.</b> Sudah kami saring.`,
  ax:['Pintu sesuai kondisi pengguna · rancangan lanjutan','🎧 Format alternatif: buku audio·braille·huruf besar','🚚 Antar ke rumah Chaeknarae: bagi yang sulit bepergian','📞 Mode telepon: semua lewat satu panggilan','🌏 Suara 10 bahasa <b>(berfungsi)</b>'],
  shT:'Ajukan pinjam antar-cabang?',shP:'Ini demo, permintaan tidak benar-benar diajukan',
@@ -1965,8 +1965,8 @@ id:{ bq:BQ.id, instT:'Bisa dipasang di ponsel', instD:'Tambahkan ke layar utama.
  kUser:'Pemohon',user:'Hong ○○ (anggota fiktif)',yes:'Ya, ajukan',no:'Batal',
  dT:'Permintaan diterima (demo)',
   d1:(md,l,m)=>`Ini contoh pengajuan via <b>${md}</b>.<br>Pada layanan nyata, buku akan dipindah dari <b>${l}</b> ke <b>Perpustakaan ${m}</b>,<br>dan Anda akan menerima SMS saat tiba.`,
- innerBusy:k=>`ada di ${k} · semua dipinjam`,tag3:'Menunggu dikembalikan',shT2:'Minta panduan Chaekbada?',shT3:'Pesan buku ini?',yes2:'Ya, pandu saya',kProc:'Langkah',procV:'Daftar Chaekbada → persetujuan pustakawan → bayar ongkir',procS:'PP 5.800 won · sistem terpisah, jadi kami memandu saja',kHold:'Batas ambil',holdV:'Dalam 3 hari, termasuk hari tiba',holdS:'Tidak diambil tepat waktu → dikembalikan otomatis, permintaan diblokir 7 hari',kCancel:'Batal',cancelV:'Hanya saat status “diterima” · sudah dikirim, hubungi perpustakaan',didT:'Yang Chaekiji lakukan untuk Anda',didV:'Transkrip → identifikasi buku → cek 16 cabang → tinjau aturan permintaan (batas dan keterlambatan dicek di loket) → diterima (demo) · Anda: satu kalimat, satu ketukan',kNext:'Langkah berikut',nextV:'Daftar Chaekbada → <span class=nw>perpustakaan menyetujui</span>',d2:m=>`Berikut cara mengajukan lewat Chaekbada.<br><b>Perpustakaan ${m}</b> akan membantu pendaftaran dan persetujuan.`,d3:(l,m)=>`Pesanan diterima.<br>Saat buku dikembalikan, Anda bisa mengajukan peralihan ke pinjam antar-cabang untuk diambil di <b>Perpustakaan ${m}</b>.`,
- shP2:'Ini layar demo · tidak ada permintaan yang benar-benar diajukan',dT2:'Ini panduannya',didV2:'Transkrip → identifikasi buku → cek 16 cabang & nasional → tentukan jalur → jelaskan cara mengajukan · Anda: satu kalimat, <span class=nw>satu ketukan</span>',
+ innerBusy:k=>`ada di ${k} · semua dipinjam`,tag3:'Menunggu dikembalikan',shT2:'Minta panduan Chaekbada?',shT3:'Pesan buku ini?',yes2:'Ya, pandu saya',kProc:'Langkah',procV:'Daftar Chaekbada → persetujuan pustakawan → bayar ongkir',procS:'PP 5.800 won · sistem terpisah, jadi kami memandu saja',kHold:'Batas ambil',holdV:'Dalam 3 hari, termasuk hari tiba',holdS:'Tidak diambil tepat waktu → dikembalikan otomatis, permintaan diblokir 7 hari',kCancel:'Batal',cancelV:'Hanya saat status “diterima” · sudah dikirim, hubungi perpustakaan',didT:'Yang Chaekiji lakukan untuk Anda',didV:'Transkrip → identifikasi buku → cek 16 cabang → tinjau aturan permintaan (batas dan keterlambatan dicek di loket) → diterima (demo) · Anda: satu kalimat, satu ketukan',kNext:'Langkah berikut',nextV:'Daftar Chaekbada → <span class=nw>perpustakaan menyetujui</span>',d2:m=>`Berikut cara mengajukan lewat Chaekbada.<br><b>Perpustakaan ${m}</b> akan membantu pendaftaran dan persetujuan.`,d3:(l,m)=>`Ini contoh pemesanan.<br>Pada layanan nyata, saat buku dikembalikan, Anda bisa mengajukan peralihan ke pinjam antar-cabang untuk diambil di <b>Perpustakaan ${m}</b>.`,
+ shP2:'Ini layar demo · tidak ada permintaan yang benar-benar diajukan',smsDemo:'Ini demo, SMS tidak benar-benar dikirim',dT2:'Ini panduannya',didV2:'Transkrip → identifikasi buku → cek 16 cabang & nasional → tentukan jalur → jelaskan cara mengajukan · Anda: satu kalimat, <span class=nw>satu ketukan</span>',
  kArr:'Perkiraan tiba',kNum:'No. penerimaan',home:'Kembali ke awal' },
 };
 function U(){ return UI[ (L===LANGS.ko) ? 'ko' : Object.keys(LANGS).find(k=>LANGS[k]===L) ] || UI.ko; }
@@ -2506,7 +2506,7 @@ function result(){
   {
     const exSay = c.real ? '' : u.exSay + ' ';                       /* v1.12.7: 예시 장면(③)은 음성에도 「예시」라고 밝힌다 */
     const dW = dayWords(c.asof || 기준일, Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko');   /* v1.12.7: 바로 이용 음성에 이 판정이 쓴 자료의 조회일 */
-    if(L.m){ say(exSay + (t === 0 ? G_().res(c.book.t, btName, dW) : L.m.res(c.book.t, btName))); }
+    if(L.m){ say(exSay + (t === 0 ? G_().res(c.book.t, btName, dW) : (t === 2 && L.m.res2) ? L.m.res2(c.book.t) : L.m.res(c.book.t, btName))); }   /* v1.12.19: 책바다는 외국어도 「신청」이 아니라 안내 */
     else {
       const plain = document.createElement('div'); plain.innerHTML = h;
       const sum = plain.querySelector('.sumline');
@@ -2546,7 +2546,7 @@ function openSheet(){
   $('sheet').classList.add('on');
   ynPrep();
   const _yn = () => ynListen();
-  if(L.m) say(L.m.sh(c.book.t, btName), _yn);
+  if(L.m) say((t === 2 && L.m.sh2) ? L.m.sh2(u.yes2) : L.m.sh(c.book.t, btName), _yn);   /* v1.12.19: 책바다 확인 시트 음성도 안내 */
   else if(t === 2) say(`책바다는 별도 가입과 사서 승인이 필요합니다. 신청 방법 안내를 받으시려면 네, 안내 받을게요 단추를 눌러 주세요.`, _yn);
   else say(`신청 내용을 확인해 주세요. 도서 ${c.book.t}, 대출 도서관 ${btName}, 수령 도서관 ${u.NM(내관)}, 예상 소요 ${T[5]}.${(t===1||t===3) ? ' 도착한 날을 포함해 3일 안에 찾아가 주세요. 기한 안에 찾아가지 않으면 자동 반납되고 7일 동안 상호대차를 신청할 수 없습니다.' : ''} 진행하시려면 네, 신청합니다 단추를 눌러 주세요.`, _yn);
 }
@@ -2589,7 +2589,7 @@ function finishRequest(via){
   /* v1.12.8: 책바다는 문자를 보내지 않으므로 「신청 방법을 알려 드립니다」(다른 언어는 LANGS.m.dn2 — 「접수되었습니다」가 아님) */
   if(L.m) say((t === 2 && L.m.dn2 ? L.m.dn2() : L.m.dn()) + ' ' + u.caution);
   else say((t === 2 ? `책바다 신청 방법을 알려 드립니다. 가입과 승인은 도서관에서 도와 드립니다.` :
-      t === 3 ? `예약이 접수되었습니다. 책이 반납되면 ${내관}도서관으로 받는 상호대차로 바꿔 신청할 수 있습니다.` :
+      t === 3 ? `예약을 신청한 장면입니다. 실제 서비스라면 책이 반납될 때 ${내관}도서관으로 받는 상호대차로 바꿔 신청할 수 있습니다.` :
       `${T[1]}${ro(T[1])} 신청한 장면입니다. 실제 서비스라면 책이 도착할 때 문자로 알려 드리고, 도착한 날을 포함해 3일 안에 찾아가시면 됩니다.`) + ' ' + u.caution);
 };
 
@@ -2710,7 +2710,7 @@ function bqOpen(){
         const el = $('bqs' + idx);
         if(r.g === 'now'){ el.textContent = B.rNow; el.className = 'bqst now'; }
         else if(r.g === 'ill'){ el.textContent = B.rIll(r.v.okN); el.className = 'bqst ill'; }
-        else { el.textContent = B.rSea; el.className = 'bqst sea'; }
+        else { el.textContent = B.rSea + (r.c.real ? '' : ` (${EXTAG[phCode()] || EXTAG.ko})`); el.className = 'bqst sea'; }   /* v1.12.19: 예시 책은 예시라고 */
       }, STEP * (idx + 1));
     });
     setTimeout(() => { if(scene === SCENE) bqPlanShow(rows); }, STEP * rows.length + 600);
@@ -2724,7 +2724,7 @@ function bqPlanShow(rows){
   const now = rows.filter(r => r.g === 'now'), ill = rows.filter(r => r.g === 'ill'), sea = rows.filter(r => r.g === 'sea');
   $('bqS').textContent = B.got;
   $('bqPermT').textContent = B.perm;
-  const li = a => a.map(r => `· ${r.c.book.t}`).join('<br>');
+  const li = a => a.map(r => `· ${r.c.book.t}${r.c.real ? '' : ` (${EXTAG[phCode()] || EXTAG.ko})`}`).join('<br>');   /* v1.12.19: 예시 책은 예시라고 */
   let h = '';
   if(now.length) h += `<div class="bqg">✅ ${B.gNow}</div><div class="bqitems">${li(now)}</div>`;
   if(ill.length) h += `<div class="bqg">🚚 ${B.gIll(u.NM(내관))}</div><div class="bqitems">${li(ill)}</div>`;
@@ -2977,61 +2977,61 @@ const SHOW_INSTALL = false;   /* v1.7: 「휴대폰에 설치할 수 있어요�
 const X_ = {
  ko:{pkOff:"시연이라 생략(ⓘ 안내에서 패스키 체험을 켤 수 있어요)",micNet:"인터넷 연결이 끊겨 음성을 인식하지 못했어요. 연결을 확인하고 다시 눌러 주세요.",micPerm1:"마이크 <b>허용</b>을 눌렀다면 마이크 단추를 <b>한 번 더</b> 눌러 주세요. (처음 한 번은 허용 창 때문에 인식이 시작되지 않을 수 있어요)",micPerm2:"마이크 사용이 차단되어 있습니다. 아이폰: 주소창 왼쪽 <b>가가(또는 AA) 단추 → 웹 사이트 설정 → 마이크 허용</b> / 안드로이드: 주소창 <b>자물쇠 → 권한 → 마이크</b> 허용 후 다시 눌러 주세요.",micNoSound:"소리를 못 들었어요. 마이크 단추를 누르고 바로 말씀해 주세요.",micFail:"음성을 인식하지 못했습니다. 아래 예시 단추를 눌러 보세요.",micStart:"마이크를 시작하지 못했어요. 한 번 더 눌러 주세요.",micLang:"이 기기의 브라우저는 {lang} 음성 인식을 지원하지 않아요. 아래에 글로 입력하거나 다른 언어를 골라 주세요.",srOk:'음성 가능',srNo:'글자 입력만',lib:'자주 가는 도서관',libP:'수령 도서관이자 판정의 기준입니다 · 예시 결과도 이 도서관 기준으로 다시 계산됩니다',close:'닫기',
      scanT:'책 뒤표지 바코드를 네모 안에 맞춰 주세요',scanErr:'카메라를 열 수 없어요. 아래 예시나 직접 입력을 이용해 주세요.',scanNone:'시연 모델에는 예시 5권만 실려 있어요. 아래 예시를 눌러 보세요.',
-     kAuth:'본인 확인',pkReg:'이 기기를 등록할게요. 지문이나 얼굴로 한 번만 확인해 주세요',pkNew:'등록된 기기 ✓ (방금 등록 · 다음부터 무료 신청은 바로)',pkOk:'등록된 기기 ✓ (무료 신청은 바로)',pkSkip:'기기 등록을 건너뜀 (시연 계속)',pkNone:'등록된 기기 (시연 · 이 브라우저는 생체인증 미지원)',
+     kAuth:'본인 확인',pkReg:'이 기기를 등록할게요. 지문이나 얼굴로 한 번만 확인해 주세요',pkNew:'등록된 기기 ✓ (방금 등록 · 다음부터 무료 신청은 바로)',pkOk:'등록된 기기 ✓ (무료 신청은 바로)',pkSkip:'기기 등록을 건너뜀 (시연 계속)',pkNone:'기기 등록 안 함 (시연 · 이 브라우저는 생체인증 미지원)',
      pkStep:'위임을 만들기 전에 지문·얼굴로 한 번 더 확인합니다…',pkCancel:'생체인증이 취소되어 위임을 만들지 않았습니다. 안전 쪽이 기본값이에요.',
      voice:'🎙 「네」 또는 「아니오」로 답하셔도 됩니다',local:'🔒 기기 안에서 인식',lsrOn:'이 기기: 기기 내 인식 사용 중',lsrOff:'이 기기: 브라우저 제공사 인식(서비스 서버 미전송)',mcpOn:'이 브라우저: 연결됨(도구 3종 등록) · 신청 도구는 이용자 확인 없이는 거부',mcpOff:'이 브라우저: 미지원 · 신청 도구는 이용자 확인 없이는 거부',
      welcome:"무슨 책 찾으세요? 마이크 단추를 누르고 책 제목을 말씀해 주세요. 제목이 정확하지 않아도 괜찮아요.",startT:"눌러서 시작하기",startP:"음성 안내가 시작됩니다. 🔊 단추로 언제든 끌 수 있어요.",startNo:"음성 없이 시작"},
  en:{pkOff:"Skipped in the demo (turn on the passkey demo under ⓘ)",micNet:"Speech recognition needs an internet connection. Check your connection and try again.",micPerm1:"If you tapped Allow, please tap the microphone once more (the first try can be interrupted by the permission prompt).",micPerm2:"Microphone access is blocked. iPhone: tap ᴬA in the address bar → Website Settings → Microphone: Allow. Android: tap the lock icon → Permissions → Microphone.",micNoSound:"I didn't hear anything. Tap the microphone and speak right away.",micFail:"I couldn't recognize the speech. Try the examples below.",micStart:"Couldn't start the microphone. Please tap once more.",micLang:"This browser doesn't support {lang} speech recognition on this device. Please type below or choose another language.",srOk:'Voice OK',srNo:'Text only',lib:'My library',libP:'Pickup library and the basis for rule checks · example results are recalculated for it',close:'Close',
      scanT:'Fit the barcode on the back cover inside the box',scanErr:'Could not open the camera. Use the examples or type instead.',scanNone:'This demo carries only the 5 example titles. Try one below.',
-     kAuth:'Identity',pkReg:'Registering this device. Confirm once with fingerprint or face',pkNew:'Registered device ✓ (just registered · free requests go straight through next time)',pkOk:'Registered device ✓ (free requests go straight through)',pkSkip:'Device registration skipped (demo continues)',pkNone:'Registered device (demo · no biometrics in this browser)',
+     kAuth:'Identity',pkReg:'Registering this device. Confirm once with fingerprint or face',pkNew:'Registered device ✓ (just registered · free requests go straight through next time)',pkOk:'Registered device ✓ (free requests go straight through)',pkSkip:'Device registration skipped (demo continues)',pkNone:'No device registered (demo · no biometrics in this browser)',
      pkStep:'Confirm once more with fingerprint or face before creating the mandate…',pkCancel:'Biometric check cancelled. No mandate was created. Safe side is the default.',
      voice:'🎙 You can also answer “yes” or “no”',local:'🔒 Recognised on device',lsrOn:'This device: on-device recognition',lsrOff:'This device: browser-vendor recognition (never sent to our server)',mcpOn:'This browser: connected (3 tools registered) · request tool refuses without user confirmation',mcpOff:'This browser: not supported · request tool refuses without user confirmation',
      welcome:"What book are you looking for? Tap the microphone and say the title. It is fine if the title is not exact.",startT:"Tap to start",startP:"Voice guidance will begin. You can turn it off anytime with the 🔊 button.",startNo:"Start without voice"},
  zh:{pkOff:"演示中省略（可在 ⓘ 中开启通行密钥体验）",micNet:"语音识别需要网络连接。请检查网络后重试。",micPerm1:"如果已点击「允许」，请再点一次麦克风按钮（第一次可能因权限提示而未开始识别）。",micPerm2:"麦克风已被禁止。iPhone：地址栏 ᴬA → 网站设置 → 麦克风 允许；Android：地址栏锁形图标 → 权限 → 麦克风。",micNoSound:"没有听到声音。请点击麦克风后立即说话。",micFail:"无法识别语音。请试试下面的示例。",micStart:"无法启动麦克风，请再点一次。",micLang:"此设备的浏览器不支持{lang}语音识别。请在下方输入文字或选择其他语言。",srOk:'可语音',srNo:'仅文字',lib:'常去的图书馆',libP:'取书馆，也是规则判定的基准 · 示例结果会按此馆重新计算',close:'关闭',
      scanT:'请把封底条形码对准方框',scanErr:'无法打开相机，请使用示例或直接输入。',scanNone:'演示模型只收录了 5 本示例书，请点下面的示例。',
-     kAuth:'本人确认',pkReg:'正在登记此设备，请用指纹或人脸确认一次',pkNew:'已登记设备 ✓（刚登记 · 下次免费申请直接通过）',pkOk:'已登记设备 ✓（免费申请直接通过）',pkSkip:'已跳过设备登记（演示继续）',pkNone:'已登记设备（演示 · 此浏览器不支持生物识别）',
+     kAuth:'本人确认',pkReg:'正在登记此设备，请用指纹或人脸确认一次',pkNew:'已登记设备 ✓（刚登记 · 下次免费申请直接通过）',pkOk:'已登记设备 ✓（免费申请直接通过）',pkSkip:'已跳过设备登记（演示继续）',pkNone:'未登记设备（演示 · 此浏览器不支持生物识别）',
      pkStep:'创建委托前，请再用指纹或人脸确认一次…',pkCancel:'生物识别已取消，未创建委托。安全是默认值。',
      voice:'🎙 也可以说“是”或“否”',local:'🔒 在设备内识别',lsrOn:'此设备：使用设备内识别',lsrOff:'此设备：浏览器厂商识别（不发送到我们的服务器）',mcpOn:'此浏览器：已连接（已注册 3 个工具） · 申请工具无用户确认即拒绝',mcpOff:'此浏览器：不支持 · 申请工具无用户确认即拒绝',
      welcome:"您想找什么书？请点击麦克风，说出书名。书名不完全准确也没关系。",startT:"点击开始",startP:"将开始语音提示。随时可用 🔊 按钮关闭。",startNo:"不用语音开始"},
  ja:{pkOff:"デモのため省略（ⓘ でパスキー体験をオンにできます）",micNet:"音声認識にはインターネット接続が必要です。接続を確認してもう一度お試しください。",micPerm1:"「許可」を押した場合は、もう一度マイクボタンを押してください（初回は許可画面のため認識が始まらないことがあります）。",micPerm2:"マイクがブロックされています。iPhone：アドレスバーの ᴬA → Webサイトの設定 → マイクを許可 / Android：鍵アイコン → 権限 → マイク。",micNoSound:"音声が聞き取れませんでした。マイクを押してすぐ話してください。",micFail:"音声を認識できませんでした。下の例をお試しください。",micStart:"マイクを開始できませんでした。もう一度押してください。",micLang:"この端末のブラウザは{lang}の音声認識に対応していません。下に入力するか、別の言語を選んでください。",srOk:'音声OK',srNo:'文字のみ',lib:'いつもの図書館',libP:'受取館であり判定の基準です · 例の結果もこの館基準で再計算されます',close:'閉じる',
      scanT:'裏表紙のバーコードを枠に合わせてください',scanErr:'カメラを開けません。例や直接入力をご利用ください。',scanNone:'デモには例の5冊だけ入っています。下の例をお試しください。',
-     kAuth:'本人確認',pkReg:'この端末を登録します。指紋か顔で一度だけ確認してください',pkNew:'登録済み端末 ✓（登録完了 · 次回から無料申請はそのまま）',pkOk:'登録済み端末 ✓（無料申請はそのまま）',pkSkip:'端末登録をスキップ（デモ続行）',pkNone:'登録済み端末（デモ · このブラウザは生体認証非対応）',
+     kAuth:'本人確認',pkReg:'この端末を登録します。指紋か顔で一度だけ確認してください',pkNew:'登録済み端末 ✓（登録完了 · 次回から無料申請はそのまま）',pkOk:'登録済み端末 ✓（無料申請はそのまま）',pkSkip:'端末登録をスキップ（デモ続行）',pkNone:'端末登録なし（デモ · このブラウザは生体認証非対応）',
      pkStep:'委任を作る前に指紋・顔でもう一度確認します…',pkCancel:'生体認証がキャンセルされ、委任は作成しませんでした。安全側が既定です。',
      voice:'🎙 「はい」「いいえ」と答えても構いません',local:'🔒 端末内で認識',lsrOn:'この端末：端末内認識を使用中',lsrOff:'この端末：ブラウザ提供元の認識（当方サーバーへは送信しません）',mcpOn:'このブラウザ：接続済み（ツール3種を登録） · 申請ツールは利用者確認なしでは拒否',mcpOff:'このブラウザ：非対応 · 申請ツールは利用者確認なしでは拒否',
      welcome:"どんな本をお探しですか？マイクを押して、本のタイトルを話してください。正確なタイトルでなくても大丈夫です。",startT:"タップして開始",startP:"音声案内が始まります。🔊 ボタンでいつでも切れます。",startNo:"音声なしで始める"},
  vi:{pkOff:"Bỏ qua trong bản demo (bật trải nghiệm passkey trong ⓘ)",micNet:"Nhận dạng giọng nói cần kết nối Internet. Hãy kiểm tra kết nối rồi thử lại.",micPerm1:"Nếu bạn đã bấm Cho phép, hãy bấm nút micro thêm một lần nữa (lần đầu có thể bị gián đoạn bởi hộp thoại quyền).",micPerm2:"Micro đang bị chặn. iPhone: ᴬA trên thanh địa chỉ → Cài đặt trang web → Micro: Cho phép. Android: biểu tượng ổ khóa → Quyền → Micro.",micNoSound:"Tôi không nghe thấy gì. Hãy bấm micro và nói ngay.",micFail:"Không nhận dạng được giọng nói. Hãy thử các ví dụ bên dưới.",micStart:"Không khởi động được micro. Hãy bấm lại một lần nữa.",micLang:"Trình duyệt trên thiết bị này không hỗ trợ nhận dạng giọng nói {lang}. Hãy nhập chữ bên dưới hoặc chọn ngôn ngữ khác.",srOk:'Có giọng nói',srNo:'Chỉ gõ chữ',lib:'Thư viện quen thuộc',libP:'Nơi nhận sách và cơ sở xét quy định · kết quả ví dụ được tính lại theo thư viện này',close:'Đóng',
      scanT:'Đưa mã vạch ở bìa sau vào trong khung',scanErr:'Không mở được máy ảnh. Hãy dùng ví dụ hoặc nhập tay.',scanNone:'Bản trình diễn chỉ có 5 cuốn ví dụ. Hãy thử ví dụ bên dưới.',
-     kAuth:'Xác minh',pkReg:'Đang đăng ký thiết bị này. Xác nhận một lần bằng vân tay hoặc khuôn mặt',pkNew:'Thiết bị đã đăng ký ✓ (vừa đăng ký · lần sau yêu cầu miễn phí đi thẳng)',pkOk:'Thiết bị đã đăng ký ✓ (yêu cầu miễn phí đi thẳng)',pkSkip:'Bỏ qua đăng ký thiết bị (tiếp tục trình diễn)',pkNone:'Thiết bị đã đăng ký (trình diễn · trình duyệt này không hỗ trợ sinh trắc)',
+     kAuth:'Xác minh',pkReg:'Đang đăng ký thiết bị này. Xác nhận một lần bằng vân tay hoặc khuôn mặt',pkNew:'Thiết bị đã đăng ký ✓ (vừa đăng ký · lần sau yêu cầu miễn phí đi thẳng)',pkOk:'Thiết bị đã đăng ký ✓ (yêu cầu miễn phí đi thẳng)',pkSkip:'Bỏ qua đăng ký thiết bị (tiếp tục trình diễn)',pkNone:'Không đăng ký thiết bị (trình diễn · trình duyệt này không hỗ trợ sinh trắc)',
      pkStep:'Xác nhận thêm một lần bằng vân tay/khuôn mặt trước khi tạo ủy quyền…',pkCancel:'Đã hủy sinh trắc, không tạo ủy quyền. An toàn là mặc định.',
      voice:'🎙 Bạn cũng có thể trả lời “có” hoặc “không”',local:'🔒 Nhận dạng trên thiết bị',lsrOn:'Thiết bị này: nhận dạng trên thiết bị',lsrOff:'Thiết bị này: nhận dạng của nhà cung cấp trình duyệt (không gửi tới máy chủ của chúng tôi)',mcpOn:'Trình duyệt này: đã kết nối (đăng ký 3 công cụ) · công cụ yêu cầu từ chối nếu chưa được xác nhận',mcpOff:'Trình duyệt này: không hỗ trợ · công cụ yêu cầu từ chối nếu chưa được xác nhận',
      welcome:"Bạn tìm sách gì? Hãy nhấn micro và nói tên sách. Không cần nói chính xác tên sách.",startT:"Chạm để bắt đầu",startP:"Hướng dẫn bằng giọng nói sẽ bắt đầu. Có thể tắt bất cứ lúc nào bằng nút 🔊.",startNo:"Bắt đầu không cần giọng nói"},
  th:{pkOff:"ข้ามในการสาธิต (เปิดทดลอง passkey ได้ที่ ⓘ)",micNet:"การรู้จำเสียงต้องใช้อินเทอร์เน็ต กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่",micPerm1:"ถ้ากด อนุญาต แล้ว โปรดกดปุ่มไมโครโฟนอีกครั้ง (ครั้งแรกอาจไม่เริ่มฟังเพราะหน้าต่างขออนุญาต)",micPerm2:"ไมโครโฟนถูกบล็อก iPhone: ᴬA ในแถบที่อยู่ → การตั้งค่าเว็บไซต์ → ไมโครโฟน อนุญาต / Android: ไอคอนกุญแจ → สิทธิ์ → ไมโครโฟน",micNoSound:"ไม่ได้ยินเสียง โปรดกดไมโครโฟนแล้วพูดทันที",micFail:"ไม่สามารถรู้จำเสียงได้ ลองแตะตัวอย่างด้านล่าง",micStart:"เริ่มไมโครโฟนไม่ได้ โปรดกดอีกครั้ง",micLang:"เบราว์เซอร์ของอุปกรณ์นี้ไม่รองรับการรู้จำเสียงภาษา{lang} โปรดพิมพ์ด้านล่างหรือเลือกภาษาอื่น",srOk:'ใช้เสียงได้',srNo:'พิมพ์เท่านั้น',lib:'ห้องสมุดประจำ',libP:'เป็นที่รับหนังสือและเกณฑ์การตัดสิน · ผลตัวอย่างจะคำนวณใหม่ตามห้องสมุดนี้',close:'ปิด',
      scanT:'วางบาร์โค้ดปกหลังให้อยู่ในกรอบ',scanErr:'เปิดกล้องไม่ได้ กรุณาใช้ตัวอย่างหรือพิมพ์เอง',scanNone:'รุ่นสาธิตมีเพียง 5 เล่มตัวอย่าง ลองกดตัวอย่างด้านล่าง',
-     kAuth:'ยืนยันตัวตน',pkReg:'กำลังลงทะเบียนอุปกรณ์นี้ ยืนยันด้วยลายนิ้วมือหรือใบหน้าหนึ่งครั้ง',pkNew:'อุปกรณ์ที่ลงทะเบียน ✓ (เพิ่งลงทะเบียน · ครั้งต่อไปคำขอฟรีผ่านทันที)',pkOk:'อุปกรณ์ที่ลงทะเบียน ✓ (คำขอฟรีผ่านทันที)',pkSkip:'ข้ามการลงทะเบียนอุปกรณ์ (สาธิตต่อ)',pkNone:'อุปกรณ์ที่ลงทะเบียน (สาธิต · เบราว์เซอร์นี้ไม่รองรับไบโอเมตริก)',
+     kAuth:'ยืนยันตัวตน',pkReg:'กำลังลงทะเบียนอุปกรณ์นี้ ยืนยันด้วยลายนิ้วมือหรือใบหน้าหนึ่งครั้ง',pkNew:'อุปกรณ์ที่ลงทะเบียน ✓ (เพิ่งลงทะเบียน · ครั้งต่อไปคำขอฟรีผ่านทันที)',pkOk:'อุปกรณ์ที่ลงทะเบียน ✓ (คำขอฟรีผ่านทันที)',pkSkip:'ข้ามการลงทะเบียนอุปกรณ์ (สาธิตต่อ)',pkNone:'ไม่ได้ลงทะเบียนอุปกรณ์ (สาธิต · เบราว์เซอร์นี้ไม่รองรับไบโอเมตริก)',
      pkStep:'ยืนยันด้วยลายนิ้วมือ/ใบหน้าอีกครั้งก่อนสร้างการมอบหมาย…',pkCancel:'ยกเลิกไบโอเมตริก ไม่ได้สร้างการมอบหมาย ค่าเริ่มต้นคือฝั่งปลอดภัย',
      voice:'🎙 ตอบว่า “ใช่” หรือ “ไม่” ก็ได้',local:'🔒 รู้จำในอุปกรณ์',lsrOn:'อุปกรณ์นี้: รู้จำเสียงในอุปกรณ์',lsrOff:'อุปกรณ์นี้: รู้จำโดยผู้ให้บริการเบราว์เซอร์ (ไม่ส่งไปเซิร์ฟเวอร์ของเรา)',mcpOn:'เบราว์เซอร์นี้: เชื่อมต่อแล้ว (ลงทะเบียน 3 เครื่องมือ) · เครื่องมือยื่นคำขอปฏิเสธหากไม่มีการยืนยัน',mcpOff:'เบราว์เซอร์นี้: ไม่รองรับ · เครื่องมือยื่นคำขอปฏิเสธหากไม่มีการยืนยัน',
      welcome:"คุณกำลังหาหนังสือเล่มไหน แตะไมโครโฟนแล้วพูดชื่อหนังสือได้เลย ชื่อไม่ตรงเป๊ะก็ไม่เป็นไร",startT:"แตะเพื่อเริ่ม",startP:"เสียงแนะนำจะเริ่มทำงาน ปิดได้ทุกเมื่อด้วยปุ่ม 🔊",startNo:"เริ่มโดยไม่ใช้เสียง"},
  ru:{pkOff:"В демо пропущено (включите пробу passkey в ⓘ)",micNet:"Для распознавания речи нужен интернет. Проверьте соединение и попробуйте снова.",micPerm1:"Если вы нажали «Разрешить», нажмите кнопку микрофона ещё раз (в первый раз запрос разрешения может прервать распознавание).",micPerm2:"Доступ к микрофону заблокирован. iPhone: ᴬA в адресной строке → Настройки сайта → Микрофон: разрешить. Android: значок замка → Разрешения → Микрофон.",micNoSound:"Ничего не слышно. Нажмите микрофон и сразу говорите.",micFail:"Не удалось распознать речь. Попробуйте примеры ниже.",micStart:"Не удалось запустить микрофон. Нажмите ещё раз.",micLang:"Браузер на этом устройстве не поддерживает распознавание речи: {lang}. Введите текст ниже или выберите другой язык.",srOk:'Голос есть',srNo:'Только текст',lib:'Моя библиотека',libP:'Место получения и основа проверки правил · примеры пересчитываются для неё',close:'Закрыть',
      scanT:'Поместите штрихкод с задней обложки в рамку',scanErr:'Не удалось открыть камеру. Используйте примеры или ввод.',scanNone:'В демо только 5 примеров. Попробуйте пример ниже.',
-     kAuth:'Проверка личности',pkReg:'Регистрируем это устройство. Подтвердите один раз отпечатком или лицом',pkNew:'Зарегистрированное устройство ✓ (только что · бесплатные заявки далее без подтверждения)',pkOk:'Зарегистрированное устройство ✓ (бесплатные заявки без подтверждения)',pkSkip:'Регистрация пропущена (демо продолжается)',pkNone:'Зарегистрированное устройство (демо · биометрия в этом браузере недоступна)',
+     kAuth:'Проверка личности',pkReg:'Регистрируем это устройство. Подтвердите один раз отпечатком или лицом',pkNew:'Зарегистрированное устройство ✓ (только что · бесплатные заявки далее без подтверждения)',pkOk:'Зарегистрированное устройство ✓ (бесплатные заявки без подтверждения)',pkSkip:'Регистрация пропущена (демо продолжается)',pkNone:'Устройство не зарегистрировано (демо · биометрия в этом браузере недоступна)',
      pkStep:'Перед созданием поручения подтвердите ещё раз отпечатком или лицом…',pkCancel:'Биометрия отменена, поручение не создано. Безопасный вариант по умолчанию.',
      voice:'🎙 Можно ответить «да» или «нет»',local:'🔒 Распознано на устройстве',lsrOn:'Это устройство: распознавание на устройстве',lsrOff:'Это устройство: распознавание поставщика браузера (на наш сервер не передаётся)',mcpOn:'Этот браузер: подключён (3 инструмента) · заявка без подтверждения отклоняется',mcpOff:'Этот браузер: не поддерживается · заявка без подтверждения отклоняется',
      welcome:"Какую книгу вы ищете? Нажмите на микрофон и назовите книгу. Точное название не обязательно.",startT:"Нажмите, чтобы начать",startP:"Начнётся голосовая подсказка. Её можно выключить кнопкой 🔊 в любой момент.",startNo:"Начать без голоса"},
  mn:{pkOff:"Үзүүлэнд алгассан (ⓘ-д passkey туршилтыг асаана уу)",micNet:"Дуу таних интернэт холболт шаардана. Холболтоо шалгаад дахин оролдоно уу.",micPerm1:"«Зөвшөөрөх» дарсан бол микрофоны товчийг дахин нэг удаа дарна уу (эхний удаад зөвшөөрлийн цонхны улмаас танилт эхлэхгүй байж болно).",micPerm2:"Микрофон хаалттай байна. iPhone: хаягийн мөрний ᴬA → Вэб сайтын тохиргоо → Микрофон зөвшөөрөх / Android: цоожны дүрс → Зөвшөөрөл → Микрофон.",micNoSound:"Дуу сонсогдсонгүй. Микрофоныг дараад шууд ярина уу.",micFail:"Яриаг таньж чадсангүй. Доорх жишээг туршиж үзнэ үү.",micStart:"Микрофоныг эхлүүлж чадсангүй. Дахин дарна уу.",micLang:"Энэ төхөөрөмжийн хөтөч {lang} хэлний ярианы танилтыг дэмждэггүй. Доор бичих эсвэл өөр хэл сонгоно уу.",srOk:'Дуу болно',srNo:'Зөвхөн бичих',lib:'Миний номын сан',libP:'Хүлээн авах газар, дүрмийн шалгалтын үндэс · жишээний үр дүн энэ сангаар дахин тооцно',close:'Хаах',
      scanT:'Арын хавтасны зураасан кодыг хүрээнд тааруулна уу',scanErr:'Камер нээгдсэнгүй. Жишээ эсвэл гараар оруулна уу.',scanNone:'Үзүүлэнд зөвхөн 5 жишээ ном бий. Доорх жишээг үзнэ үү.',
-     kAuth:'Баталгаажуулалт',pkReg:'Энэ төхөөрөмжийг бүртгэж байна. Хурууны хээ эсвэл царайгаар нэг удаа батална уу',pkNew:'Бүртгэлтэй төхөөрөмж ✓ (дөнгөж бүртгэсэн · дараагийн үнэгүй захиалга шууд)',pkOk:'Бүртгэлтэй төхөөрөмж ✓ (үнэгүй захиалга шууд)',pkSkip:'Бүртгэлийг алгассан (үзүүлэн үргэлжилнэ)',pkNone:'Бүртгэлтэй төхөөрөмж (үзүүлэн · энэ хөтөч биометр дэмжихгүй)',
+     kAuth:'Баталгаажуулалт',pkReg:'Энэ төхөөрөмжийг бүртгэж байна. Хурууны хээ эсвэл царайгаар нэг удаа батална уу',pkNew:'Бүртгэлтэй төхөөрөмж ✓ (дөнгөж бүртгэсэн · дараагийн үнэгүй захиалга шууд)',pkOk:'Бүртгэлтэй төхөөрөмж ✓ (үнэгүй захиалга шууд)',pkSkip:'Бүртгэлийг алгассан (үзүүлэн үргэлжилнэ)',pkNone:'Төхөөрөмж бүртгээгүй (үзүүлэн · энэ хөтөч биометр дэмжихгүй)',
      pkStep:'Итгэмжлэл үүсгэхийн өмнө хурууны хээ/царайгаар дахин батална…',pkCancel:'Биометр цуцлагдсан, итгэмжлэл үүсгээгүй. Аюулгүй тал нь анхдагч.',
      voice:'🎙 «Тийм» эсвэл «үгүй» гэж хариулж болно',local:'🔒 Төхөөрөмж дотор танина',lsrOn:'Энэ төхөөрөмж: төхөөрөмж доторх таних',lsrOff:'Энэ төхөөрөмж: хөтөч нийлүүлэгчийн таних (манай сервер рүү илгээхгүй)',mcpOn:'Энэ хөтөч: холбогдсон (3 хэрэгсэл) · захиалгын хэрэгсэл баталгаагүй бол татгалзана',mcpOff:'Энэ хөтөч: дэмжихгүй · захиалгын хэрэгсэл баталгаагүй бол татгалзана',
      welcome:"Ямар ном хайж байна вэ? Микрофоныг дараад номын нэрийг хэлнэ үү. Нэр яг таарахгүй байсан ч зүгээр.",startT:"Эхлэхийн тулд дарна уу",startP:"Дуут заавар эхэлнэ. 🔊 товчоор хүссэн үедээ унтрааж болно.",startNo:"Дуугүй эхлэх"},
  uz:{pkOff:"Namoyishda o‘tkazib yuborildi (ⓘ da passkey sinovini yoqing)",micNet:"Ovozni tanish uchun internet kerak. Ulanishni tekshirib, qayta urinib ko‘ring.",micPerm1:"«Ruxsat berish»ni bosgan bo'lsangiz, mikrofon tugmasini yana bir marta bosing (birinchi safar ruxsat oynasi tufayli tanib olish boshlanmasligi mumkin).",micPerm2:"Mikrofon bloklangan. iPhone: manzil satridagi ᴬA → Veb-sayt sozlamalari → Mikrofon: ruxsat / Android: qulf belgisi → Ruxsatlar → Mikrofon.",micNoSound:"Ovoz eshitilmadi. Mikrofonni bosib, darhol gapiring.",micFail:"Nutq tanib olinmadi. Quyidagi namunalarni sinab ko'ring.",micStart:"Mikrofonni ishga tushirib bo'lmadi. Yana bir marta bosing.",micLang:"Bu qurilmadagi brauzer {lang} tilida nutqni tanib olishni qo'llab-quvvatlamaydi. Quyida yozing yoki boshqa tilni tanlang.",srOk:'Ovoz bor',srNo:'Faqat matn',lib:'Doimiy kutubxonam',libP:'Olish joyi va qoida tekshiruvi asosi · misollar shu kutubxona bo‘yicha qayta hisoblanadi',close:'Yopish',
      scanT:'Orqa muqovadagi shtrix-kodni ramkaga joylang',scanErr:'Kamera ochilmadi. Misollar yoki qo‘lda kiritishdan foydalaning.',scanNone:'Namoyishda faqat 5 ta misol kitob bor. Quyidagi misolni sinang.',
-     kAuth:'Shaxsni tasdiqlash',pkReg:'Bu qurilma ro‘yxatga olinmoqda. Barmoq izi yoki yuz bilan bir marta tasdiqlang',pkNew:'Ro‘yxatdan o‘tgan qurilma ✓ (hozir · keyingi bepul buyurtmalar to‘g‘ridan-to‘g‘ri)',pkOk:'Ro‘yxatdan o‘tgan qurilma ✓ (bepul buyurtmalar to‘g‘ridan-to‘g‘ri)',pkSkip:'Ro‘yxat o‘tkazib yuborildi (namoyish davom etadi)',pkNone:'Ro‘yxatdan o‘tgan qurilma (namoyish · bu brauzerda biometriya yo‘q)',
+     kAuth:'Shaxsni tasdiqlash',pkReg:'Bu qurilma ro‘yxatga olinmoqda. Barmoq izi yoki yuz bilan bir marta tasdiqlang',pkNew:'Ro‘yxatdan o‘tgan qurilma ✓ (hozir · keyingi bepul buyurtmalar to‘g‘ridan-to‘g‘ri)',pkOk:'Ro‘yxatdan o‘tgan qurilma ✓ (bepul buyurtmalar to‘g‘ridan-to‘g‘ri)',pkSkip:'Ro‘yxat o‘tkazib yuborildi (namoyish davom etadi)',pkNone:'Qurilma ro‘yxatga olinmagan (namoyish · bu brauzerda biometriya yo‘q)',
      pkStep:'Vakolat yaratishdan oldin barmoq izi/yuz bilan yana bir bor tasdiqlang…',pkCancel:'Biometriya bekor qilindi, vakolat yaratilmadi. Xavfsiz tomon: standart.',
      voice:'🎙 «Ha» yoki «yo‘q» deb javob bersangiz ham bo‘ladi',local:'🔒 Qurilma ichida tanildi',lsrOn:'Bu qurilma: qurilma ichida tanish',lsrOff:'Bu qurilma: brauzer ta’minotchisi tanishi (bizning serverga yuborilmaydi)',mcpOn:'Bu brauzer: ulangan (3 vosita) · buyurtma vositasi tasdiqsiz rad etiladi',mcpOff:'Bu brauzer: qo‘llab-quvvatlanmaydi · buyurtma vositasi tasdiqsiz rad etiladi',
      welcome:"Qaysi kitobni qidiryapsiz? Mikrofonni bosib kitob nomini ayting. Nomi aniq bo‘lmasa ham bo‘ladi.",startT:"Boshlash uchun bosing",startP:"Ovozli yo‘riqnoma boshlanadi. 🔊 tugmasi bilan istalgan vaqtda o‘chirish mumkin.",startNo:"Ovozsiz boshlash"},
  id:{pkOff:"Dilewati di demo (aktifkan uji passkey di ⓘ)",micNet:"Pengenalan suara memerlukan koneksi internet. Periksa koneksi lalu coba lagi.",micPerm1:"Jika sudah menekan Izinkan, ketuk tombol mikrofon sekali lagi (percobaan pertama bisa terputus oleh dialog izin).",micPerm2:"Mikrofon diblokir. iPhone: ᴬA di bilah alamat → Pengaturan Situs Web → Mikrofon: Izinkan. Android: ikon gembok → Izin → Mikrofon.",micNoSound:"Tidak terdengar suara. Ketuk mikrofon lalu langsung bicara.",micFail:"Suara tidak dikenali. Coba contoh di bawah.",micStart:"Mikrofon tidak bisa dimulai. Ketuk sekali lagi.",micLang:"Browser di perangkat ini tidak mendukung pengenalan suara {lang}. Ketik di bawah atau pilih bahasa lain.",srOk:'Suara OK',srNo:'Hanya teks',lib:'Perpustakaan langganan',libP:'Tempat pengambilan dan dasar pemeriksaan aturan · hasil contoh dihitung ulang untuk perpustakaan ini',close:'Tutup',
      scanT:'Posisikan barcode sampul belakang di dalam kotak',scanErr:'Kamera tidak bisa dibuka. Gunakan contoh atau ketik.',scanNone:'Demo hanya memuat 5 judul contoh. Coba contoh di bawah.',
-     kAuth:'Verifikasi',pkReg:'Mendaftarkan perangkat ini. Konfirmasi sekali dengan sidik jari atau wajah',pkNew:'Perangkat terdaftar ✓ (baru saja · permintaan gratis berikutnya langsung)',pkOk:'Perangkat terdaftar ✓ (permintaan gratis langsung)',pkSkip:'Pendaftaran perangkat dilewati (demo berlanjut)',pkNone:'Perangkat terdaftar (demo · browser ini tanpa biometrik)',
+     kAuth:'Verifikasi',pkReg:'Mendaftarkan perangkat ini. Konfirmasi sekali dengan sidik jari atau wajah',pkNew:'Perangkat terdaftar ✓ (baru saja · permintaan gratis berikutnya langsung)',pkOk:'Perangkat terdaftar ✓ (permintaan gratis langsung)',pkSkip:'Pendaftaran perangkat dilewati (demo berlanjut)',pkNone:'Perangkat tidak didaftarkan (demo · browser ini tanpa biometrik)',
      pkStep:'Konfirmasi sekali lagi dengan sidik jari/wajah sebelum membuat mandat…',pkCancel:'Biometrik dibatalkan, mandat tidak dibuat. Sisi aman adalah bawaan.',
      voice:'🎙 Anda juga bisa menjawab “ya” atau “tidak”',local:'🔒 Dikenali di perangkat',lsrOn:'Perangkat ini: pengenalan di perangkat',lsrOff:'Perangkat ini: pengenalan vendor browser (tidak dikirim ke server kami)',mcpOn:'Browser ini: terhubung (3 alat terdaftar) · alat permintaan menolak tanpa konfirmasi pengguna',mcpOff:'Browser ini: tidak didukung · alat permintaan menolak tanpa konfirmasi pengguna',
      welcome:"Buku apa yang Anda cari? Tekan mikrofon dan sebutkan judulnya. Judulnya tidak harus persis.",startT:"Ketuk untuk mulai",startP:"Panduan suara akan dimulai. Bisa dimatikan kapan saja dengan tombol 🔊.",startNo:"Mulai tanpa suara"}
@@ -3238,61 +3238,61 @@ try{ window.__cjMark && window.__cjMark('s1end'); }catch(e){}
    화면은 통화 기록(자막)일 뿐이며, 판정·분기는 앱과 같은 view()/eff()를 그대로 쓴다. */
 /* 전화 한 통 모드 안내 시트 — 10개 언어 */
 const PSHEET={
-ko:{t:'📞 전화 한 통 모드',p:'스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마칩니다.',
+ko:{t:'📞 전화 한 통 모드',p:'스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마치도록 설계했습니다.',
  r:[['본인 확인','등록된 번호로 걸었는지 확인','이름은 첫 글자만 부르고, 회원번호는 어디에도 나오지 않습니다'],
     ['하는 일','소장 확인 · 관내 상호대차 신청 · 예약 · 위임 해지','무료이고 취소할 수 있는 일만 전화로 대신합니다'],
     ['안 하는 일','책바다(실비) 신청 · 회원정보 변경 · 결제','위험한 일일수록 문을 세게: 앱(재인증)이나 창구로 안내합니다'],
     ['지금 상태','대화 흐름은 아래에서 그대로 체험할 수 있습니다','실제 전화망 연결은 통신 사업자 연동(AI 콜센터 API 또는 070 회선)이 필요한 운영 단계 과제 · 시연 모델은 전화가 걸리지 않습니다']],
  go:'통화 흐름 체험하기',close:'닫기'},
-en:{t:'📞 One-call mode',p:'An entrance for people who find smartphones or websites hard to use. Call the library’s main number and the same Chaekiji guides you by voice alone, all the way to an interlibrary loan request.',
+en:{t:'📞 One-call mode',p:'An entrance for people who find smartphones or websites hard to use. It is designed so that when you call the library’s main number, the same Chaekiji guides you by voice alone, all the way to an interlibrary loan request.',
  r:[['Identity','Checks that you called from a registered number','Only the first letter of your name is spoken; your member ID never appears'],
     ['What it does','Checks holdings · requests interlibrary loan · reserves · cancels a mandate','Only free, cancellable actions are done by phone'],
     ['Never by phone','Chaekbada (paid) requests · changing member info · payments','The riskier the action, the tighter the door: you are guided to the app (re-authentication) or the desk'],
     ['Current status','You can try the conversation flow below as it is','Connecting to the real phone network needs a carrier integration (AI call-center API or a 070 line), an operations-stage task. This demo does not place calls']],
  go:'Try the call flow',close:'Close'},
-zh:{t:'📞 一通电话模式',p:'为不便使用智能手机或网站的人准备的入口。拨打图书馆代表号码，同一个책이지仅凭语音为您引导，直至完成馆际互借申请。',
+zh:{t:'📞 一通电话模式',p:'为不便使用智能手机或网站的人准备的入口。设计为拨打图书馆代表号码后，同一个책이지仅凭语音为您引导，直至完成馆际互借申请。',
  r:[['身份确认','确认是否从已登记的号码拨打','只念姓名的第一个字，会员编号不会出现在任何地方'],
     ['能做的事','馆藏确认 · 馆际互借申请 · 预约 · 解除委托','只代办免费且可取消的事项'],
     ['不做的事','책바다（实费）申请 · 修改会员信息 · 付款','越危险的操作门锁越紧：引导至应用（重新认证）或柜台'],
     ['当前状态','可在下方直接体验对话流程','接入真实电话网需要与通信运营商对接（AI呼叫中心API或070线路），属于运营阶段课题 · 演示模型不会真正拨号']],
  go:'体验通话流程',close:'关闭'},
-ja:{t:'📞 電話一本モード',p:'スマートフォンやホームページの操作が難しい方のための入口です。図書館の代表番号に電話すると、同じ책이지が声だけで案内し、館内相互貸借の申請まで済ませます。',
+ja:{t:'📞 電話一本モード',p:'スマートフォンやホームページの操作が難しい方のための入口です。図書館の代表番号に電話すると、同じ책이지が声だけで案内し、館内相互貸借の申請まで済ませる設計です。',
  r:[['本人確認','登録された番号からの発信かを確認','名前は頭文字だけを呼び、会員番号はどこにも出ません'],
     ['できること','所蔵確認 · 館内相互貸借の申請 · 予約 · 委任の解除','無料で取り消せることだけを電話で代行します'],
     ['しないこと','책바다（実費）申請 · 会員情報の変更 · 決済','危険なことほど扉を固く：アプリ（再認証）や窓口へ案内します'],
     ['現在の状態','会話の流れは下でそのまま体験できます','実際の電話網への接続は通信事業者との連携（AIコールセンターAPIまたは070回線）が必要な運用段階の課題 · デモでは電話はかかりません']],
  go:'通話の流れを体験',close:'閉じる'},
-vi:{t:'📞 Chế độ một cuộc gọi',p:'Lối vào dành cho người khó dùng điện thoại thông minh hoặc trang web. Gọi đến số đại diện của thư viện, chính Chaekiji sẽ hướng dẫn bằng giọng nói và hoàn tất đăng ký mượn liên thư viện.',
+vi:{t:'📞 Chế độ một cuộc gọi',p:'Lối vào dành cho người khó dùng điện thoại thông minh hoặc trang web. Được thiết kế để khi gọi đến số đại diện của thư viện, chính Chaekiji sẽ hướng dẫn bằng giọng nói và hoàn tất đăng ký mượn liên thư viện.',
  r:[['Xác minh','Kiểm tra bạn gọi từ số đã đăng ký','Chỉ đọc chữ cái đầu của tên; mã hội viên không xuất hiện ở đâu cả'],
     ['Việc làm được','Kiểm tra sách · đăng ký mượn liên thư viện · đặt trước · hủy ủy quyền','Chỉ làm thay những việc miễn phí và có thể hủy'],
     ['Việc không làm','Đăng ký Chaekbada (có phí) · đổi thông tin hội viên · thanh toán','Việc càng rủi ro, cửa càng chặt: hướng dẫn sang ứng dụng (xác thực lại) hoặc quầy'],
     ['Trạng thái','Bạn có thể trải nghiệm luồng hội thoại ngay bên dưới','Kết nối mạng điện thoại thật cần tích hợp với nhà mạng (API tổng đài AI hoặc đường 070), nhiệm vụ giai đoạn vận hành · bản trình diễn không gọi điện thật']],
  go:'Trải nghiệm cuộc gọi',close:'Đóng'},
-th:{t:'📞 โหมดโทรครั้งเดียว',p:'ทางเข้าสำหรับผู้ที่ใช้สมาร์ตโฟนหรือเว็บไซต์ได้ยาก โทรไปยังเบอร์กลางของห้องสมุด แล้ว Chaekiji ตัวเดียวกันจะแนะนำด้วยเสียงเท่านั้น จนถึงการยื่นขอยืมระหว่างห้องสมุด',
+th:{t:'📞 โหมดโทรครั้งเดียว',p:'ทางเข้าสำหรับผู้ที่ใช้สมาร์ตโฟนหรือเว็บไซต์ได้ยาก ออกแบบให้เมื่อโทรไปยังเบอร์กลางของห้องสมุด Chaekiji ตัวเดียวกันจะแนะนำด้วยเสียงเท่านั้น จนถึงการยื่นขอยืมระหว่างห้องสมุด',
  r:[['ยืนยันตัวตน','ตรวจว่าโทรจากเบอร์ที่ลงทะเบียนไว้','เรียกชื่อเพียงอักษรแรก และหมายเลขสมาชิกจะไม่ปรากฏที่ใด'],
     ['สิ่งที่ทำ','ตรวจสอบหนังสือ · ยื่นขอยืมระหว่างห้องสมุด · จอง · ยกเลิกการมอบหมาย','ทำแทนเฉพาะเรื่องที่ฟรีและยกเลิกได้'],
     ['สิ่งที่ไม่ทำ','ยื่น Chaekbada (มีค่าใช้จ่าย) · แก้ไขข้อมูลสมาชิก · ชำระเงิน','ยิ่งเสี่ยง ประตูยิ่งแน่น: แนะนำไปที่แอป (ยืนยันตัวตนใหม่) หรือเคาน์เตอร์'],
     ['สถานะปัจจุบัน','ทดลองลำดับการสนทนาได้ด้านล่าง','การเชื่อมต่อเครือข่ายโทรศัพท์จริงต้องเชื่อมกับผู้ให้บริการ (API คอลเซ็นเตอร์ AI หรือสาย 070) เป็นงานขั้นดำเนินการ · รุ่นสาธิตไม่โทรออกจริง']],
  go:'ทดลองการสนทนา',close:'ปิด'},
-ru:{t:'📞 Режим одного звонка',p:'Вход для тех, кому трудно пользоваться смартфоном или сайтом. Позвоните по основному номеру библиотеки. Тот же Chaekiji проведёт вас голосом и оформит запрос на межбиблиотечный обмен.',
+ru:{t:'📞 Режим одного звонка',p:'Вход для тех, кому трудно пользоваться смартфоном или сайтом. Задумано так: вы звоните по основному номеру библиотеки, и тот же Chaekiji голосом проводит вас до запроса на межбиблиотечный обмен.',
  r:[['Проверка','Проверяет, что звонок с зарегистрированного номера','Называется только первая буква имени; номер читателя нигде не звучит'],
     ['Что делает','Проверка наличия · запрос обмена · бронь · отмена поручения','По телефону выполняются только бесплатные и отменяемые действия'],
     ['Чего не делает','Заявки Chaekbada (платно) · изменение данных · оплата','Чем рискованнее действие, тем крепче дверь: направляем в приложение (повторная проверка) или к стойке'],
     ['Состояние','Ход разговора можно попробовать ниже','Подключение к реальной телефонной сети требует интеграции с оператором (API AI-колл-центра или линия 070), задача этапа эксплуатации · демо не звонит']],
  go:'Попробовать разговор',close:'Закрыть'},
-mn:{t:'📞 Нэг дуудлагын горим',p:'Ухаалаг утас, вэб сайт ашиглахад бэрхшээлтэй хүмүүст зориулсан хаалга. Номын сангийн төв дугаарт залгахад мөн л Chaekiji зөвхөн дуу хоолойгоор чиглүүлж, номын сан хоорондын захиалгыг гүйцээнэ.',
+mn:{t:'📞 Нэг дуудлагын горим',p:'Ухаалаг утас, вэб сайт ашиглахад бэрхшээлтэй хүмүүст зориулсан хаалга. Номын сангийн төв дугаарт залгахад мөн л Chaekiji зөвхөн дуу хоолойгоор чиглүүлж, номын сан хоорондын захиалгыг гүйцээхээр зохион бүтээсэн.',
  r:[['Баталгаажуулалт','Бүртгэлтэй дугаараас залгасан эсэхийг шалгана','Нэрний зөвхөн эхний үсгийг дуудна; гишүүний дугаар хаана ч гарахгүй'],
     ['Хийдэг зүйл','Ном байгаа эсэх · номын сан хоорондын захиалга · урьдчилсан захиалга · итгэмжлэл цуцлах','Зөвхөн үнэгүй, цуцалж болох зүйлийг утсаар гүйцэтгэнэ'],
     ['Хийдэггүй зүйл','Chaekbada (төлбөртэй) захиалга · гишүүний мэдээлэл өөрчлөх · төлбөр','Эрсдэлтэй байх тусам хаалга чанга: апп (дахин баталгаажуулалт) эсвэл лангуу руу чиглүүлнэ'],
     ['Одоогийн байдал','Ярианы урсгалыг доор шууд туршиж болно','Бодит утасны сүлжээнд холбогдоход оператортой холболт (AI дуудлагын төвийн API эсвэл 070 шугам) шаардлагатай, ашиглалтын шатны ажил · үзүүлэнгийн загвар залгадаггүй']],
  go:'Яриаг туршиж үзэх',close:'Хаах'},
-uz:{t:'📞 Bir qo‘ng‘iroq rejimi',p:'Smartfon yoki veb-saytdan foydalanish qiyin bo‘lganlar uchun kirish yo‘li. Kutubxonaning asosiy raqamiga qo‘ng‘iroq qilsangiz, o‘sha Chaekiji faqat ovoz bilan yo‘naltirib, kutubxonalararo buyurtmani yakunlaydi.',
+uz:{t:'📞 Bir qo‘ng‘iroq rejimi',p:'Smartfon yoki veb-saytdan foydalanish qiyin bo‘lganlar uchun kirish yo‘li. Kutubxonaning asosiy raqamiga qo‘ng‘iroq qilsangiz, o‘sha Chaekiji faqat ovoz bilan yo‘naltirib, kutubxonalararo buyurtmani yakunlaydigan qilib loyihalangan.',
  r:[['Tekshiruv','Ro‘yxatdan o‘tgan raqamdan qo‘ng‘iroq qilinganini tekshiradi','Ismning faqat birinchi harfi aytiladi; a’zolik raqami hech qayerda chiqmaydi'],
     ['Nima qiladi','Kitob borligini tekshirish · kutubxonalararo buyurtma · band qilish · vakolatni bekor qilish','Telefon orqali faqat bepul va bekor qilsa bo‘ladigan ishlar bajariladi'],
     ['Nima qilmaydi','Chaekbada (pullik) buyurtma · a’zo ma’lumotini o‘zgartirish · to‘lov','Xavf qancha katta bo‘lsa, eshik shuncha mahkam: ilova (qayta tasdiqlash) yoki peshtaxtaga yo‘naltiriladi'],
     ['Hozirgi holat','Suhbat oqimini quyida sinab ko‘rishingiz mumkin','Haqiqiy telefon tarmog‘iga ulanish uchun operator bilan integratsiya (AI call-markaz API yoki 070 liniyasi) kerak, foydalanish bosqichi vazifasi · namoyish qo‘ng‘iroq qilmaydi']],
  go:'Suhbatni sinab ko‘rish',close:'Yopish'},
-id:{t:'📞 Mode satu panggilan',p:'Pintu masuk bagi yang kesulitan memakai ponsel pintar atau situs web. Hubungi nomor utama perpustakaan, dan Chaekiji yang sama memandu hanya dengan suara sampai permohonan pinjam antarperpustakaan selesai.',
+id:{t:'📞 Mode satu panggilan',p:'Pintu masuk bagi yang kesulitan memakai ponsel pintar atau situs web. Dirancang agar saat Anda menghubungi nomor utama perpustakaan, Chaekiji yang sama memandu hanya dengan suara sampai permohonan pinjam antarperpustakaan selesai.',
  r:[['Verifikasi','Memastikan Anda menelepon dari nomor terdaftar','Hanya huruf pertama nama yang disebut; nomor anggota tidak muncul di mana pun'],
     ['Yang dilakukan','Cek koleksi · permohonan pinjam antarperpustakaan · reservasi · batalkan mandat','Hanya hal yang gratis dan dapat dibatalkan yang dikerjakan lewat telepon'],
     ['Tidak dilakukan','Permohonan Chaekbada (berbayar) · ubah data anggota · pembayaran','Makin berisiko, makin ketat pintunya: diarahkan ke aplikasi (autentikasi ulang) atau loket'],
@@ -3550,7 +3550,7 @@ function phHandle(kind, text, forced, chip){   /* v1.12.13: chip = 예시 단추
   if(yn===null){ phBubble('a', p.askAgain); phState('talk'); phSpeak(p.askAgain, ()=>phListen('yn')); return; }
   const t=PH.tier;
   let msg= yn ? (t===0?p.y0 : t===1?p.y1(내관) : t===3?p.y3(내관) : p.y2) : p.no;
-  if(yn && t!==2){ const dm = (t===0 ? u.shP2 : u.shP), lc = phCode();   /* v1.12.11: 「보내 드렸습니다·접수됐습니다」로 끝나지 않게 — 화면 흐름의 완료 음성처럼 끝에 시연 문장(확인 시트와 같은 글 · 책바다 y2는 절차 안내라 그대로) */
+  if(yn && t!==2){ const dm = (t===0 ? u.smsDemo : u.shP), lc = phCode();   /* v1.12.11: 「보내 드렸습니다·접수됐습니다」로 끝나지 않게 — 화면 흐름의 완료 음성처럼 끝에 시연 문장(확인 시트와 같은 글 · 책바다 y2는 절차 안내라 그대로) */
     msg += ' ' + dm + (/[.。!?！？]$/.test(dm) ? '' : (lc==='zh' || lc==='ja') ? '。' : lc==='th' ? '' : '.'); }   /* 확인 시트 글에는 마침표가 없어 말풍선에서는 그 언어의 마침표를 붙임(타이어는 붙이지 않음) */
   phBubble('a', msg); phState('talk');
   phSpeak(msg, ()=>{

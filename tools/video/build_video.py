@@ -46,7 +46,7 @@ print(f"장면 {len(items)}장 · 길이 {int(total // 60)}분 {total % 60:.1f}�
 if total > 300:
     print("※ 5분을 넘습니다 — 챌린지 규격(약 5분 이내)에 맞게 장면을 줄이세요")
 if not A.no_video:
-    title = "책이지 — 상호대차 상담 비서 시연영상" + ("(초안)" if draft else "")
+    title = "책이지: 상호대차 AI 에이전트 시연영상" + ("(초안)" if draft else "")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst,
                     "-vf", "fps=30,scale=1920:1080:flags=lanczos,format=yuv420p",
                     "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-profile:v", "high",

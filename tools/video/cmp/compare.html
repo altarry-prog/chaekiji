@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>비교 장면 2판</title>
+<style>
+@font-face{font-family:'Pretendard';font-weight:400;src:url('../fonts/Pretendard-Regular.otf')}
+@font-face{font-family:'Pretendard';font-weight:500;src:url('../fonts/Pretendard-Medium.otf')}
+@font-face{font-family:'Pretendard';font-weight:600;src:url('../fonts/Pretendard-SemiBold.otf')}
+@font-face{font-family:'Pretendard';font-weight:700;src:url('../fonts/Pretendard-Bold.otf')}
+:root{--mint:#7ff0c8;--mint2:#9fd8c6;--sun:#ffd36b;--ink:#0f3d33;--mute:#c9d6d1}
+html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;font-family:'Pretendard','Noto Sans CJK KR',sans-serif;color:#fff;word-break:keep-all}
+#stage{position:relative;width:1280px;height:720px;background:radial-gradient(1200px 700px at 70% 45%,#1d5e4e 0%,#0f3d33 58%,#0a2b24 100%)}
+#crumb{position:absolute;left:44px;top:24px;font-size:17px;color:var(--mint2);font-weight:600}
+#crumb b{color:#fff;font-weight:700}
+#spdb{position:absolute;right:40px;top:22px;font-size:15px;color:#ffe2a0;border:1px solid rgba(255,217,138,.55);border-radius:20px;padding:4px 12px}
+/* 머리 글: 책이지를 앞에 */
+#hd{position:absolute;left:60px;top:56px;right:60px}
+#hd .k{font-size:20px;color:var(--mint2);font-weight:600;margin-bottom:4px}
+#hd .t{font-size:46px;font-weight:800;letter-spacing:-.6px;line-height:1.15}
+#hd .t em{font-style:normal;color:var(--mint)}
+#hd .s{font-size:22px;color:var(--mute);margin-top:6px;font-weight:500}
+#hd .s b{color:#fff;font-weight:600}
+.panel{position:absolute;top:186px;height:436px;border-radius:20px;box-sizing:border-box}
+/* A 누리집: 한 걸음 물러난 쪽 */
+#pa{left:60px;width:520px;padding:16px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14)}
+#pa .ph{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+#pa .ph .n{font-size:21px;font-weight:700;color:#dfe9e5}
+#pa .ph .d{font-size:14.5px;color:#c4d4ce}
+.tag{margin-left:auto;font-size:12.5px;color:#ffe2a0;border:1px solid rgba(255,217,138,.45);border-radius:12px;padding:2px 9px;white-space:nowrap}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.scr{position:relative;border-radius:8px;background:#fff;overflow:hidden;opacity:.2;transition:opacity .3s,box-shadow .3s;filter:grayscale(.45) brightness(.9)}
+.scr.on{opacity:.85}
+.scr.cur{opacity:1;filter:none;box-shadow:0 0 0 2px #fff,0 8px 20px rgba(0,0,0,.4)}
+.scr img{display:block;width:100%;aspect-ratio:640/531;object-fit:cover}
+.scr .lbl{font-size:11.5px;font-weight:700;text-align:center;background:#fff;padding:3px 1px 4px;color:#33423d;border-top:1px solid #dfe5e2;white-space:nowrap;letter-spacing:-.4px}
+.scr .pl{position:absolute;width:18px;height:18px;border-radius:50%;border:2.5px solid #ffb020;background:rgba(255,176,32,.35);transform:translate(-50%,-50%) scale(.3);opacity:0;pointer-events:none}
+.scr .pl.go{animation:tap .55s ease-out both}
+@keyframes tap{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}25%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}}
+#ast{margin-top:12px;font-size:16px;color:#c3d3cd;height:22px;display:flex;align-items:center;gap:8px}
+#ast .dot{width:8px;height:8px;border-radius:50%;background:#ffb020;animation:bl 1s steps(1) infinite}
+#ast.done .dot{display:none}
+@keyframes bl{50%{opacity:.15}}
+#pa .meter{position:absolute;left:18px;right:18px;bottom:16px;display:flex;gap:10px}
+#pa .m{flex:1;background:rgba(0,0,0,.28);border-radius:12px;padding:8px 14px;display:flex;align-items:baseline;gap:8px}
+#pa .m .v{font-size:32px;font-weight:700;font-variant-numeric:tabular-nums;color:#e6dcc8}
+#pa .m .u{font-size:15px;color:#c4d4ce}
+/* B 책이지: 주인공 */
+#pb{left:600px;width:620px;padding:16px 22px;background:linear-gradient(155deg,rgba(127,240,200,.24),rgba(127,240,200,.06) 55%,rgba(255,255,255,.05));border:2px solid var(--mint);box-shadow:0 0 0 1px rgba(127,240,200,.25),0 24px 70px rgba(127,240,200,.16);transition:box-shadow .5s}
+#pb.win{box-shadow:0 0 0 4px rgba(127,240,200,.35),0 0 60px rgba(127,240,200,.45)}
+#pb .ph{display:flex;align-items:baseline;gap:10px}
+#pb .ph .n{font-size:30px;font-weight:800;letter-spacing:-.3px}
+#pb .ph .d{font-size:16px;color:#d3ebe2}
+#phone{position:absolute;left:22px;top:62px;width:186px;height:362px;border-radius:24px;background:#0b0b0b;padding:6px;box-sizing:border-box;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#phone img{width:174px;height:350px;border-radius:18px;display:block;object-fit:cover;object-position:top;background:#fff}
+#ptap{position:absolute;width:30px;height:30px;border-radius:50%;border:3px solid #fff;background:rgba(127,240,200,.5);transform:translate(-50%,-50%) scale(.3);opacity:0;pointer-events:none}
+#ptap.go{animation:tap .6s ease-out both}
+#bsteps{position:absolute;left:232px;top:70px;width:366px}
+#bsteps div{font-size:21px;line-height:1.3;margin-bottom:12px;padding:8px 12px 8px 46px;position:relative;border-radius:12px;color:#cfe6dd;transition:background .3s,color .3s}
+#bsteps div::before{content:attr(data-n);position:absolute;left:10px;top:7px;width:26px;height:26px;border-radius:50%;background:rgba(127,240,200,.25);color:#e9fff7;font-size:15px;font-weight:700;text-align:center;line-height:26px}
+#bsteps div.on{background:rgba(127,240,200,.16);color:#fff}
+#bsteps div.on::before{background:var(--mint);color:var(--ink);content:'✓'}
+#stamp{position:absolute;left:236px;top:246px;font-size:27px;font-weight:800;color:var(--ink);background:var(--sun);border-radius:30px;padding:8px 20px;opacity:0;transform:scale(.6) rotate(-4deg);transition:opacity .25s,transform .35s cubic-bezier(.2,1.6,.4,1)}
+#stamp.on{opacity:1;transform:scale(1) rotate(-2deg)}
+#pb .meter{position:absolute;left:232px;right:22px;bottom:16px;display:flex;gap:12px}
+#pb .m{flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(127,240,200,.35);border-radius:14px;padding:6px 16px 4px;display:flex;flex-direction:column;align-items:flex-start}
+#pb .m .v{font-size:50px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--mint);letter-spacing:-1px;line-height:1.1}
+#pb .m .u{font-size:14px;color:#d3ebe2;font-weight:600}
+#bar{position:absolute;left:60px;right:60px;bottom:14px;min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(0,0,0,.5);border-radius:12px;padding:6px 20px;font-size:19px;line-height:1.35;font-weight:600;box-sizing:border-box}
+#bar small{display:block;font-size:14.5px;font-weight:500;color:#cfe3db;margin-top:2px}
+</style></head><body>
+<div id="stage">
+  <div id="crumb"><b>책이지</b> · 왜 만들었나</div>
+  <div id="spdb">실제 걸린 시간을 <span id="spd">6</span>배 빨리 보여 줌</div>
+  <div id="hd"><div class="k">같은 책을 신청해 보면</div><div class="t">책이지는 <em>3번 눌러 20초</em></div><div class="s">누리집은 <b>18번 눌러 1분 20초</b></div></div>
+  <div class="panel" id="pa">
+    <div class="ph"><span class="n">누리집(지금)</span><span class="d">로그인부터 신청 버튼까지</span><span class="tag">실제 화면 · 개인정보 가림</span></div>
+    <div id="grid">
+      <div class="scr" data-c="2" data-x=".145" data-y=".933"><img src="real/a01.png" alt=""><div class="pl"></div><div class="lbl">① 로그인</div></div>
+      <div class="scr" data-c="3" data-x=".769" data-y=".489"><img src="real/a02.png" alt=""><div class="pl"></div><div class="lbl">② 아이디·비밀번호</div></div>
+      <div class="scr" data-c="2" data-x=".063" data-y=".171"><img src="real/a03.png" alt=""><div class="pl"></div><div class="lbl">③ 자료검색 메뉴</div></div>
+      <div class="scr" data-c="2" data-x=".708" data-y=".087"><img src="real/a04.png" alt=""><div class="pl"></div><div class="lbl">④ 책 제목 검색</div></div>
+      <div class="scr" data-c="3" data-x=".754" data-y=".962"><img src="real/a05.png" alt=""><div class="pl"></div><div class="lbl">⑤ 결과에서 고르기</div></div>
+      <div class="scr" data-c="2" data-x=".674" data-y=".320"><img src="real/a06.png" alt=""><div class="pl"></div><div class="lbl">⑥ 소장·대출 확인</div></div>
+      <div class="scr" data-c="2" data-x=".459" data-y=".055"><img src="real/a07.png" alt=""><div class="pl"></div><div class="lbl">⑦ 받을 도서관</div></div>
+      <div class="scr" data-c="2" data-x=".387" data-y=".827"><img src="real/a08.png" alt=""><div class="pl"></div><div class="lbl">⑧ 신청 버튼</div></div>
+    </div>
+    <div id="ast"><span class="dot"></span><span id="astt">시작</span></div>
+    <div class="meter"><div class="m"><span class="v" id="ca">0</span><span class="u">번 누름</span></div><div class="m"><span class="v" id="ta">0초</span><span class="u">걸린 시간</span></div></div>
+  </div>
+  <div class="panel" id="pb">
+    <div class="ph"><span class="n">책이지</span><span class="d">시연 화면</span><span class="tag">실제 화면</span></div>
+    <div id="phone"><img id="pimg" src="app_home.png" alt=""></div>
+    <div id="ptap"></div>
+    <div id="bsteps"><div data-n="1">책 제목을 말하거나 입력</div><div data-n="2">「상호대차 신청」</div><div data-n="3">「네, 신청합니다」</div></div>
+    <div id="stamp">✓ 20초 만에 끝</div>
+    <div class="meter"><div class="m"><span class="u">누른 수</span><span class="v" id="cb">0번</span></div><div class="m"><span class="u">걸린 시간</span><span class="v" id="tb">0초</span></div></div>
+  </div>
+  <div id="bar"><span id="bar1">개발에 참여하지 않은 직원 3명이 시연 도서 5권으로 잰 가운데값(2026. 10. 27.~28.)</span><small id="bar2">책마다 3명 평균 · 왼쪽은 실제 누리집 화면(개인정보 가림), 누른 수와 시간은 측정 기록 · 시연 화면의 신청은 실제 접수가 아닙니다 · 기록은 저장소 server/lab/out</small></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const scrs=[...document.querySelectorAll('#grid .scr')];
+const clicks=scrs.map(s=>+s.dataset.c);            // 2+3+2+2+3+2+2+2 = 18(장면별 나눔은 그림용, 합계만 측정값)
+const A_TOTAL=80, B_TOTAL=20, A_N=18, B_AT=[5,12,20];
+const names=scrs.map(s=>s.querySelector('.lbl').textContent);
+function fmt(s){s=Math.round(s);const m=Math.floor(s/60),x=s%60;return (m?m+'분 ':'')+x+'초';}
+let lastA=-1,lastB=-1;
+function setT(t){
+  // A
+  const ca=Math.min(A_N,Math.floor(t/A_TOTAL*A_N+1e-9)); let acc=0, idx=-1;
+  for(let i=0;i<scrs.length;i++){ const st=acc; acc+=clicks[i]; const on = ca>st || (i===0 && t>0); scrs[i].classList.toggle('on', on); if(on) idx=i; }
+  const aDone=t>=A_TOTAL;
+  scrs.forEach((s,i)=>s.classList.toggle('cur', !aDone && i===idx));
+  $('ca').textContent=ca; $('ta').textContent=fmt(Math.min(A_TOTAL,t));
+  $('ast').classList.toggle('done', aDone);
+  $('astt').textContent = aDone ? '끝: 18번 눌러 1분 20초' : (t>=B_TOTAL ? '아직 누르는 중 · ' : '누르는 중 · ') + (idx>=0?names[idx]:'');
+  if(idx>=0 && ca!==lastA){ lastA=ca; const s=scrs[idx], pl=s.querySelector('.pl'), im=s.querySelector('img');
+    pl.style.left=(+s.dataset.x*100)+'%'; pl.style.top=(+s.dataset.y*im.offsetHeight)+'px';
+    if(ca>0){ pl.classList.remove('go'); void pl.offsetWidth; pl.classList.add('go'); } }
+  // B
+  const cb=B_AT.filter(x=>t>=x).length;
+  $('cb').textContent=cb+'번'; $('tb').textContent=fmt(Math.min(B_TOTAL,t));
+  $('pimg').src = cb>=3?'app_done.png':cb===2?'app_confirm.png':cb===1?'app_result.png':(t>=2?'app_typed.png':'app_home.png');
+  [...document.querySelectorAll('#bsteps div')].forEach((d,i)=>d.classList.toggle('on',i<cb));
+  $('stamp').classList.toggle('on', t>=B_TOTAL); $('pb').classList.toggle('win', t>=B_TOTAL);
+  if(cb!==lastB){ lastB=cb; if(cb>0){ const p=$('ptap'); p.style.left=(22+93)+'px'; p.style.top=(62+(cb===1?110:330))+'px'; p.classList.remove('go'); void p.offsetWidth; p.classList.add('go'); } }
+}
+try{ const q=new URLSearchParams(location.search); if(q.get('spd')) $('spd').textContent=q.get('spd'); }catch(e){}
+window.setT=setT; setT(0);
+</script>
+</body></html>

@@ -81,6 +81,110 @@ html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;
 #side .h{font-size:44px;line-height:1.25;font-weight:700;letter-spacing:-.4px;white-space:pre-line}
 #side .s{font-size:25px;line-height:1.5;color:#dbeee7;margin-top:20px;white-space:pre-line;text-wrap:pretty}
 #side .n{font-size:19px;color:#ffd98a;margin-top:26px;line-height:1.5;text-wrap:pretty}
+
+/* ── 인포 스타일(10. 28. 담당자 승인): 큰 숫자·칸·읽는 법 ── */
+:root{--mint:#7ff0c8;--mint2:#9fd8c6;--sun:#ffd36b;--ink:#0f3d33;--mute:#c9d6d1;--sky:#9cc9ff}
+.ih{position:absolute;left:60px;right:60px;top:62px}
+.ih .k{font-size:21px;color:var(--mint2);font-weight:600;margin-bottom:6px}
+.ih .t{font-size:46px;font-weight:700;letter-spacing:-.6px;line-height:1.18;text-wrap:balance}
+.ih .t em{font-style:normal;color:var(--mint)}
+.ih .s{font-size:21px;color:#d0e0da;margin-top:8px;line-height:1.45}
+.rv{opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s}
+.rv.on{opacity:1;transform:none}
+/* 제목 */
+#hero{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 110px}
+#hero .k{font-size:22px;color:var(--mint2);font-weight:600;margin-bottom:18px}
+#hero .t{font-size:62px;font-weight:700;letter-spacing:-.8px;line-height:1.15}
+#hero .t em{font-style:normal;color:var(--mint)}
+#hero .s{font-size:28px;color:#e2f1ec;margin-top:16px;line-height:1.45}
+#hero .chips{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
+#hero .chip{font-size:19px;font-weight:600;padding:9px 18px;border-radius:24px;background:rgba(127,240,200,.14);border:1.5px solid rgba(127,240,200,.55);color:#e9fff7}
+#hero .chip b{color:var(--sun);font-weight:700}
+/* 큰 숫자 칸 + 신청 전 세 가지 */
+#stats .tiles{position:absolute;left:60px;right:60px;top:212px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.tile{background:rgba(3,22,18,.32);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px 24px;box-shadow:0 10px 30px rgba(0,30,24,.35)}
+.tile .v{font-size:64px;font-weight:700;color:var(--mint);letter-spacing:-1.5px;line-height:1.05;font-variant-numeric:tabular-nums}
+.tile .v small{font-size:27px;font-weight:700;margin-left:4px;letter-spacing:0;color:#d9fff1}
+.tile .l{font-size:20px;color:#e6f2ee;margin-top:8px;font-weight:600;line-height:1.35}
+.tile .n{font-size:15px;color:#cfe0d9;margin-top:5px;line-height:1.4}
+.tile.hot{border:2px solid var(--mint);background:linear-gradient(155deg,rgba(127,240,200,.18),rgba(3,22,18,.30));box-shadow:0 0 40px rgba(127,240,200,.18)}
+#stats .need{position:absolute;left:60px;right:60px;top:440px}
+#stats .need .q{font-size:23px;font-weight:700;margin-bottom:12px;color:#ffe9b0}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.step{display:flex;gap:14px;align-items:center;background:rgba(3,22,18,.36);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 18px}
+.step .no{flex:0 0 42px;height:42px;border-radius:50%;background:var(--sun);color:var(--ink);font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step .tt{font-size:21px;font-weight:700;line-height:1.3}
+.step .dd{font-size:16px;color:#cfe0d9;margin-top:3px;line-height:1.35}
+/* 흐름(누가 무엇을) */
+#flow2 .boxes{position:absolute;left:60px;right:60px;top:206px;display:flex;gap:14px;align-items:stretch}
+#flow2 .bx{flex:1;border-radius:16px;background:rgba(3,22,18,.32);border:1px solid rgba(255,255,255,.12);padding:0 0 16px;overflow:hidden;box-shadow:0 10px 30px rgba(0,30,24,.35)}
+#flow2 .bx .tg{font-size:15px;font-weight:700;padding:8px 16px;color:var(--ink)}
+#flow2 .bx .h{font-size:24px;font-weight:700;margin:12px 16px 8px;line-height:1.25}
+#flow2 .bx .d{font-size:18.5px;line-height:1.45;color:#e2efe9;margin:0 16px}
+#flow2 .bx.u .tg{background:var(--sun)} #flow2 .bx.a .tg{background:var(--sky)} #flow2 .bx.r .tg{background:var(--mint)} #flow2 .bx.o .tg{background:#fff}
+#flow2 .bx.r{border:2px solid var(--mint);background:linear-gradient(160deg,rgba(127,240,200,.18),rgba(3,22,18,.30))}
+#flow2 .ar{align-self:center;width:22px;height:22px;flex:0 0 22px;border-top:4px solid var(--mint2);border-right:4px solid var(--mint2);transform:rotate(45deg);opacity:0;transition:opacity .5s;margin:0 2px}
+#flow2 .ar.on{opacity:1}
+#flow2 .say{position:absolute;left:60px;right:60px;top:470px;border-radius:16px;background:rgba(3,22,18,.42);border-left:6px solid var(--sun);padding:14px 22px}
+#flow2 .say .a{font-size:25px;font-weight:700}
+#flow2 .say .b{font-size:16.5px;color:#d3e3dd;margin-top:4px;line-height:1.4}
+/* 세 단계 */
+#steps3 .row{position:absolute;left:60px;right:60px;top:230px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.st3{background:rgba(3,22,18,.32);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px 22px;min-height:190px;box-shadow:0 10px 30px rgba(0,30,24,.35)}
+.st3 .no{width:46px;height:46px;border-radius:50%;background:var(--mint);color:var(--ink);font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.st3 .h{font-size:24px;font-weight:700;line-height:1.3}
+.st3 .d{font-size:18px;color:#dbe9e3;margin-top:8px;line-height:1.45}
+.st3 .pill{display:inline-block;margin-top:12px;font-family:'D2Coding',monospace;font-size:15px;background:#0b1512;border:1.5px solid var(--mint);color:#e9fff7;border-radius:10px;padding:6px 10px;white-space:nowrap}
+/* 명령 창 좁게 + 읽는 법 칸 */
+#term.narrow{left:44px;top:66px;width:760px;height:540px}
+#term.narrow #tbody{font-size:15.2px;line-height:1.5;padding:10px 18px}
+#term.narrow .tb{height:36px} #term.narrow .tb .tt{font-size:14px} #term.narrow .tb .tag{font-size:12.5px}
+#term.narrow #tbody{top:37px}
+#read{position:absolute;left:822px;top:66px;width:414px;height:540px;border-radius:18px;box-sizing:border-box;padding:16px 18px;background:linear-gradient(160deg,rgba(127,240,200,.18),rgba(255,255,255,.04));border:2px solid rgba(127,240,200,.7)}
+#read .h{font-size:15px;color:var(--mint2);font-weight:700;letter-spacing:.3px;margin-bottom:10px}
+.rrow{border-radius:14px;padding:11px 14px 12px;margin-bottom:10px;background:rgba(0,0,0,.22);opacity:.42;transition:opacity .35s,background .35s}
+.rrow.on{opacity:1;background:rgba(0,0,0,.34);box-shadow:inset 4px 0 0 var(--sun)}
+.rrow .lb{font-size:13.5px;font-weight:700;color:#ffe2a0;margin-bottom:4px}
+.rrow .vv{font-size:19px;font-weight:600;line-height:1.35}
+.rrow .ss{font-size:14.5px;color:#cfe0d9;margin-top:3px;line-height:1.4}
+.pill{display:inline-block;background:var(--mint);color:var(--ink);font-size:26px;font-weight:700;border-radius:24px;padding:3px 16px}
+.pill.warn{background:var(--sun)}
+.bigv{font-size:88px;font-weight:700;color:var(--mint);letter-spacing:-2px;line-height:1}
+.bigv small{font-size:34px;color:#d9fff1;margin-left:4px;letter-spacing:0}
+/* 숫자 칸(공개 모델) */
+#nums .tiles{position:absolute;left:60px;right:60px;top:220px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+#nums .note{position:absolute;left:60px;right:60px;top:470px;font-size:19px;color:#e2efe9;line-height:1.5;background:rgba(3,22,18,.40);border-left:6px solid var(--sun);border-radius:16px;padding:12px 20px}
+#nums .note b{color:var(--sun)}
+/* 두 칸(지금 / 다음) */
+#two .cols{position:absolute;left:60px;right:60px;top:196px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.col{border-radius:16px;padding:16px 22px 10px;background:rgba(3,22,18,.32);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,30,24,.35)}
+.col.now{border:2px solid var(--mint);background:linear-gradient(160deg,rgba(127,240,200,.16),rgba(3,22,18,.30))}
+.col .ch{font-size:23px;font-weight:700;margin-bottom:10px}
+.col .ch span{font-size:15px;font-weight:600;color:var(--mint2);margin-left:8px}
+.col .it{display:flex;gap:12px;align-items:flex-start;font-size:19.5px;line-height:1.42;margin-bottom:12px;color:#eef6f3}
+.col .it i{flex:0 0 26px;height:26px;border-radius:50%;font-style:normal;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.col.now .it i{background:var(--mint);color:var(--ink)}
+.col.next .it i{background:transparent;border:2px solid var(--sun);color:var(--sun)}
+#two .foot{position:absolute;left:60px;right:60px;top:520px;font-size:17px;color:#cfe3db;text-align:center}
+/* 끝 */
+#endc .tt{position:absolute;left:110px;top:150px;width:700px}
+#endc .tt .k{font-size:22px;color:var(--mint2);font-weight:600}
+#endc .tt .t{font-size:56px;font-weight:700;letter-spacing:-.6px;margin-top:10px;line-height:1.18}
+#endc .tt .ln{margin-top:28px}
+#endc .tt .ln div{font-size:21px;line-height:1.75;color:#e2f0eb}
+#endc .tt .ln b{display:inline-block;width:124px;color:var(--mint2);font-weight:600}
+#endc .tt .team{margin-top:22px;font-size:20px;color:#fff;font-weight:600}
+#endc .tt .sm{margin-top:6px;font-size:16px;color:#c4d6cf}
+#endc .qr{position:absolute;right:120px;top:190px;width:250px;text-align:center}
+#endc .qr img{width:230px;height:230px;background:#fff;border-radius:16px;padding:10px;box-sizing:content-box}
+#endc .qr div{font-size:17px;color:#d9ece5;margin-top:12px}
+/* 비교 장면(별도 파일을 화면 가득) */
+#cmpf{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;background:#0f3d33}
+/* 시민 화면 단계 표시 */
+#dsteps{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+#dsteps span{font-size:16px;font-weight:600;padding:6px 13px;border-radius:18px;background:rgba(3,22,18,.32);color:#cfe0d9;border:1px solid rgba(255,255,255,.14)}
+#dsteps span.on{background:var(--mint);color:var(--ink);border-color:var(--mint)}
+#dsteps span.done{color:#e9fff7;border-color:rgba(127,240,200,.5)}
 </style></head><body>
 <div id="stage">
   <div id="crumb" class="fade"></div>
@@ -91,8 +195,17 @@ html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;
   <div id="term" class="fade hide"><div class="tb"><i style="background:#ff6b5e"></i><i style="background:#ffbd2e"></i><i style="background:#28c840"></i><span class="tt" id="tt"></span><span class="tag" id="ttag">실제 실행 결과(기록 재생)</span></div><div id="tbody"></div></div>
   <div id="clip" class="fade hide"><div class="tb"><i style="background:#ff6b5e"></i><i style="background:#ffbd2e"></i><i style="background:#28c840"></i><span class="tt" id="clt"></span><span class="tag" id="cltag">실제 화면 녹화</span></div><video id="cv" muted playsinline preload="auto"></video></div>
   <div id="slot" class="fade hide"><div class="k" id="sk">자리 표시(초안)</div><div class="t" id="st"></div><div class="s" id="ss"></div></div>
-  <div id="side" class="fade hide"><div class="k" id="dk"></div><div class="h" id="dh"></div><div class="s" id="ds"></div><div class="n" id="dn"></div></div>
+  <div id="side" class="fade hide"><div id="dsteps"></div><div class="k" id="dk"></div><div class="h" id="dh"></div><div class="s" id="ds"></div><div class="n" id="dn"></div></div>
   <div id="phone" class="fade hide"><div class="screen"><img id="appimg" alt=""><div class="cover" id="cover"></div></div></div>
+  <div id="hero" class="fade hide"><div class="k" id="hk"></div><div class="t" id="ht"></div><div class="s" id="hs"></div><div class="chips" id="hc"></div></div>
+  <div id="stats" class="fade hide"><div class="ih"><div class="k" id="sk2"></div><div class="t" id="st2"></div><div class="s" id="ss2"></div></div><div class="tiles" id="stiles"></div><div class="need"><div class="q rv" id="sq"></div><div class="steps" id="ssteps"></div></div></div>
+  <div id="flow2" class="fade hide"><div class="ih"><div class="k" id="f2k"></div><div class="t" id="f2t"></div></div><div class="boxes" id="f2b"></div><div class="say rv" id="f2s"><div class="a" id="f2sa"></div><div class="b" id="f2sb"></div></div></div>
+  <div id="steps3" class="fade hide"><div class="ih"><div class="k" id="s3k"></div><div class="t" id="s3t"></div></div><div class="row" id="s3r"></div></div>
+  <div id="read" class="fade hide"><div class="h" id="rh">도구가 돌려준 것 · 읽는 법</div><div id="rrows"></div></div>
+  <div id="nums" class="fade hide"><div class="ih"><div class="k" id="nk"></div><div class="t" id="nt"></div></div><div class="tiles" id="ntiles"></div><div class="note rv" id="nnote"></div></div>
+  <div id="two" class="fade hide"><div class="ih"><div class="k" id="wk"></div><div class="t" id="wt"></div></div><div class="cols" id="wcols"></div><div class="foot rv" id="wfoot"></div></div>
+  <div id="endc" class="fade hide"><div class="tt"><div class="k" id="ek"></div><div class="t" id="et"></div><div class="ln" id="eln"></div><div class="team" id="eteam"></div><div class="sm" id="esm"></div></div><div class="qr" id="eqr"></div></div>
+  <iframe id="cmpf" class="fade hide" title="비교 장면"></iframe>
   <div id="tap"></div>
   <div id="bar" class="fade hide"></div>
 </div>
@@ -107,7 +220,7 @@ const vis=(id,on)=>$(id).classList.toggle('hide',!on);
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 window.crumb=html=>{$('crumb').innerHTML=html||'';};
 window.draft=(on,text)=>{if(text)$('draft').textContent=text;vis('draft',on);};
-window.only=(...ids)=>{for(const id of ['card','fh','flow','term','clip','slot','side','phone','bar']){ $(id).style.opacity=''; vis(id, ids.includes(id)); }};
+window.only=(...ids)=>{for(const id of ['card','fh','flow','term','clip','slot','side','phone','bar','hero','stats','flow2','steps3','read','nums','two','endc','cmpf']){ $(id).style.opacity=''; vis(id, ids.includes(id)); }};
 window.card=(k,t,s,lines)=>{$('ck').textContent=k||'';$('ct').textContent=t||'';$('cs').textContent=s||'';
   $('cl').innerHTML=(lines||[]).map(x=>`<li>${x}</li>`).join('');};
 window.cardLine=i=>{const li=$('cl').children[i]; if(li) li.classList.add('on');};
@@ -141,5 +254,48 @@ window.clipLoad=(src,title,tag)=>new Promise((r,j)=>{const v=$('cv');$('clt').te
   v.onloadeddata=()=>r(v.duration);v.onerror=()=>j('clip load error');v.src=src;v.load();});
 window.clipPlay=()=>new Promise(r=>{const v=$('cv');v.onended=()=>r(v.currentTime);v.currentTime=0;v.play();});
 window.tap=(x,y)=>{const t=$('tap');t.style.left=x+'px';t.style.top=y+'px';t.classList.remove('go');void t.offsetWidth;t.classList.add('go');};
+
+/* ── 인포 스타일 함수(10. 28.) ── */
+const on=(el,i)=>{const c=el.children[i]; if(c) c.classList.add('on');};
+window.hero=(k,t,s,chips)=>{$('hk').textContent=k||'';$('ht').innerHTML=t||'';$('hs').textContent=s||'';$('hc').innerHTML=(chips||[]).map(x=>`<span class="chip rv">${x}</span>`).join('');};
+window.heroChip=i=>on($('hc'),i);
+window.stats=(k,t,s,tiles,q,steps)=>{$('sk2').textContent=k||'';$('st2').innerHTML=t||'';$('ss2').textContent=s||'';
+  $('stiles').innerHTML=tiles.map(x=>`<div class="tile rv${x.hot?' hot':''}"><div class="v">${x.v}<small>${x.u||''}</small></div><div class="l">${x.l}</div><div class="n">${x.n||''}</div></div>`).join('');
+  $('sq').textContent=q||''; $('sq').classList.remove('on');
+  $('ssteps').innerHTML=(steps||[]).map((x,i)=>`<div class="step rv"><div class="no">${i+1}</div><div><div class="tt">${x.tt}</div><div class="dd">${x.dd||''}</div></div></div>`).join('');};
+window.statsTile=i=>on($('stiles'),i);
+window.statsNeed=()=>{$('sq').classList.add('on');};
+window.statsStep=i=>on($('ssteps'),i);
+window.flow2=(k,t,boxes,a,b)=>{$('f2k').textContent=k||'';$('f2t').innerHTML=t||'';
+  $('f2b').innerHTML=boxes.map((x,i)=>(i?'<div class="ar"></div>':'')+`<div class="bx rv ${x.c||''}"><div class="tg">${x.tg}</div><div class="h">${x.h}</div><div class="d">${x.d}</div></div>`).join('');
+  $('f2sa').textContent=a||'';$('f2sb').textContent=b||'';$('f2s').classList.remove('on');};
+window.flow2Step=i=>{const bs=[...$('f2b').querySelectorAll('.bx')], ars=[...$('f2b').querySelectorAll('.ar')]; if(bs[i]) bs[i].classList.add('on'); if(i>0&&ars[i-1]) ars[i-1].classList.add('on');};
+window.flow2Say=()=>{$('f2s').classList.add('on');};
+window.steps3=(k,t,steps)=>{$('s3k').textContent=k||'';$('s3t').innerHTML=t||'';
+  $('s3r').innerHTML=steps.map((x,i)=>`<div class="st3 rv"><div class="no">${i+1}</div><div class="h">${x.h}</div><div class="d">${x.d||''}</div>${x.pill?`<div class="pill">${x.pill}</div>`:''}</div>`).join('');};
+window.steps3On=i=>on($('s3r'),i);
+window.readPanel=(rows,title)=>{$('rh').textContent=title||'도구가 돌려준 것 · 읽는 법';
+  $('rrows').innerHTML=rows.map(x=>`<div class="rrow"><div class="lb">${x.lb}</div><div class="vv">${x.vv}</div>${x.ss?`<div class="ss">${x.ss}</div>`:''}</div>`).join('');};
+window.readOn=idx=>{[...$('rrows').children].forEach((r,i)=>r.classList.toggle('on', idx.includes(i)));};
+window.termNarrow=n=>{$('term').classList.toggle('narrow',!!n);};
+window.nums=(k,t,tiles,note)=>{$('nk').textContent=k||'';$('nt').innerHTML=t||'';
+  $('ntiles').innerHTML=tiles.map(x=>`<div class="tile rv${x.hot?' hot':''}"><div class="v">${x.v}<small>${x.u||''}</small></div><div class="l">${x.l}</div><div class="n">${x.n||''}</div></div>`).join('');
+  $('nnote').innerHTML=note||'';$('nnote').classList.remove('on');};
+window.numsOn=i=>on($('ntiles'),i);
+window.numsNote=()=>{$('nnote').classList.add('on');};
+window.two=(k,t,L,R,foot)=>{$('wk').textContent=k||'';$('wt').innerHTML=t||'';
+  const col=(c,cls,mark)=>`<div class="col ${cls} rv"><div class="ch">${c.h}<span>${c.sub||''}</span></div>${c.items.map(x=>`<div class="it"><i>${mark}</i><div>${x}</div></div>`).join('')}</div>`;
+  $('wcols').innerHTML=col(L,'now','✓')+col(R,'next','○'); $('wfoot').innerHTML=foot||''; $('wfoot').classList.remove('on');};
+window.twoOn=i=>on($('wcols'),i);
+window.twoFoot=()=>{$('wfoot').classList.add('on');};
+window.endc=(k,t,lines,team,sm,qr,qrl)=>{$('ek').textContent=k||'';$('et').innerHTML=t||'';
+  $('eln').innerHTML=lines.map(x=>`<div><b>${x[0]}</b>${x[1]}</div>`).join('');$('eteam').textContent=team||'';$('esm').textContent=sm||'';
+  $('eqr').innerHTML=qr?`<img src="${qr}" alt=""><div>${qrl||''}</div>`:'';};
+window.dsteps=list=>{$('dsteps').innerHTML=(list||[]).map(x=>`<span>${x}</span>`).join('');};
+window.dstep=i=>{[...$('dsteps').children].forEach((x,j)=>{x.classList.toggle('on',j===i);x.classList.toggle('done',j<i);});};
+/* 비교 장면: 따로 만든 화면(cmp/compare.html)을 불러 spd배속으로 재생, 끝나면 돌아옴 */
+window.cmpLoad=src=>new Promise(r=>{const f=$('cmpf');f.onload=()=>{try{f.contentWindow.document.fonts.ready.then(()=>r(true));}catch(e){r(false)}};f.src=src;});
+window.cmpPlay=spd=>new Promise(r=>{const w=$('cmpf').contentWindow;const t0=performance.now();const A=80;
+  const tick=()=>{const t=Math.min(A,(performance.now()-t0)/1000*spd);w.setT(t);if(t<A)requestAnimationFrame(tick);else r();};requestAnimationFrame(tick);});
 </script>
 </body></html>

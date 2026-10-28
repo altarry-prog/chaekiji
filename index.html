@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.15 (2026. 10. 28.) · 캐시 chaekiji-v41 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.16 (2026. 10. 28.) · 캐시 chaekiji-v42 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -345,7 +345,7 @@ body.bigmode .bqitems{font-size:15.5px}
   font-size:10.5px;padding:6px;line-height:1.35;font-weight:700;
 }
 .bookcard .meta{flex:1;min-width:0}
-.bookcard h3{margin:0 0 3px;font-size:16px;letter-spacing:-.3px;line-height:1.35}
+.bookcard h2,.bookcard h3{margin:0 0 3px;font-size:16px;letter-spacing:-.3px;line-height:1.35}
 .bookcard .au{font-size:12.5px;color:var(--ink2);margin:0 0 6px}
 .bookcard .isbn{font-size:11px;color:var(--ink3);margin:0}
 
@@ -545,7 +545,7 @@ body.bigmode .bqitems{font-size:15.5px}
 /* ── 모바일 1화면 최적화 ── */
 .bookcard{padding:12px 13px;gap:11px;margin-bottom:11px}
 .cover{width:48px;height:68px;font-size:9.5px;padding:5px}
-.bookcard h3{font-size:15.5px;margin-bottom:2px}
+.bookcard h2,.bookcard h3{font-size:15.5px;margin-bottom:2px}
 .bookcard .au{font-size:12px;margin-bottom:4px}
 .tierbar{padding:10px 12px;margin-bottom:11px}
 .sumline{padding:11px 13px;margin-bottom:12px;font-size:13.8px}
@@ -668,7 +668,7 @@ body.bigmode .foot button{font-size:12.5px}
 <noscript><div class="bootfail" role="alert"><b>이 브라우저에서 자바스크립트가 꺼져 있어 시연 화면이 움직이지 않습니다.</b>설정에서 켜거나 크롬·사파리로 열어 주세요. · <a href="https://github.com/altarry-prog/chaekiji/blob/main/docs/%EC%8B%9C%EC%97%B0%EC%9B%B9-%EA%B8%B0%EB%8A%A5-%EC%83%81%EC%84%B8.md">그림으로 둘러보기</a></div></noscript>
 <div class="phone">
 
-  <div class="top">
+  <div class="top" role="banner">
     <span class="demo-tag">시안</span>
     <div class="atools">
       <button id="libbtn" aria-label="자주 가는 도서관 바꾸기">📍 상동</button>
@@ -695,7 +695,7 @@ body.bigmode .foot button{font-size:12.5px}
     </div>
   </div>
 
-  <div class="body" id="body">
+  <div class="body" id="body" role="main">
 
     <!-- 대기 -->
     <div class="screen on" id="s-idle">
@@ -968,7 +968,7 @@ body.bigmode .foot button{font-size:12.5px}
   </div>
 
   <!-- 신청 확인 -->
-  <div class="sheet" id="sheet">
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t">
     <div class="sheet-in">
       <h3 id="sheet-t">상호대차를 신청할까요?</h3>
       <p class="p" id="sheetP">시연이라 실제로 접수되지는 않아요</p>
@@ -1002,6 +1002,7 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    탭이 강제 종료될 수 있음(Electron이 같은 문제를 고친 기록).
    담당자 15:43 「원인마다 해결 방법」: 광고 차단이 단순 배치로도 화면 틀을 숨기면 틀의 이름을 바꿔 피함(.cjx), 10초 안에 다 받지 못하면
    연결 알림(다시 불러오기 · 휴대폰 데이터 · 그림으로 둘러보기, 다 받으면 지움). 판정·자료 흐름은 그대로 */
+/* v1.12.16(2026. 10. 28., 캐시 v42): 담당자 14:59 승인, 접근성 점검(axe-core 4.10, WCAG 2.2 AA) 권장 사항 반영. 위쪽 머리 영역 role=banner, 본문 role=main, 판정 화면 책 제목 h3를 h2로(머리말 단계), 신청 확인 시트 role=dialog·aria-modal·aria-labelledby. 화면 모양은 그대로(판정 화면 사진 같음). */
 /* v1.12.15(2026. 10. 28., 캐시 v41): 담당자 13:15 요청 — 예시 단추 순서만 바꿈. ① 나미야 잡화점의 기적(상동 대출 중, 관내 상호대차) ② 한강 소년이 온다(상동에 있음, 바로 이용). 판정은 8. 18. 실측 그대로, 10개 언어·전화 모드 같은 순서. */
 /* v1.12.14(2026. 10. 27., 캐시 v40): 담당자 17:58 「부천시립상동도서관으로」에 따라 「성격」 칸의 기관 표기만 바꿈(동작 그대로). */
 /* v1.12.13(2026. 10. 27., 캐시 v39): 담당자 16:10 「심사위원이 검색하는 책을 한강 소년이 온다로」에 따라 입력 칸 예시(10개 언어)와
@@ -2421,7 +2422,7 @@ function result(){
     <div class="bookcard">
       <div class="cover">${c.book.t}</div>
       <div class="meta">
-        <h3>${c.book.t}</h3>
+        <h2>${c.book.t}</h2>
         <p class="au">${c.book.a}${c.book.p ? ' · '+c.book.p : ''}${c.book.y ? ' ('+c.book.y+')' : ''}</p>
         <p class="isbn">ISBN ${c.book.isbn}</p>
       </div>

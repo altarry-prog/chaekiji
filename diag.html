@@ -161,7 +161,7 @@ function timed(url, label, opt){
 timed('index.html?diag=' + Date.now(), '시연 웹 파일(이 사이트)').then(function(t){
   if(t == null) return;
   var v = /v1\.12\.\d+/.exec(t);
-  row('n', '받은 시연 웹 파일', Math.round(t.length / 1000) + "천 자 · " + (v ? v[0] : '판 표시 없음'), (t.length > 100000 && v) ? "ok" : "bad");
+  row('n', '받은 시연 웹 파일', (function(k){ return '약 ' + Math.floor(k / 10) + '만' + (k % 10 ? ' ' + (k % 10) + '천' : '') + ' 자 · '; })(Math.round(t.length / 1000)) + (v ? v[0] : '판 표시 없음'), (t.length > 100000 && v) ? "ok" : "bad");
   if(!(t.length > 100000 && v)) R.blankFile = true;
 });
 timed('data/holdings-today.json?diag=' + Date.now(), '새벽 자료(이 사이트)').then(function(t){

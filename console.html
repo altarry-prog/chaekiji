@@ -100,7 +100,7 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
 <body>
 <div class="wrap">
 <header>
-  <span class="kicker">Chaekiji MCP Live Console</span>
+  <span class="kicker">Chaekiji MCP Demo Console</span>
   <h1>책이지 MCP 콘솔</h1>
   <p class="lede">참조 서버(chaekiji-mcp)와 <b>동일한 도구·규칙·실측 데이터</b>를 브라우저에 옮겨,
   에이전트의 도구 호출이 실제로 어떻게 오가는지 눈으로 확인하는 시연 콘솔입니다.
@@ -111,7 +111,7 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
 <svg viewBox="0 0 880 144" role="img" aria-label="MCP 표준 도구 10구 멀티탭: 핵심 8구와 자동화 확장 2구. 도구가 호출되면 해당 콘센트에 불이 들어온다.">
 <g font-family="IBM Plex Mono,monospace" font-size="10.5" text-anchor="middle">
 <rect x="8" y="8" width="864" height="128" rx="16" fill="none" stroke="#a06e24" stroke-width="2"/>
-<text x="440" y="28" font-family="IBM Plex Sans KR,sans-serif" font-size="12" font-weight="700" fill="currentColor">MCP 도구 서버: 핵심 8구 + 자동화 확장 2구 (참조 서버 v0.3 · 적합성 시험 33건)</text>
+<text x="440" y="28" font-family="IBM Plex Sans KR,sans-serif" font-size="12" font-weight="700" fill="currentColor">MCP 도구 서버: 핵심 8구 + 자동화 확장 2구 (2026. 8. 30. 참조 서버 v0.3 · 적합성 시험 33건)</text>
 <g id="sk-search_item" class="socket"><rect x="28" y="40" width="120" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="79" cy="52" r="2.5" fill="#a06e24"/><circle cx="97" cy="52" r="2.5" fill="#a06e24"/><text x="88" y="69" fill="currentColor" font-size="10">search_item</text></g>
 <g id="sk-check_availability" class="socket"><rect x="187" y="40" width="160" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="258" cy="52" r="2.5" fill="#a06e24"/><circle cx="276" cy="52" r="2.5" fill="#a06e24"/><text x="267" y="69" fill="currentColor" font-size="10">check_availability</text></g>
 <g id="sk-check_policy" class="socket"><rect x="386" y="40" width="120" height="36" rx="8" fill="none" stroke="#a06e24" stroke-width="1.5"/><circle cx="437" cy="52" r="2.5" fill="#a06e24"/><circle cx="455" cy="52" r="2.5" fill="#a06e24"/><text x="446" y="69" fill="currentColor" font-size="10">check_policy</text></g>
@@ -139,7 +139,7 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
   <button class="btn" data-step="9">⑦ 이용자 취소 <b>cancel_request</b><br><span style="color:var(--ink3);font-size:12px">④ 직후엔 취소·한도 복원 · ⑥ 이송 뒤엔 거부(도서관 문의)</span></button>
   <button class="btn" data-step="10">＋ 같은 요청 재전송 <b>request_service</b><br><span style="color:var(--ink3);font-size:12px">통신 장애로 두 번 보내도 접수는 한 건</span></button>
   <button class="btn" data-step="6">＋ 대체자료 확인 <b>find_alternative</b><br><span style="color:var(--ink3);font-size:12px">『소년이 온다』: 오디오북 → 책나래 분기</span></button>
-  <button class="btn" data-step="7">＋ 관내에 없는 책 <b>전국 폴백</b><br><span style="color:var(--ink3);font-size:12px">『지구 끝의 온실』: 정보나루 · 전일 기준 · 책바다는 안내로</span></button>
+  <button class="btn" data-step="7">＋ 관내에 없는 책 <b>전국 폴백</b><br><span style="color:var(--ink3);font-size:12px">『지구 끝의 온실』: (예시) 관내에 없다고 가정 · 책바다는 안내로</span></button>
 
   <button class="btn" id="passBtn" style="border-color:#a06e24">▶ 책이지 패스: 사전 위임 <b>mandate</b><br><span style="color:var(--ink3);font-size:12px">등록 한 번 → 다음 요청은 확인 없이 접수 → 범위 밖은 확인으로</span></button>
 
@@ -161,7 +161,7 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
 
 <p class="note"><b>정직 고지</b>: 이 콘솔은 파이썬 참조 서버 <span style="font-family:'IBM Plex Mono',monospace">chaekiji-mcp</span>의
 규칙 엔진·금고·실측 픽스처(2026. 8. 18. 정보나루 bookExist 64건)를 브라우저에 그대로 이식한 것입니다.
-실제 MCP 전송(stdio JSON-RPC)의 검증은 참조 서버(v0.3)의 적합성 시험 33건이 담당하며, 이 화면은 그 동작을 사람이 볼 수 있게 만든 창입니다.
+실제 MCP 전송(stdio JSON-RPC)의 검증은 참조 서버의 적합성 시험(2026. 8. 30. v0.3 기준 33건)이 담당하며, 이 화면은 그 동작을 사람이 볼 수 있게 만든 창입니다.
 규정 판정은 부천 고시 4종에 도서관계 일반 3종(연체·정지, 제외 자료, 중복 신청)을 더한 7종이고, 신청 이후의 상태 전이·취소·재시도 중복 방지까지 같은 논리로 재현합니다.
 회원은 가상 인물, 대체자료·전국 소장 수·상태 전이 시간은 예시 데이터입니다. · 2026. 9. 부천시립도서관 책이지 프로젝트</p>
 </div>
@@ -217,7 +217,7 @@ const TOOLS={
    const ok=Object.keys(h).filter(k=>h[k]==="ok").sort();
    const busy=Object.keys(h).filter(k=>h[k]==="busy").sort();
    const res={city:"부천", home_library:c.home, home_status:h[c.home]||"none",
-              available_at:ok, loaned_at:busy, basis:"관내: 도서관리시스템 실시간(모의)"};
+              available_at:ok, loaned_at:busy, basis:"관내: 정보나루 2026. 8. 18. 실측(전일 기준)"};
    /* 다음 갈래 — 자주 가는 곳에 있으면 방문 · 관내 다른 곳에 있으면 관내 상호대차 ·
       관내 소장은 있으나 전부 대출 중이면 예약(책바다는 관내 미소장 자료가 대상) · 관내 미소장이면 책바다 안내 */
    if(res.home_status==="ok") res.next_step="visit";

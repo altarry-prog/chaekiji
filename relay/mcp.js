@@ -329,7 +329,7 @@ async function holdingsLocal(isbn13, deps, ctx) {
     const h = (HOLD.holdings || {})[isbn13] || {};
     const out = Object.fromEntries(Object.keys(LIBS).map(n => [n, h[n] || "none"]));
     const ex = (HOLD._examples || []).includes(isbn13);
-    const basis = (ex ? "관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면, 이 책의 실제 소장과 다를 수 있음)"
+    const basis = (ex ? "관내: 예시 데이터(관내에 없는 책의 흐름을 보이려고 꾸민 값, 이 책의 실제 소장과 다름)"
                       : "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 전일 기준)") + " · 중계 응답 없음 → 픽스처로 복귀";
     return { out, meta: { basis, asof: FIX_ASOF, holding_count: countHeld(out), calls: 0, cached: false, example: ex } };
   }
@@ -497,8 +497,8 @@ export async function consultRequest(args, deps, ctx) {
   const t_ = `『${disp}』${eun(disp)}`;
   let notice;
   if (route === "visit") {
-    notice = `${t_} 지금 ${pickup}도서관 서가에 있어 바로 대출하실 수 있습니다. ` +
-             `받으실 도서관에 있는 자료는 상호대차 신청 대상이 아니니 방문해 주세요.`;
+    notice = `${t_} ${pickup}도서관에 대출 가능 상태로 있어 방문하시면 바로 대출하실 수 있습니다. ` +   // [10/28] 「지금 … 서가에 있어」는 전일 기준 자료와 맞지 않음
+             `받으실 도서관에 있는 자료는 상호대차 신청 대상이 아닙니다.`;
   } else if (route === "ill" && isPoint) {                     // [10/18] 작은도서관에서 받기 — 그곳 소장 여부는 말하지 않는다(모름)
     notice = `${t_} ${fromLib}도서관 등 ${CFG.city}시립도서관 ${nOk}곳에 대출 가능 상태입니다. ` + illTerms(pickup, eta, hold, true);
   } else if (route === "ill") {
@@ -506,7 +506,7 @@ export async function consultRequest(args, deps, ctx) {
     notice = `${t_} ${pickup}도서관에는 ${where}지만 ${fromLib}도서관 등 ${CFG.city}시립도서관 ${nOk}곳에 대출 가능 상태입니다. ` +
              illTerms(pickup, eta, hold);
   } else if (route === "reserve") {
-    notice = `${t_} ${CFG.city}시립도서관 ${nBusy}곳이 소장하고 있지만 지금은 모두 대출 중입니다. ` +
+    notice = `${t_} ${CFG.city}시립도서관 ${nBusy}곳이 소장하고 있지만 모두 대출 중입니다. ` +
              (CFG.reserve_converts_to_ill ? "먼저 예약해 두시면, 책이 반납될 때 상호대차로 바꿔 신청할 수 있습니다"
                                           : "상호대차 대신 예약을 권해 드립니다") +
              "(책바다는 관내에 없는 자료가 대상입니다).";
@@ -520,7 +520,7 @@ export async function consultRequest(args, deps, ctx) {
   }
   const example = (HOLD._examples || []).includes(isbn) && !!meta.example;
   if (route !== "check")                                      // 조회한 자료가 없으면 날짜를 찍지 않는다
-    notice += example ? " (예시 데이터, 이 책의 실제 소장·대출과 다를 수 있습니다)" : ` (대출 상태는 정보나루 ${asofK} 조회, 전일 기준)`;
+    notice += example ? " (예시 데이터: 관내에 없는 책의 흐름을 보이려고 꾸민 값이라 이 책의 실제 소장·대출과 다릅니다)" : ` (대출 상태는 정보나루 ${asofK} 조회, 전일 기준)`;
   if (pol.pending.length) notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다.";
   const others = found.same_title_others || [];                // [10/19] 같은 제목·다른 저자의 책이 함께 검색됨 — 고른 책을 밝히고 확인을 청한다
   if (others.length)
@@ -559,7 +559,7 @@ export async function consultRequest(args, deps, ctx) {
     `도서: ${String(title).trim()}${found.vol ? ` [${volLabel(found.vol)}]` : ""} (${found.author || ""}) ISBN ${isbn}` + (others.length ? ` · 같은 제목 다른 책 ${others.length}건, 저자 확인` : ""),
     `갈래: ${ROUTE_LABEL[route]}` + (fromLib ? ` · 소장관 ${fromLib}` : ""),
     isPoint ? `수령관: ${pickup}도서관 (작은도서관: 서가 비치·도착일·보관 기한은 창구 확인)`
-            : `수령관: ${pickup} (현재 ${atPickup === "ok" ? "서가 비치" : atPickup === "busy" ? "대출 중" : unknown ? "확인 불가" : "미소장"})`,
+            : `수령관: ${pickup} (${atPickup === "ok" ? "조회일 기준 서가 비치" : atPickup === "busy" ? "조회일 기준 대출 중" : unknown ? "확인 불가" : "조회일 기준 미소장"})`,
     unknown ? "대출 가능 관: 확인 불가 / 대출 중: 확인 불가"
             : `대출 가능 관: ${avail.available_at.join(", ") || "없음"} / 대출 중: ${avail.loaned_at.join(", ") || "없음"}`,
     `근거: ${avail.basis}`,
@@ -592,7 +592,7 @@ const IMPL = {
 };
 
 // ── MCP 상자(JSON-RPC over HTTP) ─────────────────────────────────────────
-export const INSTRUCTIONS = "책이지 원격 상담 비서(부천시립도서관 상호대차 판정 · 시연·검증용, 접수 기능 없음).\n" +
+export const INSTRUCTIONS = "책이지 원격 판(부천시립도서관 상호대차 판정 · 시연·검증용, 접수 기능 없음).\n" +
   PROMPT_BODY.split("{pickup}").join(CFG.home_library + "(사서가 다른 도서관을 말하면 그 도서관)")
              .split("{lang}").join("ko(이용자가 다른 언어를 쓰면 그 언어 코드)").trim();
 const TOOL_LIST = TOOLS.map(t => ({ ...t, annotations: { title: t.name === "consult_request" ? "상호대차 상담(판정·안내문)" :
@@ -614,7 +614,7 @@ async function handleOne(m, deps) {
     case "initialize": {
       const v = PROTOCOLS.includes(p.protocolVersion) ? p.protocolVersion : PROTOCOLS[0];
       return rpcResult(m.id, { protocolVersion: v, capabilities: { tools: { listChanged: false }, prompts: { listChanged: false } },
-        serverInfo: { name: "chaekiji-consult", title: "책이지 상담 비서(원격)", version: SERVER_VERSION + "-remote" }, instructions: INSTRUCTIONS });
+        serverInfo: { name: "chaekiji-consult", title: "책이지(원격 판)", version: SERVER_VERSION + "-remote" }, instructions: INSTRUCTIONS });
     }
     case "ping": return rpcResult(m.id, {});
     case "tools/list": return rpcResult(m.id, { tools: TOOL_LIST });
@@ -646,18 +646,18 @@ function guidePage(req) {
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const addr = esc(new URL(req.url).origin + "/mcp");
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>책이지 원격 상담 비서: 커넥터 주소</title><style>
+<title>책이지 원격 판: 커넥터 주소</title><style>
 body{margin:0;background:#f4f7f5;color:#1d2421;font:16px/1.65 system-ui,-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;word-break:keep-all}
 main{max-width:640px;margin:0 auto;padding:28px 18px 40px}h1{font-size:22px;line-height:1.35;margin:0 0 12px;color:#11463a}
 .box{background:#fff;border:1px solid #d5dfda;border-radius:12px;padding:16px 18px;margin:16px 0}ol{margin:0;padding-left:22px}li{margin:6px 0}
 code{background:#eef3f0;border-radius:4px;padding:1px 5px;font-size:.95em;overflow-wrap:anywhere}.n{color:#55615b;font-size:14px}a{color:#0b5c8a}
 </style></head><body><main>
 <h1>이 주소는 claude.ai 커넥터에 넣는 주소입니다</h1>
-<p>인터넷 창으로 열면 이 안내만 보이는 것이 정상입니다. AI 프로그램(MCP 클라이언트)이 이 주소로 질문을 보내면, 책이지 상담 비서가 부천시립도서관 상호대차 판정과 안내문을 돌려줍니다.</p>
+<p>인터넷 창으로 열면 이 안내만 보이는 것이 정상입니다. AI 프로그램(MCP 클라이언트)이 이 주소로 질문을 보내면, 책이지가 부천시립도서관 상호대차 판정과 안내문을 돌려줍니다.</p>
 <div class="box"><b>붙이는 법</b><ol>
 <li>claude.ai → 사용자 정의 → 커넥터 → 「+ 추가」 → 「커스텀 커넥터 추가」</li>
-<li>이름 「책이지 상담 비서」, 주소 <code>${addr}</code> → 「계속」 → 인증 방식 「로그인 없음」 → 「추가」</li>
-<li>새 대화의 「+」 → 커넥터에서 켜고, 이용자의 말을 그대로 입력(예: 한강 소년이 온다 빌리고 싶어요, 역곡에서 받을게요)</li>
+<li>이름 「책이지」, 주소 <code>${addr}</code> → 「계속」 → 감지된 인증 설정이 나오면 다시 「계속」 → 인증 방식 「로그인 없음」 → 「추가」</li>
+<li>새 대화의 「+」 → 커넥터에서 켜고, 이용자의 말을 그대로 입력(예: 한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요)</li>
 </ol></div>
 <p class="n">시연·검증용입니다. 접수는 하지 않으며, 대출 상태는 정보나루 조회일 전일 기준입니다. 무료 요금제는 커스텀 커넥터를 1개까지 쓸 수 있습니다.</p>
 <p class="n">시민용 시연 웹 <a href="https://altarry-prog.github.io/chaekiji/">altarry-prog.github.io/chaekiji</a> · 소스 <a href="https://github.com/altarry-prog/chaekiji">github.com/altarry-prog/chaekiji</a></p>

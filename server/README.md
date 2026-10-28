@@ -284,7 +284,7 @@ AI 모델은 말을 알아듣고 도구를 고르는 일만 합니다. 조회와
 - 시연 웹: https://altarry-prog.github.io/chaekiji/
 - 확산 모델 설계도: https://altarry-prog.github.io/chaekiji/mcp.html
 - 도구 호출 콘솔: https://altarry-prog.github.io/chaekiji/console.html
-- 통합 저장소: 공공 GitLab 제출본 https://gitlab.aigov.go.kr/altarry/chaekiji-challenge (2026. 11. 2. 등록) · 공개 초안 https://gitlab.aigov.go.kr/altarry/chaekiji · 깃허브 https://github.com/altarry-prog/chaekiji
+- 통합 저장소: 공공 GitLab 제출본 https://gitlab.aigov.go.kr/altarry/chaekiji-challenge (2026. 11. 2. 등록, 비공개: 심사위원 열람용) · 공개 초안 https://gitlab.aigov.go.kr/altarry/chaekiji · 깃허브 https://github.com/altarry-prog/chaekiji
 - 종전 단독 저장소(2026. 10. 13. 통합 뒤 보관): https://gitlab.aigov.go.kr/altarry/chaekiji-mcp · https://github.com/altarry-prog/chaekiji-mcp
 
 정보나루 공식 MCP(국립중앙도서관, 2026. 8. 개시)는 조회 도구입니다. 책이지는 그 위에 판정·실행 계층을 얹자는 제안이며, 조회원을 공식 MCP로 바꿔 끼우는 것이 v0.4 이후의 방향입니다.

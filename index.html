@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.16 (2026. 10. 28.) · 캐시 chaekiji-v42 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.17 (2026. 10. 28.) · 캐시 chaekiji-v43 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -891,7 +891,7 @@ body.bigmode .foot button{font-size:12.5px}
       <h3>책이지 안내</h3>
       <p class="p">답하는 AI가 아니라 대신 하는 AI, 말 한마디면 상호대차가 끝나는 시연 모델입니다</p>
       <div class="kv i"><span class="k">탐색</span><span class="v">자주 가는 도서관 → 관내 16개관 → 전국(책바다)</span></div>
-      <div class="kv i"><span class="k">판정</span><span class="v">수령관 비치 · 한도 · 연체 · 제외 자료 · 중복 신청<small>상담 비서는 규정 7종을 검토해 사유를 안내 · 이 시연 화면은 소장·대출 상태로만 판정(한도·연체는 창구 확인)</small></span></div>
+      <div class="kv i"><span class="k">판정</span><span class="v">수령관 비치 · 한도 · 연체 · 제외 자료 · 중복 신청<small>책이지 판정 도구는 규정 7종을 검토해 사유를 안내 · 이 시연 화면은 소장·대출 상태로만 판정(한도·연체는 창구 확인)</small></span></div>
       <div class="kv i"><span class="k">실행</span><span class="v">MCP 표준 도구 10종<small>도서관리시스템(알파스 등) 단위로 확산</small></span></div>
       <div class="kv i"><span class="k">접근성</span><span class="v">큰글자 · 음성 안내 · 10개 언어 · 📷 바코드<small>말하기 어려우면 책 뒤표지 바코드를 찍어도 됩니다(지원 기기)</small></span></div>
       <div class="kv i"><span class="k">등록된 기기</span><span class="v">첫 신청 때 지문·얼굴로 이 기기를 등록(패스키) → 무료 신청은 그 뒤 바로<small>위임(책이지 패스) 생성은 생체인증을 한 번 더 · 회원번호는 어디에도 표시하지 않음 · 시연에서는 기기 안에만 저장</small></span></div>
@@ -1002,6 +1002,7 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    탭이 강제 종료될 수 있음(Electron이 같은 문제를 고친 기록).
    담당자 15:43 「원인마다 해결 방법」: 광고 차단이 단순 배치로도 화면 틀을 숨기면 틀의 이름을 바꿔 피함(.cjx), 10초 안에 다 받지 못하면
    연결 알림(다시 불러오기 · 휴대폰 데이터 · 그림으로 둘러보기, 다 받으면 지움). 판정·자료 흐름은 그대로 */
+/* v1.12.17(2026. 10. 28., 캐시 v43): 담당자 16:46 승인. 안내 창의 「상담 비서는」을 「책이지 판정 도구는」으로(이름을 책이지 하나로), 결과 화면 링크 「공식 누리집에서」를 「공식 홈페이지에서」로(시민이 누르는 곳, 전화 모드의 「홈페이지」와 맞춤). 다른 언어·판정·자료 흐름은 그대로. */
 /* v1.12.16(2026. 10. 28., 캐시 v42): 담당자 14:59 승인, 접근성 점검(axe-core 4.10, WCAG 2.2 AA) 권장 사항 반영. 위쪽 머리 영역 role=banner, 본문 role=main, 판정 화면 책 제목 h3를 h2로(머리말 단계), 신청 확인 시트 role=dialog·aria-modal·aria-labelledby. 화면 모양은 그대로(판정 화면 사진 같음). */
 /* v1.12.15(2026. 10. 28., 캐시 v41): 담당자 13:15 요청 — 예시 단추 순서만 바꿈. ① 나미야 잡화점의 기적(상동 대출 중, 관내 상호대차) ② 한강 소년이 온다(상동에 있음, 바로 이용). 판정은 8. 18. 실측 그대로, 10개 언어·전화 모드 같은 순서. */
 /* v1.12.14(2026. 10. 27., 캐시 v40): 담당자 17:58 「부천시립상동도서관으로」에 따라 「성격」 칸의 기관 표기만 바꿈(동작 그대로). */
@@ -1048,7 +1049,7 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    결과 화면에 「공식 누리집에서 이 책 보기·신청」 링크(접수는 이용자가 누리집에 로그인해 직접 — 이 화면의 접수는 시연). */
 const OFFICIAL_SEARCH = 'https://alpasq.bcl.go.kr/search/keyword/{isbn13}';   /* v1.12.5 공식 자료검색 주소 틀(ISBN, 이전 {title}) — 비우면 링크 생략 */
 const OFFICIAL_SEARCH_TITLE = 'https://alpasq.bcl.go.kr/search/keyword/{title}';   /* v1.12.5 ISBN이 없는 책만 제목 검색 */
-const OLINK = {ko:'공식 누리집에서 이 책 보기 · 신청 ›', en:'Open this book on the official library site ›', zh:'在图书馆官网查看本书 · 申请 ›',
+const OLINK = {ko:'공식 홈페이지에서 이 책 보기 · 신청 ›', en:'Open this book on the official library site ›', zh:'在图书馆官网查看本书 · 申请 ›',
   ja:'図書館公式サイトでこの本を見る · 申込 ›', vi:'Xem sách này trên trang web chính thức của thư viện ›', th:'ดูหนังสือเล่มนี้ที่เว็บไซต์ห้องสมุด ›',
   ru:'Открыть эту книгу на сайте библиотеки ›', mn:'Номын сангийн албан ёсны сайтаас энэ номыг үзэх ›', uz:'Bu kitobni kutubxona rasmiy saytida ko‘rish ›',
   id:'Lihat buku ini di situs resmi perpustakaan ›'};

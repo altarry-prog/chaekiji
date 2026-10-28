@@ -211,5 +211,5 @@ jobs:
       - name: 배포가 실패했으면 빨간 X로 알리기
         if: steps.deploy.outcome == 'failure'
         run: |
-          echo "중계 배포 실패 — relay/last_deploy.json 에 까닭이 있습니다"
+          echo "중계 배포 실패: relay/last_deploy.json 에 까닭이 있습니다"
           exit 1

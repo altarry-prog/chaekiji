@@ -162,14 +162,15 @@ c5 = Client(CHAEKIJI_MODE="auto", CHAEKIJI_RELAY=RELAY, CHAEKIJI_SNAPSHOT=str(tm
 r7 = c5.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동")
 ok(r7["mode"] == "demo" and r7["availability"]["asof"] == "2026-08-18", "   30일 지난 스냅샷은 무시 → demo(8/18 픽스처)")
 c5.banner()
-# [10/19] 심사 기간 고정 자료 — 동결(11/8 18시) 뒤 새벽 갱신이 멈춰도 11/8 자료로 결선(11/25)까지 답한다. 날짜를 넣어 순수 함수로 확인(실제 시계와 무관)
+# [10/19] 심사 기간 고정 자료 — 동결 뒤 새벽 갱신이 멈춰도 동결일 자료로 결선(11/25)까지 답한다. 날짜를 넣어 순수 함수로 확인(실제 시계와 무관)
+# [10/27] 동결을 10/30 18시로 앞당김 — 같은 판정 기준을 10/30 자료로
 sys.path.insert(0, str(ROOT))
 from connectors import naru as _naru
 D = datetime.date
-ok(_naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 13)) and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 17)) and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 25))
-   and _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 26)) and not _naru.snapshot_ok(D(2026, 11, 8), D(2026, 11, 27))
-   and not _naru.snapshot_ok(D(2026, 11, 7), D(2026, 11, 13)) and not _naru.snapshot_ok(D(2026, 11, 9), D(2026, 11, 8)),
-   "   ⑥′ 심사 기간 고정 자료 — 11/8 자료는 11/13·11/17·11/25·11/26에 신선, 11/27엔 아님 · 11/7 자료는 아님 · 미래 날짜 자료는 아님")
+ok(_naru.snapshot_ok(D(2026, 10, 30), D(2026, 11, 13)) and _naru.snapshot_ok(D(2026, 10, 30), D(2026, 11, 17)) and _naru.snapshot_ok(D(2026, 10, 30), D(2026, 11, 25))
+   and _naru.snapshot_ok(D(2026, 10, 30), D(2026, 11, 26)) and not _naru.snapshot_ok(D(2026, 10, 30), D(2026, 11, 27))
+   and not _naru.snapshot_ok(D(2026, 10, 29), D(2026, 11, 13)) and not _naru.snapshot_ok(D(2026, 10, 31), D(2026, 10, 30)),
+   "   ⑥′ 심사 기간 고정 자료 — 10/30 자료는 11/13·11/17·11/25·11/26에 신선, 11/27엔 아님 · 10/29 자료는 아님 · 미래 날짜 자료는 아님")
 ok(_naru.snapshot_ok(D(2026, 10, 19), D(2026, 10, 19)) and _naru.snapshot_ok(D(2026, 10, 17), D(2026, 10, 19)) and not _naru.snapshot_ok(D(2026, 10, 16), D(2026, 10, 19)),
    "   ⑥″ 평소 규칙은 그대로 — 2일 이내만 신선(10/17 자료는 10/19에 신선, 10/16 자료는 아님)")
 httpd2 = serve(PORT + 1); time.sleep(0.3)

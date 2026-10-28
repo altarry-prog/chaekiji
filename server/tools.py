@@ -47,7 +47,7 @@ def _local_holdings(isbn13: str):
         rt = naru.holdings_local(isbn13, CFG["libraries"], CFG["region_code"], mode=MODE)
         return rt, naru.LAST_META.get("basis", "관내: 정보나루(전일 기준)")
     if isbn13 in naru._hold.get("_examples", []):        # 실측이 아닌 예시 장면용 값
-        return alpas.holdings_realtime(isbn13), "관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면 — 이 책의 실제 소장과 다를 수 있음)"
+        return alpas.holdings_realtime(isbn13), "관내: 예시 데이터(관내에 없는 책의 흐름을 보이는 장면, 이 책의 실제 소장과 다를 수 있음)"
     # demo: 도서관리시스템 실시간 연동을 흉내 낸 모의 커넥터 — 값은 픽스처(정보나루 실측)이므로 안내문의 조회일과 같은 출처를 밝힌다
     y, m, d = naru.FIX_ASOF.split("-")
     return alpas.holdings_realtime(isbn13), f"관내: 도서관리시스템 실시간 연동 모의(값은 {y}. {int(m)}. {int(d)}. 정보나루 실측)"
@@ -58,7 +58,7 @@ def search_item(utterance: str, lang: str = "ko"):
         # [10/19 밤] 리허설 지적 — auto인데 중계에 닿지 못해 시연 도서 5종만 찾을 수 있을 때, 그 밖의 책은 「저자를 알려 달라」고 되묻지 않고
         #   「조회 불가 → 창구」로(relay 모드의 v0.3.5 규칙과 같게). 일부러 고른 demo 모드는 그대로(시연용 되묻기)
         title = naru.clean_title(utterance, places=naru.PLACES, points=naru.POINTS)
-        r = {"found": False, "reason": f"중계에 닿지 못함(auto → {MODE}) — 시연 도서 5종 밖의 책은 찾을 수 없음(검색어 「{title}」)",
+        r = {"found": False, "reason": f"중계에 닿지 못함(auto → {MODE}). 시연 도서 5종 밖의 책은 찾을 수 없음(검색어 「{title}」)",
              "candidates": [], "unavailable": True}
     return r
 
@@ -97,7 +97,7 @@ def request_service(user: str, isbn13: str, from_lib: str, pickup: str,
         prev = alpas.find_by_ref(vault.resolve(user), client_ref)
         if prev:
             return {"accepted": True, "receipt": prev, "duplicate": True,
-                    "why": "동일 client_ref 재수신 — 새 신청을 만들지 않고 기존 접수를 반환(이중 신청 방지)"}
+                    "why": "동일 client_ref 재수신: 새 신청을 만들지 않고 기존 접수를 반환(이중 신청 방지)"}
     if mandate_id:
         m = _MANDATES.get(mandate_id)
         if not m or not m["active"]:
@@ -106,7 +106,7 @@ def request_service(user: str, isbn13: str, from_lib: str, pickup: str,
             raise PermissionError("위임의 이용자가 다릅니다")
         if m["scope"]["free_routes_only"] and route != "ill":
             return {"accepted": False, "skipped": True,
-                    "why": "실비 경로는 위임 범위 밖 — 자동 실행하지 않고 수동 확인으로 넘깁니다"}
+                    "why": "실비 경로는 위임 범위 밖이라 자동 실행하지 않고 수동 확인으로 넘깁니다"}
         if m["used_this_cycle"] >= m["scope"]["max_per_cycle"]:
             return {"accepted": False, "skipped": True,
                     "why": f"이번 주기 한도({m['scope']['max_per_cycle']}권) 소진"}
@@ -119,7 +119,7 @@ def request_service(user: str, isbn13: str, from_lib: str, pickup: str,
     receipt = res["no"]
     if res.get("duplicate"):                              # 같은 요청 재수신(재시도) → 기존 접수 반환
         return {"accepted": True, "receipt": receipt, "duplicate": True,
-                "why": "동일 client_ref 재수신 — 새 신청을 만들지 않고 기존 접수를 반환(이중 신청 방지)"}
+                "why": "동일 client_ref 재수신: 새 신청을 만들지 않고 기존 접수를 반환(이중 신청 방지)"}
     if mandate_id:
         _MANDATES[mandate_id]["used_this_cycle"] += 1
         _MANDATES[mandate_id]["ledger"].append(receipt)
@@ -177,11 +177,11 @@ def _guest_policy(isbn13: str, pickup: str):
     pending = []
     for c in v["checks"]:
         if any(k in c["rule"] for k in _MEMBER_RULE_KEYS):
-            c["pass"] = None; c["detail"] = "회원 확인 필요 — 창구에서 도서관리시스템으로 확인"
+            c["pass"] = None; c["detail"] = "회원 확인 필요(창구에서 도서관리시스템으로 확인)"
             pending.append(c["rule"])
     decided = [c for c in v["checks"] if c["pass"] is not None]
     return {"allowed_so_far": all(c["pass"] for c in decided), "checks": v["checks"], "pending": pending,
-            "basis": "회원 토큰 없이 판정 — 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인"}
+            "basis": "회원 토큰 없이 판정: 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인"}
 
 def _unverified_item(item) -> bool:
     """[v0.3.5] 정보나루 서지만으로는 자료 유형(비도서 등)·신착 여부를 알 수 없다 — 픽스처에 없는 책의 서지."""
@@ -229,12 +229,12 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         return {**base, "found": False, "route": "check", "route_label": _ROUTE_LABEL["check"],
                 "book": None, "reason": found.get("reason"), "candidates": [],
                 "notice": "지금 정보나루에 연결되지 않아 책을 찾지 못했습니다. 창구에서 도서관리시스템으로 찾아 드리겠습니다.",
-                "desk_memo": f"[조회 불가] 문의 「{utterance}」 — 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회"}
+                "desk_memo": f"[조회 불가] 문의 「{utterance}」: 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회"}
     if not found.get("found"):
         out = {**base, "found": False, "route": "unknown", "route_label": _ROUTE_LABEL["unknown"],
                "book": None, "reason": found.get("reason"), "candidates": found.get("candidates", []),
                "notice": "말씀하신 책을 아직 찾지 못했습니다. 저자나 출판사, 대략의 내용을 조금 더 알려 주시겠어요?",
-               "desk_memo": f"[미확정] 문의 「{utterance}」 — 서지 재확인 필요"}
+               "desk_memo": f"[미확정] 문의 「{utterance}」: 서지 재확인 필요"}
         if found.get("candidate_books"):              # [10/19] 검색은 됐지만 문의와 맞는 책을 못 고름 — 후보를 보여 주고 되묻는다
             out["candidate_books"] = found["candidate_books"]
             out["desk_memo"] += "\n검색 후보: " + " / ".join(
@@ -265,7 +265,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     if unknown:                                       # 수령관 비치 여부도 모르므로 비치 규정까지 창구 확인으로 돌린다
         for c in pol["checks"]:
             if "비치" in c["rule"] and c["pass"] is not None:
-                c["pass"] = None; c["detail"] = "소장·대출 상태 확인 불가 — 창구에서 도서관리시스템으로 확인"
+                c["pass"] = None; c["detail"] = "소장·대출 상태 확인 불가(창구에서 도서관리시스템으로 확인)"
                 pol["pending"].append(c["rule"])
         pol["allowed_so_far"] = all(c["pass"] for c in pol["checks"] if c["pass"] is not None)
     if is_point:                                      # [10/18] 작은도서관 서가 비치 여부는 정보나루에 없다 — 「통과」로 두지 않는다
@@ -311,7 +311,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     if route == "check":                              # 조회한 자료가 없으므로 날짜를 찍지 않는다
         pass
     elif example:                                     # 실측이 아닌 예시 장면 — 날짜 대신 그렇게 밝힌다
-        notice += " (예시 데이터 — 이 책의 실제 소장·대출과 다를 수 있습니다)"
+        notice += " (예시 데이터, 이 책의 실제 소장·대출과 다를 수 있습니다)"
     else:
         notice += f" (대출 상태는 정보나루 {asof_k} 조회, 전일 기준)"
     if pol["pending"]:
@@ -319,7 +319,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     others = found.get("same_title_others") or []    # [10/19] 같은 제목·다른 저자의 책이 함께 검색됨 — 고른 책을 밝히고 확인을 청한다
     if others:
         notice += (" 같은 제목의 다른 책도 있습니다(" + " / ".join(f"{b.get('author') or ''} · {b.get('publisher') or ''} {b.get('year') or ''}"
-                                                          for b in others) + ") — 찾으시는 책의 저자가 다르면 알려 주세요.")
+                                                          for b in others) + "). 찾으시는 책의 저자가 다르면 알려 주세요.")
     alt = []                                          # [10/19] 판본 보정 — 고른 판이 관내에 없을 때 같은 작품의 다른 판 하나가 관내에 있으면 알린다. 갈래는 그대로
     if route == "sea":                               # 하나만 본다 — 원격 판(Cloudflare 무료)은 요청당 외부 호출 50회 한도라 관내 조회(16회)를 두 번 더 하면 넘을 수 있다
         for b in (found.get("same_work_editions") or [])[:1]:
@@ -340,15 +340,15 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                    + ". 판이 달라도 괜찮으시면 그 판으로 이용하실 수 있습니다" + (f"(그 판의 공식 누리집 화면: {lk})." if lk else "."))
     bad = [c for c in pol["checks"] if c["pass"] is False and not (route == "visit" and "비치" in c["rule"])]
     if bad:                                           # 바로 이용 갈래에서 비치 규정은 곧 그 갈래의 이유이므로 되풀이하지 않는다
-        notice += " 다만 " + "; ".join(f"{c['rule']}({c['detail']})" for c in bad) + " — 이 조건을 먼저 확인해야 합니다."
+        notice += " 다만 " + "; ".join(f"{c['rule']}({c['detail']})" for c in bad) + ". 이 조건을 먼저 확인해야 합니다."
     link = _official_link(title, isbn, by_title=(route == "check")) if route in ("visit", "ill", "reserve", "check") else None   # 관내에 없는 책(책바다)은 누리집에 없다
     if link:
-        tail = {"visit": "이 책 보기", "ill": "이 책 보기·신청(로그인 뒤 「상호대차 신청」 — 접수는 이용자가 직접)",
+        tail = {"visit": "이 책 보기", "ill": "이 책 보기·신청(로그인 뒤 「상호대차 신청」, 접수는 이용자가 직접)",
                 "reserve": "이 책 보기·예약(로그인 뒤 「예약」)", "check": "이 책의 소장·대출 상태 보기"}[route]
         notice += f" 공식 누리집에서 {tail}: {link}"
-    memo_lines = [f"도서: {str(title).strip()}" + (f" [{naru.vol_label(found['vol'])}]" if found.get("vol") else "") + f" ({found.get('author') or ''}) ISBN {isbn}" + (f" · 같은 제목 다른 책 {len(others)}건 — 저자 확인" if others else ""),
+    memo_lines = [f"도서: {str(title).strip()}" + (f" [{naru.vol_label(found['vol'])}]" if found.get("vol") else "") + f" ({found.get('author') or ''}) ISBN {isbn}" + (f" · 같은 제목 다른 책 {len(others)}건, 저자 확인" if others else ""),
                   f"갈래: {_ROUTE_LABEL[route]}" + (f" · 소장관 {from_lib}" if from_lib else ""),
-                  (f"수령관: {pickup}도서관 (작은도서관 — 서가 비치·도착일·보관 기한은 창구 확인)" if is_point else
+                  (f"수령관: {pickup}도서관 (작은도서관: 서가 비치·도착일·보관 기한은 창구 확인)" if is_point else
                    f"수령관: {pickup} (현재 {'서가 비치' if at_pickup == 'ok' else '대출 중' if at_pickup == 'busy' else '확인 불가' if unknown else '미소장'})"),
                   ("대출 가능 관: 확인 불가 / 대출 중: 확인 불가" if unknown else
                    f"대출 가능 관: {', '.join(avail['available_at']) or '없음'} / 대출 중: {', '.join(avail['loaned_at']) or '없음'}"),
@@ -356,7 +356,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                   f"규정: {sum(1 for c in pol['checks'] if c['pass'] is True)}건 통과 · {sum(1 for c in pol['checks'] if c['pass'] is False)}건 불가 · {len(pol['pending'])}건 창구 확인",
                   "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)"]
     for b in alt:                                     # [10/19] 판본 보정 — 다른 판의 관내 소장(접수 전 판 확인)
-        memo_lines.insert(-1, f"다른 판 관내: {b.get('publisher') or ''} {b.get('year') or ''} ISBN {b['isbn13']} — "
+        memo_lines.insert(-1, f"다른 판 관내: {b.get('publisher') or ''} {b.get('year') or ''} ISBN {b['isbn13']}: "
                               f"대출 가능 {', '.join(b['available_at']) or '없음'} / 대출 중 {', '.join(b['loaned_at']) or '없음'}")
     next_tool = None
     if route == "ill" and user:
@@ -409,13 +409,13 @@ def manage_mandate(user: str, op: str, pickup: str = None):
     raise ValueError("op은 create/status/revoke")
 
 _GUIDE = {
-    "requested": "접수됨 — 소장관이 자료를 확보하면 이송이 시작됩니다",
-    "confirmed": "자료 확보 — 다음 이송 편에 실립니다",
-    "in_transit": "이송 중 — 도착하면 알림이 갑니다",
-    "arrived": "도착 — 보관기한 내 미수령 시 자동 취소됩니다",
+    "requested": "접수됨: 소장관이 자료를 확보하면 이송이 시작됩니다",
+    "confirmed": "자료 확보: 다음 이송 편에 실립니다",
+    "in_transit": "이송 중: 도착하면 알림이 갑니다",
+    "arrived": "도착: 보관기한 내 미수령 시 자동 취소됩니다",
     "loaned": "대출 완료",
-    "failed": "실패 — 다른 소장관 재신청 또는 대체자료(find_alternative) 확인을 권장",
-    "canceled": "취소됨 — 한도는 복원되었습니다",
+    "failed": "실패: 다른 소장관 재신청 또는 대체자료(find_alternative) 확인을 권장",
+    "canceled": "취소됨: 한도는 복원되었습니다",
 }
 
 def track_request(user: str, request_no: str):

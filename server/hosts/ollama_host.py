@@ -7,7 +7,7 @@
 이 스크립트가 그 두 번째 호스트다. 서버는 손대지 않는다 — 클로드 데스크톱과 똑같이 `python server.py`를 붙인다.
 
 준비: Ollama 설치(https://ollama.com) → 모델 받기 예) ollama pull exaone3.5:2.4b  또는  ollama pull llama3.2:3b
-실행: python hosts/ollama_host.py --model exaone3.5:2.4b --ask "나미야 잡화점의 기적 빌리고 싶어요"
+실행: python hosts/ollama_host.py --model exaone3.5:2.4b --ask "한강 소년이 온다 빌리고 싶어요, 역곡에서 받을게요"
       python hosts/ollama_host.py --model llama3.2:3b          (대화형)
 기록: --log lab/out/host_log.ndjson 에 호출된 도구·인자·소요 시간·판정 갈래가 한 줄씩 남는다(구동안내서·2종 실측 기록 재료).
       --answers lab/out/host_answers.ndjson 에는 질문마다 모델의 최종 답이 남는다(10/16 — 코랩 2종 구동 노트북이 기록표를 만든다).
@@ -167,7 +167,7 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
                 if "user" in args:                                     # [10/18] 회원 토큰은 모델이 넘기지 않는다(지시문 4) — 3차 실측에서 라마가 user="null"을 넘겨 도구 오류
                     forced = (forced or []) + [f"user: {args.pop('user')!r} → (뺌)"]
             print(f"▶ 도구 호출 {step}: {name} {json.dumps(args, ensure_ascii=False)}  (모델 {resp['_ms']} ms)"
-                  + (f"  ※ 호출자 값으로 고정 — {', '.join(forced)}" if forced else ""))
+                  + (f"  ※ 호출자 값으로 고정: {', '.join(forced)}" if forced else ""))
             ms, o = 0, None
             if name not in tool_names:
                 result, err = json.dumps({"error": f"없는 도구: {name}", "available": sorted(tool_names)}, ensure_ascii=False), True
@@ -218,11 +218,11 @@ def main():
     ap.add_argument("--ask", default="", help="한 문장만 묻고 끝낸다(없으면 대화형)")
     ap.add_argument("--protocol", default="auto", choices=["auto", "native", "json"])
     ap.add_argument("--tools", default="all", choices=["all", "consult"],
-                    help="모델에 보여 줄 도구 — all(11종) / consult(상담 묶음 consult_request 하나만, 작은 모델이 다른 도구로 새지 않게)")
+                    help="모델에 보여 줄 도구: all(11종) / consult(상담 묶음 consult_request 하나만, 작은 모델이 다른 도구로 새지 않게)")
     ap.add_argument("--log", default="", help="호출 기록 JSONL 경로(예: lab/out/host_log.ndjson)")
     ap.add_argument("--answers", default="", help="최종 답 기록 JSONL 경로(예: lab/out/host_answers.ndjson)")
     ap.add_argument("--num-ctx", type=int, default=4096)
-    ap.add_argument("--timeout", type=int, default=600, help="모델 응답 대기(초) — CPU에서는 길게")
+    ap.add_argument("--timeout", type=int, default=600, help="모델 응답 대기(초), CPU에서는 길게")
     a = ap.parse_args()
 
     env = dict(os.environ, CHAEKIJI_MODE=a.mode, PYTHONUTF8="1")

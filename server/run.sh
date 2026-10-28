@@ -10,7 +10,7 @@ if ! "$PY" -c "import yaml" 2>/dev/null; then
   echo "[chaekiji-mcp] PyYAML 설치(처음 한 번, 인터넷 사용)"
   if ! "$PY" -m pip install -q -r requirements.txt; then
     # 「외부 관리」 파이썬(데비안 12·우분투 23.04 이후의 시스템 파이썬, 맥 Homebrew 등)은 pip 설치를 막는다 — 이 폴더 안 가상환경(.venv)에 설치
-    echo "[chaekiji-mcp] 이 파이썬은 바로 설치를 막아 두었습니다 — 이 폴더 안 가상환경(.venv)에 설치합니다"
+    echo "[chaekiji-mcp] 이 파이썬은 바로 설치를 막아 두었습니다. 이 폴더 안 가상환경(.venv)에 설치합니다"
     if "$PY" -m venv .venv && .venv/bin/python -m pip install -q -r requirements.txt; then
       PY=.venv/bin/python
     else
@@ -35,7 +35,7 @@ echo
 echo "== 공개 모델 호스트 시험(10건, 모의 Ollama) =="
 "$PY" tests/run_host.py
 echo
-echo "[chaekiji-mcp] 준비 완료 — 시험 104건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts/ollama_host.py 를 보세요."
+echo "[chaekiji-mcp] 준비 완료: 시험 104건. 상담 비서 연결은 README의 '상담 비서' 절, 공개 모델은 hosts/ollama_host.py 를 보세요."
 if [ "$PY" = ".venv/bin/python" ]; then                  # [10/19 밤] 리허설 지적 — 가상환경에 설치했으면 다음 명령도 그 파이썬으로
   echo "※ 이 PC는 파이썬 패키지 설치를 막아 두어 이 폴더의 가상환경(.venv)에 설치했습니다."
   echo "  다음 명령(lab/consult_cli.py · hosts/ollama_host.py · 클로드 데스크톱 설정의 command)은 python 대신 아래 파이썬으로 실행하세요."

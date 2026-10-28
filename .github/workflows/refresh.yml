@@ -49,9 +49,9 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" --silent && echo "게시 요청 완료" || echo "게시 요청 실패 — 다음 커밋 때 함께 반영됩니다"
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" --silent && echo "게시 요청 완료" || echo "게시 요청 실패. 다음 커밋 때 함께 반영됩니다"
       - name: 조회가 실패했으면 빨간 X로 알리기
         if: steps.fetch.outcome == 'failure'
         run: |
-          echo "정보나루 조회 실패 — server/lab/out/refresh_status.json 에 까닭이 있습니다"
+          echo "정보나루 조회 실패: server/lab/out/refresh_status.json 에 까닭이 있습니다"
           exit 1

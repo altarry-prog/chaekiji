@@ -1,18 +1,18 @@
 {
- "time": "2026-10-19 19:51 KST",
+ "time": "2026-10-27 17:02 KST",
  "result": "ok",
  "url": "https://chaekiji-relay.altarry2.workers.dev",
  "health": {
   "status": 200,
-  "ms": 240,
+  "ms": 118,
   "ok": true,
   "keyed": true,
   "region": "31050",
-  "colo": "ORD"
+  "colo": "SJC"
  },
  "probe_python_default_name": {
   "status": 403,
-  "ms": 70,
+  "ms": 35,
   "text": "error code: 1010"
  },
  "cors_web": {
@@ -21,41 +21,38 @@
  },
  "holdings_sample": {
   "status": 200,
-  "ms": 3173,
-  "asof": "2026-10-19",
+  "ms": 9378,
+  "asof": "2026-10-27",
   "calls": 16,
   "via": "http",
   "cached": false,
-  "upstream_ms": 3062,
-  "call_ms_median": 1968,
-  "call_ms_max": 3062,
-  "placement": "local-ORD",
-  "edge": "ORD",
+  "upstream_ms": 9304,
+  "call_ms_median": 3873,
+  "call_ms_max": 9304,
+  "placement": "local-SJC",
+  "edge": "SJC",
   "isbn": "9788972756194",
-  "ok": 7,
-  "busy": 6,
+  "ok": 8,
+  "busy": 5,
   "none": 3
  },
  "search_sample": {
-  "status": 502,
-  "ms": 686,
-  "error": "upstream",
-  "detail": [
-   "naru:1일 500건 이상 요청 시 IP 등록이 필요합니다. 등록 된 IP를 확인하시기 바랍니다."
-  ]
+  "status": 200,
+  "ms": 3928,
+  "via": "http",
+  "docs": 6,
+  "first": "나미야 잡화점의 기적 :히가시노 게이고 장편소설 "
  },
  "nation_sample": {
-  "status": 502,
-  "ms": 3227,
-  "error": "upstream",
-  "detail": [
-   "naru:1일 500건 이상 요청 시 IP 등록이 필요합니다. 등록 된 IP를 확인하시기 바랍니다."
-  ]
+  "status": 200,
+  "ms": 1687,
+  "found_count": 200,
+  "via": "http"
  },
  "mcp": {
   "initialize": {
    "status": 200,
-   "ms": 75,
+   "ms": 36,
    "protocol": "2025-06-18",
    "server": "0.3.5-remote"
   },
@@ -69,11 +66,11 @@
   ],
   "consult": {
    "status": 200,
-   "ms": 123,
-   "route": "ill",
-   "asof": "2026-10-19",
-   "basis": "관내: 정보나루 bookExist(매일 갱신 · 2026-10-19 조회 · 전일 기준)",
-   "notice_head": "『나미야 잡화점의 기적』은 상동도서관에는 대출 중이지만 꿈여울도서관 등 부천시립도서관 7곳에 대출 가능 상태입니다. 관내 상호"
+   "ms": 260,
+   "route": "visit",
+   "asof": "2026-10-27",
+   "basis": "관내: 정보나루 bookExist(매일 갱신 · 2026-10-27 조회 · 전일 기준)",
+   "notice_head": "『나미야 잡화점의 기적』은 지금 상동도서관 서가에 있어 바로 대출하실 수 있습니다. 받으실 도서관에 있는 자료는 상호대차 신청"
   }
  },
  "client_name_probe": {
@@ -87,5 +84,5 @@
   "Claude-User": 200,
   "Mozilla/5.0 (compatible; Claude-User/1.0; +Claude-User@anthropic.com)": 200
  },
- "check": "fail"
+ "check": "ok"
 }

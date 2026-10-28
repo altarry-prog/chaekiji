@@ -34,11 +34,11 @@ def check(rules: dict, member: dict, pickup_on_shelf: bool, pickup: str,
         na = bool(item.get("new_arrival", False))
         bad_type = t in excl
         bad_new = exna and na
-        detail = ("자료 유형 " + t + " — 제외 대상") if bad_type else \
-                 ("신착 자료 — 신착 제외 기간" if bad_new else f"유형 {t} · 신착 아님")
+        detail = ("자료 유형 " + t + ": 제외 대상") if bad_type else \
+                 ("신착 자료: 신착 제외 기간" if bad_new else f"유형 {t} · 신착 아님")
         rule("상호대차 제외 자료 아님", not (bad_type or bad_new), detail)
     else:
-        rule("상호대차 제외 자료 아님", True, "서지 미확인 — 제외 판정 보류(통과 처리)")
+        rule("상호대차 제외 자료 아님", True, "서지 미확인: 제외 판정 보류(통과 처리)")
 
     # [v0.3] 중복 — 같은 도서에 진행 중 신청이 있으면 새 신청을 막는다.
     act = member.get("active_isbns", [])

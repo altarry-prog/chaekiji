@@ -91,7 +91,7 @@ failed = []
 for i, isbn in enumerate(isbns, 1):
     if not a.demo and len(naru.CALLS) + 17 > a.max_calls:          # 다음 도서가 상한을 넘길 수 있으면 여기서 멈춘다
         out["partial"] = True
-        print(f"호출 상한({a.max_calls}) 근접 — {i-1}/{len(isbns)}종에서 멈춤")
+        print(f"호출 상한({a.max_calls}) 근접: {i-1}/{len(isbns)}종에서 멈춤")
         break
     if not fetch_one(i, isbn):
         failed.append((i, isbn))
@@ -109,7 +109,7 @@ if failed:
     out["partial"] = True
 out["calls"] = len(naru.CALLS)
 if not out["holdings"]:
-    write_status("실패 — 받은 데이터 없음(키·한도·네트워크 확인)")
+    write_status("실패: 받은 데이터 없음(키·한도·네트워크 확인)")
     sys.exit("받은 데이터가 없어 파일을 쓰지 않습니다(키·한도·네트워크 확인). 까닭은 lab/out/refresh_status.json")
 write_status("일부" if out["partial"] else "성공")
 for path in (a.out, a.web_out):

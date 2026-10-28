@@ -193,7 +193,7 @@ async def main():
             if key in NARR and not A.mute:
                 NARR_EV.append((round(now() + NARR_LEAD, 2), NARR[key][0], NARR[key][1]))
 
-        async def hold(key, pad=0.5):
+        async def hold(key, pad=0.35):
             # 내레이션이 다 끝날 때까지 장면을 붙잡아 둔다(음성이 다음 장면으로 넘치지 않게)
             if key not in NARR or A.mute:
                 return
@@ -256,10 +256,10 @@ async def main():
         await ev("only('cmpf')")
         cue("같은 책을 신청해 보면 책이지는 3번 눌러 20초, 누리집은 18번 눌러 1분 20초",
             "개발에 참여하지 않은 직원 3명이 시연 도서 5권으로 잰 가운데값(책마다 평균, 2026. 10. 27.~28.) · 왼쪽은 실제 누리집 화면(개인정보 가림) · 시연 화면의 신청은 실제 접수가 아닙니다")
-        await W(900)
+        await W(400)
         await page.evaluate("cmpPlay(4)")
-        await W(1500)
-        await hold("04", pad=0.6)
+        await W(700)
+        await hold("04", pad=0.4)
 
         # ── 2. 어떻게(인포: 누가 무엇을 하나) ──
         scene("02", "2 어떻게 푸나", "흐름 네 칸(이용자·AI 모델·규칙 도구(MCP)·결과와 사서)을 색으로 나눠 차례로 → 「도구를 제대로 부르면 모델을 바꿔도 판정은 같습니다」")
@@ -382,13 +382,13 @@ async def main():
                              "나머지 <b>4건</b>은 한쪽 모델이 도구 없이 답해 쓸 수 없는 답이었습니다. 그래서 판정은 모델이 아니라 규칙 도구가 합니다."])
         cue("같은 상담을 공개 모델로, 코랩 「모두 실행」 한 번", "엑사원 3.5 2.4B · 라마 3.2 3B · 같은 지시문 · 같은 문의 5건 · 같은 도구(consult_request)")
         await app.goto(APP_URL, wait_until="load")       # 다음 장면에 쓸 시연 웹을 미리 띄워 둔다(보이지 않는 동안)
-        g8 = share("08", [0.05, 0.05, 0.07, 0.09], [0.9, 0.9, 1.2, 1.8])
+        g8 = share("08", [0.03, 0.03, 0.04, 0.05], [0.7, 0.7, 0.9, 1.2])
         for i in range(3):
             await W(g8[i]); await ev(f"numsOn({i})")
         cue("기록표가 남은 3차례 15건 가운데 두 모델 모두 도구 결과를 받은 11건은 판정이 같았습니다")
         await W(g8[3]); await ev("numsNote()")
         cue("나머지 4건은 한쪽 모델이 도구 없이 답해 쓸 수 없는 답이었습니다", "그래서 판정은 모델이 아니라 규칙 도구가 합니다")
-        await W(1800)
+        await W(1200)
         m = clip_meta("model2")
         if m:
             await play_clip(m)
@@ -425,7 +425,7 @@ async def main():
         await side("흐름 3 · 시민 음성 화면", "같은 판정을 시민이 직접\n(2027 시범 운영 제안)",
                    "휴대폰 인터넷 창에서 열고 「눌러서 시작하기」를 누릅니다. 예시 단추로 음성 없이도 흐름을 볼 수 있습니다.",
                    "시연 웹 altarry-prog.github.io/chaekiji")
-        await W(3800)
+        await W(2600)
         try:
             g = app.locator("#gateGo")
             if await g.count() and await g.is_visible():
@@ -438,17 +438,17 @@ async def main():
         await side("판정", "상동은 대출 중이라\n다른 분관에서 보내 드립니다",
                    "이 예시 단추는 2026. 8. 18. 실측 장면입니다. 직접 말하거나 입력하면 오늘 새벽 자료로 찾습니다.",
                    "대출 상태는 정보나루 전일 기준")
-        await W(6000)
+        await W(4300)
         for y in (200, 400):
-            await scroll_to(y, 1500)
-        await W(1200)
-        await scroll_to(0, 1200)
+            await scroll_to(y, 1200)
+        await W(700)
+        await scroll_to(0, 900)
         mark("9 신청 확인", "「상호대차 신청」 → 확인 시트")
         await ev("dstep(2)")
         await tapclick(app.locator("#apply"))
         await side("신청 확인", "대출관 · 수령관 · 소요 ·\n수령 기한 · 미수령 제한",
                    "화면을 읽어 주고, 「네」 한마디나 단추 한 번으로 확인합니다.", "※ 시연이며 실제 접수로 이어지지 않습니다")
-        await W(6000)
+        await W(4500)
         mark("9 접수(시연)", "「네, 신청합니다」 → 접수(시연) 화면, 「책이지가 대신 한 일」까지 굴림")
         await ev("dstep(3)")
         try:
@@ -458,9 +458,9 @@ async def main():
         await side("접수(시연)", "책이지가 대신 한 일을\n한 화면에",
                    "말을 글로 옮기고, 책을 확정하고, 16개관을 확인하고, 규정 7종을 본 뒤 접수까지 이어 줍니다. 이용자는 말 한마디, 확인 한 번입니다.",
                    "※ 시연이며 실제 접수로 이어지지 않습니다")
-        await W(3600)
-        await scroll_to(150, 1600)
         await W(2600)
+        await scroll_to(150, 1200)
+        await W(1600)
         mark("9 누구나", "처음 화면 → 큰글자 → 언어 선택(베트남어)")
         await ev("dstep(4)")
         await ev("cover(true)"); await W(600)
@@ -477,18 +477,18 @@ async def main():
         except Exception as e:
             print("gateNo skipped", e)
         try:
-            await tapclick(app.locator("#bigbtn")); await W(2800)
+            await tapclick(app.locator("#bigbtn")); await W(2100)
         except Exception as e:
             print("big skipped", e)
         try:
-            await tapclick(app.locator("#langbtn")); await W(1700)
+            await tapclick(app.locator("#langbtn")); await W(1200)
             vi = app.locator("text=Tiếng Việt").first
             if await vi.count():
-                await tapclick(vi); await W(3200)
+                await tapclick(vi); await W(2500)
         except Exception as e:
             print("lang skipped", e)
-        await W(1200)
-        await hold("09", pad=0.4)
+        await W(500)
+        await hold("09", pad=0.3)
         await acdp.send("Page.stopScreencast")
         await ev("dsteps([])")
 

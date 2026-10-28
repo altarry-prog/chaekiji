@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """record.py가 남긴 화면 묶음(rec/frames/*.jpg + rec/captions.json) → mp4 · 자막(SRT) · 구성표(md).
 
-  python3 tools/video/build_video.py            # out/[시연영상]_부천시_책이지(_초안).mp4 · .srt · _구성표.md
+  python3 tools/video/build_video.py            # out/[시연영상]_경기도 부천시청_책이지(_초안).mp4 · .srt · _구성표.md
   python3 tools/video/build_video.py --no-video # 자막·구성표만
 
 - 화면이 바뀐 순간마다 받은 장면을 다음 장면까지 그대로 두는 방식(ffconcat)으로 이어 붙이고 30fps H.264(1920x1080)로 만든다.
@@ -14,7 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ap = argparse.ArgumentParser()
 ap.add_argument("--rec", default=os.path.join(HERE, "rec"))
 ap.add_argument("--out", default=os.path.join(HERE, "out"))
-ap.add_argument("--name", default="[시연영상]_부천시_책이지")
+ap.add_argument("--name", default="[시연영상]_경기도 부천시청_책이지")   # 기관명은 참가신청서·공문과 같게(담당자 10. 28.)
 ap.add_argument("--no-video", action="store_true")
 A = ap.parse_args()
 os.makedirs(A.out, exist_ok=True)

@@ -4,7 +4,7 @@
 
   python3 tools/video/record.py              # 초안(「초안 · 오늘 날짜」 표시)
   python3 tools/video/record.py --final      # 표시 없이(자리 표시 두 곳에 실제 녹화가 들어간 뒤)
-  python3 tools/video/build_video.py         # → out/[시연영상]_부천시_책이지(_초안).mp4 · .srt · 구성표.md
+  python3 tools/video/build_video.py         # → out/[시연영상]_경기도 부천시청_책이지(_초안).mp4 · .srt · 구성표.md
 
 무엇을 보이나
 - 표지: 녹화를 시작하기 전에 시연 웹 첫 화면을 받아 끝 칸과 같은 모양의 표지에 넣는다(영상 첫 장이자 썸네일, 소리 없음).
@@ -62,7 +62,7 @@ rd = lambda n: open(os.path.join(HERE, n), encoding="utf-8").read().rstrip("\n")
 T1, T2, T3, T4 = rd("t1.txt"), rd("t2.txt"), rd("t3.txt"), rd("t4.txt")
 META = json.load(open(os.path.join(HERE, "t_meta.json"), encoding="utf-8"))   # capture.py — 찍은 날 고른 책·판정·조회일·시험 수
 # 화면 글에 쓰는 예시(담당자 승인으로 바꿈). 흐름도의 이용자 말, 「다음 단계」 칸에 덧붙일 줄(없으면 None)
-EX_SAY = os.environ.get("CHAEKIJI_VIDEO_SAY", "한강 소년이 온다 빌리고 싶어요, 역곡에서 받을게요")
+EX_SAY = os.environ.get("CHAEKIJI_VIDEO_SAY", "한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요")
 NEXT_EXTRA = os.environ.get("CHAEKIJI_VIDEO_NEXT", "정보화사업 연계로 전국 도서관이 같은 기준으로 상호대차를 안내") or None
 # 장면별 내레이션(tts.yml이 만든 mp3와 길이) — 파일 이름 앞 두 자리가 장면 번호
 NARR_DIR = os.path.join(HERE, "narration", "audio", "script")
@@ -333,7 +333,7 @@ async def main():
         rtxt = f"규정 {rule1.group(1)}건 통과 · {rule1.group(3)}건 창구 확인" if rule1 else "규정 확인"
         scene("05", "5 명령 창 1(관내 상호대차)", f"명령 창(기록 재생) {A1['title']} · {P1}, 오른쪽 「읽는 법」 칸에서 판정·근거 → 안내문 → 접수 메모를 차례로 강조")
         await crumb("<b>흐름 1</b> / 3 · 같은 도구를 PC에서 직접 부르기")
-        await ev("term('명령 창 · 상담 비서 도구를 한 번 부르기(server/lab/consult_cli.py)'); termNarrow(1); only('term','read','bar')")
+        await ev("term('명령 창 · 책이지 도구를 한 번 부르기(server/lab/consult_cli.py)'); termNarrow(1); only('term','read','bar')")
         await page.evaluate("r=>{readPanel(r);readOn([])}", [
             {"lb": "① 판정", "vv": f"<span class=\"pill\">{A1['route']}</span>", "ss": (f"소장관 {A1.get('holder')} · " if A1.get('holder') else "") + f"{P1}에서 받기"},
             {"lb": "② 근거", "vv": f"{P1}은 {here1}<br>{A1['available'][0]} 등 {len(A1['available'])}곳은 대출 가능", "ss": f"정보나루 {A1['asof']} 조회(전일 기준)"},

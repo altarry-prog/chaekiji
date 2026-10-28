@@ -89,7 +89,7 @@ AI 모델은 말을 알아듣고 도구를 고르는 일만 합니다. 조회와
 2. 클로드 데스크톱을 다시 켭니다.
 3. 「+」 메뉴에서 프롬프트 `consult`를 고르고(받을 도서관·언어 선택), 이용자의 말을 적습니다.
 
-   > 한강 소년이 온다 빌리고 싶어요, 역곡에서 받을게요
+   > 한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요
 
    도구가 한 번 불리고, 판정 한 줄·이용자 안내문·접수 메모가 돌아옵니다.
 
@@ -98,7 +98,7 @@ AI 모델은 말을 알아듣고 도구를 고르는 일만 합니다. 조회와
 공통기반 지원 계열이며, 발화가 PC 밖으로 나가지 않습니다.
 
     ollama pull exaone3.5:2.4b
-    python hosts/ollama_host.py --model exaone3.5:2.4b --ask "한강 소년이 온다 빌리고 싶어요, 역곡에서 받을게요"
+    python hosts/ollama_host.py --model exaone3.5:2.4b --ask "한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요"
 
 - 라마(`llama3.2:3b`)·젬마(`gemma3:4b`)도 됩니다. 기록을 남기려면 `--log lab/out/host_log.ndjson`을 붙입니다.
 - 모델이 Ollama의 도구 호출을 지원하지 않으면, 호스트가 스스로 「JSON 한 덩어리」 방식으로 넘어갑니다.
@@ -284,7 +284,7 @@ AI 모델은 말을 알아듣고 도구를 고르는 일만 합니다. 조회와
 - 시연 웹: https://altarry-prog.github.io/chaekiji/
 - 확산 모델 설계도: https://altarry-prog.github.io/chaekiji/mcp.html
 - 도구 호출 콘솔: https://altarry-prog.github.io/chaekiji/console.html
-- 통합 저장소: 공공 GitLab 제출본 https://gitlab.aigov.go.kr/altarry/chaekiji-challenge (2026. 11. 2. 등록) · 공개 초안 https://gitlab.aigov.go.kr/altarry/chaekiji · 깃허브 https://github.com/altarry-prog/chaekiji
+- 통합 저장소: 공공 GitLab 제출본 https://gitlab.aigov.go.kr/altarry/chaekiji-challenge (2026. 11. 2. 등록, 비공개: 심사위원 열람용) · 공개 초안 https://gitlab.aigov.go.kr/altarry/chaekiji · 깃허브 https://github.com/altarry-prog/chaekiji
 - 종전 단독 저장소(2026. 10. 13. 통합 뒤 보관): https://gitlab.aigov.go.kr/altarry/chaekiji-mcp · https://github.com/altarry-prog/chaekiji-mcp
 
 정보나루 공식 MCP(국립중앙도서관, 2026. 8. 개시)는 조회 도구입니다. 책이지는 그 위에 판정·실행 계층을 얹자는 제안이며, 조회원을 공식 MCP로 바꿔 끼우는 것이 v0.4 이후의 방향입니다.

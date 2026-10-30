@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.20 (2026. 10. 30.) · 캐시 chaekiji-v46 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.22 (2026. 10. 30.) · 캐시 chaekiji-v48 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -194,6 +194,7 @@ html.noanim .scanrow{opacity:1}
   position:relative;
 }
 .mic:active{transform:scale(.94)}
+#s-idle.errOn:has(#micerr a) .micwrap{min-height:120px}#s-idle.errOn:has(#micerr a) .mic{width:100px;height:100px}   /* v1.12.22: 홈페이지 찾기 줄이 붙은 안내에서만 */
 /* 홈화면 설치 안내 */
 .inst{display:none;margin:0 0 8px;padding:9px 11px;border-radius:12px;
   background:var(--brand-l);border:1.4px solid #bfded6;font-size:11.5px;line-height:1.4;color:#14483e}
@@ -783,8 +784,8 @@ body.bigmode .foot button{font-size:12.5px}
       </div>
       <div class="chips">
         <div class="lbl" id="chiplbl">눌러서 바로 보기</div>
-        <button class="chip" data-case="1">
-          “<b>나미야 잡화점의 기적</b> 빌리고 싶어요”
+        <button class="chip" data-case="0">
+          “<b>한강 소년이 온다</b> 찾아주세요”
           <span class="m">① 상동은 대출 중 → 관내 상호대차<em class="lv">10. 30. 실제 자료</em></span>
         </button>
         <button class="chip" data-case="3">
@@ -1094,6 +1095,14 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    탭이 강제 종료될 수 있음(Electron이 같은 문제를 고친 기록).
    담당자 15:43 「원인마다 해결 방법」: 광고 차단이 단순 배치로도 화면 틀을 숨기면 틀의 이름을 바꿔 피함(.cjx), 10초 안에 다 받지 못하면
    연결 알림(다시 불러오기 · 휴대폰 데이터 · 그림으로 둘러보기, 다 받으면 지움). 판정·자료 흐름은 그대로 */
+/* v1.12.22(2026. 10. 30., 캐시 v48): 담당자 15:03 「1번은 한강 소년이 온다여야지」·15:05 「예시 5권만 찾을 수 있다고 하는데」, 15:29 승인.
+   ① 예시 단추 ①을 나미야 잡화점의 기적에서 한강 소년이 온다로(기준일 10. 30. 자료로 상동 대출 중 · 다른 10곳 대출 가능 → 관내 상호대차, 단추 설명 그대로).
+   10개 언어 단추 설명·전화 모드 단추도 같은 순서(소년이 온다 · 불편한 편의점 · 지구 끝의 온실). 나미야는 단추에서만 빠지고 말하거나 입력하면 그대로 찾는다.
+   ② 목록 밖 책을 말하거나 입력했을 때 「예시 5권만」 안내 끝에 「홈페이지에서 「제목」 찾기 ›」(한국어 화면, 부천시립도서관 홈페이지 자료 검색). 정보나루 호출은 늘지 않는다.
+   그 줄이 붙은 안내에서만 마이크를 100px로(휴대폰 4가지 크기에서 한 화면 안, 둘레 겹침 없음). 판정·자료 흐름은 그대로 */
+/* v1.12.21(2026. 10. 30., 캐시 v47): 담당자 11:42. 처음 안내의 「시작하기」·「음성 없이 시작」을 누르면 아래 음성 시작 화면(「눌러서 시작하기 · 음성 없이 시작」)이
+   0.3초 서서히 사라지는 사이에 잠깐 비쳤다. 처음 안내를 걷기 전에 아래 화면을 그 자리에서 없애 한 장면도 비치지 않게 함. 화면을 눌러 음성 시작 화면을 직접 닫을 때의
+   서서히 사라짐은 그대로. 판정·자료 흐름·문구는 그대로 */
 /* v1.12.20(2026. 10. 30., 캐시 v46): 측정에 참여한 직원 의견(10. 30.)을 담당자가 전함. ① 처음 열 때 한 번 「처음 안내」(상호대차란 · 이렇게 써요 ·
    자주 가는 도서관 고르기, 10개 언어, 「시작하기」 누름이 곧 음성 시작). ⓘ 안내의 「처음 안내 다시 보기」, 주소 ?intro=1로 다시 봄. 기관 로고는 머리글에 이미 있어 따로 넣지 않음.
    ② 관내 상호대차 신청 완료 화면 맨 위 「받는 방법」(수령 도서관 · 예상 도착 · 수령 기한 · 빌리는 방법). ③ 시민 화면의 「창구」를 「안내데스크」로(사서용 화면·문서는 그대로).
@@ -1391,61 +1400,61 @@ function exLv(code){ const m = /(\d{4})\D+(\d{1,2})\D+(\d{1,2})/.exec(기준일)
 const EXTAG = {ko:'예시', en:'sample', zh:'示例', ja:'例', vi:'mẫu', th:'ตัวอย่าง', ru:'пример', mn:'жишээ', uz:'namuna', id:'contoh'};
 const CHIPS_L = {
   ko:{c:[
-    ['“<b>한강 소년이 온다</b> 찾아주세요”','② 상동도서관에 있음 → 바로 이용',true],
+    ['“<b>한강 소년이 온다</b> 찾아주세요”','① 상동은 대출 중 → 관내 상호대차',true],
     ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','① 상동은 대출 중 → 관내 상호대차',true],
     ['“<b>지구 끝의 온실</b> 찾아주세요”','③ 관내에 없음 → 책바다(전국)',null],
     ['“<b>불편한 편의점</b> 있나요”','② 상동도서관에 있음 → 바로 이용',true]],
     note:'직접 말하거나 입력하면(예: 한강 소년이 온다) 그날 새벽 받은 정보나루 자료로 판정해요. 대출 상태는 조회한 날의 전날 기준이에요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)'},
   en:{c:[
-    ['“Find <b>Human Acts</b> by Han Kang”','② At Sangdong Library → use right away',true],
+    ['“Find <b>Human Acts</b> by Han Kang”','① Checked out at Sangdong → loan within Bucheon',true],
     ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','① Checked out at Sangdong → loan within Bucheon',true],
     ['“Find <b>The Greenhouse at the End of the Earth</b>”','③ Not in Bucheon → nationwide (Chaekbada)',null],
     ['“Do you have <b>The Second Chance Convenience Store</b>?”','② At Sangdong Library → use right away',true]],
     note:'Speak or type a title (e.g., Human Acts) to check with the Data4Library data fetched early that morning. Loan status is as of the previous day (③ The Greenhouse at the End of the Earth stays a sample scene even when you search for it)'},
   zh:{c:[
-    ['“帮我找韩江的<b>《少年来了》</b>”','② 上洞图书馆有藏 → 直接借阅',true],
+    ['“帮我找韩江的<b>《少年来了》</b>”','① 上洞馆已借出 → 市内馆际互借',true],
     ['“我想借<b>《解忧杂货店》</b>”','① 上洞馆已借出 → 市内馆际互借',true],
     ['“帮我找<b>《地球尽头的温室》</b>”','③ 富川市内没有 → 全国服务',null],
     ['“有<b>《不便利的便利店》</b>吗？”','② 上洞图书馆有藏 → 直接借阅',true]],
     note:'直接说出或输入书名（例如《少年来了》），将按当天清晨获取的图书馆数据判定。借阅状态为查询日前一天的情况（③《地球尽头的温室》直接搜索也只显示示例场景）'},
   ja:{c:[
-    ['「ハン・ガンの<b>『少年が来る』</b>を探して」','② 上洞図書館に所蔵 → すぐ利用',true],
+    ['「ハン・ガンの<b>『少年が来る』</b>を探して」','① 上洞館は貸出中 → 市内の相互貸借',true],
     ['「<b>『ナミヤ雑貨店の奇蹟』</b>を借りたい」','① 上洞館は貸出中 → 市内の相互貸借',true],
     ['「<b>『地球の果ての温室』</b>を探して」','③ 富川市内に無し → 全国サービス',null],
     ['「<b>『不便なコンビニ』</b>はありますか」','② 上洞図書館に所蔵 → すぐ利用',true]],
     note:'話すか入力すると（例：『少年が来る』）、その日の早朝に受け取った図書館データで判定します。貸出状況は照会日の前日時点です（③『地球の果ての温室』は直接探しても例の場面です）'},
   vi:{c:[
-    ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','② Có tại TV Sangdong → dùng ngay',true],
+    ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','① Sangdong đã cho mượn → mượn trong Bucheon',true],
     ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','① Sangdong đã cho mượn → mượn trong Bucheon',true],
     ['“Tìm giúp tôi <b>Nhà kính ở tận cùng Trái Đất</b>”','③ Không có ở Bucheon → toàn quốc',null],
     ['“Có sách <b>Cửa hàng tiện lợi bất tiện</b> không?”','② Có tại TV Sangdong → dùng ngay',true]],
     note:'Nói hoặc nhập tên sách (VD: Bản chất của người) để kiểm tra theo dữ liệu Data4Library nhận sáng sớm hôm đó. Tình trạng mượn tính đến ngày hôm trước (③ Nhà kính ở tận cùng Trái Đất vẫn là cảnh minh họa dù bạn tự tìm)'},
   th:{c:[
-    ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','② มีที่ห้องสมุดซังดง → ใช้ได้เลย',true],
+    ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','① ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน',true],
     ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','① ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน',true],
     ['“ช่วยหา <b>เรือนกระจกที่สุดขอบโลก</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null],
     ['“มีหนังสือ <b>ร้านสะดวกซื้อไม่สะดวก</b> ไหม”','② มีที่ห้องสมุดซังดง → ใช้ได้เลย',true]],
     note:'พูดหรือพิมพ์ชื่อหนังสือ (เช่น Human Acts) เพื่อตรวจด้วยข้อมูลที่รับมาเช้ามืดวันนั้น สถานะการยืมเป็นของวันก่อนหน้า (③ เรือนกระจกที่สุดขอบโลก แม้ค้นเองก็ยังเป็นฉากตัวอย่าง)'},
   ru:{c:[
-    ['«Найди <b>Человеческие поступки</b> Хан Ган»','② Есть в библиотеке Сандон → сразу читать',true],
+    ['«Найди <b>Человеческие поступки</b> Хан Ган»','① В Сандоне выдана → обмен внутри Пучхона',true],
     ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','① В Сандоне выдана → обмен внутри Пучхона',true],
     ['«Найди <b>Теплицу на краю Земли</b>»','③ Нет в Пучхоне → по всей стране',null],
     ['«Есть <b>«Магазин шаговой недоступности»</b>?»','② Есть в библиотеке Сандон → сразу читать',true]],
     note:'Скажите или введите название (напр., «Человеческие поступки»), проверим по данным, полученным рано утром в тот день. Статус выдачи на предыдущий день (③ «Теплица на краю Земли» и при поиске показывается как пример)'},
   mn:{c:[
-    ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','② Сандон номын санд байгаа → шууд ашиглах',true],
+    ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','① Сандонд зээлэгдсэн → Бүчон доторх солилцоо',true],
     ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','① Сандонд зээлэгдсэн → Бүчон доторх солилцоо',true],
     ['“<b>Дэлхийн захын хүлэмж</b>-ийг олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null],
     ['“<b>Тухгүй минимаркет</b> ном байгаа юу?”','② Сандон номын санд байгаа → шууд ашиглах',true]],
     note:'Номын нэрийг хэлж эсвэл бичвэл (жишээ нь Хөвгүүн ирлээ) тэр өдрийн өглөө эрт авсан өгөгдлөөр шалгана. Зээлийн төлөв нь өмнөх өдрийнх (③ Дэлхийн захын хүлэмж-ийг өөрөө хайсан ч жишээ үзэгдэл хэвээр)'},
   uz:{c:[
-    ['“Han Kangning <b>Human Acts</b> kitobini toping”','② Sangdon kutubxonasida bor → darhol foydalaning',true],
+    ['“Han Kangning <b>Human Acts</b> kitobini toping”','① Sangdonda band → Bucheon ichida almashish',true],
     ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','① Sangdonda band → Bucheon ichida almashish',true],
     ['“<b>Yer chekkasidagi issiqxona</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null],
     ['“<b>Noqulay minimarket</b> kitobi bormi?”','② Sangdon kutubxonasida bor → darhol foydalaning',true]],
     note:'Kitob nomini ayting yoki yozing (masalan, Human Acts), o\'sha kuni erta tongda olingan ma\'lumot bilan tekshiramiz. Ijara holati oldingi kun bo\'yicha (③ Yer chekkasidagi issiqxona o\'zingiz qidirsangiz ham namuna sahna bo\'lib qoladi)'},
   id:{c:[
-    ['“Carikan <b>Mata Malam</b> karya Han Kang”','② Ada di Perpustakaan Sangdong → langsung pakai',true],
+    ['“Carikan <b>Mata Malam</b> karya Han Kang”','① Dipinjam di Sangdong → pinjam antar-cabang Bucheon',true],
     ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','① Dipinjam di Sangdong → pinjam antar-cabang Bucheon',true],
     ['“Carikan <b>Rumah Kaca di Ujung Bumi</b>”','③ Tidak ada di Bucheon → seluruh negeri',null],
     ['“Ada buku <b>Minimarket yang Tak Nyaman</b>?”','② Ada di Perpustakaan Sangdong → langsung pakai',true]],
@@ -2447,7 +2456,10 @@ function run(text, live){
       const P0 = (typeof PHONE !== 'undefined' && PHONE[code0]) ? PHONE[code0] : null;
       const msg = P0 ? P0.unk2 : '시연 화면은 예시 5권만 찾을 수 있어요. 소년이 온다, 나미야 잡화점의 기적, 불편한 편의점, 설민석의 한국사 대모험 가운데 하나를 말씀해 주세요. 지구 끝의 온실은 예시 장면으로만 볼 수 있어요.';
       const esc = x => String(x).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
-      show('s-idle'); micNote(`“${esc(text)}”: ${esc(msg)}`, true); if(TTS_ON) say(msg);
+      /* v1.12.22: 막다른 안내 대신 찾아볼 곳 — 한국어 화면에서 부천시립도서관 홈페이지 자료 검색을 그 제목으로 연다(정보나루 호출 없음) */
+      const q0 = String(text||'').replace(/[?？.!,。]/g,' ').replace(/\s*(빌리고 ?싶(어요|은데요|습니다)|빌릴 ?수 ?있(어요|나요|을까요)|찾아 ?(주세요|줘)|있(나요|어요|을까요|습니까)|대출 ?(되나요|할 ?수 ?있나요)|읽고 ?싶어요|보고 ?싶어요)\s*$/,'').trim();
+      const link = (code0 === 'ko' && q0.length >= 2) ? ` <a href="${OFFICIAL_SEARCH_TITLE.replace('{title}', encodeURIComponent(q0))}" target="_blank" rel="noopener" style="white-space:nowrap;color:#0f5c4c;text-underline-offset:3px">홈페이지에서 「${esc(q0)}」 찾기 ›</a>` : '';
+      show('s-idle'); micNote(`“${esc(text)}”: ${esc(msg)}` + link, true); if(TTS_ON) say(msg);
       return;
     }
     cur = hit;
@@ -3225,13 +3237,14 @@ function gateLang(){
   $('gateNo').textContent = MX('startNo') || '음성 없이 시작';
 }
 function gateFit(){ const g = $('ttsgate'); if(!g) return; try{ const h = document.querySelector('.top').offsetHeight; if(h > 0) g.style.top = h + 'px'; }catch(e){} }
-function gateHide(){
+function gateHide(now){
   const g = $('ttsgate'); if(!g || !g.classList.contains('on') || g.classList.contains('off')) return;
+  if(now){ g.classList.remove('on'); g.classList.remove('off'); return; }   /* v1.12.21: 처음 안내에서 닫을 때는 그 자리에서 없앤다(0.3초 사라지는 사이에 「눌러서 시작하기」가 비치지 않게) */
   g.classList.add('off'); setTimeout(()=>{ g.classList.remove('on'); g.classList.remove('off'); }, 320);
 }
-function gateStart(voice){
+function gateStart(voice, now){
   const g = $('ttsgate'); if(!g || !g.classList.contains('on')) return;
-  gateHide();
+  gateHide(now);
   if(voice && TTS_ON){
     TTS_UNLOCKED = true;                                          // 이 speak()는 이용자 동작(click) 안에서 나간다
     say(MX('welcome') || '무슨 책 찾으세요? 마이크 단추를 누르고 책 제목을 말씀해 주세요. 제목이 정확하지 않아도 괜찮아요.');
@@ -3363,14 +3376,16 @@ function introClose(how){
   const i = $('intro'); if(!i || !i.classList.contains('on')) return;
   try{ localStorage.setItem(INTRO_KEY, '1'); }catch(e){}
   const pick = $('introLib').value;
+  const g = $('ttsgate');
+  /* v1.12.21: 아래 음성 시작 화면을 먼저, 그 자리에서 없앤 뒤 처음 안내를 걷는다(담당자 11:42 「시작하기를 누르면 찰나지만 음성 없이 시작 이전 그림이 뜬다」).
+     전에는 처음 안내가 먼저 사라지고 음성 시작 화면이 0.3초 동안 서서히 사라져, 그 사이 「눌러서 시작하기 · 음성 없이 시작」이 비쳤다 */
+  if(g && g.classList.contains('on')){
+    if(how === 'go') gateStart(true, true);
+    else if(how === 'no'){ TTS_ON = false; $('ttsbtn').classList.remove('on'); savePref({tts:false}); gateStart(false, true); }
+  }
   i.classList.remove('on'); gateCover(false);
   if(pick && pick !== 내관) setMyLib(pick);
-  const g = $('ttsgate');
-  if(g && g.classList.contains('on')){
-    if(how === 'go') gateStart(true);
-    else if(how === 'no'){ TTS_ON = false; $('ttsbtn').classList.remove('on'); savePref({tts:false}); gateStart(false); }
-    else { try{ $('gateGo').focus({preventScroll:true}); }catch(e){} }
-  }
+  if(how === 'esc' && g && g.classList.contains('on')){ try{ $('gateGo').focus({preventScroll:true}); }catch(e){} }
 }
 (function introInit(){
   const i = $('intro'); if(!i) return;
@@ -3833,7 +3848,7 @@ function phStart(){
   PH.on=true; PH.tries=0; PH.c=null; PH.kind=null; PH.tier=1;
   phLabels(); $('pcState').textContent=p.connecting; $('pcHang').classList.remove('re'); $('pcIn').value='';
   const CL=CHIPS_L[code]||CHIPS_L.ko; $('pcChips').innerHTML='';
-  [1,3,2].forEach(i=>{ const b=document.createElement('button'); const q=(CL.c[i]||CL.c[0])[0].replace(/<[^>]+>/g,'').replace(/[“”"]/g,'');
+  [0,3,2].forEach(i=>{ const b=document.createElement('button'); const q=(CL.c[i]||CL.c[0])[0].replace(/<[^>]+>/g,'').replace(/[“”"]/g,'');
     b.textContent=q; b.onclick=()=>phHandle('book', q, undefined, true); $('pcChips').appendChild(b); });
   PH.t0=Date.now(); clearInterval(PH.timer); $('pcTimer').textContent='00:00';
   PH.timer=setInterval(()=>{ const s=Math.floor((Date.now()-PH.t0)/1000); $('pcTimer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);

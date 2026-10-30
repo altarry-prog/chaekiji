@@ -474,7 +474,7 @@ async def main():
             print("intro/gate skipped", e)
         mark("9 판정", "예시 ① 누름 → 처리 단계 → 판정 화면, 아래로 굴려 다른 도서관까지")
         await ev("dstep(1)")
-        await tapclick(app.locator("text=나미야 잡화점의 기적 빌리고 싶어요").first)
+        await tapclick(app.locator("text=한강 소년이 온다 찾아주세요").first)   # v1.12.22(10. 30.)부터 예시 단추 ①은 한강 소년이 온다(상동 대출 중 → 관내 상호대차)
         await side("판정", "상동은 대출 중이라\n다른 도서관에서 보내 드립니다",
                    f"예시 단추도 정보나루 실제 자료({KD} 새벽 자료)로 판정합니다. 직접 말하거나 입력하면 그날 새벽 자료로 찾습니다.",
                    "대출 상태는 정보나루 전일 기준")

@@ -1,0 +1,50 @@
+# GPT 모델 구동 실측: 깃허브 모델(GitHub Models, 무료 시험용)로 오픈AI GPT 모델에 책이지 상담 도구를 붙여,
+# 공개 모델 2종 노트북과 같은 문의 5건을 돌리고 기록표를 만든다(tools/model2/run_gpt.py).
+# 왜: ChatGPT 커넥터는 유료 요금제에서만 열려(2026. 10. 30. 확인), 결제·인증키 없이 GPT 계열에서도 같은 판정이 나오는지
+#     기록하려고(담당자 10. 30. 16:15 승인). main은 건드리지 않고 기록은 이 가지(tools/model2)의 server/lab/out/에 커밋한다.
+# 인증: 깃허브 액션 기본 토큰(GITHUB_TOKEN)에 models: read 권한만 더한다. 인증키·결제 없음.
+# 정보나루: 원격 중계를 거쳐 오늘 자료 — 새벽 자료에 있는 책은 호출 0, 없는 책(채식주의자)만 한 번(약 17건, 10분 캐시).
+name: model-gpt
+on:
+  workflow_dispatch:
+  push:
+    branches: [tools/model2]
+    paths: [".github/workflows/model-gpt.yml", "tools/model2/gpt_host.py", "tools/model2/run_gpt.py"]
+permissions:
+  contents: write
+  models: read
+concurrency:
+  group: model-gpt
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHONUNBUFFERED: "1"
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 작업 폴더(공개 모델 실측과 같은 /content)
+        run: sudo mkdir -p /content && sudo chown "$USER" /content
+      - name: GPT 모델 × 같은 문의 5건(깃허브 모델)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/model2/run_gpt.py
+      - name: 기록을 이 가지에 커밋
+        if: always()
+        run: |
+          mkdir -p server/lab/out
+          cp /content/chaekiji/server/lab/out/model_gpt_record_actions_*.md server/lab/out/ 2>/dev/null || true
+          cp /content/chaekiji/server/lab/out/gpt_host_log_actions_*.ndjson server/lab/out/ 2>/dev/null || true
+          cp /content/chaekiji/server/lab/out/gpt_host_answers_actions_*.ndjson server/lab/out/ 2>/dev/null || true
+          ls -la server/lab/out | grep gpt || echo "기록 파일 없음"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out
+          git commit -m "GPT 모델 구동 실측 기록 — 깃허브 액션·깃허브 모델(${RUN_URL##*/})" || echo "커밋할 것 없음"
+          git pull --rebase -q origin tools/model2 || true
+          git push

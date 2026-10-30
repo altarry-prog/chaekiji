@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
-<title>비교 장면 2판</title>
+<title>비교 장면 3판</title>
 <style>
 @font-face{font-family:'Pretendard';font-weight:400;src:url('../fonts/Pretendard-Regular.otf')}
 @font-face{font-family:'Pretendard';font-weight:500;src:url('../fonts/Pretendard-Medium.otf')}
@@ -70,7 +70,7 @@ html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;
 <div id="stage">
   <div id="crumb"><b>책이지</b> · 왜 만들었나</div>
   <div id="spdb">실제 걸린 시간을 <span id="spd">6</span>배 빨리 보여 줌</div>
-  <div id="hd"><div class="k">같은 책을 신청해 보면</div><div class="t">책이지는 <em>3번 눌러 20초</em></div><div class="s">누리집은 <b>18번 눌러 1분 20초</b></div></div>
+  <div id="hd"><div class="k">같은 책으로 재 보니</div><div class="t">책이지 시연 화면은 <em>3번 눌러 20초</em></div><div class="s">누리집은 <b>18번 눌러 1분 20초</b></div></div>
   <div class="panel" id="pa">
     <div class="ph"><span class="n">누리집(지금)</span><span class="d">로그인부터 신청 버튼까지</span><span class="tag">실제 화면 · 개인정보 가림</span></div>
     <div id="grid">
@@ -87,20 +87,23 @@ html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0f3d33;
     <div class="meter"><div class="m"><span class="v" id="ca">0</span><span class="u">번 누름</span></div><div class="m"><span class="v" id="ta">0초</span><span class="u">걸린 시간</span></div></div>
   </div>
   <div class="panel" id="pb">
-    <div class="ph"><span class="n">책이지</span><span class="d">시연 화면</span><span class="tag">실제 화면</span></div>
-    <div id="phone"><img id="pimg" src="app_home.png" alt=""></div>
+    <div class="ph"><span class="n">책이지</span><span class="d">시연 화면 · 말로 묻기</span><span class="tag">실제 화면 · 따로 찍음</span></div>
+    <div id="phone"><img id="pimg" src="app_gate.png" alt=""></div>
     <div id="ptap"></div>
-    <div id="bsteps"><div data-n="1">책 제목을 말하거나 입력</div><div data-n="2">「상호대차 신청」</div><div data-n="3">「네, 신청합니다」</div></div>
-    <div id="stamp">✓ 20초 만에 끝</div>
+    <div id="bsteps"><div data-n="1">「눌러서 시작하기」</div><div data-n="2">마이크 누르고 책 제목 말하기</div><div data-n="3">「방문 안내 보기」</div></div>
+    <div id="stamp">✓ 20초에 안내</div>
     <div class="meter"><div class="m"><span class="u">누른 수</span><span class="v" id="cb">0번</span></div><div class="m"><span class="u">걸린 시간</span><span class="v" id="tb">0초</span></div></div>
   </div>
-  <div id="bar"><span id="bar1">개발에 참여하지 않은 직원 3명이 시연 도서 5권으로 잰 가운데값(2026. 10. 27.)</span><small id="bar2">책마다 3명 평균 · 왼쪽은 실제 누리집 화면(개인정보 가림), 누른 수와 시간은 측정 기록 · 시연 화면의 신청은 실제 접수가 아닙니다 · 기록은 저장소 server/lab/out</small></div>
+  <div id="bar"><span id="bar1">개발에 참여하지 않은 직원 3명이 시연 도서 5권으로 잰 가운데값(2026. 10. 27.)</span><small id="bar2">책마다 3명 평균 · 끝: 누리집은 신청 버튼, 책이지는 「바로 이용」 방문 안내 · 화면은 따로 찍음(누리집은 개인정보 가림) · 기록은 저장소 server/lab/out</small></div>
 </div>
+<script src="app_shots.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const scrs=[...document.querySelectorAll('#grid .scr')];
 const clicks=scrs.map(s=>+s.dataset.c);            // 2+3+2+2+3+2+2+2 = 18(장면별 나눔은 그림용, 합계만 측정값)
-const A_TOTAL=80, B_TOTAL=20, A_N=18, B_AT=[5,12,20];
+const A_TOTAL=80, B_TOTAL=20, A_N=18, B_AT=[2,6,18];   // 오른쪽: ① 시작 ② 마이크 ③ 방문 안내 보기(누른 때는 그림용, 합계 3번·20초만 측정값)
+const SHOT=window.APP_SHOTS||{taps:{gate:[195,450],mic:[195,256],apply:[195,523]}};   // shoot_app.py가 찍은 화면의 누른 곳(390폭 기준)
+const PS=174/390, TAPXY=[SHOT.taps.gate,SHOT.taps.mic,SHOT.taps.apply].map(([x,y])=>[22+6+x*PS,62+6+y*PS]);
 const names=scrs.map(s=>s.querySelector('.lbl').textContent);
 function fmt(s){s=Math.round(s);const m=Math.floor(s/60),x=s%60;return (m?m+'분 ':'')+x+'초';}
 let lastA=-1,lastB=-1;
@@ -119,10 +122,10 @@ function setT(t){
   // B
   const cb=B_AT.filter(x=>t>=x).length;
   $('cb').textContent=cb+'번'; $('tb').textContent=fmt(Math.min(B_TOTAL,t));
-  $('pimg').src = cb>=3?'app_done.png':cb===2?'app_confirm.png':cb===1?'app_result.png':(t>=2?'app_typed.png':'app_home.png');
+  $('pimg').src = cb>=3?'app_visit.png':t>=11?'app_result.png':cb===2?'app_listen.png':cb===1?'app_home.png':'app_gate.png';
   [...document.querySelectorAll('#bsteps div')].forEach((d,i)=>d.classList.toggle('on',i<cb));
   $('stamp').classList.toggle('on', t>=B_TOTAL); $('pb').classList.toggle('win', t>=B_TOTAL);
-  if(cb!==lastB){ lastB=cb; if(cb>0){ const p=$('ptap'); p.style.left=(22+93)+'px'; p.style.top=(62+(cb===1?110:330))+'px'; p.classList.remove('go'); void p.offsetWidth; p.classList.add('go'); } }
+  if(cb!==lastB){ lastB=cb; if(cb>0){ const p=$('ptap'), xy=TAPXY[cb-1]; p.style.left=xy[0]+'px'; p.style.top=xy[1]+'px'; p.classList.remove('go'); void p.offsetWidth; p.classList.add('go'); } }
 }
 try{ const q=new URLSearchParams(location.search); if(q.get('spd')) $('spd').textContent=q.get('spd'); }catch(e){}
 window.setT=setT; setT(0);

@@ -16,3 +16,15 @@
 - **인증** — 깃허브 액션 기본 토큰(`GITHUB_TOKEN`)에 `models: read` 권한만 더한다. 깃허브 모델은 무료 시험용이라 분당·하루 호출 한도가 있고, 운영 경로가 아니다.
 - **기준 판정** — 모델 없이 같은 도구를 같은 값으로 직접 부른 결과를 함께 적어, 모델마다 판정이 기준과 같은지 본다.
 - **결과** — 이 가지의 `server/lab/out/model_gpt_record_actions_….md`와 원 기록(`gpt_host_log_actions_…`·`gpt_host_answers_actions_…`). 실행 기록은 Actions 탭의 `model-gpt`.
+
+### 결과: 깃허브 모델로는 잴 수 없음(2026. 10. 30.)
+
+- 깃허브 모델(GitHub Models)은 **2026. 7. 30. 완전히 종료**되었다(GitHub 변경 기록 「GitHub Models is now retired」). 이 가지에서 네 번 돌린 결과(`model_gpt_record_actions_2026-10-30_1620`~`_1630`)는 모두 0/5이며, 서비스 주소가 어떤 요청에도 200 「OK」만 돌려준 연결 실패 기록이다(`gpt_probe_actions_41020774870.txt`). 실패도 기록이라 지우지 않는다.
+- 그래서 GPT 계열은 아래 GPT-OSS(공개 모델)로 잰다. `gpt_host.py`·`run_gpt.py`·워크플로 `model-gpt`는 더 쓰지 않는다.
+
+## GPT-OSS(오픈AI의 공개 모델) — 2026. 10. 30. 추가
+
+- **무엇** — `gpt-oss:20b`(받는 크기 약 14GB)를 깃허브 액션 서버(CPU)의 Ollama로 돌려 같은 문의 5건을 처리한다(`run_gptoss.py`, 워크플로 `model-gptoss`). 호스트는 엑사원·라마 실측과 같은 main의 `server/hosts/ollama_host.py` 그대로다.
+- **왜** — 결제 없이 GPT 계열을 잴 길이 공개 모델뿐이고, GPT-OSS는 행정안전부 AI 공통기반 목록(참가 안내서 10. 21. 변경판)에 있다.
+- **주의** — 그래픽카드가 없는 서버(메모리 16GB)라 느리고, 메모리가 모자라면 실패할 수 있다. 실패도 그대로 기록한다.
+- **결과** — 이 가지의 `server/lab/out/model_gptoss_record_actions_….md`와 원 기록(`gptoss_host_log_actions_…`·`gptoss_host_answers_actions_…`).

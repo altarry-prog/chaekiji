@@ -63,7 +63,7 @@ T1, T2, T3, T4 = rd("t1.txt"), rd("t2.txt"), rd("t3.txt"), rd("t4.txt")
 META = json.load(open(os.path.join(HERE, "t_meta.json"), encoding="utf-8"))   # capture.py — 찍은 날 고른 책·판정·조회일·시험 수
 # 화면 글에 쓰는 예시(담당자 승인으로 바꿈). 흐름도의 이용자 말, 「다음 단계」 칸에 덧붙일 줄(없으면 None)
 EX_SAY = os.environ.get("CHAEKIJI_VIDEO_SAY", "한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요")
-NEXT_EXTRA = os.environ.get("CHAEKIJI_VIDEO_NEXT", "정보화사업 연계로 전국 도서관이 같은 기준으로 상호대차를 안내") or None
+NEXT_EXTRA = os.environ.get("CHAEKIJI_VIDEO_NEXT", "정보화사업 연계로 전국 도서관이 같은 도구로 상호대차를 안내") or None
 # 장면별 내레이션(tts.yml이 만든 mp3와 길이) — 파일 이름 앞 두 자리가 장면 번호
 NARR_DIR = os.path.join(HERE, "narration", "audio", "script")
 NARR, NARR_EV, NARR_LEAD = {}, [], 0.4
@@ -113,6 +113,7 @@ async def main():
             cctx = await b.new_context(viewport={"width": 390, "height": 790}, device_scale_factor=2.4, locale="ko-KR",
                                        has_touch=True, service_workers="block")
             await cctx.route("**/*workers.dev*", lambda r: r.abort())
+            await cctx.add_init_script("try{localStorage.setItem('chaekiji.intro','1')}catch(e){}")   # v1.12.20: 표지는 처음 안내가 아니라 첫 화면
             cpg = await cctx.new_page()
             await cpg.goto(APP_URL, wait_until="load"); await cpg.wait_for_timeout(1200)
             g = cpg.locator("#gateNo")
@@ -170,7 +171,7 @@ async def main():
             await page.evaluate("([t,s])=>bar(t,s)", [text, small])
 
         async def side(k, h, s, n_=""):
-            cue(h.replace("\n", " "), s, n_)
+            cue(h.replace("\n(", "(").replace("\n", " "), s, n_)
             await page.evaluate("([k,h,s,n])=>sideFade(k,h,s,n)", [k, h, s, n_])
 
         async def card(k, t, s, items):
@@ -232,17 +233,6 @@ async def main():
         scene("CV", "· 표지", "끝 칸과 같은 모양(과제명·한 줄 표어·팀·챌린지 이름)에 찍는 날의 시연 웹 첫 화면을 휴대폰 틀로 크게, 소리 없이 약 2.4초")
         cue(COVER[0] + " · 말 한마디로 내 손안에 책이", COVER[2], COVER[3])   # 자막 세 줄이 「·」로 시작하지 않게
         await W(2400)
-
-        # ── 0. 첫 화면: claude.ai 실제 화면(창구 질문을 그대로) ──
-        m = clip_meta("claude")
-        scene("00", "0 첫 화면(claude.ai 실제 화면)", "2026. 10. 20. 크롬 실제 화면 캡처 20초. 창구 질문을 그대로 넣고 판정·안내문이 나오기까지(기다린 약 50초는 빨리 감음, 첫 3초 커넥터 목록의 다른 커넥터 이름은 흐림 처리)")
-        await crumb("<b>책이지</b> · 창구에서 받는 질문을 그대로")
-        if m:
-            await play_clip(m)
-        else:
-            await slot("claude.ai에서 같은 문의를 넣는\n실제 화면(20초)", "clips/claude.webm이 없어 자리 표시를 둡니다")
-            await W(6000)
-        await hold("00")
 
         # ── 1. 제목 · 왜(인포: 제목 칸 → 큰 숫자 세 칸과 신청 전 세 가지) ──
         scene("01", "1 제목·왜 만들었나", "제목(과제명·한 줄 설명·세 가지 특징) → 상호대차 큰 숫자 세 칸(44개소·320,140권·96.5%)과 신청 전 세 가지 확인")
@@ -325,6 +315,17 @@ async def main():
             await ev(f"steps3On({i})"); cue(S3[i]["h"] + ": " + S3[i]["d"] + ((" " + S3[i]["pill"]) if S3[i].get("pill") else "")); await W(g3[i])
         await hold("03")
 
+        # ── 0. 흐름 1 실제 화면: claude.ai(창구 질문을 그대로, 담당자 10. 30. 「흐름 1 소개 뒤로」) ──
+        m = clip_meta("claude")
+        scene("00", "3-2 흐름 1 실제 화면(claude.ai)", "2026. 10. 20. 크롬 실제 화면 캡처 20초. 창구 질문을 그대로 넣고 판정·안내문이 나오기까지(기다린 약 50초는 빨리 감음, 첫 3초 커넥터 목록의 다른 커넥터 이름은 흐림 처리)")
+        await crumb("<b>흐름 1</b> / 3 · claude.ai 실제 화면(2026. 10. 20.)")
+        if m:
+            await play_clip(m)
+        else:
+            await slot("claude.ai에서 같은 문의를 넣는\n실제 화면(20초)", "clips/claude.webm이 없어 자리 표시를 둡니다")
+            await W(6000)
+        await hold("00")
+
         # ── 5. 명령 창 1: 관내 상호대차(찍는 날 자료로 고른 책, capture.py) · 오른쪽에 읽는 법 ──
         A1 = META["t1"]
         P1 = A1.get("pickup", "상동")
@@ -365,7 +366,7 @@ async def main():
         scene("06", "6 명령 창 2(바로 이용)", f"명령 창(기록 재생) {A2['title']} · {P2} → 바로 이용, 읽는 법 칸")
         await ev("term('명령 창 · 다른 책으로'); termNarrow(1); only('term','read','bar')")
         await page.evaluate("r=>{readPanel(r);readOn([])}", [
-            {"lb": "① 판정", "vv": f"<span class=\"pill\">{A2['route']}</span>", "ss": f"받을 도서관({P2}) 서가에 있음"},
+            {"lb": "① 판정", "vv": f"<span class=\"pill\">{A2['route']}</span>", "ss": f"받을 도서관({P2})에 대출 가능(조회일 기준)"},
             {"lb": "② 근거", "vv": f"{P2} 등 {len(A2['available'])}곳 대출 가능", "ss": f"정보나루 {A2['asof']} 조회(전일 기준)"},
             {"lb": "③ 이용자 안내문", "vv": "상호대차 없이 바로 빌리시면 됩니다"}])
         await bar("받을 도서관 서가에 있으면", "상호대차 대신 「바로 이용」으로 안내합니다")
@@ -403,7 +404,7 @@ async def main():
         await crumb("<b>흐름 2</b> / 3 · 같은 상담을 공개 모델로")
         await page.evaluate("(a)=>{nums(...a);only('nums')}",
                             ["흐름 2 · 같은 상담을 공개 모델로", "코랩 「모두 실행」 한 번, <em>공개 모델 2종</em>",
-                             [{"v": "2", "u": "종", "l": "공개 모델", "n": "엑사원 3.5 2.4B · 라마 3.2 3B(공고의 공통기반 지원 계열)"},
+                             [{"v": "2", "u": "종", "l": "공개 모델", "n": "엑사원 3.5 2.4B(행정안전부 AI 공통기반 지원 모델) · 라마 3.2 3B"},
                               {"v": "15", "u": "건", "l": "기록표가 남은 3차례 × 문의 5건", "n": "같은 지시문 · 같은 도구(consult_request) · 2026. 10. 18. 깃허브 액션 실행"},
                               {"v": "11", "u": "건", "l": "두 모델 모두 도구 결과를 받은 답", "n": "판정이 모두 같았음", "hot": True}],
                              "나머지 <b>4건</b>은 한쪽 모델이 도구 없이 답해 쓸 수 없는 답이었습니다. 그래서 판정은 모델이 아니라 규칙 도구가 합니다."])
@@ -412,9 +413,8 @@ async def main():
         g8 = share("08", [0.03, 0.03, 0.04, 0.05], [0.7, 0.7, 0.9, 1.2])
         for i in range(3):
             await W(g8[i]); await ev(f"numsOn({i})")
-        cue("기록표가 남은 3차례 15건 가운데 두 모델 모두 도구 결과를 받은 11건은 판정이 같았습니다")
+        # [10/30] 1.2~1.4초만 보이던 자막 두 줄(1차 검수 A 28)은 빼고, 같은 말은 화면 글과 이어지는 기록표 클립 자막(8초씩)이 맡는다
         await W(g8[3]); await ev("numsNote()")
-        cue("나머지 4건은 한쪽 모델이 도구 없이 답해 쓸 수 없는 답이었습니다", "그래서 판정은 모델이 아니라 규칙 도구가 합니다")
         await W(1200)
         m = clip_meta("model2")
         if m:
@@ -426,9 +426,9 @@ async def main():
         await hold("08", pad=0.3)
 
         # ── 9. 흐름 3: 시민 음성 화면(왼쪽 위에 단계 표시) ──
-        scene("09", "9 흐름 3 시작", "왼쪽 단계 표시(시작·판정·신청 확인·접수(시연)·누구나)와 설명 + 오른쪽 휴대폰(시연 웹 실제 조작)")
+        scene("09", "9 흐름 3 시작", "왼쪽 단계 표시(처음 안내·판정·신청 확인·접수(시연)·누구나)와 설명 + 오른쪽 휴대폰(시연 웹 v1.12.20 실제 조작)")
         await crumb("<b>흐름 3</b> / 3 · 시민 음성 화면(2027 시범 운영 제안)")
-        await ev("side('','','',''); dsteps(['시작','판정','신청 확인','접수(시연)','누구나']); dstep(0); only('side','phone')")
+        await ev("side('','','',''); dsteps(['처음 안내','판정','신청 확인','접수(시연)','누구나']); dstep(0); only('side','phone')")
         await W(1200)
         rect = await page.evaluate("(()=>{const r=document.getElementById('appimg').getBoundingClientRect();return [r.left,r.top,r.width,r.height]})()")
         vw, vh = 390, 790
@@ -450,20 +450,33 @@ async def main():
             await W(int(ms * 0.15))
 
         await side("흐름 3 · 시민 음성 화면", "같은 판정을 시민이 직접\n(2027 시범 운영 제안)",
-                   "휴대폰 인터넷 창에서 열고 「눌러서 시작하기」를 누릅니다. 예시 단추로 음성 없이도 흐름을 볼 수 있습니다.",
+                   "휴대폰 인터넷 창에서 엽니다. 처음 열면 상호대차가 무엇인지와 쓰는 법을 먼저 알려 드리고, 자주 가는 도서관을 고르게 합니다.",
                    "시연 웹 altarry-prog.github.io/chaekiji")
         await W(2600)
+        KDAY = await app.evaluate("typeof 기준일 !== 'undefined' ? 기준일 : ''")      # v1.12.20 예시 단추 자료 날짜(예: 2026. 10. 30.)
+        KD = re.sub(r"^\d{4}\. ", "", KDAY) or "실제 자료"
         try:
-            g = app.locator("#gateGo")
-            if await g.count() and await g.is_visible():
-                await tapclick(g); await W(1500)
+            intro = app.locator("#introGo")
+            if await intro.count() and await intro.is_visible():
+                mark("9 처음 안내", "처음 열면 한 번: 상호대차란 · 이렇게 써요 · 자주 가는 도서관 → 「시작하기」")
+                await side("처음 안내", "처음 열면 한 번,\n상호대차부터 알려 드립니다",
+                           "상호대차란 · 이렇게 써요 · 자주 가는 도서관 고르기. 「시작하기」를 누르면 음성 안내가 시작됩니다.",
+                           "직원 의견(10. 30.)으로 넣음 · 10개 언어")
+                await W(2600)
+                await app.evaluate("(()=>{const i=document.getElementById('intro');if(i)i.scrollTo({top:i.scrollHeight,behavior:'smooth'})})()")
+                await W(2000)
+                await tapclick(intro); await W(1500)
+            else:
+                g = app.locator("#gateGo")
+                if await g.count() and await g.is_visible():
+                    await tapclick(g); await W(1500)
         except Exception as e:
-            print("gate skipped", e)
+            print("intro/gate skipped", e)
         mark("9 판정", "예시 ① 누름 → 처리 단계 → 판정 화면, 아래로 굴려 다른 도서관까지")
         await ev("dstep(1)")
         await tapclick(app.locator("text=나미야 잡화점의 기적 빌리고 싶어요").first)
         await side("판정", "상동은 대출 중이라\n다른 도서관에서 보내 드립니다",
-                   "이 예시 단추는 2026. 8. 18. 실측 장면입니다. 직접 말하거나 입력하면 오늘 새벽 자료로 찾습니다.",
+                   f"예시 단추도 정보나루 실제 자료({KD} 새벽 자료)로 판정합니다. 직접 말하거나 입력하면 그날 새벽 자료로 찾습니다.",
                    "대출 상태는 정보나루 전일 기준")
         await W(4300)
         for y in (200, 400):
@@ -476,17 +489,17 @@ async def main():
         await side("신청 확인", "대출관 · 수령관 · 소요 ·\n수령 기한 · 미수령 제한",
                    "화면을 읽어 주고, 「네」 한마디나 단추 한 번으로 확인합니다.", "※ 시연이며 실제 접수로 이어지지 않습니다")
         await W(4500)
-        mark("9 접수(시연)", "「네, 신청합니다」 → 접수(시연) 화면, 「책이지가 대신 한 일」까지 굴림")
+        mark("9 접수(시연)", "「네, 신청합니다」 → 접수(시연) 화면: 맨 위 받는 방법(수령 도서관·예상 도착·수령 기한·빌리는 방법), 「책이지가 대신 한 일」까지 굴림")
         await ev("dstep(3)")
         try:
             await tapclick(app.locator("#confirm")); await W(1300)
         except Exception as e:
             print("confirm skipped", e)
-        await side("접수(시연)", "책이지가 대신 한 일을\n한 화면에",
-                   "말을 글로 옮기고, 책을 확정하고, 16개관을 확인하고, 규정 7종을 본 뒤 접수까지 이어 줍니다. 이용자는 말 한마디, 확인 한 번입니다.",
+        await side("접수(시연)", "받는 방법을 맨 위에,\n대신 한 일까지 한 화면에",
+                   "말을 글로 옮기고, 책을 확정하고, 16개관을 확인하고, 신청 규정을 확인한 뒤(한도·연체는 안내데스크에서) 접수(시연) 화면까지 이어 줍니다. 이용자는 말 한마디, 확인 한 번입니다.",
                    "※ 시연이며 실제 접수로 이어지지 않습니다")
         await W(2600)
-        await scroll_to(150, 1200)
+        await scroll_to(320, 1400)
         await W(1600)
         mark("9 누구나", "처음 화면 → 큰글자 → 언어 선택(베트남어)")
         await ev("dstep(4)")
@@ -494,7 +507,7 @@ async def main():
         await app.goto(APP_URL + "?r=2", wait_until="load"); await W(900)
         await ev("cover(false)"); await W(400)
         await side("누구나", "큰글자 · 10개 언어 ·\n전화 한 통 모드",
-                   "어르신, 외국인 주민, 시각이 불편한 분도\n같은 흐름으로 쓸 수 있습니다.",
+                   "어르신, 외국인 주민, 시각이 불편한 분도\n같은 흐름으로 쓰도록 설계했습니다(당사자 시험은 시범 운영 때).",
                    "음성 인식은 기기·브라우저가 지원하는 언어만 되고, 그 밖은 글자로 입력합니다")
         await W(1300)
         try:
@@ -544,7 +557,7 @@ async def main():
         scene("11", "11 어디까지 진짜인가", "두 칸: 지금 되는 것(사서 상담용) · 다음 단계(2027 시범 운영 제안), 아래 정직 고지")
         await crumb("<b>책이지</b> · 어디까지 진짜인가")
         NEXT = ["시민 음성 화면(지금은 시연, 실제 접수 아님)", "도서관리시스템과 연결해 접수까지",
-                "다른 지자체는 도서관 코드·규정 설정만 바꿔 적용(정보나루는 전국 공통 자료)"]
+                "다른 지자체는 도서관 코드·규정을 설정해 적용(정보나루는 전국 공통 자료)"]
         if NEXT_EXTRA:
             NEXT.append(NEXT_EXTRA)
         await page.evaluate("(a)=>{two(...a);only('two')}",
@@ -557,7 +570,7 @@ async def main():
                              "대출 상태는 정보나루 전일 기준이고, 시연 웹의 신청은 실제 접수가 아닙니다"])
         cue("판정까지는 지금, 접수는 연동 뒤")
         g11 = share("11", [0.35, 0.35], [3.0, 3.0])
-        await W(700); await ev("twoOn(0)"); cue("지금 되는 것: 사서가 창구·전화에서 쓰도록 만든 판정 도구(접수는 현행 시스템에서) · 정보나루 실제 자료(전일 기준) · 공개 모델 2종도 같은 판정")
+        await W(700); await ev("twoOn(0)"); cue("지금 되는 것: 사서가 창구·전화에서 쓰도록 만든 판정 도구(접수는 현행 시스템에서) · 정보나루 실제 자료(전일 기준) · 공개 모델 2종도 도구 결과를 받은 11건은 같은 판정")
         await W(g11[0]); await ev("twoOn(1)"); cue("다음 단계(2027 시범): " + " · ".join(NEXT))
         await W(g11[1]); await ev("twoFoot()"); cue("대출 상태는 정보나루 전일 기준이고, 시연 웹의 신청은 실제 접수가 아닙니다")
         await hold("11")

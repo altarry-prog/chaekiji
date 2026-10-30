@@ -429,7 +429,7 @@ async def main():
             await W(g8[i]); await ev(f"numsOn({i})")
         # [10/30] 1.2~1.4초만 보이던 자막 두 줄(1차 검수 A 28)은 빼고, 같은 말은 화면 글과 이어지는 기록표 클립 자막(8초씩)이 맡는다
         await W(g8[3]); await ev("numsNote()")
-        await W(1200)
+        await W(800)   # [10/30 17:55] 1.2초에서(5분 안)
         m = clip_meta("model2")
         if m:
             await play_clip(m)
@@ -466,7 +466,7 @@ async def main():
         await side("흐름 3 · 시민 음성 화면", "같은 판정을 시민이 직접\n(2027 시범 운영 제안)",
                    "휴대폰 인터넷 창에서 엽니다. 처음 열면 상호대차가 무엇인지와 쓰는 법을 먼저 알려 드리고, 자주 가는 도서관을 고르게 합니다.",
                    "시연 웹 altarry-prog.github.io/chaekiji")
-        await W(2600)
+        await W(2200)   # [10/30 17:55] 2.6초에서(5분 안)
         KDAY = await app.evaluate("typeof 기준일 !== 'undefined' ? 기준일 : ''")      # v1.12.20 예시 단추 자료 날짜(예: 2026. 10. 30.)
         KD = re.sub(r"^\d{4}\. ", "", KDAY) or "실제 자료"
         try:
@@ -492,7 +492,7 @@ async def main():
         await side("판정", "상동은 대출 중이라\n다른 도서관에서 보내 드립니다",
                    f"예시 단추도 정보나루 실제 자료({KD} 새벽 자료)로 판정합니다. 직접 말하거나 입력하면 그날 새벽 자료로 찾습니다.",
                    "대출 상태는 정보나루 전일 기준")
-        await W(4300)
+        await W(3600)   # [10/30 17:55] 4.3초에서(5분 안)
         for y in (200, 400):
             await scroll_to(y, 1200)
         await W(700)
@@ -502,7 +502,7 @@ async def main():
         await tapclick(app.locator("#apply"))
         await side("신청 확인", "대출관 · 수령관 · 소요 ·\n수령 기한 · 미수령 제한",
                    "화면을 읽어 주고, 「네」 한마디나 단추 한 번으로 확인합니다.", "※ 시연이며 실제 접수로 이어지지 않습니다")
-        await W(4500)
+        await W(3800)   # [10/30 17:55] 4.5초에서(5분 안)
         mark("9 접수(시연)", "「네, 신청합니다」 → 접수(시연) 화면: 맨 위 받는 방법(수령 도서관·예상 도착·수령 기한·빌리는 방법), 「책이지가 대신 한 일」까지 굴림")
         await ev("dstep(3)")
         try:
@@ -512,7 +512,7 @@ async def main():
         await side("접수(시연)", "받는 방법을 맨 위에,\n대신 한 일까지 한 화면에",
                    "말을 글로 옮기고, 책을 확정하고, 16개관을 확인하고, 신청 규정을 확인한 뒤(한도·연체는 안내데스크에서) 접수(시연) 화면까지 이어 줍니다. 이용자는 말 한마디, 확인 한 번입니다.",
                    "※ 시연이며 실제 접수로 이어지지 않습니다")
-        await W(2600)
+        await W(2200)   # [10/30 17:55] 2.6초에서(5분 안)
         await scroll_to(320, 1400)
         await W(1600)
         mark("9 누구나", "처음 화면 → 큰글자 → 언어 선택(베트남어)")
@@ -598,7 +598,7 @@ async def main():
                              "음성 해설: AI 합성(MeloTTS)" if NARR and not A.mute else "", "/tools/video/cmp/qr_demo.png", "휴대폰으로 시연 웹 열기"])
         cue("말 한마디로 내 손안에 책이", " · ".join(f"{a} {b}" for a, b in L12) + " · 팀 책이지 · 부천시립상동도서관")
         await W(5000)
-        await hold("12", pad=0.6)   # [10/30] 0.9에서 0.6으로(5분 안)
+        await hold("12", pad=0.4)   # [10/30] 0.9→0.6, 17:55 0.4로(5분 안)
         t_end = now(); mark("종료")
         await W(300)
         await cdp.send("Page.stopScreencast")

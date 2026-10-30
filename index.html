@@ -376,7 +376,10 @@ body.bigmode .bqitems{font-size:15.5px}
   background:linear-gradient(140deg,#1f7a6a,#0a5548);color:#fff;
   display:flex;align-items:center;justify-content:center;text-align:center;
   font-size:10.5px;padding:6px;line-height:1.35;font-weight:700;
+  position:relative;overflow:hidden;
 }
+/* v1.12.20: 시연 도서 표지 그림(있으면 덮고, 못 받으면 지워져 아래 제목 글이 보임) */
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .bookcard .meta{flex:1;min-width:0}
 .bookcard h2,.bookcard h3{margin:0 0 3px;font-size:16px;letter-spacing:-.3px;line-height:1.35}
 .bookcard .au{font-size:12.5px;color:var(--ink2);margin:0 0 6px}
@@ -971,7 +974,7 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="kv i"><span class="k">패스키 체험</span><span class="v">켜면 첫 신청 때 지문·얼굴로 이 기기를 등록하고, 위임을 만들 때 한 번 더 확인합니다(기기 안에서만 · 서버 없음). 기본은 꺼짐<small><button type="button" class="mini" id="pkToggle">켜기</button> <span id="pkDemoSt">지금: 꺼짐 · 신청은 확인 한 번으로 끝납니다</span></small></span></div>
       <div class="kv i"><span class="k">전화 한 통</span><span class="v">대표번호로 같은 상담·신청, 화면 없이<small>헤더의 📞 단추에서 통화 흐름을 체험할 수 있습니다 (전화망 연결은 운영 단계 과제)</small></span></div>
       <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
-      <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>예시 단추 ①②와 직접 찾기 모두 정보나루 실제 자료 · 예시 단추는 <span id="exDayInfo">2026. 10. 30.</span> 조회 자료로 고정, 직접 찾으면 매일 새벽 받은 자료(없으면 그 자리에서 조회) · 대출 상태는 조회한 날의 전날 기준 · ③은 예시 장면</small></span></div>
+      <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>예시 단추 ①②와 직접 찾기 모두 정보나루 실제 자료 · 예시 단추는 <span id="exDayInfo">2026. 10. 30.</span> 조회 자료로 고정, 직접 찾으면 매일 새벽 받은 자료(없으면 그 자리에서 조회) · 대출 상태는 조회한 날의 전날 기준 · ③은 예시 장면 · 표지 그림은 각 출판사의 것으로, 책을 알아보기 쉽게 작게 넣음</small></span></div>
       <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">직접 말하거나 입력하면(예: 한강 소년이 온다) 그날 새벽 받은 정보나루 자료로 판정해요. 대출 상태는 조회한 날의 전날 기준이에요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)</span></div>
       <div class="kv i"><span class="k">성격</span><span class="v">실현 가능성 검증용 시연 모델<small>실제 신청이 접수되지 않습니다 · 2026. 8. 부천시립상동도서관</small></span></div>
       <button class="cta ghost" id="introAgain" type="button">처음 안내 다시 보기</button>
@@ -1075,7 +1078,7 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
 /* v1.12.20(2026. 10. 30., 캐시 v46): 측정에 참여한 직원 의견(10. 30.)을 담당자가 전함. ① 처음 열 때 한 번 「처음 안내」(상호대차란 · 이렇게 써요 ·
    자주 가는 도서관 고르기, 10개 언어, 「시작하기」 누름이 곧 음성 시작). ⓘ 안내의 「처음 안내 다시 보기」, 주소 ?intro=1로 다시 봄. 기관 로고는 머리글에 이미 있어 따로 넣지 않음.
    ② 관내 상호대차 신청 완료 화면 맨 위 「받는 방법」(수령 도서관 · 예상 도착 · 수령 기한 · 빌리는 방법). ③ 시민 화면의 「창구」를 「안내데스크」로(사서용 화면·문서는 그대로).
-   함께: 도서관만 바꿨을 때 「한국어로 바뀌었습니다」를 읽다 끊기던 것을 읽지 않게. 판정·자료 흐름은 그대로. 번역은 원어민 확인 전 */
+   ④ 시연 도서 4권의 실제 표지 그림(담당자가 보냄, covers/). 함께: 도서관만 바꿨을 때 「한국어로 바뀌었습니다」를 읽다 끊기던 것을 읽지 않게. 판정·자료 흐름은 그대로. 번역은 원어민 확인 전 */
 /* v1.12.18(2026. 10. 28., 캐시 v44): 담당자 17시대 승인(최종 점검 고침안 가·다, 「장애인 무료」 빼기). ③ 예시 장면은 「이 책은 실제로는 부천 관내에 있습니다」로 분명히, 근거 없는 「가장 빠름·가장 가까움」을 「추천」으로, 접수(시연) 화면 제목·본문을 시연 장면으로, 「시안」을 「시연」으로, 「그 외 ○곳」 셈에 묶음 줄 안의 관 수까지, 안내 창 줄 이름·한도 3종·예시 ③ 구분·전일 기준, 휴대폰 줄바꿈(낱말 단위), 예시 단추 배지 「8. 18. 실측」, 바닥글 자료 날짜, 「오늘 바로」를 「바로 대출」로, 조사·띄어쓰기·「단추」·「16개관」·「지도에서 위치 보기」 다듬기. 판정·자료 흐름은 그대로. */
 /* v1.12.17(2026. 10. 28., 캐시 v43): 담당자 16:46 승인. 안내 창의 「상담 비서는」을 「책이지 판정 도구는」으로(이름을 책이지 하나로), 결과 화면 링크 「공식 누리집에서」를 「공식 홈페이지에서」로(시민이 누르는 곳, 전화 모드의 「홈페이지」와 맞춤). 다른 언어·판정·자료 흐름은 그대로. */
 /* v1.12.16(2026. 10. 28., 캐시 v42): 담당자 14:59 승인, 접근성 점검(axe-core 4.10, WCAG 2.2 AA) 권장 사항 반영. 위쪽 머리 영역 role=banner, 본문 role=main, 판정 화면 책 제목 h3를 h2로(머리말 단계), 신청 확인 시트 role=dialog·aria-modal·aria-labelledby. 화면 모양은 그대로(판정 화면 사진 같음). */
@@ -1122,6 +1125,9 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
 /* v1.12.1: 예시 단추 = 8/18 장면 고정, 말·입력 검색 = 오늘 자료. ③ 예시 배지·출처 줄 정정(관내에 없음은 예시였고, 10/16 실제 조회에서는 16개관 소장).
 /* v1.12: 화면 정리 — 첫 화면의 책큐·패스 카드를 글자 줄로, 도서관코드 숨김, 확인 시트에서 기술 용어 행 제거,
    결과 화면에 「공식 누리집에서 이 책 보기·신청」 링크(접수는 이용자가 누리집에 로그인해 직접 — 이 화면의 접수는 시연). */
+/* v1.12.20: 시연 도서 표지(담당자가 보낸 그림을 작게 줄임, covers/ISBN.jpg). 표지 그림은 각 출판사의 저작물이라 책을 알아보는 데에만 씀(MIT 대상 아님) */
+const COVERS = ['9788936434120', '9788972756194', '9791161571188', '9791191824001'];
+function coverImg(c){ const i = c && c.book && c.book.isbn; return (i && COVERS.indexOf(i) >= 0) ? `<img src="covers/${i}.jpg" alt="" decoding="async" onerror="this.remove()">` : ''; }
 const OFFICIAL_SEARCH = 'https://alpasq.bcl.go.kr/search/keyword/{isbn13}';   /* v1.12.5 공식 자료검색 주소 틀(ISBN, 이전 {title}) — 비우면 링크 생략 */
 const OFFICIAL_SEARCH_TITLE = 'https://alpasq.bcl.go.kr/search/keyword/{title}';   /* v1.12.5 ISBN이 없는 책만 제목 검색 */
 const OLINK = {ko:'공식 홈페이지에서 이 책 보기 · 신청 ›', en:'Open this book on the official library site ›', zh:'在图书馆官网查看本书 · 申请 ›',
@@ -2521,7 +2527,7 @@ function result(){
 
   let h = `
     <div class="bookcard">
-      <div class="cover">${c.book.t}</div>
+      <div class="cover">${coverImg(c)}<span>${c.book.t}</span></div>
       <div class="meta">
         <h2>${c.book.t}</h2>
         <p class="au">${c.book.a}${c.book.p ? ' · '+c.book.p : ''}${c.book.y ? ' ('+c.book.y+')' : ''}</p>

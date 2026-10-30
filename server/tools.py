@@ -129,7 +129,7 @@ def request_service(user: str, isbn13: str, from_lib: str, pickup: str,
             "authorized_by": ("사전 위임 " + mandate_id) if mandate_id else "이용자 즉시 확인"}
 
 # ── [v0.3.4] 상담 묶음 — 창구·전화에서 사서가 지금 쓰는 판정 도구 ─────────────────────
-_ROUTE_LABEL = {"visit": "바로 이용(수령관 서가에 있음)", "ill": "관내 상호대차", "reserve": "예약 권장(관내 소장분 전부 대출 중)",
+_ROUTE_LABEL = {"visit": "바로 이용(수령관에 대출 가능)", "ill": "관내 상호대차", "reserve": "예약 권장(관내 소장분 전부 대출 중)",
                 "sea": "책바다(전국 상호대차) 안내", "unknown": "도서 미확정", "check": "소장 확인 불가(창구에서 조회)"}
 _MEMBER_RULE_KEYS = ("권", "연체", "중복")              # 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
 

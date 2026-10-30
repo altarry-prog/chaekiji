@@ -20,7 +20,7 @@ const SNAPSHOT_MAX_DAYS = 2;
 // [10/27] 동결을 10. 30. 18시로 앞당김(담당자 결정) → 10. 30. 이후 자료
 const FROZEN_FROM = "2026-10-30", FROZEN_UNTIL = "2026-11-26";
 const SNAP_CACHE_MS = 10 * 60 * 1000;
-const ROUTE_LABEL = { visit: "바로 이용(수령관 서가에 있음)", ill: "관내 상호대차", reserve: "예약 권장(관내 소장분 전부 대출 중)",
+const ROUTE_LABEL = { visit: "바로 이용(수령관에 대출 가능)", ill: "관내 상호대차", reserve: "예약 권장(관내 소장분 전부 대출 중)",
                       sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정", check: "소장 확인 불가(창구에서 조회)" };
 const MEMBER_RULE_KEYS = ["권", "연체", "중복"];                 // 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
 
@@ -231,7 +231,7 @@ async function searchItem(utterance, deps, ctx) {
   const [base, vol, explicit] = splitVolume(title);
   if (!vol) {                                                  // [10/19] 권차를 말하면 시연 도서(1권) 픽스처로 바로 가지 않는다
     const fx = fixtureSearch(utterance);
-    if (fx.found) { fx.evidence = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 중계로 오늘 조회"; return fx; }
+    if (fx.found) { fx.evidence = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준"; return fx; }
   }
   const toks = words(title);
   const plan = vol ? (explicit ? [[base, []]] : [[title, []], [base, []]])

@@ -190,7 +190,7 @@ def search(utterance: str, mode="demo"):
         if not split_volume(title)[1]:                # [10/19] 권차를 말하면 시연 도서(1권) 픽스처로 바로 가지 않는다
             fx = search(utterance, mode="demo")       # 실측 서지 5종은 픽스처가 먼저(시연 도서는 늘 같은 답)
             if fx.get("found"):
-                fx["evidence"] = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 중계로 오늘 조회"
+                fx["evidence"] = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준"
                 return fx
         return pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
                            unavailable_reason=f"중계 응답 없음: 픽스처 5종에도 없는 도서(검색어 「{title}」)")

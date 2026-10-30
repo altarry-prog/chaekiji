@@ -39,6 +39,26 @@ STAMP = datetime.datetime.now(KST).strftime("%Y-%m-%d_%H%M")
 CALLS = OUT_DIR / f"gpt_host_log_actions_{STAMP}.ndjson"
 ANSWERS = OUT_DIR / f"gpt_host_answers_actions_{STAMP}.ndjson"
 
+# ②-1 연결 점검: 모델마다 짧은 요청 한 번. 상태 코드와 오류 문구(토큰 가림)를 기록에 남긴다(10. 30. 첫 실행이 답 없이 끝나 까닭을 보려고)
+import urllib.request, urllib.error
+TOKEN = os.environ.get("GITHUB_TOKEN", "")
+PROBE = {}
+for m in MODELS:
+    body = {"model": m, "messages": [{"role": "user", "content": "한 단어로 답하세요: 안녕"}]}
+    if not m.split("/")[-1].startswith(("gpt-5", "o1", "o3", "o4")): body["temperature"] = 0
+    req = urllib.request.Request(ENDPOINT, data=json.dumps(body, ensure_ascii=False).encode("utf-8"), method="POST",
+                                 headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json",
+                                          "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r:
+            o = json.load(r); PROBE[m] = f"200 · 답: {(((o.get('choices') or [{}])[0].get('message') or {}).get('content') or '(도구 호출 또는 빈 답)')[:40]!r}"
+    except urllib.error.HTTPError as e:
+        PROBE[m] = f"{e.code} · {e.read().decode('utf-8', 'replace')[:300].replace(TOKEN or '§', '***')}"
+    except Exception as e:
+        PROBE[m] = f"연결 실패 · {type(e).__name__}: {str(e)[:200]}"
+    print(f"연결 점검 · {m}: {PROBE[m]}", flush=True)
+    time.sleep(GAP)
+
 # ③ 기준 판정: 모델 없이 도구를 직접 부른다(같은 모드·같은 받을 도서관·같은 언어). 중계 캐시도 먼저 데워 모델 실행과 같은 자료를 쓰게 한다
 sys.path.insert(0, "hosts")
 import ollama_host as oh                                  # noqa: E402
@@ -56,6 +76,7 @@ mcp.close()
 
 # ④ GPT 모델로 같은 문의 5건(호스트는 main의 ollama_host.py, 모델 부르는 함수만 깃허브 모델로)
 env = dict(os.environ, CHAEKIJI_SERVER_DIR=str(WORK / "chaekiji" / "server"))
+RUNLOG = {}
 for m in MODELS:
     for ask, pickup, lang in ASKS:
         t0 = time.time()
@@ -67,6 +88,7 @@ for m in MODELS:
             out = (r.stdout or "")[-1800:] + ("\n" + (r.stderr or "")[-600:] if r.returncode else "")
         except subprocess.TimeoutExpired:
             out = "(시간 초과 15분: 이 문의는 답 없음으로 기록하고 다음 문의로 넘어갑니다)"
+        RUNLOG[(m, ask)] = out.replace(os.environ.get('GITHUB_TOKEN') or '§', '***')
         print(f"\n━━ {m} · 「{ask}」 ({time.time() - t0:.0f}초)\n{out}", flush=True)
         time.sleep(GAP)
 
@@ -100,6 +122,7 @@ L = [f"# GPT 모델 구동 실측 기록 — 깃허브 액션·깃허브 모델 
      f"공개 모델 2종 노트북과 같은 문의 {len(ASKS)}건 · 모델에 보이는 도구는 `consult_request` 하나 · 호스트는 `server/hosts/ollama_host.py` 그대로(모델 부르는 함수만 깃허브 모델로, `tools/model2/gpt_host.py`)",
      "- 기준 판정: 모델 없이 같은 도구를 같은 값으로 직접 부른 결과. 판정은 도구가 정하므로 모델의 판정은 기준과 같아야 정상",
      f"- 원 기록: `{CALLS.name}`(도구 호출) · `{ANSWERS.name}`(최종 답) — 실제로 돌린 결과이며 사람이 고치지 않았다", "",
+     "## 연결 점검(모델마다 짧은 요청 한 번)", ""] + [f"- {m}: {PROBE[m]}" for m in MODELS] + ["",
      "## 한눈에", "", "| 모델 | 방식 | 성공 | 기준 판정과 같음 | 판정을 답에 옮김 | 도구 없이 답함 | 평균 시간 |", "|---|---|---|---|---|---|---|"]
 for m in MODELS:
     ss = [s for s in S if s["model"] == m]
@@ -119,6 +142,9 @@ for i, (ask, pickup, lang) in enumerate(ASKS, 1):
     for s in [s for s in S if s["ask"] == ask]:
         body = s["answer"].strip().replace("\n", "<br>") or "(답 없음)"
         L += ["", f"<details><summary>{s['model']}의 답 원문</summary>", "", body, "", "</details>"]
+        if not s["ok"]:
+            tail = (RUNLOG.get((s["model"], ask)) or "").strip()[-900:]
+            L += ["", f"<details><summary>{s['model']} 호스트 출력(끝부분, 실패 까닭)</summary>", "", "```", tail or "(출력 없음)", "```", "", "</details>"]
     L.append("")
 L += ["---", "대출 상태는 정보나루 조회일 전일 기준이며, 이 기록의 어떤 상담도 실제 접수로 이어지지 않았다. "
       "깃허브 모델은 무료 시험용(분당·하루 호출 한도 있음)이라 운영 경로가 아니라 「GPT 계열에서도 같은 도구가 돈다」는 실측용이다."]

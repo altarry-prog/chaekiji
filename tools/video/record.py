@@ -66,7 +66,7 @@ EX_SAY = os.environ.get("CHAEKIJI_VIDEO_SAY", "한강 소년이 온다 빌리고
 NEXT_EXTRA = os.environ.get("CHAEKIJI_VIDEO_NEXT", "정보화사업 연계로 전국 도서관이 같은 도구로 상호대차를 안내") or None
 # 장면별 내레이션(tts.yml이 만든 mp3와 길이) — 파일 이름 앞 두 자리가 장면 번호
 NARR_DIR = os.path.join(HERE, "narration", "audio", "script")
-NARR, NARR_EV, NARR_LEAD = {}, [], 0.4
+NARR, NARR_EV, NARR_LEAD = {}, [], 0.3   # [10/30] 0.4에서 0.3으로: 전체를 5분 안에(내레이션 합계 약 288초)
 try:
     for it in json.load(open(os.path.join(NARR_DIR, "기록.json"), encoding="utf-8"))["items"]:
         NARR[it["file"][:2]] = (it["file"], float(it["seconds"]))
@@ -216,7 +216,7 @@ async def main():
             if key in NARR and not A.mute:
                 NARR_EV.append((round(now() + NARR_LEAD, 2), NARR[key][0], NARR[key][1]))
 
-        async def hold(key, pad=0.35):
+        async def hold(key, pad=0.25):   # [10/30] 기본 0.35에서 0.25로(5분 안)
             # 내레이션이 다 끝날 때까지 장면을 붙잡아 둔다(음성이 다음 장면으로 넘치지 않게)
             if key not in NARR or A.mute:
                 return
@@ -232,7 +232,7 @@ async def main():
         # ── 표지: 끝 칸과 같은 모양, QR 자리에 시연 웹 첫 화면(녹화 전에 다 그려 둔 그대로, 소리 없이) ──
         scene("CV", "· 표지", "끝 칸과 같은 모양(과제명·한 줄 표어·팀·챌린지 이름)에 찍는 날의 시연 웹 첫 화면을 휴대폰 틀로 크게, 소리 없이 약 2.4초")
         cue(COVER[0] + " · 말 한마디로 내 손안에 책이", COVER[2], COVER[3])   # 자막 세 줄이 「·」로 시작하지 않게
-        await W(2400)
+        await W(2000)   # [10/30] 2.4초에서 2초로(5분 안)
 
         # ── 1. 제목 · 왜(인포: 제목 칸 → 큰 숫자 세 칸과 신청 전 세 가지) ──
         scene("01", "1 제목·왜 만들었나", "제목(과제명·한 줄 설명·세 가지 특징) → 상호대차 큰 숫자 세 칸(44개소·320,140권·96.5%)과 신청 전 세 가지 확인")
@@ -346,9 +346,9 @@ async def main():
         await W(700)
         await page.evaluate("t=>termType(t,22)", f'CHAEKIJI_MODE=snapshot python lab/consult_cli.py "{A1["utterance"]}" {P1}')
         await W(300)
-        await page.evaluate("l=>termOut(l,90)", T1)
+        await page.evaluate("l=>termOut(l,70)", T1)
         await W(500)
-        g5 = share("05", [0.30, 0.24, 0.22], [6.0, 5.5, 5.0])
+        g5 = share("05", [0.30, 0.24, 0.22], [4.6, 4.2, 3.8])   # [10/30] 6.0·5.5·5.0에서 줄임(내레이션 13초보다 화면이 8초 길었음, 5분 안)
         await ev("termFocus(['◀ 판정','◀ 근거']); readOn([0,1])")
         await bar(f"판정: {A1['route']}", f"{P1}은 {here1}, {A1['available'][0]} 등 {len(A1['available'])}곳은 대출 가능 · 정보나루 {A1['asof']} 조회(전일 기준)")
         await W(g5[0])
@@ -369,7 +369,7 @@ async def main():
             {"lb": "① 판정", "vv": f"<span class=\"pill\">{A2['route']}</span>", "ss": f"받을 도서관({P2})에 대출 가능(조회일 기준)"},
             {"lb": "② 근거", "vv": f"{P2} 등 {len(A2['available'])}곳 대출 가능", "ss": f"정보나루 {A2['asof']} 조회(전일 기준)"},
             {"lb": "③ 이용자 안내문", "vv": "상호대차 없이 바로 빌리시면 됩니다"}])
-        await bar("받을 도서관 서가에 있으면", "상호대차 대신 「바로 이용」으로 안내합니다")
+        await bar("받을 도서관에 대출 가능한 책이면", "상호대차 대신 「바로 이용」으로 안내합니다(조회일 기준)")   # [10/30] 「서가에 있으면」은 전일 기준 자료로 장담 못 함
         await W(500)
         await page.evaluate("t=>termType(t,24)", f'CHAEKIJI_MODE=snapshot python lab/consult_cli.py "{A2["utterance"]}" {P2}')
         await W(300)
@@ -584,7 +584,7 @@ async def main():
                              "음성 해설: AI 합성(MeloTTS)" if NARR and not A.mute else "", "/tools/video/cmp/qr_demo.png", "휴대폰으로 시연 웹 열기"])
         cue("말 한마디로 내 손안에 책이", " · ".join(f"{a} {b}" for a, b in L12) + " · 팀 책이지 · 부천시립상동도서관")
         await W(5000)
-        await hold("12", pad=0.9)
+        await hold("12", pad=0.6)   # [10/30] 0.9에서 0.6으로(5분 안)
         t_end = now(); mark("종료")
         await W(300)
         await cdp.send("Page.stopScreencast")

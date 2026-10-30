@@ -30,6 +30,24 @@ jobs:
           python-version: "3.12"
       - name: 작업 폴더(공개 모델 실측과 같은 /content)
         run: sudo mkdir -p /content && sudo chown "$USER" /content
+      - name: 연결 진단(10. 30. 2~4차가 200 「OK」만 받음 — 응답 머리글과 앞부분을 기록에 남김, 토큰은 찍지 않음)
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          out=/content/gpt_probe_actions_${GITHUB_RUN_ID}.txt
+          body='{"model":"openai/gpt-4.1-mini","messages":[{"role":"user","content":"hi"}]}'
+          {
+            echo "# 연결 진단 $(date -u +%FT%TZ) · run ${GITHUB_RUN_ID}"
+            echo "## 프록시 변수(값은 주소만)"; env | grep -i -E '^(https?|no)_proxy=' || echo "(없음)"
+            echo "## 이름 풀이"; getent hosts models.github.ai || echo "(실패)"; getent hosts models.inference.ai.azure.com || echo "(실패)"
+            echo "## 1. 카탈로그 GET(인증 없음)"; curl -sS -m 30 -D - -o /tmp/b1 https://models.github.ai/catalog/models; head -c 300 /tmp/b1; echo
+            echo "## 2. 추론 POST(현재 판 머리글)"; curl -sS -m 60 -D - -o /tmp/b2 -X POST https://models.github.ai/inference/chat/completions -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "X-GitHub-Api-Version: 2026-03-10" -H "Content-Type: application/json" -d "$body"; head -c 400 /tmp/b2; echo
+            echo "## 3. 추론 POST(-L 넘겨주기 따라감)"; curl -sS -L -m 60 -D - -o /tmp/b3 -X POST https://models.github.ai/inference/chat/completions -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Content-Type: application/json" -d "$body"; head -c 400 /tmp/b3; echo
+            echo "## 4. 옛 주소(azure) POST"; curl -sS -m 60 -D - -o /tmp/b4 -X POST https://models.inference.ai.azure.com/chat/completions -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "Content-Type: application/json" -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"hi"}]}'; head -c 400 /tmp/b4; echo
+          } > "$out" 2>&1
+          sed -i "s/${GITHUB_TOKEN}/***/g" "$out"
+          cat "$out"
       - name: GPT 모델 × 같은 문의 5건(깃허브 모델)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -41,6 +59,7 @@ jobs:
           cp /content/chaekiji/server/lab/out/model_gpt_record_actions_*.md server/lab/out/ 2>/dev/null || true
           cp /content/chaekiji/server/lab/out/gpt_host_log_actions_*.ndjson server/lab/out/ 2>/dev/null || true
           cp /content/chaekiji/server/lab/out/gpt_host_answers_actions_*.ndjson server/lab/out/ 2>/dev/null || true
+          cp /content/gpt_probe_actions_*.txt server/lab/out/ 2>/dev/null || true
           ls -la server/lab/out | grep gpt || echo "기록 파일 없음"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

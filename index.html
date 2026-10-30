@@ -128,7 +128,7 @@ body{
 .intro-in{background:#fff;border:1.5px solid var(--line);border-radius:22px;padding:16px 18px 10px;width:100%;max-width:340px;margin:auto 0;
   box-shadow:0 12px 40px rgba(0,0,0,.16)}
 .intro-art{display:block;margin:0 auto 4px;width:200px;max-width:100%;height:auto}
-.intro h3{margin:0 0 8px;font-size:18.5px;line-height:1.38;letter-spacing:-.4px;text-align:center;word-break:keep-all;overflow-wrap:anywhere;white-space:pre-line}
+.intro h3{margin:0 0 8px;font-size:18.5px;line-height:1.38;letter-spacing:-.4px;text-align:center;word-break:keep-all;overflow-wrap:anywhere;white-space:pre-line;text-wrap:balance}
 .intro h3:focus{outline:none}   /* 화면 읽기 프로그램이 제목부터 읽도록 제목에 초점(누르는 것이 아니라 테두리는 없음) */
 .intro-sec{border-top:1px solid var(--line);padding:9px 0 7px}
 .intro-sec b{display:block;font-size:14px;color:var(--brand-d);margin-bottom:3px}
@@ -759,11 +759,11 @@ body.bigmode .foot button{font-size:12.5px}
         <div class="lbl" id="chiplbl">눌러서 바로 보기</div>
         <button class="chip" data-case="1">
           “<b>나미야 잡화점의 기적</b> 빌리고 싶어요”
-          <span class="m">① 상동은 대출 중 → 관내 상호대차<em class="lv">8. 18. 실측</em></span>
+          <span class="m">① 상동은 대출 중 → 관내 상호대차<em class="lv">10. 30. 실제 자료</em></span>
         </button>
-        <button class="chip" data-case="0">
-          “<b>한강 소년이 온다</b> 찾아주세요”
-          <span class="m">② 상동도서관에 있음 → 바로 이용<em class="lv">8. 18. 실측</em></span>
+        <button class="chip" data-case="3">
+          “<b>불편한 편의점</b> 있나요”
+          <span class="m">② 상동도서관에 있음 → 바로 이용<em class="lv">10. 30. 실제 자료</em></span>
         </button>
         <button class="chip" data-case="2">
           “<b>지구 끝의 온실</b> 찾아주세요”
@@ -946,7 +946,7 @@ body.bigmode .foot button{font-size:12.5px}
 
   <div class="foot">
     <button id="infobtn" onclick="document.getElementById('isheet').classList.add('on')" aria-label="책이지 안내 열기">
-      <b>ⓘ 안내</b> · <span id="footSrc">자료 2026. 8. 18. 기준</span> · 시연 모델
+      <b>ⓘ 안내</b> · <span id="footSrc">자료 10. 30. 조회</span> · 시연 모델
     </button>
   </div>
 
@@ -967,8 +967,8 @@ body.bigmode .foot button{font-size:12.5px}
       <div class="kv i"><span class="k">패스키 체험</span><span class="v">켜면 첫 신청 때 지문·얼굴로 이 기기를 등록하고, 위임을 만들 때 한 번 더 확인합니다(기기 안에서만 · 서버 없음). 기본은 꺼짐<small><button type="button" class="mini" id="pkToggle">켜기</button> <span id="pkDemoSt">지금: 꺼짐 · 신청은 확인 한 번으로 끝납니다</span></small></span></div>
       <div class="kv i"><span class="k">전화 한 통</span><span class="v">대표번호로 같은 상담·신청, 화면 없이<small>헤더의 📞 단추에서 통화 흐름을 체험할 수 있습니다 (전화망 연결은 운영 단계 과제)</small></span></div>
       <div class="kv i"><span class="k">확장 설계</span><span class="v">대체자료 매칭 · 책나래 우편 수령</span></div>
-      <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>예시 단추 ①②는 2026. 8. 18. 조회(실측), ③은 예시 장면 · 직접 찾으면 매일 새벽 받은 자료(없으면 그 자리에서 조회) · 대출 상태는 전일 기준</small></span></div>
-      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 전일 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)</span></div>
+      <div class="kv i"><span class="k">데이터</span><span class="v">도서관 정보나루 Open API<small>예시 단추 ①②와 직접 찾기 모두 정보나루 실제 자료 · 예시 단추는 <span id="exDayInfo">2026. 10. 30.</span> 조회 자료로 고정, 직접 찾으면 매일 새벽 받은 자료(없으면 그 자리에서 조회) · 대출 상태는 조회한 날의 전날 기준 · ③은 예시 장면</small></span></div>
+      <div class="kv i"><span class="k">직접 입력</span><span class="v" id="chipnote">직접 말하거나 입력하면(예: 한강 소년이 온다) 그날 새벽 받은 정보나루 자료로 판정해요. 대출 상태는 조회한 날의 전날 기준이에요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)</span></div>
       <div class="kv i"><span class="k">성격</span><span class="v">실현 가능성 검증용 시연 모델<small>실제 신청이 접수되지 않습니다 · 2026. 8. 부천시립상동도서관</small></span></div>
       <button class="cta ghost" id="introAgain" type="button">처음 안내 다시 보기</button>
       <button class="cta ghost" onclick="document.getElementById('isheet').classList.remove('on')">닫기</button>
@@ -1051,11 +1051,11 @@ body.bigmode .foot button{font-size:12.5px}
 try{ window.__cjMark && window.__cjMark('s1'); }catch(e){}   /* v1.12.12: 첫 스크립트 시작 */
 /* ══════════════════════════════════════════════════════════════
    데이터 구간
-   · 실데이터 : 도서관 정보나루 Open API (2026. 8. 18. 조회)
-                bookExist — 16개 분관 × 4종 = 64건
+   · 실데이터 : 도서관 정보나루 Open API — 예시 단추 장면(아래 CASES의 bx)은 매일 새벽 자료(data/holdings-today.json) 가운데
+                기준일의 것을 그대로 옮겨 고정한다(v1.12.20, 담당자 결정 10. 30. 그 전에는 2026. 8. 18. 실측 16개 분관 × 4종 = 64건)
    · 예시     : 관외(책바다) 구간 — 실데이터 수집 예정
    ══════════════════════════════════════════════════════════════ */
-const 기준일 = "2026. 8. 18.";
+const 기준일 = "2026. 10. 30.";   /* v1.12.20: 예시 단추 ①②의 자료 조회일. 동결일(11. 5.) 새벽 자료로 바꿔 심사 기간 화면 날짜를 하나로(refresh_examples.py) */
 /* v1.10: 정보나루 중계(relay/) — 주소를 넣으면 실데이터, 비우면 매일 갱신 파일 → 픽스처 순. 중계가 3초 안에 답하지 않으면 다음 출처로 자동 복귀
    v1.12.2: 중계 주소 연결(2026. 10. 16. Cloudflare Workers 첫 배포). 순서는 오늘 새벽 매일 갱신 파일 → (그 파일이 오늘 것이 아니거나 그 책이 없을 때만) 중계 → 2일 이내 파일 → 8/18.
    정보나루 대출 상태는 어차피 전일 기준이라 낮에 다시 물어도 새벽 자료와 같다 — 같은 자료를 두 번 받지 않고 하루 호출 한도를 아낀다(서버 auto 모드와 같은 규칙) */
@@ -1151,9 +1151,14 @@ function frozenOk(asof){ const t = kstToday(); return typeof asof === 'string' &
 function dailyJson(){
   return fetch('data/holdings-today.json', {cache:'no-store'}).then(r => r.ok ? r.json() : null).catch(() => null);
 }
-/* v1.12.3: 바닥글 날짜 — 매일 갱신 파일이 2일 이내면 「○. ○. 갱신」, 아니면 「2026. 8. 18. 기준」 그대로 */
+/* v1.12.3: 바닥글 날짜 — 매일 갱신 파일이 2일 이내면 「○. ○. 갱신」
+   v1.12.20: 예시 단추도 실제 자료(기준일). 매일 파일과 같은 날이면 날짜 하나만, 다르면 예시 단추 날짜를 함께 */
+const exShort = () => 기준일.replace(/^\d{4}\. /, '');
+(function(){ try{ const el = document.getElementById('footSrc'); if(el) el.textContent = `자료 ${exShort()} 조회`;
+  const ei = document.getElementById('exDayInfo'); if(ei) ei.textContent = 기준일; }catch(e){} })();
 dailyJson().then(j => { if(!j || !j.asof) return; const age = (Date.now() - new Date(j.asof + 'T00:00:00')) / 864e5;
-  const el = document.getElementById('footSrc'); if(el && ((age >= 0 && age <= 2.5) || frozenOk(j.asof))) el.textContent = `자료 ${asofText(j.asof).replace(/^\d{4}\. /, '')} 갱신(예시 단추는 8. 18.)`; });
+  const el = document.getElementById('footSrc'); if(!el || !((age >= 0 && age <= 2.5) || frozenOk(j.asof))) return;
+  const d = asofText(j.asof); el.textContent = (d === 기준일) ? `자료 ${exShort()} 조회` : `자료 ${d.replace(/^\d{4}\. /, '')} 갱신(예시 단추는 ${exShort()})`; });
 function useDaily(c, j, todayOnly){
   if(!j || !j.holdings || !j.holdings[c.book.isbn] || !j.asof) return false;
   if(todayOnly){ if(j.asof !== kstToday() && !frozenOk(j.asof)) return false; }   /* v1.12.6: 심사 기간엔 동결일(v1.12.11부터 10/30) 자료를 오늘 자료처럼 */
@@ -1171,7 +1176,7 @@ function askRelay(c){
       c.bx = bx; c.asof = asofText(j.asof) || null; return true; })
     .catch(() => { clearTimeout(tm); return false; });
 }
-function relayHoldings(c){   /* 오늘 새벽 파일 → 중계 → 2일 이내 파일 → (거짓이면) 8/18 */
+function relayHoldings(c){   /* 오늘 새벽 파일 → 중계 → 2일 이내 파일 → (거짓이면) 기준일 자료(예시 단추와 같음) */
   if(!c.real || !window.fetch) return Promise.resolve(false);
   return dailyJson().then(j => {
     if(useDaily(c, j, true)) return true;
@@ -1195,15 +1200,15 @@ const CASES = [
     heard:"한강 소년이 온다 찾아주세요",
     fix:"‘한강 소년이 온다’ → <b>소년이 온다</b>로 이해했습니다",
     book:{t:"소년이 온다", a:"한강 지음", p:"창비", y:"2014", isbn:"9788936434120"},
-    bx:{"꿈빛":"ok","꿈여울":"ok","도당":"ok","동화":"busy","별빛마루":"busy","북부":"busy",
-        "상동":"ok","송내":"ok","수주":"ok","심곡":"ok","역곡":"busy","역곡밝은":"busy",
-        "오정":"ok","원미":"ok","책마루":"ok","한울빛":"ok"} },
+    bx:{"꿈빛":"ok","꿈여울":"ok","도당":"ok","동화":"ok","별빛마루":"busy","북부":"busy",
+        "상동":"busy","송내":"ok","수주":"ok","심곡":"ok","역곡":"busy","역곡밝은":"ok",
+        "오정":"busy","원미":"ok","책마루":"busy","한울빛":"ok"} },
 
   { real:true, key:["나미야","잡화점","기적","namiya","ナミヤ","雑貨店","解忧杂货店","纳米亚","tạphóa","นามิยะ","намия","намиа","namia","miracle","мөжизалари","mojizalari","mo'jizalari","keajaiban"],
     heard:"나미야 잡화점의 기적 빌리고 싶어요",
     fix:"‘나미야 잡화점’ → <b>나미야 잡화점의 기적</b>으로 이해했습니다",
     book:{t:"나미야 잡화점의 기적", a:"히가시노 게이고 지음 · 양윤옥 옮김", p:"현대문학", y:"2012", isbn:"9788972756194"},
-    bx:{"꿈빛":"ok","꿈여울":"ok","도당":"ok","동화":"none","별빛마루":"busy","북부":"busy",
+    bx:{"꿈빛":"busy","꿈여울":"ok","도당":"ok","동화":"none","별빛마루":"busy","북부":"busy",
         "상동":"busy","송내":"ok","수주":"busy","심곡":"ok","역곡":"busy","역곡밝은":"none",
         "오정":"ok","원미":"ok","책마루":"none","한울빛":"ok"} },
 
@@ -1220,20 +1225,20 @@ const CASES = [
       {n:"그 밖 3곳", s:"ok", loc:"전국", note:"대구·광주·대전", cnt:3}
     ] },
 
-  { real:true, key:["불편한","편의점","convenience","便利店","コンビニ","tiệnlợi","สะดวกซื้อ","минимаркет","minimarket","김호연"],
+  { real:true, key:["불편한","편의점","convenience","便利店","コンビニ","tiệnlợi","สะดวกซื้อ","минимаркет","minimarket","김호연","недоступности"],
     heard:"불편한 편의점 있나요",
     fix:"‘불편한 편의점’ → <b>불편한 편의점</b>(김호연)으로 이해했습니다",
     book:{t:"불편한 편의점", a:"김호연 지음", p:"나무옆의자", y:"2021", isbn:"9791161571188"},
     bx:{"꿈빛":"ok","꿈여울":"busy","도당":"ok","동화":"ok","별빛마루":"ok","북부":"busy",
-        "상동":"busy","송내":"ok","수주":"ok","심곡":"ok","역곡":"none","역곡밝은":"none",
-        "오정":"none","원미":"none","책마루":"none","한울빛":"none"} },
+        "상동":"ok","송내":"ok","수주":"ok","심곡":"ok","역곡":"busy","역곡밝은":"busy",
+        "오정":"ok","원미":"ok","책마루":"ok","한울빛":"busy"} },
 
   { real:true, key:["설민석","한국사","대모험","seolminseok","한국사대모험"],
     heard:"설민석 한국사 대모험 있어요",
     fix:"‘설민석 한국사’ → <b>설민석의 한국사 대모험</b>으로 이해했습니다",
     book:{t:"설민석의 한국사 대모험", a:"설민석 글 · 정현희 그림", p:"휴먼큐브", y:"2017", isbn:"9791195794799"},
     bx:{"꿈빛":"ok","꿈여울":"ok","도당":"ok","동화":"busy","별빛마루":"busy","북부":"ok",
-        "상동":"ok","송내":"busy","수주":"none","심곡":"busy","역곡":"none","역곡밝은":"none",
+        "상동":"ok","송내":"busy","수주":"none","심곡":"ok","역곡":"none","역곡밝은":"none",
         "오정":"ok","원미":"ok","책마루":"ok","한울빛":"ok"} }
 ];
 
@@ -1343,59 +1348,77 @@ const LANGS = {
          res:(t,l)=>`Hasil: ${t}. Perpustakaan yang disarankan: ${l}. Tekan tombol hijau untuk meminjam.`,
          sh:(t,l)=>`Mohon konfirmasi: ${t}, dari ${l}.`, res2:(t)=>`Hasil: ${t}. Chaekbada perlu pendaftaran terpisah dan persetujuan pustakawan. Tekan tombol hijau untuk panduan.`, sh2:(y)=>`Chaekbada perlu pendaftaran terpisah dan persetujuan pustakawan. Untuk mendapat panduan, tekan ${y}.`, dn:()=>`Beginilah tampilan setelah pengajuan.`, dn2:()=>`Berikut cara mengajukan lewat Chaekbada. Perpustakaan akan membantu pendaftaran dan persetujuan.`}},
 };
+/* v1.12.20: 예시 단추 ①②의 배지 — 기준일(정보나루 실제 자료 조회일)을 그 언어로. 동결일에 기준일만 바꾸면 따라온다 */
+const EXLV = {ko:(M,D)=>`${M}. ${D}. 실제 자료`, en:(M,D)=>`${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][M-1]} ${D} data`,
+  zh:(M,D)=>`${M}月${D}日实际数据`, ja:(M,D)=>`${M}/${D}実データ`, vi:(M,D)=>`dữ liệu ${D}/${M}`,
+  th:(M,D)=>`ข้อมูล ${D} ${['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][M-1]}`,
+  ru:(M,D)=>`данные ${String(D).padStart(2,'0')}.${String(M).padStart(2,'0')}`, mn:(M,D)=>`${M}/${D} өгөгдөл`,
+  uz:(M,D)=>`${D}-${['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'][M-1]} ma'lumoti`,
+  id:(M,D)=>`data ${D} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][M-1]}`};
+function exLv(code){ const m = /(\d{4})\D+(\d{1,2})\D+(\d{1,2})/.exec(기준일); const f = EXLV[code] || EXLV.ko; return m ? f(+m[2], +m[3]) : ''; }
 /* v1.12.1: ③은 관내에 없는 책의 흐름을 보이는 예시 장면 — 실측이 아님을 단추에 적는다 */
 const EXTAG = {ko:'예시', en:'sample', zh:'示例', ja:'例', vi:'mẫu', th:'ตัวอย่าง', ru:'пример', mn:'жишээ', uz:'namuna', id:'contoh'};
 const CHIPS_L = {
   ko:{c:[
-    ['“<b>한강 소년이 온다</b> 찾아주세요”','② 상동도서관에 있음 → 바로 이용','8. 18. 실측'],
-    ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','① 상동은 대출 중 → 관내 상호대차','8. 18. 실측'],
-    ['“<b>지구 끝의 온실</b> 찾아주세요”','③ 관내에 없음 → 책바다(전국)',null]],
-    note:'직접 말하거나 입력하면(예: 불편한 편의점) 정보나루 전일 기준 자료로 판정해요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)'},
+    ['“<b>한강 소년이 온다</b> 찾아주세요”','② 상동도서관에 있음 → 바로 이용',true],
+    ['“<b>나미야 잡화점의 기적</b> 빌리고 싶어요”','① 상동은 대출 중 → 관내 상호대차',true],
+    ['“<b>지구 끝의 온실</b> 찾아주세요”','③ 관내에 없음 → 책바다(전국)',null],
+    ['“<b>불편한 편의점</b> 있나요”','② 상동도서관에 있음 → 바로 이용',true]],
+    note:'직접 말하거나 입력하면(예: 한강 소년이 온다) 그날 새벽 받은 정보나루 자료로 판정해요. 대출 상태는 조회한 날의 전날 기준이에요(③ 지구 끝의 온실은 직접 찾아도 예시 장면)'},
   en:{c:[
-    ['“Find <b>Human Acts</b> by Han Kang”','② At Sangdong Library → use right away','Aug 18 data'],
-    ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','① Checked out at Sangdong → loan within Bucheon','Aug 18 data'],
-    ['“Find <b>The Greenhouse at the End of the Earth</b>”','③ Not in Bucheon → nationwide (Chaekbada)',null]],
-    note:'Example buttons replay fixed scenes (Aug 18 data) · speak or type a title to check with yesterday\'s Data4Library data (③ The Greenhouse at the End of the Earth stays a sample scene even when you search for it)'},
+    ['“Find <b>Human Acts</b> by Han Kang”','② At Sangdong Library → use right away',true],
+    ['“I\'d like to borrow <b>The Miracles of the Namiya General Store</b>”','① Checked out at Sangdong → loan within Bucheon',true],
+    ['“Find <b>The Greenhouse at the End of the Earth</b>”','③ Not in Bucheon → nationwide (Chaekbada)',null],
+    ['“Do you have <b>The Second Chance Convenience Store</b>?”','② At Sangdong Library → use right away',true]],
+    note:'Speak or type a title (e.g., Human Acts) to check with the Data4Library data fetched early that morning. Loan status is as of the previous day (③ The Greenhouse at the End of the Earth stays a sample scene even when you search for it)'},
   zh:{c:[
-    ['“帮我找韩江的<b>《少年来了》</b>”','② 上洞图书馆有藏 → 直接借阅','8月18日实测'],
-    ['“我想借<b>《解忧杂货店》</b>”','① 上洞馆已借出 → 市内馆际互借','8月18日实测'],
-    ['“帮我找<b>《地球尽头的温室》</b>”','③ 富川市内没有 → 全国服务',null]],
-    note:'示例按钮为固定场景（8月18日实测）· 直接说出或输入书名，将按前一天的图书馆数据判定（③《地球尽头的温室》直接搜索也只显示示例场景）'},
+    ['“帮我找韩江的<b>《少年来了》</b>”','② 上洞图书馆有藏 → 直接借阅',true],
+    ['“我想借<b>《解忧杂货店》</b>”','① 上洞馆已借出 → 市内馆际互借',true],
+    ['“帮我找<b>《地球尽头的温室》</b>”','③ 富川市内没有 → 全国服务',null],
+    ['“有<b>《不便利的便利店》</b>吗？”','② 上洞图书馆有藏 → 直接借阅',true]],
+    note:'直接说出或输入书名（例如《少年来了》），将按当天清晨获取的图书馆数据判定。借阅状态为查询日前一天的情况（③《地球尽头的温室》直接搜索也只显示示例场景）'},
   ja:{c:[
-    ['「ハン・ガンの<b>『少年が来る』</b>を探して」','② 上洞図書館に所蔵 → すぐ利用','8/18実測'],
-    ['「<b>『ナミヤ雑貨店の奇蹟』</b>を借りたい」','① 上洞館は貸出中 → 市内の相互貸借','8/18実測'],
-    ['「<b>『地球の果ての温室』</b>を探して」','③ 富川市内に無し → 全国サービス',null]],
-    note:'例のボタンは固定の場面（8/18実測）· 話すか入力すると前日基準のデータで判定します（③『地球の果ての温室』は直接探しても例の場面です）'},
+    ['「ハン・ガンの<b>『少年が来る』</b>を探して」','② 上洞図書館に所蔵 → すぐ利用',true],
+    ['「<b>『ナミヤ雑貨店の奇蹟』</b>を借りたい」','① 上洞館は貸出中 → 市内の相互貸借',true],
+    ['「<b>『地球の果ての温室』</b>を探して」','③ 富川市内に無し → 全国サービス',null],
+    ['「<b>『不便なコンビニ』</b>はありますか」','② 上洞図書館に所蔵 → すぐ利用',true]],
+    note:'話すか入力すると（例：『少年が来る』）、その日の早朝に受け取った図書館データで判定します。貸出状況は照会日の前日時点です（③『地球の果ての温室』は直接探しても例の場面です）'},
   vi:{c:[
-    ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','② Có tại TV Sangdong → dùng ngay','dữ liệu 18/8'],
-    ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','① Sangdong đã cho mượn → mượn trong Bucheon','dữ liệu 18/8'],
-    ['“Tìm giúp tôi <b>Nhà kính ở tận cùng Trái Đất</b>”','③ Không có ở Bucheon → toàn quốc',null]],
-    note:'Nút ví dụ là cảnh cố định (dữ liệu 18/8) · nói hoặc nhập tên sách để kiểm tra theo dữ liệu hôm qua (③ Nhà kính ở tận cùng Trái Đất vẫn là cảnh minh họa dù bạn tự tìm)'},
+    ['“Tìm giúp tôi <b>Bản chất của người</b> của Han Kang”','② Có tại TV Sangdong → dùng ngay',true],
+    ['“Tôi muốn mượn <b>Điều kỳ diệu của tiệm tạp hóa Namiya</b>”','① Sangdong đã cho mượn → mượn trong Bucheon',true],
+    ['“Tìm giúp tôi <b>Nhà kính ở tận cùng Trái Đất</b>”','③ Không có ở Bucheon → toàn quốc',null],
+    ['“Có sách <b>Cửa hàng tiện lợi bất tiện</b> không?”','② Có tại TV Sangdong → dùng ngay',true]],
+    note:'Nói hoặc nhập tên sách (VD: Bản chất của người) để kiểm tra theo dữ liệu Data4Library nhận sáng sớm hôm đó. Tình trạng mượn tính đến ngày hôm trước (③ Nhà kính ở tận cùng Trái Đất vẫn là cảnh minh họa dù bạn tự tìm)'},
   th:{c:[
-    ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','② มีที่ห้องสมุดซังดง → ใช้ได้เลย','ข้อมูล 18 ส.ค.'],
-    ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','① ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน','ข้อมูล 18 ส.ค.'],
-    ['“ช่วยหา <b>เรือนกระจกที่สุดขอบโลก</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null]],
-    note:'ปุ่มตัวอย่างเป็นฉากคงที่ (ข้อมูล 18 ส.ค.) · พูดหรือพิมพ์ชื่อหนังสือเพื่อตรวจด้วยข้อมูลของเมื่อวาน (③ เรือนกระจกที่สุดขอบโลก แม้ค้นเองก็ยังเป็นฉากตัวอย่าง)'},
+    ['“ช่วยหา <b>Human Acts</b> ของฮันคัง”','② มีที่ห้องสมุดซังดง → ใช้ได้เลย',true],
+    ['“อยากยืม <b>ปาฏิหาริย์ร้านชำของคุณนามิยะ</b>”','① ซังดงถูกยืมอยู่ → ยืมข้ามสาขาในบูชอน',true],
+    ['“ช่วยหา <b>เรือนกระจกที่สุดขอบโลก</b>”','③ ไม่มีในบูชอน → ทั่วประเทศ',null],
+    ['“มีหนังสือ <b>ร้านสะดวกซื้อไม่สะดวก</b> ไหม”','② มีที่ห้องสมุดซังดง → ใช้ได้เลย',true]],
+    note:'พูดหรือพิมพ์ชื่อหนังสือ (เช่น Human Acts) เพื่อตรวจด้วยข้อมูลที่รับมาเช้ามืดวันนั้น สถานะการยืมเป็นของวันก่อนหน้า (③ เรือนกระจกที่สุดขอบโลก แม้ค้นเองก็ยังเป็นฉากตัวอย่าง)'},
   ru:{c:[
-    ['«Найди <b>Человеческие поступки</b> Хан Ган»','② Есть в библиотеке Сандон → сразу читать','данные 18.08'],
-    ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','① В Сандоне выдана → обмен внутри Пучхона','данные 18.08'],
-    ['«Найди <b>Теплицу на краю Земли</b>»','③ Нет в Пучхоне → по всей стране',null]],
-    note:'Кнопки-примеры: фиксированные сцены (данные 18 авг.) · скажите или введите название, проверим по вчерашним данным (③ «Теплица на краю Земли» и при поиске показывается как пример)'},
+    ['«Найди <b>Человеческие поступки</b> Хан Ган»','② Есть в библиотеке Сандон → сразу читать',true],
+    ['«Хочу взять <b>«Чудеса лавки Намия»</b>»','① В Сандоне выдана → обмен внутри Пучхона',true],
+    ['«Найди <b>Теплицу на краю Земли</b>»','③ Нет в Пучхоне → по всей стране',null],
+    ['«Есть <b>«Магазин шаговой недоступности»</b>?»','② Есть в библиотеке Сандон → сразу читать',true]],
+    note:'Скажите или введите название (напр., «Человеческие поступки»), проверим по данным, полученным рано утром в тот день. Статус выдачи на предыдущий день (③ «Теплица на краю Земли» и при поиске показывается как пример)'},
   mn:{c:[
-    ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','② Сандон номын санд байгаа → шууд ашиглах','8/18 өгөгдөл'],
-    ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','① Сандонд зээлэгдсэн → Бүчон доторх солилцоо','8/18 өгөгдөл'],
-    ['“<b>Дэлхийн захын хүлэмж</b>-ийг олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null]],
-    note:'Жишээ товч нь тогтмол үзэгдэл (8/18-ны өгөгдөл) · номын нэрийг хэлж эсвэл бичвэл өчигдрийн өгөгдлөөр шалгана (③ Дэлхийн захын хүлэмж-ийг өөрөө хайсан ч жишээ үзэгдэл хэвээр)'},
+    ['“Хан Ганы <b>Хөвгүүн ирлээ</b>-г олж өгөөч”','② Сандон номын санд байгаа → шууд ашиглах',true],
+    ['“<b>Намия дэлгүүрийн гайхамшиг</b>-ийг зээлмээр байна”','① Сандонд зээлэгдсэн → Бүчон доторх солилцоо',true],
+    ['“<b>Дэлхийн захын хүлэмж</b>-ийг олж өгөөч”','③ Бүчонд байхгүй → улс даяар',null],
+    ['“<b>Тухгүй минимаркет</b> ном байгаа юу?”','② Сандон номын санд байгаа → шууд ашиглах',true]],
+    note:'Номын нэрийг хэлж эсвэл бичвэл (жишээ нь Хөвгүүн ирлээ) тэр өдрийн өглөө эрт авсан өгөгдлөөр шалгана. Зээлийн төлөв нь өмнөх өдрийнх (③ Дэлхийн захын хүлэмж-ийг өөрөө хайсан ч жишээ үзэгдэл хэвээр)'},
   uz:{c:[
-    ['“Han Kangning <b>Human Acts</b> kitobini toping”','② Sangdon kutubxonasida bor → darhol foydalaning','18-avgust ma\'lumoti'],
-    ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','① Sangdonda band → Bucheon ichida almashish','18-avgust ma\'lumoti'],
-    ['“<b>Yer chekkasidagi issiqxona</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null]],
-    note:'Misol tugmalari qat\'iy sahnalar (18-avgust ma\'lumoti) · kitob nomini ayting yoki yozing, kechagi ma\'lumot bilan tekshiramiz (③ Yer chekkasidagi issiqxona o\'zingiz qidirsangiz ham namuna sahna bo\'lib qoladi)'},
+    ['“Han Kangning <b>Human Acts</b> kitobini toping”','② Sangdon kutubxonasida bor → darhol foydalaning',true],
+    ['“<b>Namiya do\'koni mo\'jizalari</b>ni olmoqchiman”','① Sangdonda band → Bucheon ichida almashish',true],
+    ['“<b>Yer chekkasidagi issiqxona</b>ni toping”','③ Bucheonda yo\'q → butun mamlakat',null],
+    ['“<b>Noqulay minimarket</b> kitobi bormi?”','② Sangdon kutubxonasida bor → darhol foydalaning',true]],
+    note:'Kitob nomini ayting yoki yozing (masalan, Human Acts), o\'sha kuni erta tongda olingan ma\'lumot bilan tekshiramiz. Ijara holati oldingi kun bo\'yicha (③ Yer chekkasidagi issiqxona o\'zingiz qidirsangiz ham namuna sahna bo\'lib qoladi)'},
   id:{c:[
-    ['“Carikan <b>Mata Malam</b> karya Han Kang”','② Ada di Perpustakaan Sangdong → langsung pakai','data 18 Agu'],
-    ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','① Dipinjam di Sangdong → pinjam antar-cabang Bucheon','data 18 Agu'],
-    ['“Carikan <b>Rumah Kaca di Ujung Bumi</b>”','③ Tidak ada di Bucheon → seluruh negeri',null]],
-    note:'Tombol contoh adalah adegan tetap (data 18 Agu) · ucapkan atau ketik judul untuk cek dengan data kemarin (③ Rumah Kaca di Ujung Bumi tetap adegan contoh walau dicari sendiri)'},
+    ['“Carikan <b>Mata Malam</b> karya Han Kang”','② Ada di Perpustakaan Sangdong → langsung pakai',true],
+    ['“Saya mau pinjam <b>Keajaiban Toko Kelontong Namiya</b>”','① Dipinjam di Sangdong → pinjam antar-cabang Bucheon',true],
+    ['“Carikan <b>Rumah Kaca di Ujung Bumi</b>”','③ Tidak ada di Bucheon → seluruh negeri',null],
+    ['“Ada buku <b>Minimarket yang Tak Nyaman</b>?”','② Ada di Perpustakaan Sangdong → langsung pakai',true]],
+    note:'Ucapkan atau ketik judul (cth: Mata Malam) untuk cek dengan data Data4Library yang diterima dini hari itu. Status pinjam sesuai hari sebelumnya (③ Rumah Kaca di Ujung Bumi tetap adegan contoh walau dicari sendiri)'},
 };
 
 /* 전 화면 언어팩 — 도서명·도서관명은 원어 유지 */
@@ -2103,6 +2126,7 @@ function applyLang(code){
     let [q, m, lv] = CL.c[+b.dataset.case] || CL.c[0];   /* v1.12.15: 단추 순서를 바꿔도 문구는 장면 번호를 따른다 */
     const ex = (CASES[+b.dataset.case] && CASES[+b.dataset.case].real === false);
     if(내관 !== '상동'){ const ci = +b.dataset.case; const tt = U().tier[eff(CASES[ci])]; m = '→ ' + (tt ? tt[1] : ''); }
+    if(lv === true) lv = exLv(code);                                   /* v1.12.20: 실제 자료 날짜(기준일) */
     if(ex && !lv) lv = EXTAG[code] || EXTAG.ko;
     b.innerHTML = q + `<span class="m">${m}${lv ? `<em class="lv${ex ? ' ex' : ''}">${lv}</em>` : ''}</span>`;
   });
@@ -3209,33 +3233,33 @@ const INTRO_L = {
       c:'자주 가는 도서관', cp:'책을 받을 도서관을 골라 주세요. 나중에 📍\u00a0단추로 바꿀 수 있어요.',
       go:'시작하기', no:'음성 없이 시작', note:'시연 화면이에요. 실제 신청은 이루어지지 않아요.', again:'처음 안내 다시 보기'},
   en:{h:'New here?\nHere is how interlibrary loan works', a:'What is interlibrary loan?',
-      ap:'If the book you want is not at your nearby library but another Bucheon public library has it, it can be brought to your nearby library for you to borrow and return there. It is free.',
-      b:'How it works', bl:['Say or type the book title (it does not need to be exact)','We tell you where you can borrow it','Check the pickup library and dates, then request'],
+      ap:'If your nearby library does not have the book but another Bucheon public library does, it can be sent to your nearby library. You borrow and return it there. It is free.',
+      b:'How to use it', bl:['Say or type the book title (it does not need to be exact)','We tell you where you can borrow it','Check the pickup library and dates, then send your request'],
       c:'Your usual library', cp:'Choose the library where you will pick up books. You can change it later with the 📍\u00a0button.',
       go:'Start', no:'Start without voice', note:'This is a demo. No real request is made.', again:'Show the welcome guide again'},
   zh:{h:'第一次使用吗？\n先为您介绍馆际互借', a:'什么是馆际互借？',
       ap:'您要找的书如果附近的图书馆没有，但富川市立图书馆的其他馆有，就可以送到附近的图书馆，在那里借阅和归还。免费。',
       b:'使用方法', bl:['说出或输入书名（不必完全准确）','告诉您在哪里可以借到','确认取书馆和日期后申请'],
       c:'常去的图书馆', cp:'请选择取书的图书馆。之后可用📍按钮更改。',
-      go:'开始', no:'不使用语音开始', note:'这是演示画面，不会真正提交申请。', again:'再次查看入门说明'},
-  ja:{h:'はじめてですか？\nまず相互貸借についてご案内します', a:'相互貸借とは？',
+      go:'开始', no:'不用语音开始', note:'这是演示画面，不会真正提交申请。', again:'再次查看入门说明'},
+  ja:{h:'はじめてですか？\nまず、相互貸借をご案内します', a:'相互貸借とは？',
       ap:'読みたい本が近くの図書館になくても、富川市立図書館のほかの館にあれば、近くの図書館まで取り寄せて借りたり返したりできます。無料です。',
-      b:'使い方', bl:['本のタイトルを話すか入力します（正確でなくても大丈夫です）','どこで借りられるかをお知らせします','受取館と日にちを確認して申し込みます'],
-      c:'よく行く図書館', cp:'本を受け取る図書館を選んでください。あとで📍ボタンで変更できます。',
-      go:'はじめる', no:'音声なしではじめる', note:'デモ画面です。実際の申込みは行われません。', again:'はじめての案内をもう一度見る'},
+      b:'使い方', bl:['本のタイトルを話すか入力します（正確でなくても大丈夫です）','どこで借りられるかをお知らせします','受取館と日にちを確認して申請します'],
+      c:'いつもの図書館', cp:'本を受け取る図書館を選んでください。あとで📍ボタンで変更できます。',
+      go:'始める', no:'音声なしで始める', note:'デモ画面です。実際の申請は行われません。', again:'はじめての案内をもう一度見る'},
   vi:{h:'Lần đầu sử dụng?\nTrước hết xin giới thiệu dịch vụ mượn liên thư viện', a:'Mượn liên thư viện là gì?',
       ap:'Nếu cuốn sách bạn cần không có ở thư viện gần nhà nhưng có ở một thư viện công cộng khác của Bucheon, sách sẽ được chuyển đến thư viện gần bạn để mượn và trả tại đó. Miễn phí.',
       b:'Cách dùng', bl:['Nói hoặc nhập tên sách (không cần chính xác)','Chúng tôi cho biết bạn có thể mượn ở đâu','Kiểm tra thư viện nhận sách và ngày, rồi đăng ký'],
-      c:'Thư viện quen', cp:'Hãy chọn thư viện nơi bạn nhận sách. Bạn có thể đổi sau bằng nút\u00a0📍.',
-      go:'Bắt đầu', no:'Bắt đầu không dùng giọng nói', note:'Đây là màn hình minh họa. Không có yêu cầu thật nào được gửi.', again:'Xem lại hướng dẫn ban đầu'},
-  th:{h:'ใช้งานครั้งแรกใช่ไหม\nขอแนะนำบริการยืมระหว่างห้องสมุดก่อน', a:'บริการยืมระหว่างห้องสมุดคืออะไร',
+      c:'Thư viện quen thuộc', cp:'Hãy chọn thư viện nơi bạn nhận sách. Bạn có thể đổi sau bằng nút\u00a0📍.',
+      go:'Bắt đầu', no:'Bắt đầu không cần giọng nói', note:'Đây là màn hình demo. Không có yêu cầu thật nào được gửi.', again:'Xem lại hướng dẫn ban đầu'},
+  th:{h:'ใช้งานครั้งแรกใช่ไหม\nขอแนะนำบริการยืมข้ามสาขาก่อน', a:'บริการยืมข้ามสาขาคืออะไร',
       ap:'ถ้าหนังสือที่ต้องการไม่มีที่ห้องสมุดใกล้บ้าน แต่มีที่ห้องสมุดประชาชนแห่งอื่นในบูชอน ก็จะส่งมาที่ห้องสมุดใกล้บ้านให้ยืมและคืนที่นั่นได้ ไม่มีค่าใช้จ่าย',
       b:'วิธีใช้', bl:['พูดหรือพิมพ์ชื่อหนังสือ (ไม่ต้องตรงทุกคำ)','เราจะบอกว่ายืมได้ที่ไหน','ตรวจสอบห้องสมุดที่รับหนังสือและวันที่ แล้วส่งคำขอ'],
       c:'ห้องสมุดประจำ', cp:'เลือกห้องสมุดที่จะไปรับหนังสือ เปลี่ยนภายหลังได้ด้วยปุ่ม\u00a0📍',
       go:'เริ่มต้น', no:'เริ่มโดยไม่ใช้เสียง', note:'นี่คือหน้าจอสาธิต ไม่มีการส่งคำขอจริง', again:'ดูคำแนะนำเริ่มต้นอีกครั้ง'},
-  ru:{h:'Вы здесь впервые?\nСначала расскажем о межбиблиотечном абонементе', a:'Что такое межбиблиотечный абонемент?',
+  ru:{h:'Вы здесь впервые?\nСначала расскажем о межбиблиотечном абонементе', a:'Что такое межбиблиотечный абонемент (МБА)?',
       ap:'Если нужной книги нет в ближайшей библиотеке, но она есть в другой публичной библиотеке Пучхона, её доставят в ближайшую библиотеку, где её можно взять и вернуть. Бесплатно.',
-      b:'Как это работает', bl:['Скажите или введите название книги (можно неточно)','Мы подскажем, где её можно взять','Проверьте библиотеку получения и даты и отправьте заявку'],
+      b:'Как это работает', bl:['Скажите или введите название книги (можно неточно)','Мы подскажем, где её можно взять','Проверьте пункт получения и даты, затем отправьте заявку'],
       c:'Ваша библиотека', cp:'Выберите библиотеку, где будете получать книги. Позже её можно сменить кнопкой\u00a0📍.',
       go:'Начать', no:'Начать без голоса', note:'Это демонстрация. Настоящая заявка не отправляется.', again:'Показать вводное руководство снова'},
   mn:{h:'Анх удаа юу?\nЭхлээд номын сан хоорондын зээлийг танилцуулъя', a:'Номын сан хоорондын зээл гэж юу вэ?',
@@ -3246,7 +3270,7 @@ const INTRO_L = {
   uz:{h:'Birinchi marta foydalanyapsizmi?\nAvval kutubxonalararo xizmat haqida aytib beramiz', a:'Kutubxonalararo xizmat nima?',
       ap:'Kerakli kitob yaqin kutubxonada bo‘lmasa-yu, Bucheondagi boshqa ommaviy kutubxonada bo‘lsa, u yaqin kutubxonangizga keltiriladi va o‘sha yerda olib, qaytarishingiz mumkin. Bepul.',
       b:'Qanday foydalaniladi', bl:['Kitob nomini ayting yoki yozing (aniq bo‘lishi shart emas)','Qayerdan olish mumkinligini aytamiz','Olish kutubxonasi va sanalarni tekshirib, so‘rov yuboring'],
-      c:'Odatiy kutubxonangiz', cp:'Kitoblarni oladigan kutubxonani tanlang. Keyinroq 📍\u00a0tugmasi bilan o‘zgartirish mumkin.',
+      c:'Doimiy kutubxonangiz', cp:'Kitoblarni oladigan kutubxonani tanlang. Keyinroq 📍\u00a0tugmasi bilan o‘zgartirish mumkin.',
       go:'Boshlash', no:'Ovozsiz boshlash', note:'Bu namoyish ekrani. Haqiqiy so‘rov yuborilmaydi.', again:'Boshlang‘ich yo‘riqnomani yana ko‘rish'},
   id:{h:'Baru pertama kali?\nKami kenalkan dulu layanan pinjam antarperpustakaan', a:'Apa itu pinjam antarperpustakaan?',
       ap:'Jika buku yang Anda cari tidak ada di perpustakaan terdekat tetapi ada di perpustakaan umum lain di Bucheon, buku itu akan dikirim ke perpustakaan terdekat agar bisa dipinjam dan dikembalikan di sana. Gratis.',
@@ -3257,15 +3281,15 @@ const INTRO_L = {
 /* 받는 방법 칸 — 칸 이름은 기존 사전(수령 도서관·예상 도착·수령 기한)을 쓰고, 새 말은 제목과 빌리는 방법뿐 */
 const GET_L = {
   ko:{t:'받는 방법', k:'빌리는 방법', how:n=>`도착 문자를 받으면 ${n} 안내데스크에서 대출`},
-  en:{t:'How to pick up', k:'How to borrow', how:n=>`When you get the arrival text, borrow it at the ${n} information desk`},
-  zh:{t:'取书方法', k:'借阅方法', how:n=>`收到到馆短信后，在${n}服务台借阅`},
-  ja:{t:'受け取り方', k:'借り方', how:n=>`到着のお知らせを受け取ったら、${n}の案内カウンターで貸出`},
-  vi:{t:'Cách nhận sách', k:'Cách mượn', how:n=>`Khi nhận tin nhắn sách đã đến, mượn tại quầy thông tin ${n}`},
+  en:{t:'How to pick up', k:'How to borrow', how:n=>`When you get a text saying it has arrived, borrow it at the ${n} information desk`},
+  zh:{t:'取书方法', k:'借阅方法', how:n=>`收到到馆短信后，请到${n}柜台借阅`},
+  ja:{t:'受け取り方', k:'借り方', how:n=>`到着のお知らせ（SMS）が届いたら、${n}のカウンターで借りられます`},
+  vi:{t:'Cách nhận sách', k:'Cách mượn', how:n=>`Khi nhận được tin nhắn báo sách đã đến, hãy mượn tại quầy thông tin của ${n}`},
   th:{t:'วิธีรับหนังสือ', k:'วิธียืม', how:n=>`เมื่อได้รับข้อความแจ้งว่าหนังสือมาถึง ยืมได้ที่เคาน์เตอร์บริการ${n}`},
-  ru:{t:'Как получить', k:'Как взять книгу', how:n=>`Получив SMS о прибытии, возьмите книгу на стойке информации: ${n}`},
-  mn:{t:'Хэрхэн авах', k:'Хэрхэн зээлэх', how:n=>`Ирсэн тухай мессеж ирмэгц ${n}-ийн лавлах ширээнээс зээлнэ`},
-  uz:{t:'Qanday olinadi', k:'Qanday olish', how:n=>`Kelganligi haqida xabar olgach, ${n} ma’lumot peshtaxtasida oling`},
-  id:{t:'Cara mengambil', k:'Cara meminjam', how:n=>`Setelah menerima SMS kedatangan, pinjam di meja informasi ${n}`}
+  ru:{t:'Как получить', k:'Как взять книгу', how:n=>`Получив SMS о прибытии, возьмите книгу на стойке информации (${n})`},
+  mn:{t:'Хэрхэн авах', k:'Хэрхэн зээлэх', how:n=>`Ном ирсэн тухай мессеж авмагц ${n}гийн лангуунаас зээлнэ`},
+  uz:{t:'Qanday olinadi', k:'Olish tartibi', how:n=>`Kelganligi haqida xabar olgach, ${n}ning ma’lumot peshtaxtasida oling`},
+  id:{t:'Cara mengambil', k:'Cara meminjam', how:n=>`Setelah menerima SMS bahwa buku sudah tiba, pinjam di meja layanan ${n}`}
 };
 function langCode(){ return Object.keys(LANGS).find(k=>LANGS[k]===L) || 'ko'; }
 function IX(){ return INTRO_L[langCode()] || INTRO_L.ko; }
@@ -3412,7 +3436,7 @@ let WEBMCP_ON = false;
       inputSchema:{type:'object', properties:{query:{type:'string', description:'책 제목이나 지은이, 또는 한마디'}}, required:['query']},
       annotations:{readOnlyHint:true},
       async execute({query}){ const i = matchCase(query||''); if(i < 0) return txt({found:false}); const b = CASES[i].book; return txt({found:true, isbn:b.isbn, title:b.t, author:b.a, publisher:b.p, year:b.y}); }});
-    mc.registerTool({name:'check_availability', description:'ISBN으로 부천시립도서관 16개관의 소장·대출 상태(정보나루 매일 새벽 자료, 전일 기준. 받지 못하면 2026. 8. 18. 실측)와 다음 갈래(바로 이용·관내 상호대차·예약·책바다 안내)를 돌려줍니다. 조회일은 asof에 있습니다.',
+    mc.registerTool({name:'check_availability', description:'ISBN으로 부천시립도서관 16개관의 소장·대출 상태(정보나루 매일 새벽 자료, 전일 기준. 받지 못하면 예시 단추와 같은 '+기준일+' 조회 자료)와 다음 갈래(바로 이용·관내 상호대차·예약·책바다 안내)를 돌려줍니다. 조회일은 asof에 있습니다.',
       inputSchema:{type:'object', properties:{isbn:{type:'string'}}, required:['isbn']},
       annotations:{readOnlyHint:true},
       async execute({isbn}){ const c = CASES.find(c => c.book.isbn === isbn); if(!c) return txt({found:false});
@@ -3461,13 +3485,13 @@ en:{t:'📞 One-call mode',p:'An entrance for people who find smartphones or web
 zh:{t:'📞 一通电话模式',p:'为不便使用智能手机或网站的人准备的入口。设计为拨打图书馆代表号码后，同一个책이지仅凭语音为您引导，直至完成馆际互借申请。',
  r:[['身份确认','确认是否从已登记的号码拨打','只念姓名的第一个字，会员编号不会出现在任何地方'],
     ['能做的事','馆藏确认 · 馆际互借申请 · 预约 · 解除委托','只代办免费且可取消的事项'],
-    ['不做的事','책바다（实费）申请 · 修改会员信息 · 付款','越危险的操作门锁越紧：引导至应用（重新认证）或柜台'],
+    ['不做的事','Chaekbada（实费）申请 · 修改会员信息 · 付款','越危险的操作门锁越紧：引导至应用（重新认证）或柜台'],
     ['当前状态','可在下方直接体验对话流程','接入真实电话网需要与通信运营商对接（AI呼叫中心API或070线路），属于运营阶段课题 · 演示模型不会真正拨号']],
  go:'体验通话流程',close:'关闭'},
 ja:{t:'📞 電話一本モード',p:'スマートフォンやホームページの操作が難しい方のための入口です。図書館の代表番号に電話すると、同じ책이지が声だけで案内し、館内相互貸借の申請まで済ませる設計です。',
  r:[['本人確認','登録された番号からの発信かを確認','名前は頭文字だけを呼び、会員番号はどこにも出ません'],
     ['できること','所蔵確認 · 館内相互貸借の申請 · 予約 · 委任の解除','無料で取り消せることだけを電話で代行します'],
-    ['しないこと','책바다（実費）申請 · 会員情報の変更 · 決済','危険なことほど扉を固く：アプリ（再認証）や窓口へ案内します'],
+    ['しないこと','チェクバダ（実費）申請 · 会員情報の変更 · 決済','危険なことほど扉を固く：アプリ（再認証）や窓口へ案内します'],
     ['現在の状態','会話の流れは下でそのまま体験できます','実際の電話網への接続は通信事業者との連携（AIコールセンターAPIまたは070回線）が必要な運用段階の課題 · デモでは電話はかかりません']],
  go:'通話の流れを体験',close:'閉じる'},
 vi:{t:'📞 Chế độ một cuộc gọi',p:'Lối vào dành cho người khó dùng điện thoại thông minh hoặc trang web. Được thiết kế để khi gọi đến số đại diện của thư viện, chính Chaekiji sẽ hướng dẫn bằng giọng nói và hoàn tất đăng ký mượn liên thư viện.',
@@ -3548,13 +3572,13 @@ zh:{num:'富川市立图书馆 책이지',demo:'演示 · 不会真正拨打电�
  auth:'您使用的是已登记的号码。洪先生/女士，已确认。',
  r0:m=>`这本书在您常去的${m}图书馆。无需馆际互借，可直接借阅。要把位置发短信给您吗？`,
  r1:(m,k,n)=>`${m}图书馆${n ? '没有此书' : '已借出'}，但富川市内有${k}个图书馆可以借。要送到${m}图书馆吗？免费，工作日次日到馆。`,
- r2:k=>`富川市内没有，全国有${k}个图书馆有。책바다需要另行注册和馆员审核，电话无法代为申请。要为您说明申请方法吗？`,
+ r2:k=>`富川市内没有，全国有${k}个图书馆有。Chaekbada需要另行注册和馆员审核，电话无法代为申请。要为您说明申请方法吗？`,
  r3:(m,k)=>`市内有${k}个馆收藏，但全部借出。先预约的话，图书归还时可以申请改为馆际互借，在${m}图书馆领取。要帮您预约吗？`,
  ask:'请回答“是”或“不是”。',asofSay:d=>`以下按${d}查询的数据为您说明。`,askAgain:'抱歉没听清，请说“是”或“不是”。',
  unk:'没听清，请再说一次书名或作者。',unk2:'演示版只能查找5本示例图书。例如可以说：韩江的《少年来了》。',
  y0:'已把位置发短信给您。',
  y1:m=>`已受理。到馆后会短信通知您，请在到馆当天起3天内到${m}图书馆领取；如需在转运前取消，请再拨打此号码。`,
- y2:'책바다申请按注册、馆员审核、支付运费的顺序进行。需要时柜台馆员会协助您。',
+ y2:'Chaekbada申请按注册、馆员审核、支付运费的顺序进行。需要时柜台馆员会协助您。',
  y3:m=>`预约已受理。图书归还后，可以申请改为馆际互借，在${m}图书馆领取。`,
  no:'好的，未申请。',bye:'感谢您的来电，再见。',
  did0:'语音转文字 → 确定书目 → 确认常去图书馆 → 判定无需申请 → 发送位置 · 您只说了一句话和一个“是”',
@@ -3565,13 +3589,13 @@ ja:{num:'富川市立図書館 책이지',demo:'デモ · 実際の電話はか�
  auth:'登録済みの番号からのお電話ですね。ホン様、確認できました。',
  r0:m=>`その本はいつもの${m}図書館にあります。相互貸借なしでそのまま借りられます。場所をメッセージで送りましょうか。`,
  r1:(m,k,n)=>`${m}図書館${n ? 'には所蔵がありませんが' : 'は貸出中ですが'}、市内${k}館で借りられます。${m}図書館で受け取りますか。無料で、平日なら翌日に届きます。`,
- r2:k=>`富川市内にはなく、全国${k}館にあります。책바다は別途登録と司書の承認が必要なため、電話では代わりに申し込めません。申請方法をご案内しましょうか。`,
+ r2:k=>`富川市内にはなく、全国${k}館にあります。チェクバダは別途登録と司書の承認が必要なため、電話では代わりに申し込めません。申請方法をご案内しましょうか。`,
  r3:(m,k)=>`市内${k}館が所蔵していますが、すべて貸出中です。先に予約しておけば、返却されたときに相互貸借に切り替えて${m}図書館で受け取る申請ができます。予約しましょうか。`,
  ask:'「はい」か「いいえ」でお答えください。',asofSay:d=>`${d}に照会したデータでご案内します。`,askAgain:'すみません、聞き取れませんでした。「はい」か「いいえ」でお答えください。',
  unk:'聞き取れませんでした。書名か著者名をもう一度お話しください。',unk2:'デモでは例の5冊しか探せません。例えば「ハン・ガンの少年が来る」のようにお話しください。',
  y0:'場所をメッセージで送りました。',
  y1:m=>`受け付けました。到着したらメッセージでお知らせします。到着日を含め3日以内に${m}図書館でお受け取りください。移送前の取消はこの番号にもう一度お電話ください。`,
- y2:'책바다の申請は、登録、司書の承認、送料の支払いの順に進みます。必要ならカウンターで司書がお手伝いします。',
+ y2:'チェクバダの申請は、登録、司書の承認、送料の支払いの順に進みます。必要ならカウンターで司書がお手伝いします。',
  y3:m=>`予約を受け付けました。返却されたら、相互貸借に切り替えて${m}図書館で受け取る申請ができます。`,
  no:'承知しました。申し込みはしていません。',bye:'ご利用ありがとうございました。失礼します。',
  did0:'音声を文字に → 本を特定 → いつもの図書館を確認 → 規定上申請不要と判定 → 場所を案内 · 利用者は一言と「はい」一回',
@@ -3727,7 +3751,7 @@ function phYN(text){
   if(Y.some(w=>t.indexOf(norm(w))>=0)) return true;
   return null;
 }
-function phHandle(kind, text, forced, chip){   /* v1.12.13: chip = 예시 단추로 고른 책(8. 18. 장면) */
+function phHandle(kind, text, forced, chip){   /* v1.12.13: chip = 예시 단추로 고른 책(기준일 장면, v1.12.20 전에는 8. 18.) */
   if(!PH.on) return;
   phStopRec(); phCtl(null);
   const p=phU(), u=U();
@@ -3778,7 +3802,7 @@ function phStart(){
   PH.on=true; PH.tries=0; PH.c=null; PH.kind=null; PH.tier=1;
   phLabels(); $('pcState').textContent=p.connecting; $('pcHang').classList.remove('re'); $('pcIn').value='';
   const CL=CHIPS_L[code]||CHIPS_L.ko; $('pcChips').innerHTML='';
-  [1,0,2].forEach(i=>{ const b=document.createElement('button'); const q=(CL.c[i]||CL.c[0])[0].replace(/<[^>]+>/g,'').replace(/[“”"]/g,'');
+  [1,3,2].forEach(i=>{ const b=document.createElement('button'); const q=(CL.c[i]||CL.c[0])[0].replace(/<[^>]+>/g,'').replace(/[“”"]/g,'');
     b.textContent=q; b.onclick=()=>phHandle('book', q, undefined, true); $('pcChips').appendChild(b); });
   PH.t0=Date.now(); clearInterval(PH.timer); $('pcTimer').textContent='00:00';
   PH.timer=setInterval(()=>{ const s=Math.floor((Date.now()-PH.t0)/1000); $('pcTimer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },1000);

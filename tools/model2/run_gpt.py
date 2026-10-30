@@ -49,11 +49,18 @@ for m in MODELS:
     req = urllib.request.Request(ENDPOINT, data=json.dumps(body, ensure_ascii=False).encode("utf-8"), method="POST",
                                  headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json",
                                           "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"})
+    class _NoRedirect(urllib.request.HTTPRedirectHandler):          # 넘겨주기(3xx)를 따라가지 않고 그대로 적는다
+        def redirect_request(self, *a, **k): return None
     try:
-        with urllib.request.urlopen(req, timeout=120) as r:
-            o = json.load(r); PROBE[m] = f"200 · 답: {(((o.get('choices') or [{}])[0].get('message') or {}).get('content') or '(도구 호출 또는 빈 답)')[:40]!r}"
+        with urllib.request.build_opener(_NoRedirect).open(req, timeout=120) as r:
+            raw, ctype, enc = r.read(), r.headers.get("Content-Type"), r.headers.get("Content-Encoding")
+            try:
+                o = json.loads(raw)
+                PROBE[m] = f"{r.status} · 답: {(((o.get('choices') or [{}])[0].get('message') or {}).get('content') or '(도구 호출 또는 빈 답)')[:40]!r}"
+            except Exception:
+                PROBE[m] = f"{r.status} · JSON 아님 · 형식 {ctype} · 압축 {enc} · 길이 {len(raw)} · 앞부분 {raw[:160]!r}"
     except urllib.error.HTTPError as e:
-        PROBE[m] = f"{e.code} · {e.read().decode('utf-8', 'replace')[:300].replace(TOKEN or '§', '***')}"
+        PROBE[m] = f"{e.code} · 넘겨줄 곳 {e.headers.get('Location')} · {e.read().decode('utf-8', 'replace')[:300].replace(TOKEN or '§', '***')}"
     except Exception as e:
         PROBE[m] = f"연결 실패 · {type(e).__name__}: {str(e)[:200]}"
     print(f"연결 점검 · {m}: {PROBE[m]}", flush=True)

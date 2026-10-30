@@ -1,0 +1,26 @@
+# 연결 진단 2026-10-30T07:33:12Z · run 41020774870
+## 프록시 변수(값은 주소만)
+(없음)
+## 이름 풀이
+140.82.113.21   glb-db52c2cf8be544.github.com models.github.ai
+(실패)
+## 1. 카탈로그 GET(인증 없음)
+HTTP/2 200 
+content-type: text/plain
+
+OK
+
+## 2. 추론 POST(현재 판 머리글)
+HTTP/2 200 
+content-type: text/plain
+
+OK
+
+## 3. 추론 POST(-L 넘겨주기 따라감)
+HTTP/2 200 
+content-type: text/plain
+
+OK
+
+## 4. 옛 주소(azure) POST
+curl: (6) Could not resolve host: models.inference.ai.azure.com

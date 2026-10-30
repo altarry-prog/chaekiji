@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.20 (2026. 10. 30.) · 캐시 chaekiji-v46 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.21 (2026. 10. 30.) · 캐시 chaekiji-v47 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -1094,6 +1094,9 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    탭이 강제 종료될 수 있음(Electron이 같은 문제를 고친 기록).
    담당자 15:43 「원인마다 해결 방법」: 광고 차단이 단순 배치로도 화면 틀을 숨기면 틀의 이름을 바꿔 피함(.cjx), 10초 안에 다 받지 못하면
    연결 알림(다시 불러오기 · 휴대폰 데이터 · 그림으로 둘러보기, 다 받으면 지움). 판정·자료 흐름은 그대로 */
+/* v1.12.21(2026. 10. 30., 캐시 v47): 담당자 11:42. 처음 안내의 「시작하기」·「음성 없이 시작」을 누르면 아래 음성 시작 화면(「눌러서 시작하기 · 음성 없이 시작」)이
+   0.3초 서서히 사라지는 사이에 잠깐 비쳤다. 처음 안내를 걷기 전에 아래 화면을 그 자리에서 없애 한 장면도 비치지 않게 함. 화면을 눌러 음성 시작 화면을 직접 닫을 때의
+   서서히 사라짐은 그대로. 판정·자료 흐름·문구는 그대로 */
 /* v1.12.20(2026. 10. 30., 캐시 v46): 측정에 참여한 직원 의견(10. 30.)을 담당자가 전함. ① 처음 열 때 한 번 「처음 안내」(상호대차란 · 이렇게 써요 ·
    자주 가는 도서관 고르기, 10개 언어, 「시작하기」 누름이 곧 음성 시작). ⓘ 안내의 「처음 안내 다시 보기」, 주소 ?intro=1로 다시 봄. 기관 로고는 머리글에 이미 있어 따로 넣지 않음.
    ② 관내 상호대차 신청 완료 화면 맨 위 「받는 방법」(수령 도서관 · 예상 도착 · 수령 기한 · 빌리는 방법). ③ 시민 화면의 「창구」를 「안내데스크」로(사서용 화면·문서는 그대로).
@@ -3225,13 +3228,14 @@ function gateLang(){
   $('gateNo').textContent = MX('startNo') || '음성 없이 시작';
 }
 function gateFit(){ const g = $('ttsgate'); if(!g) return; try{ const h = document.querySelector('.top').offsetHeight; if(h > 0) g.style.top = h + 'px'; }catch(e){} }
-function gateHide(){
+function gateHide(now){
   const g = $('ttsgate'); if(!g || !g.classList.contains('on') || g.classList.contains('off')) return;
+  if(now){ g.classList.remove('on'); g.classList.remove('off'); return; }   /* v1.12.21: 처음 안내에서 닫을 때는 그 자리에서 없앤다(0.3초 사라지는 사이에 「눌러서 시작하기」가 비치지 않게) */
   g.classList.add('off'); setTimeout(()=>{ g.classList.remove('on'); g.classList.remove('off'); }, 320);
 }
-function gateStart(voice){
+function gateStart(voice, now){
   const g = $('ttsgate'); if(!g || !g.classList.contains('on')) return;
-  gateHide();
+  gateHide(now);
   if(voice && TTS_ON){
     TTS_UNLOCKED = true;                                          // 이 speak()는 이용자 동작(click) 안에서 나간다
     say(MX('welcome') || '무슨 책 찾으세요? 마이크 단추를 누르고 책 제목을 말씀해 주세요. 제목이 정확하지 않아도 괜찮아요.');
@@ -3363,14 +3367,16 @@ function introClose(how){
   const i = $('intro'); if(!i || !i.classList.contains('on')) return;
   try{ localStorage.setItem(INTRO_KEY, '1'); }catch(e){}
   const pick = $('introLib').value;
+  const g = $('ttsgate');
+  /* v1.12.21: 아래 음성 시작 화면을 먼저, 그 자리에서 없앤 뒤 처음 안내를 걷는다(담당자 11:42 「시작하기를 누르면 찰나지만 음성 없이 시작 이전 그림이 뜬다」).
+     전에는 처음 안내가 먼저 사라지고 음성 시작 화면이 0.3초 동안 서서히 사라져, 그 사이 「눌러서 시작하기 · 음성 없이 시작」이 비쳤다 */
+  if(g && g.classList.contains('on')){
+    if(how === 'go') gateStart(true, true);
+    else if(how === 'no'){ TTS_ON = false; $('ttsbtn').classList.remove('on'); savePref({tts:false}); gateStart(false, true); }
+  }
   i.classList.remove('on'); gateCover(false);
   if(pick && pick !== 내관) setMyLib(pick);
-  const g = $('ttsgate');
-  if(g && g.classList.contains('on')){
-    if(how === 'go') gateStart(true);
-    else if(how === 'no'){ TTS_ON = false; $('ttsbtn').classList.remove('on'); savePref({tts:false}); gateStart(false); }
-    else { try{ $('gateGo').focus({preventScroll:true}); }catch(e){} }
-  }
+  if(how === 'esc' && g && g.classList.contains('on')){ try{ $('gateGo').focus({preventScroll:true}); }catch(e){} }
 }
 (function introInit(){
   const i = $('intro'); if(!i) return;

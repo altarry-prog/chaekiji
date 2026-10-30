@@ -1,5 +1,5 @@
 /* 책이지 서비스워커 — 화면은 항상 최신, 인터넷이 끊겨도 열림 */
-const CACHE = 'chaekiji-v46';
+const CACHE = 'chaekiji-v47';
 const SHELL = ['./index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './covers/9788936434120.jpg', './covers/9788972756194.jpg', './covers/9791161571188.jpg', './covers/9791191824001.jpg'];   // v1.12.20 시연 도서 표지
 

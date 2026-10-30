@@ -19,6 +19,12 @@ import ollama_host as oh                                  # noqa: E402  (main의
 
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
 REASONING = ("gpt-5", "o1", "o3", "o4")                  # 이 계열은 temperature를 바꿀 수 없다(기본값만)
+# 요청 머리글 묶음 — 연결 점검(run_gpt.py)이 통하는 것을 골라 GH_MODELS_VARIANT로 넘긴다(10. 30. 2·3차 실행: 2022-11-28 판 머리글에 200 「OK」만 옴)
+VARIANTS = {"v2026": {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2026-03-10"},
+            "nover": {"Accept": "application/vnd.github+json"},
+            "json": {"Accept": "application/json"},
+            "v2022": {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}}
+VARIANT = os.environ.get("GH_MODELS_VARIANT", "v2026")
 
 def _args(v):
     if isinstance(v, dict): return v
@@ -48,8 +54,7 @@ def gh_chat(base, model, messages, tools=None, num_ctx=4096, timeout=600):
     if tools: body["tools"] = tools
     if not model.split("/")[-1].startswith(REASONING): body["temperature"] = 0
     data = json.dumps(body, ensure_ascii=False).encode("utf-8")
-    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json",
-               "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json", **VARIANTS[VARIANT]}
     t0 = time.perf_counter()
     for attempt in range(6):
         req = urllib.request.Request(base, data=data, headers=headers, method="POST")

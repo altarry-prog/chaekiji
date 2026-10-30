@@ -39,32 +39,44 @@ STAMP = datetime.datetime.now(KST).strftime("%Y-%m-%d_%H%M")
 CALLS = OUT_DIR / f"gpt_host_log_actions_{STAMP}.ndjson"
 ANSWERS = OUT_DIR / f"gpt_host_answers_actions_{STAMP}.ndjson"
 
-# ②-1 연결 점검: 모델마다 짧은 요청 한 번. 상태 코드와 오류 문구(토큰 가림)를 기록에 남긴다(10. 30. 첫 실행이 답 없이 끝나 까닭을 보려고)
+# ②-1 연결 점검: 요청 머리글 묶음마다 짧은 요청 한 번. 상태 코드·응답 형식(토큰 가림)을 기록에 남기고, 통한 묶음을 본 실행에 쓴다
+#      (10. 30. 1차: 답 없이 0/5, 2·3차: 200인데 본문이 「OK」뿐 → 머리글 판을 바꿔 가며 본다)
 import urllib.request, urllib.error
+sys.path.insert(0, str(HERE))
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
-PROBE = {}
-for m in MODELS:
+os.environ["CHAEKIJI_SERVER_DIR"] = str(WORK / "chaekiji" / "server")   # gpt_host가 main의 공개 모델 호스트를 찾는 곳
+from gpt_host import VARIANTS                             # noqa: E402
+class _NoRedirect(urllib.request.HTTPRedirectHandler):     # 넘겨주기(3xx)를 따라가지 않고 그대로 적는다
+    def redirect_request(self, *a, **k): return None
+def probe(m, variant):
     body = {"model": m, "messages": [{"role": "user", "content": "한 단어로 답하세요: 안녕"}]}
     if not m.split("/")[-1].startswith(("gpt-5", "o1", "o3", "o4")): body["temperature"] = 0
     req = urllib.request.Request(ENDPOINT, data=json.dumps(body, ensure_ascii=False).encode("utf-8"), method="POST",
-                                 headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json",
-                                          "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"})
-    class _NoRedirect(urllib.request.HTTPRedirectHandler):          # 넘겨주기(3xx)를 따라가지 않고 그대로 적는다
-        def redirect_request(self, *a, **k): return None
+                                 headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json", **VARIANTS[variant]})
     try:
         with urllib.request.build_opener(_NoRedirect).open(req, timeout=120) as r:
-            raw, ctype, enc = r.read(), r.headers.get("Content-Type"), r.headers.get("Content-Encoding")
+            raw, ctype = r.read(), r.headers.get("Content-Type")
             try:
                 o = json.loads(raw)
-                PROBE[m] = f"{r.status} · 답: {(((o.get('choices') or [{}])[0].get('message') or {}).get('content') or '(도구 호출 또는 빈 답)')[:40]!r}"
+                c = (((o.get("choices") or [{}])[0].get("message") or {}).get("content") or "(빈 답)")
+                return True, f"{r.status} · 답: {c[:40]!r}"
             except Exception:
-                PROBE[m] = f"{r.status} · JSON 아님 · 형식 {ctype} · 압축 {enc} · 길이 {len(raw)} · 앞부분 {raw[:160]!r}"
+                return False, f"{r.status} · JSON 아님 · 형식 {ctype} · 길이 {len(raw)} · 앞부분 {raw[:80]!r}"
     except urllib.error.HTTPError as e:
-        PROBE[m] = f"{e.code} · 넘겨줄 곳 {e.headers.get('Location')} · {e.read().decode('utf-8', 'replace')[:300].replace(TOKEN or '§', '***')}"
+        return False, f"{e.code} · 넘겨줄 곳 {e.headers.get('Location')} · {e.read().decode('utf-8', 'replace')[:240].replace(TOKEN or '§', '***')}"
     except Exception as e:
-        PROBE[m] = f"연결 실패 · {type(e).__name__}: {str(e)[:200]}"
-    print(f"연결 점검 · {m}: {PROBE[m]}", flush=True)
+        return False, f"연결 실패 · {type(e).__name__}: {str(e)[:160]}"
+PROBE, USE = [], None
+for v in VARIANTS:
+    ok, msg = probe(MODELS[0], v)
+    PROBE.append(f"{MODELS[0]} · 머리글 {v}: {msg}"); print("연결 점검 ·", PROBE[-1], flush=True)
+    if ok and not USE: USE = v
     time.sleep(GAP)
+for m in MODELS[1:]:
+    ok, msg = probe(m, USE or "v2026")
+    PROBE.append(f"{m} · 머리글 {USE or 'v2026'}: {msg}"); print("연결 점검 ·", PROBE[-1], flush=True)
+    time.sleep(GAP)
+print("본 실행에 쓸 머리글:", USE or "(통한 것 없음 — v2026으로 시도)", flush=True)
 
 # ③ 기준 판정: 모델 없이 도구를 직접 부른다(같은 모드·같은 받을 도서관·같은 언어). 중계 캐시도 먼저 데워 모델 실행과 같은 자료를 쓰게 한다
 sys.path.insert(0, "hosts")
@@ -82,7 +94,7 @@ for ask, pickup, lang in ASKS:
 mcp.close()
 
 # ④ GPT 모델로 같은 문의 5건(호스트는 main의 ollama_host.py, 모델 부르는 함수만 깃허브 모델로)
-env = dict(os.environ, CHAEKIJI_SERVER_DIR=str(WORK / "chaekiji" / "server"))
+env = dict(os.environ, CHAEKIJI_SERVER_DIR=str(WORK / "chaekiji" / "server"), GH_MODELS_VARIANT=USE or "v2026")
 RUNLOG = {}
 for m in MODELS:
     for ask, pickup, lang in ASKS:
@@ -129,7 +141,7 @@ L = [f"# GPT 모델 구동 실측 기록 — 깃허브 액션·깃허브 모델 
      f"공개 모델 2종 노트북과 같은 문의 {len(ASKS)}건 · 모델에 보이는 도구는 `consult_request` 하나 · 호스트는 `server/hosts/ollama_host.py` 그대로(모델 부르는 함수만 깃허브 모델로, `tools/model2/gpt_host.py`)",
      "- 기준 판정: 모델 없이 같은 도구를 같은 값으로 직접 부른 결과. 판정은 도구가 정하므로 모델의 판정은 기준과 같아야 정상",
      f"- 원 기록: `{CALLS.name}`(도구 호출) · `{ANSWERS.name}`(최종 답) — 실제로 돌린 결과이며 사람이 고치지 않았다", "",
-     "## 연결 점검(모델마다 짧은 요청 한 번)", ""] + [f"- {m}: {PROBE[m]}" for m in MODELS] + ["",
+     "## 연결 점검(요청 머리글 묶음마다 짧은 요청 한 번)", ""] + [f"- {x}" for x in PROBE] + [f"- 본 실행에 쓴 머리글: {USE or '(통한 것 없음, v2026으로 시도)'}", "",
      "## 한눈에", "", "| 모델 | 방식 | 성공 | 기준 판정과 같음 | 판정을 답에 옮김 | 도구 없이 답함 | 평균 시간 |", "|---|---|---|---|---|---|---|"]
 for m in MODELS:
     ss = [s for s in S if s["model"] == m]

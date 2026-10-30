@@ -703,6 +703,25 @@ body.bigmode .foot button{font-size:12.5px}
 .olink{display:block;text-align:center;margin:8px 0 2px;font-size:14px;color:#0f5c4c;text-decoration:underline;text-underline-offset:3px}
 .pc-top{padding-top:calc(14px + env(safe-area-inset-top, 0px))}
 .scanov{padding-top:env(safe-area-inset-top, 0px)}
+/* ── v1.12.20 가독성(담당자 10. 30. 「줄 간격·가독성 신경 써 줘」): 설명 글은 12.5~13px·줄 간격 1.65~1.7, 작은 표시는 11.5px 이상.
+   첫 화면은 한 화면 맞춤 그대로 두고, 키가 큰 화면에서만 예시 단추 설명을 조금 키운다. 큰글자 규칙(body.bigmode …)이 이보다 우선 ── */
+.src{font-size:12px;line-height:1.7;margin-top:11px}
+.rule{font-size:13px;line-height:1.7;padding:11px 13px}
+.srcbar{font-size:12.5px;line-height:1.65}.srcbar .s2{font-size:12px}
+.sumline{line-height:1.65}.sumline .s2{font-size:12.8px;line-height:1.6;margin-top:4px}
+.tierbar .td{font-size:12.3px;line-height:1.45}.tierbar .tc{font-size:11.8px;line-height:1.45}
+.lib .r2{font-size:12.8px;line-height:1.6}
+.bookcard .au{font-size:12.5px;line-height:1.5}.bookcard .isbn{font-size:11.8px}
+.badge{font-size:11.5px}.pick{font-size:11px}
+.axcard .axt{font-size:12px}.axcard .axrow{font-size:13px;line-height:1.65;padding:3px 0}
+.did{padding:12px 14px}.did b{font-size:13px;margin-bottom:4px}.did span{font-size:13px;line-height:1.7}
+.kv .v .vs{font-size:12px;line-height:1.5;margin-top:2px}
+.kv.i{font-size:13.2px;line-height:1.65;padding:9px 0}.kv.i .v small{font-size:12px;line-height:1.6;margin-top:2px}
+.restrow{font-size:13.5px}
+.done p{line-height:1.7}
+.stp .d{line-height:1.6}
+.foot button{font-size:12px;padding-top:10px}
+@media (min-height:781px){ .chip .m{font-size:12px;margin-top:2px} .chip .lv{font-size:10.5px;padding:1px 7px} .chips .lbl{font-size:12px} }
 </style>
 </head>
 <body>
@@ -958,9 +977,9 @@ body.bigmode .foot button{font-size:12.5px}
   </div>
 
   <!-- 안내 -->
-  <div class="sheet" id="isheet">
+  <div class="sheet" id="isheet" role="dialog" aria-modal="true" aria-labelledby="isheetT">
     <div class="sheet-in">
-      <h3>책이지 안내</h3>
+      <h3 id="isheetT">책이지 안내</h3>
       <p class="p">답하는 AI가 아니라 대신 하는 AI, 말 한마디면 상호대차가 끝나는 시연 모델입니다</p>
       <div class="kv i"><span class="k">탐색</span><span class="v">자주 가는 도서관 → 관내 16개관 → 전국(책바다)</span></div>
       <div class="kv i"><span class="k">판정</span><span class="v">수령관 비치 · 한도 3종 · 연체 · 제외 자료 · <span class=nw>중복 신청</span><small>책이지 판정 도구는 규정 7종을 검토해 사유를 안내 · 이 시연 화면은 소장·대출 상태로만 판정(한도·연체는 안내데스크에서 확인)</small></span></div>
@@ -983,7 +1002,7 @@ body.bigmode .foot button{font-size:12.5px}
   </div>
 
   <!-- 전화 한 통 모드 안내 -->
-  <div class="sheet" id="psheet">
+  <div class="sheet" id="psheet" role="dialog" aria-modal="true" aria-labelledby="phsT">
     <div class="sheet-in">
       <h3 id="phsT">📞 전화 한 통 모드</h3>
       <p class="p" id="phsP">스마트폰이나 홈페이지를 다루기 어려운 분을 위한 입구입니다. 도서관 대표번호로 전화를 걸면 같은 책이지가 목소리만으로 안내하고, 관내 상호대차 신청까지 마치도록 설계했습니다.</p>
@@ -1016,7 +1035,7 @@ body.bigmode .foot button{font-size:12.5px}
   </div>
 
   <!-- 언어 선택 -->
-  <div class="sheet" id="libsheet">
+  <div class="sheet" id="libsheet" role="dialog" aria-modal="true" aria-labelledby="libT">
     <div class="sheet-in">
       <h3 id="libT">자주 가는 도서관</h3>
       <p class="p" id="libP">수령 도서관이자 판정의 기준입니다 · 예시 결과도 이 도서관 기준으로 다시 계산됩니다</p>
@@ -1031,9 +1050,9 @@ body.bigmode .foot button{font-size:12.5px}
     <div class="sc-frame"></div>
   </div>
 
-  <div class="sheet" id="lsheet">
+  <div class="sheet" id="lsheet" role="dialog" aria-modal="true" aria-labelledby="lsheetT">
     <div class="sheet-in">
-      <h3>언어 선택 · Language</h3>
+      <h3 id="lsheetT">언어 선택 · Language</h3>
       <p class="p">음성 인식·안내와 주요 화면 문구가 바뀝니다(ⓘ 안내 창은 대부분 한국어) · 도서명·도서관명은 원어로 표시됩니다</p>
       <div class="langgrid" id="langgrid"></div>
       <button class="cta ghost" onclick="document.getElementById('lsheet').classList.remove('on')">닫기</button>
@@ -1078,7 +1097,9 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
 /* v1.12.20(2026. 10. 30., 캐시 v46): 측정에 참여한 직원 의견(10. 30.)을 담당자가 전함. ① 처음 열 때 한 번 「처음 안내」(상호대차란 · 이렇게 써요 ·
    자주 가는 도서관 고르기, 10개 언어, 「시작하기」 누름이 곧 음성 시작). ⓘ 안내의 「처음 안내 다시 보기」, 주소 ?intro=1로 다시 봄. 기관 로고는 머리글에 이미 있어 따로 넣지 않음.
    ② 관내 상호대차 신청 완료 화면 맨 위 「받는 방법」(수령 도서관 · 예상 도착 · 수령 기한 · 빌리는 방법). ③ 시민 화면의 「창구」를 「안내데스크」로(사서용 화면·문서는 그대로).
-   ④ 시연 도서 4권의 실제 표지 그림(담당자가 보냄, covers/). 함께: 도서관만 바꿨을 때 「한국어로 바뀌었습니다」를 읽다 끊기던 것을 읽지 않게. 판정·자료 흐름은 그대로. 번역은 원어민 확인 전 */
+   ④ 시연 도서 4권의 실제 표지 그림(담당자가 보냄, covers/). ⑤ 예시 단추 ①②를 실제 자료 한 날짜(기준일)로, ②는 불편한 편의점(담당자 10:16).
+   ⑥ 읽기 쉽게(담당자 10:45): 작은 설명 글 12.5~13px·줄 간격 1.65~1.7, 작은 표시 11.5px 이상, 안내 창 넷에 role=dialog(접근성 점검 0건).
+   함께: 도서관만 바꿨을 때 「한국어로 바뀌었습니다」를 읽다 끊기던 것을 읽지 않게. 판정·자료 흐름은 그대로. 번역은 원어민 확인 전 */
 /* v1.12.18(2026. 10. 28., 캐시 v44): 담당자 17시대 승인(최종 점검 고침안 가·다, 「장애인 무료」 빼기). ③ 예시 장면은 「이 책은 실제로는 부천 관내에 있습니다」로 분명히, 근거 없는 「가장 빠름·가장 가까움」을 「추천」으로, 접수(시연) 화면 제목·본문을 시연 장면으로, 「시안」을 「시연」으로, 「그 외 ○곳」 셈에 묶음 줄 안의 관 수까지, 안내 창 줄 이름·한도 3종·예시 ③ 구분·전일 기준, 휴대폰 줄바꿈(낱말 단위), 예시 단추 배지 「8. 18. 실측」, 바닥글 자료 날짜, 「오늘 바로」를 「바로 대출」로, 조사·띄어쓰기·「단추」·「16개관」·「지도에서 위치 보기」 다듬기. 판정·자료 흐름은 그대로. */
 /* v1.12.17(2026. 10. 28., 캐시 v43): 담당자 16:46 승인. 안내 창의 「상담 비서는」을 「책이지 판정 도구는」으로(이름을 책이지 하나로), 결과 화면 링크 「공식 누리집에서」를 「공식 홈페이지에서」로(시민이 누르는 곳, 전화 모드의 「홈페이지」와 맞춤). 다른 언어·판정·자료 흐름은 그대로. */
 /* v1.12.16(2026. 10. 28., 캐시 v42): 담당자 14:59 승인, 접근성 점검(axe-core 4.10, WCAG 2.2 AA) 권장 사항 반영. 위쪽 머리 영역 role=banner, 본문 role=main, 판정 화면 책 제목 h3를 h2로(머리말 단계), 신청 확인 시트 role=dialog·aria-modal·aria-labelledby. 화면 모양은 그대로(판정 화면 사진 같음). */

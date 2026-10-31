@@ -1,0 +1,140 @@
+# 설치형 실행 스크립트 실측: 새 가상 PC(깃허브 액션)에서 main의 server/run.bat(윈도우)·server/run.sh(맥)를 그대로 실행해
+# 걸린 시간·결과(시험 104건)·파이썬 판을 기록한다. 파이썬 3.9(안내서의 최소 판)와 3.13 둘 다.
+# PyYAML은 미리 지워 두어 스크립트의 「처음 한 번 설치」 단계까지 거치게 한다. 인증키·네트워크 조회 없음(시험은 모의 자료).
+# 담당자 10. 31. 21:00 「런뱃은 너가 해줄수 있나?」. 행정망 PC 실행은 담당자가 따로 한다(프록시·설치 제한이 달라서).
+# main은 건드리지 않고 기록은 이 가지(tools/model2)의 server/lab/out/에 커밋한다.
+name: run-scripts
+on:
+  workflow_dispatch:
+  push:
+    branches: [tools/model2]
+    paths: [".github/workflows/run-scripts.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: run-scripts
+  cancel-in-progress: false
+jobs:
+  win:
+    strategy:
+      fail-fast: false
+      matrix:
+        py: ["3.9", "3.13"]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: altarry-prog/chaekiji
+          ref: main
+          path: chaekiji
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.py }}
+      - name: run.bat 실행(아무 키 대기는 빈 입력으로 넘김)
+        shell: pwsh
+        run: |
+          [Console]::OutputEncoding = [Text.Encoding]::UTF8
+          python -m pip uninstall -y pyyaml 2>$null | Out-Null
+          $os = (Get-CimInstance Win32_OperatingSystem)
+          $pyv = (python --version) 2>&1
+          $commit = (git -C chaekiji rev-parse --short HEAD)
+          $sw = [Diagnostics.Stopwatch]::StartNew()
+          $out = cmd /c "chaekiji\server\run.bat < NUL" 2>&1 | Out-String
+          $code = $LASTEXITCODE
+          $sw.Stop()
+          $sec = [Math]::Round($sw.Elapsed.TotalSeconds, 1)
+          $yaml = (python -c "import yaml; print(yaml.__version__)") 2>&1
+          New-Item -ItemType Directory -Force -Path rec | Out-Null
+          $head = "OS=$($os.Caption) $($os.Version) | PY=$pyv | MAIN=$commit | EXIT=$code | SEC=$sec | PYYAML_AFTER=$yaml"
+          Set-Content -Path "rec/win_py${{ matrix.py }}.txt" -Value ($head + "`n" + $out) -Encoding utf8
+          Write-Output $head
+          Write-Output $out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-py${{ matrix.py }}
+          path: rec/
+  mac:
+    strategy:
+      fail-fast: false
+      matrix:
+        py: ["3.9", "3.13"]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: altarry-prog/chaekiji
+          ref: main
+          path: chaekiji
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.py }}
+      - name: run.sh 실행
+        shell: bash
+        run: |
+          python3 -m pip uninstall -y pyyaml >/dev/null 2>&1 || true
+          mkdir -p rec
+          start=$(python3 -c 'import time; print(time.time())')
+          set +e
+          out=$(sh chaekiji/server/run.sh 2>&1)
+          code=$?
+          set -e
+          end=$(python3 -c 'import time; print(time.time())')
+          sec=$(python3 -c "print(round($end-$start,1))")
+          yv=$(python3 -c 'import yaml; print(yaml.__version__)' 2>&1 || true)
+          head="OS=macOS $(sw_vers -productVersion) $(uname -m) | PY=$(python3 --version 2>&1) | MAIN=$(git -C chaekiji rev-parse --short HEAD) | EXIT=$code | SEC=$sec | PYYAML_AFTER=$yv"
+          printf '%s\n%s\n' "$head" "$out" > "rec/mac_py${{ matrix.py }}.txt"
+          echo "$head"; echo "$out"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-py${{ matrix.py }}
+          path: rec/
+  record:
+    needs: [win, mac]
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: recs
+      - name: 기록표 만들기·이 가지에 커밋
+        run: |
+          python3 - <<'EOF'
+          import os, glob, re, datetime, pathlib
+          KST = datetime.timezone(datetime.timedelta(hours=9))
+          now = datetime.datetime.now(KST)
+          stamp = now.strftime("%Y-%m-%d_%H%M")
+          files = sorted(glob.glob("recs/*/*.txt"))
+          L = [f"# 설치형 실행 스크립트 실측 — run.bat(윈도우)·run.sh(맥) ({now:%Y-%m-%d %H:%M} KST)", "",
+               "- 어디서: 깃허브 액션의 새 가상 PC(윈도우 서버·맥, 사람 손 없음). 행정망 PC와는 프록시·설치 제한이 다르다",
+               "- 무엇을: 저장소 main의 `server/run.bat`·`server/run.sh`를 고치지 않고 그대로 실행. 실행 전에 PyYAML을 지워 「처음 한 번 설치」 단계까지 거치게 함",
+               "- 파이썬: 3.9(안내서에 적은 최소 판)와 3.13. 시험은 모의 자료라 인증키·정보나루 조회 없음",
+               f"- 실행 기록(공개): {os.environ.get('RUN_URL', '—')}", "",
+               "| 운영체제 | 파이썬 | 결과 | 시험 | 걸린 시간 | PyYAML(실행 뒤) |", "|---|---|---|---|---|---|"]
+          bodies = []
+          for f in files:
+              t = pathlib.Path(f).read_text(encoding="utf-8", errors="replace").lstrip("﻿")
+              head, _, body = t.partition("\n")
+              kv = dict(p.strip().split("=", 1) for p in head.split("|") if "=" in p)
+              ok = kv.get("EXIT") == "0" and "준비 완료" in body
+              m = re.search(r"시험 (\d+)건", body)
+              L.append(f"| {kv.get('OS','—')} | {kv.get('PY','—')} | {'통과' if ok else '실패(종료 코드 ' + kv.get('EXIT','?') + ')'} | "
+                       f"{(m.group(1) + '건') if m else '—'} | {kv.get('SEC','—')}초 | {kv.get('PYYAML_AFTER','—')} |")
+              bodies.append((kv.get("OS", f), kv.get("PY", ""), body.strip()))
+          L += ["", "걸린 시간에는 PyYAML 내려받기·설치가 들어 있다. main 커밋: " + ", ".join(sorted({re.search(r'MAIN=(\w+)', pathlib.Path(f).read_text(encoding='utf-8', errors='replace')).group(1) for f in files if re.search(r'MAIN=(\w+)', pathlib.Path(f).read_text(encoding='utf-8', errors='replace'))})), ""]
+          for osn, py, body in bodies:
+              tail = "\n".join(body.splitlines()[-25:])
+              L += [f"<details><summary>{osn} · {py} 화면 출력(끝 25줄)</summary>", "", "```", tail, "```", "", "</details>", ""]
+          L += ["---", "이 기록은 실제로 돌린 결과이며 사람이 고치지 않았다. 실패도 그대로 적는다."]
+          out = pathlib.Path("server/lab/out"); out.mkdir(parents=True, exist_ok=True)
+          (out / f"run_scripts_record_actions_{stamp}.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+          print("\n".join(L))
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out
+          git commit -m "설치형 실행 스크립트 실측(run.bat·run.sh) — 깃허브 액션(${RUN_URL##*/})" || echo "커밋할 것 없음"
+          git pull --rebase -q origin tools/model2 || true
+          git push

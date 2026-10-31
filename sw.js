@@ -1,5 +1,5 @@
 /* 책이지 서비스워커 — 화면은 항상 최신, 인터넷이 끊겨도 열림 */
-const CACHE = 'chaekiji-v48';
+const CACHE = 'chaekiji-v49';
 const SHELL = ['./index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png',
   './covers/9788936434120.jpg', './covers/9788972756194.jpg', './covers/9791161571188.jpg', './covers/9791191824001.jpg'];   // v1.12.20 시연 도서 표지
 
@@ -16,12 +16,13 @@ self.addEventListener('activate', e => {
   );
 });
 
-/* 네트워크 우선 → 실패 시 캐시. 깃허브에 새 index.html을 올리면 바로 반영된다. */
+/* 네트워크 우선 → 실패 시 캐시. 깃허브에 새 index.html을 올리면 바로 반영된다.
+   v1.12.23: 화면(페이지 열기) 요청은 브라우저에 남은 사본을 확인 없이 쓰지 않고 서버에 새로 확인(cache: no-cache) — 올린 직후 옛 화면이 섞이지 않게 */
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(req)
+    (req.mode === 'navigate' ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }) : fetch(req))
       .then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});

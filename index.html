@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.22 (2026. 10. 30.) · 캐시 chaekiji-v48 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.23 (2026. 10. 31.) · 캐시 chaekiji-v49 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -18,8 +18,10 @@ function rd(k){try{return window.localStorage.getItem(k);}catch(e){return null;}
 try{last=JSON.parse(rd(K)||"null");}catch(e){last=null;}
 if(/[?&]safe=0(&|$)/.test(q)){try{window.localStorage.removeItem(S);}catch(e){}}
 else if(/[?&]safe=1(&|$)/.test(q)){safe=true;why="link";}
-else{var until=+(rd(S)||0);if(until>now){safe=true;why="auto";}
-else if(last&&last.st==="start"&&now-(last.t||0)<2592e5){safe=true;why="auto";wr(S,String(now+864e5));}}
+/* v1.12.23: 받는 중에 닫은 것(at=head)·다 열린 뒤 닫은 것(s2end·load)은 멈춤이 아니다. 스크립트가 돌다 멈춘 경우(s1·s1end)에만 바로 다음 한 번만 간단 모드.
+   예전 판이 남긴 24시간 표시(safeUntil)는 지운다 — 간단 모드로 연 방문이 끝까지 열리면 다음은 보통 모드 */
+else{try{window.localStorage.removeItem(S);}catch(e){}
+if(last&&last.st==="start"&&(last.at==="s1"||last.at==="s1end")&&now-(last.t||0)<2592e5){safe=true;why="auto";}}
 window.__CJ_SAFE=safe;window.__CJ_SAFE_WHY=why;window.__CJ_LAST=last;
 wr(K,JSON.stringify({st:"start",t:now,safe:safe,at:"head"}));
 window.__cjMark=function(at){try{var v=JSON.parse(rd(K)||"null");if(v&&v.st==="start"){v.at=at;wr(K,JSON.stringify(v));}}catch(e){}};
@@ -194,6 +196,8 @@ html.noanim .scanrow{opacity:1}
   position:relative;
 }
 .mic:active{transform:scale(.94)}
+.safebar{margin:7px 0 0;padding:5px 10px;border-radius:9px;background:#fff7e0;color:#4d3d00;font-size:12.5px;line-height:1.45;word-break:keep-all}   /* v1.12.23: 간단 모드 띠 */
+.safebar a{color:#0b5a4e;font-weight:700;text-underline-offset:2px;white-space:nowrap}
 #s-idle.errOn:has(#micerr a) .micwrap{min-height:120px}#s-idle.errOn:has(#micerr a) .mic{width:100px;height:100px}   /* v1.12.22: 홈페이지 찾기 줄이 붙은 안내에서만 */
 /* 홈화면 설치 안내 */
 .inst{display:none;margin:0 0 8px;padding:9px 11px;border-radius:12px;
@@ -1095,6 +1099,10 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    탭이 강제 종료될 수 있음(Electron이 같은 문제를 고친 기록).
    담당자 15:43 「원인마다 해결 방법」: 광고 차단이 단순 배치로도 화면 틀을 숨기면 틀의 이름을 바꿔 피함(.cjx), 10초 안에 다 받지 못하면
    연결 알림(다시 불러오기 · 휴대폰 데이터 · 그림으로 둘러보기, 다 받으면 지움). 판정·자료 흐름은 그대로 */
+/* v1.12.23(2026. 10. 31., 캐시 v49): 담당자 10:34 「다시 들어갈 때 메인 페이지가 다를 때도 있고 음성이 늦게 나오거나 안 나올 때도 있어」, 11:01 승인.
+   ① 간단 모드 자동 전환을 좁힘: 느린 연결에서 화면을 다 받기 전에 닫기만 해도 다음 방문부터 24시간 간단 모드(음성·음성 인식 꺼짐, 첫 화면 다름)였다.
+      이제 스크립트가 돌다 멈춘 경우에만 바로 다음 한 번만, 간단 모드면 머리글에 「보통 모드로 열기」 띠. ② 처음 안내·시작 화면의 「음성 없이 시작」은 그 방문에만(머리글 단추만 기억).
+   ③ 목소리는 기기 안 목소리 먼저. ④ 서비스워커가 화면 파일을 새로 확인(cache: no-cache). 점검 페이지(diag.html)에 음성 시험·목소리 목록. 판정·자료 흐름은 그대로 */
 /* v1.12.22(2026. 10. 30., 캐시 v48): 담당자 15:03 「1번은 한강 소년이 온다여야지」·15:05 「예시 5권만 찾을 수 있다고 하는데」, 15:29 승인.
    ① 예시 단추 ①을 나미야 잡화점의 기적에서 한강 소년이 온다로(기준일 10. 30. 자료로 상동 대출 중 · 다른 10곳 대출 가능 → 관내 상호대차, 단추 설명 그대로).
    10개 언어 단추 설명·전화 모드 단추도 같은 순서(소년이 온다 · 불편한 편의점 · 지구 끝의 온실). 나미야는 단추에서만 빠지고 말하거나 입력하면 그대로 찾는다.
@@ -2241,7 +2249,11 @@ function pickVoice(lang){
   const vs = VOICES; if(!vs || !vs.length) return null;
   const norm = v => String((v && v.lang) || '').toLowerCase().replace('_','-');
   const l = String(lang || '').toLowerCase().replace('_','-'), p = l.split('-')[0];
-  return vs.find(v => norm(v) === l) || vs.find(v => norm(v).split('-')[0] === p) || null;
+  /* v1.12.23: 같은 언어 가운데 기기 안 목소리(localService)를 먼저 — 엣지 「온라인(자연)」·크롬 「Google」처럼 인터넷을 거치는 목소리는
+     늦게 시작하거나 길게 읽으면 끊길 수 있다. 기기 안 목소리가 없으면 예전처럼 같은 언어 아무 목소리 */
+  const loc = v => v && v.localService !== false;
+  const ex = vs.filter(v => norm(v) === l), pre = vs.filter(v => norm(v).split('-')[0] === p);
+  return ex.find(loc) || pre.find(loc) || ex[0] || pre[0] || null;
 }
 function say(t, done){
   const fin = (typeof done === 'function') ? done : null;
@@ -2291,7 +2303,7 @@ const show = id => {
 function diagnose(){
   /* v1.12.12: 간단 모드 — 마이크 안내 상자에 그 사실과 되돌리는 링크(보통 모드로 열기) */
   if(window.__CJ_SAFE) return {ok:false, safe:true, t:'간단 모드로 열었습니다',
-    d:(window.__CJ_SAFE_WHY === 'link' ? '주소에 safe=1이 있어' : '이 휴대폰에서 지난번에 화면이 끝까지 열리지 않아') + ' 음성 안내·음성 인식처럼 기기마다 다르게 동작하는 기능을 빼고 열었습니다. 입력 칸과 예시 단추로 검색 → 결과 → 신청 확인은 그대로 됩니다. <a href="?safe=0">보통 모드로 열기</a>'};
+    d:(window.__CJ_SAFE_WHY === 'link' ? '주소에 safe=1이 있어' : '이 기기에서 지난번에 시연 화면이 시작하다 멈춰') + ' 음성 안내·음성 인식처럼 기기마다 다르게 동작하는 기능을 빼고 열었습니다. 입력 칸과 예시 단추로 검색 → 결과 → 신청 확인은 그대로 됩니다. <a href="?safe=0">보통 모드로 열기</a>'};
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const ua = navigator.userAgent;
   const inFrame = (() => { try { return window.self !== window.top; } catch(e){ return true; } })();
@@ -2973,7 +2985,7 @@ $('bigbtn').onclick = function(){
 $('ttsbtn').onclick = function(){
   TTS_ON = !TTS_ON;
   this.classList.toggle('on', TTS_ON);
-  savePref({tts: TTS_ON});
+  savePref({tts2: TTS_ON});   /* v1.12.23: 머리글 「음성안내」 단추로 정한 것만 기억(tts2) */
   if(TTS_ON){ TTS_UNLOCKED = true; say(L.m ? L.m.on() : '음성 안내를 켰습니다. 검색 결과를 읽어 드립니다.'); }   /* 단추를 누른 동작 안에서 바로 읽는다 — 이 한 마디가 음성 합성을 깨운다 */
   else { gateHide(); if(window.speechSynthesis) try{ speechSynthesis.cancel(); }catch(e){} }
 };
@@ -2993,7 +3005,8 @@ function savePref(patch){
   if(p.lang && LANGS[p.lang]) applyLang(p.lang);
   if(p.big){ document.body.classList.add('bigmode'); $('bigbtn').classList.add('on'); }
   /* v1.7: 음성 안내는 처음부터 켜진 상태 — 이용자가 끄면(p.tts === false) 그 설정을 기억한다 */
-  TTS_ON = (p.tts !== false) && !window.__CJ_SAFE; $('ttsbtn').classList.toggle('on', TTS_ON);   /* v1.12.12: 간단 모드는 음성 안내 끔 */
+  /* v1.12.23: 예전 판은 처음 안내·시작 화면의 「음성 없이 시작」도 p.tts=false로 남겨 다음 방문부터 음성이 계속 꺼졌다 → 예전 값은 읽지 않고 머리글 단추 값(tts2)만 */
+  TTS_ON = (p.tts2 !== false) && !window.__CJ_SAFE; $('ttsbtn').classList.toggle('on', TTS_ON);   /* v1.12.12: 간단 모드는 음성 안내 끔 */
   BOOTING = false;
 })();
 
@@ -3042,6 +3055,10 @@ if(!window.__CJ_SAFE && 'serviceWorker' in navigator && location.protocol.starts
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   });
 }
+/* v1.12.23: 간단 모드면 머리글 안에 한 줄로 알린다(음성이 왜 꺼졌는지 바로 보이게, 한 번 눌러 보통 모드로) */
+if(window.__CJ_SAFE){ try{ const t = document.querySelector('.top'); if(t && !$('safebar')){ const d = document.createElement('div');
+  d.id = 'safebar'; d.className = 'safebar'; d.setAttribute('role', 'status');
+  d.innerHTML = '간단 모드로 열었습니다(음성 안내·음성 인식 꺼짐). <a href="?safe=0">보통 모드로 열기</a>'; t.appendChild(d); } }catch(e){} }
 /* v1.12.12: 간단 모드 — 서비스워커를 등록하지 않고, 남아 있는 것(저장된 옛 사본)은 불러온 뒤 지운다 */
 if(window.__CJ_SAFE && 'serviceWorker' in navigator){
   window.addEventListener('load', () => setTimeout(() => {
@@ -3260,7 +3277,7 @@ function gateStart(voice, now){
      click은 아이폰·안드로이드·PC 모두에서 인정된다(화면 어디를 눌러도 click이 온다) */
   const go = e => { if(done) return; done = true; gateStart(true); };
   const no = e => { try{ e.stopPropagation(); }catch(x){} if(done) return; done = true;
-    TTS_ON = false; $('ttsbtn').classList.remove('on'); savePref({tts:false}); gateStart(false); };
+    TTS_ON = false; $('ttsbtn').classList.remove('on'); gateStart(false); };   /* v1.12.23: 이 방문에만 끔(저장하지 않음) */
   g.addEventListener('click', go); $('gateNo').addEventListener('click', no);
 })();
 
@@ -3381,7 +3398,7 @@ function introClose(how){
      전에는 처음 안내가 먼저 사라지고 음성 시작 화면이 0.3초 동안 서서히 사라져, 그 사이 「눌러서 시작하기 · 음성 없이 시작」이 비쳤다 */
   if(g && g.classList.contains('on')){
     if(how === 'go') gateStart(true, true);
-    else if(how === 'no'){ TTS_ON = false; $('ttsbtn').classList.remove('on'); savePref({tts:false}); gateStart(false, true); }
+    else if(how === 'no'){ TTS_ON = false; $('ttsbtn').classList.remove('on'); gateStart(false, true); }   /* v1.12.23: 이 방문에만 끔 */
   }
   i.classList.remove('on'); gateCover(false);
   if(pick && pick !== 내관) setMyLib(pick);

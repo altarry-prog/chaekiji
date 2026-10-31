@@ -1,0 +1,10 @@
+{
+ "시흥": {
+  "error": "/content/cfg_시흥_raw.yaml — 도서관 11곳 (지역 전체 12곳), home_library=시흥시군자도서관\n  시흥시군자도서관: 141245\n  시흥시능곡도서관: 141260\n  시흥시대야도서관: 141045\n  시흥시매화도서관: 141396\n  시흥시목감도서관: 141609\n  시흥시배곧도서관: 141632\n  시흥시소래빛도서관: 141316\n  시흥시신천도서관: 141314\n  시흥시월곶도서관: 141199\n  시흥시장곡도서관: 141562\n  시흥시중앙도서관: 141066\nTraceback (most recent call last):\n  File \"/content/chaekiji/server/lab/make_city_config.py\", line 73, in <module>\n    main()\n  File \"/content/chaekiji/server/lab/make_city_config.py\", line 70, in main\n    f\"      python3 lab/measure.py --config {out.relative_to(ROOT)} --titles lab/out/titles.csv --limit 5 --tag {a.city}\")\n                                             ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/pathlib.py\", line 682, in relative_to\n    raise ValueError(f\"{str(self)!r} is not in the subpath of {str(other)!r}\")\nValueError: '/content/cfg_시흥_raw.yaml' is not in the subpath of '/content/chaekiji/server'",
+  "region": "31150"
+ },
+ "광명": {
+  "error": "/content/cfg_광명_raw.yaml — 도서관 6곳 (지역 전체 6곳), home_library=광명시광명도서관\n  광명시광명도서관: 141080\n  광명시소하도서관: 141561\n  광명시연서도서관: 141613\n  광명시철산도서관: 141405\n  광명시충현도서관: 141155\n  광명시하안도서관: 141019\nTraceback (most recent call last):\n  File \"/content/chaekiji/server/lab/make_city_config.py\", line 73, in <module>\n    main()\n  File \"/content/chaekiji/server/lab/make_city_config.py\", line 70, in main\n    f\"      python3 lab/measure.py --config {out.relative_to(ROOT)} --titles lab/out/titles.csv --limit 5 --tag {a.city}\")\n                                             ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/pathlib.py\", line 682, in relative_to\n    raise ValueError(f\"{str(self)!r} is not in the subpath of {str(other)!r}\")\nValueError: '/content/cfg_광명_raw.yaml' is not in the subpath of '/content/chaekiji/server'",
+  "region": "31060"
+ }
+}

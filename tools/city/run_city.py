@@ -84,7 +84,9 @@ def short_name(name, city):
 
 RESULTS = {}
 for city, region, hint in CITIES:
-    raw = WORK / f"cfg_{city}_raw.yaml"
+    # make_city_config.py는 --out이 서버 폴더 밖이면 파일을 쓴 뒤 마지막 안내 줄(relative_to)에서 멈춘다(10. 31. 첫 실행에서 발견).
+    # 그래서 서버 폴더 안 절대 경로로 쓴다. main 쪽 고침은 따로 제안.
+    raw = SRV / "config" / f"{city}_raw.yaml"
     t0 = time.perf_counter()
     p = subprocess.run([sys.executable, "lab/make_city_config.py", "--dtl-region", region, "--city", city, "--out", str(raw)],
                        capture_output=True, text=True, env=dict(os.environ, PYTHONUTF8="1"))

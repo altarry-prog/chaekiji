@@ -1,0 +1,41 @@
+# 책이지 — 시흥 설정(다른 도시 실측 2026-10-31_2118, tools/city/run_city.py)
+# 도서관 코드표: 정보나루 libSrch(dtl_region=31150) · lab/make_city_config.py 초안에서 이름만 줄임(「시흥시」 접두·「도서관」 접미)
+# 규정 값: 아래 「확인한 값」 말고는 부천 값을 자리표시로 둔 【확인】 — 그 도시 누리집 규정으로 바꿔야 운영에 쓸 수 있다
+# 확인한 값 per_lib_limit=10: 시흥시 도서관 이용안내 자료(lib.siheung.go.kr 게시 PDF) 「1인당, 도서관별 10권」
+# 확인한 값 total_limit=30: 같은 자료 「전체도서관 30권」
+city: 시흥
+region_code: '31150'
+home_library: 중앙
+libraries:
+  군자: '141245'
+  능곡: '141260'
+  대야: '141045'
+  매화: '141396'
+  목감: '141609'
+  배곧: '141632'
+  소래빛: '141316'
+  신천: '141314'
+  월곶: '141199'
+  장곡: '141562'
+  중앙: '141066'
+rules:
+  ill_limit: 5
+  total_limit: 30
+  per_lib_limit: 10
+  block_if_pickup_on_shelf: true
+  block_if_overdue: true
+  excluded_types:
+  - 부록
+  exclude_new_arrival: false
+ill_eta_days: '1'
+ill_eta_text: ''
+hold_days: 3
+hold_includes_arrival_day: true
+no_pickup_block_days: 7
+reserve_converts_to_ill: true
+pass:
+  max_per_cycle: 3
+  free_routes_only: true
+sso: 【확인】.go.kr
+notify_channels:
+- sms

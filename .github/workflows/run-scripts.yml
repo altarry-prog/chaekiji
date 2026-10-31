@@ -119,7 +119,7 @@ jobs:
               head, _, body = t.partition("\n")
               kv = dict(p.strip().split("=", 1) for p in head.split("|") if "=" in p)
               ok = kv.get("EXIT") == "0" and "준비 완료" in body
-              m = re.search(r"시험 (\d+)건", body)
+              m = re.search(r"준비 완료: 시험 (\d+)건", body)
               L.append(f"| {kv.get('OS','—')} | {kv.get('PY','—')} | {'통과' if ok else '실패(종료 코드 ' + kv.get('EXIT','?') + ')'} | "
                        f"{(m.group(1) + '건') if m else '—'} | {kv.get('SEC','—')}초 | {kv.get('PYYAML_AFTER','—')} |")
               bodies.append((kv.get("OS", f), kv.get("PY", ""), body.strip()))

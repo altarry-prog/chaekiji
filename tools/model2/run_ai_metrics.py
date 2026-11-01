@@ -5,7 +5,9 @@
 ③ 안내문에 도구가 준 사실(도서관 이름·대출 가능 관 수·조회일·누리집 주소)을 옮기는지 ④ 모호한 말에 되묻는지를 잰다.
 작업 하나가 (모델, 지시문, 회차) 하나를 돌고, 여러 작업의 결과는 report_ai_metrics.py가 모아 기록표를 만든다.
 
-같은 것: 저장소 main의 서버(server.py, 모드 auto)·호스트(server/hosts/ollama_host.py)·지시문(프롬프트 consult).
+같은 것: 저장소 main의 서버(server.py)·호스트(server/hosts/ollama_host.py)·지시문(프롬프트 consult).
+         서버 모드는 snapshot: 시연 도서 5종의 그날 새벽 자료만 쓰고 정보나루를 부르지 않는다(하루 호출 한도 500건 보호.
+         11. 1. 13:44 첫 실행이 시연 도서 밖 책을 정보나루로 조회하다 한도를 넘겨 취소했다). 시연 도서 5종은 auto 모드와 같은 판정이다.
          모델에 보이는 도구는 consult_request 하나. 받을 도서관·이용자 언어는 창구가 정하는 값이라 호스트 인자로 준다(지금까지의 실측과 같은 방식).
 지시문 두 가지: main(저장소 그대로) · title(1·2항을 고친 안: 내용·저자·외국어판 제목을 한국어판 제목으로 바꿔 넘기고,
          하나로 정해지지 않으면 되묻는다). title은 이 실측의 복제본에서만 지시문 파일을 바꿔 돌린 것이며 저장소 main에는 없다.
@@ -20,7 +22,8 @@ VARIANT = os.environ.get("AI_VARIANT", "main")          # main | title
 REP = int(os.environ.get("AI_REP", "1"))
 RUN_ID = os.environ.get("RUN_ID", datetime.datetime.now(KST).strftime("%m%d%H%M"))
 OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
-MIN_GAP = float(os.environ.get("AI_MIN_GAP", "45"))    # 문의 사이 최소 간격(초): 빠른 모델이 중계 한도(IP당 10분 60회)에 닿지 않게
+MIN_GAP = float(os.environ.get("AI_MIN_GAP", "0"))     # 문의 사이 최소 간격(초). snapshot 모드는 정보나루·중계를 부르지 않아 기본 0
+SMODE = os.environ.get("AI_SERVER_MODE", "snapshot")    # snapshot: 정보나루 호출 0(시연 도서 5종만) · auto: 중계로 그날 조회(하루 한도 주의)
 SLUG = re.sub(r"[^a-z0-9]+", "-", MODEL.lower()).strip("-")
 
 # (번호, 갈래, 이용자의 말, 받을 도서관, 이용자 언어, 기대한 책 제목 또는 None(되묻기 기대), 보는 것)
@@ -29,8 +32,8 @@ CASES = [
     (2, "묘사", "히가시노 게이고 소설인데 잡화점에 고민 편지 보내는 이야기 빌리고 싶어요", "상동", "ko", "나미야 잡화점의 기적", "저자와 줄거리로"),
     (3, "묘사", "서울역 노숙자가 편의점에서 야간 알바하는 소설 있죠? 역곡에서 받고 싶어요", "역곡", "ko", "불편한 편의점", "줄거리만으로"),
     (4, "묘사", "김초엽 작가 SF인데 더스트 이후에 식물 키우는 온실 이야기요", "상동", "ko", "지구 끝의 온실", "저자와 줄거리로"),
-    (5, "묘사", "노벨상 받은 한강 작가 책 중에 고기를 안 먹게 된 여자 이야기요", "상동", "ko", "채식주의자", "저자·내용으로(시연 도서 밖, 그날 조회)"),
-    (6, "묘사", "정지아 작가 소설인데 빨치산이었던 아버지 장례식 이야기 있어요?", "원미", "ko", "아버지의 해방일지", "저자·내용으로(시연 도서 밖, 그날 조회)"),
+    (5, "묘사", "김호연 작가 소설인데 독고라는 노숙자가 나오는 거요, 원미에서 받을게요", "원미", "ko", "불편한 편의점", "저자와 등장인물로"),
+    (6, "묘사", "아이가 보는 설민석 선생님 한국사 만화 시리즈 있죠?", "상동", "ko", "설민석의 한국사 대모험", "저자와 갈래로"),
     (7, "오타", "불편한편의점 잇나요? 원미에서 받을게요", "원미", "ko", "불편한 편의점", "띄어쓰기·맞춤법"),
     (8, "오타", "나미야 잡하점의 기적 빌릴수있나요", "상동", "ko", "나미야 잡화점의 기적", "제목 글자 틀림"),
     (9, "오타", "지구끝에 온실 송내에서 받을래요", "송내", "ko", "지구 끝의 온실", "띄어쓰기·조사 틀림"),
@@ -73,7 +76,7 @@ subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=T
 COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
 OUT_DIR = pathlib.Path("lab/out"); OUT_DIR.mkdir(parents=True, exist_ok=True)
 TAG = f"run{RUN_ID}_{SLUG}_{VARIANT}_r{REP}"
-print("저장소 main", COMMIT, "· 모델", MODEL, "· 지시문", VARIANT, "· 회차", REP, flush=True)
+print("저장소 main", COMMIT, "· 모델", MODEL, "· 지시문", VARIANT, "· 회차", REP, "· 서버 모드", SMODE, flush=True)
 
 # 지시문 고친 안 적용(복제본만)
 PROMPT = pathlib.Path("prompts/상담비서-지시문.md")
@@ -110,7 +113,7 @@ def tool(args):
     key = json.dumps(args, ensure_ascii=False, sort_keys=True)
     if key in _CACHE:
         return _CACHE[key]
-    mcp = oh.MCP("server.py", dict(os.environ, CHAEKIJI_MODE="auto", PYTHONUTF8="1"))
+    mcp = oh.MCP("server.py", dict(os.environ, CHAEKIJI_MODE=SMODE, PYTHONUTF8="1"))
     try:
         text, err = mcp.call("consult_request", args)
     finally:
@@ -146,7 +149,7 @@ RUNLOG = {}
 for no, cat, ask, pickup, lang, title, _ in CASES:
     t0 = time.time()
     try:
-        r = subprocess.run([sys.executable, "hosts/ollama_host.py", "--model", MODEL, "--ollama", OLLAMA, "--mode", "auto",
+        r = subprocess.run([sys.executable, "hosts/ollama_host.py", "--model", MODEL, "--ollama", OLLAMA, "--mode", SMODE,
                             "--pickup", pickup, "--lang", lang, "--ask", ask, "--log", str(CALLS), "--answers", str(ANS),
                             "--tools", "consult", "--timeout", "900", "--num-ctx", "8192"], capture_output=True, text=True,
                            encoding="utf-8", timeout=1500, env=dict(os.environ))
@@ -260,6 +263,8 @@ for no, cat, ask, pickup, lang, title, what in CASES:
            "tool_isbn": (res or {}).get("isbn13"), "tool_title": (res or {}).get("title"),
            "seconds": round((an or {}).get("total_ms", 0) / 1000, 1), "answer": text, "protocol": (an or {}).get("protocol")}
     if title:
+        ua = norm(args.get("utterance"))
+        row["title_arg_ok"] = bool(ua) and main_title(title) in ua      # 모델이 한국어판 제목(본서명)을 넣어 넘겼나(도구의 느슨한 찾기와 따로)
         book_ok = found and ((res.get("isbn13") and res.get("isbn13") == ref.get("isbn13"))
                              or (main_title(res.get("title")) and main_title(res.get("title")) == main_title(title)))
         row.update({"book_ok": bool(book_ok),
@@ -270,7 +275,8 @@ for no, cat, ask, pickup, lang, title, what in CASES:
                     "asked": None})
     else:
         row.update({"book_ok": None, "wrong_book": None, "not_found": None, "infra": bool(res and res.get("route") == "check"),
-                    "route_ok": None, "asked": (not found) and bool(ASKBACK.search(text)), "answered_some_book": found})
+                    "route_ok": None, "asked": (not found) and bool(ASKBACK.search(text)), "answered_some_book": found,
+                    "asked_before_tool": (not cs) and bool(ASKBACK.search(text)), "title_arg_ok": None})
     if found and text.strip():
         row["facts"] = facts(res, text)
         row["facts_tr"] = facts(res, foreign_part(text)) if lang != "ko" else None
@@ -280,7 +286,7 @@ for no, cat, ask, pickup, lang, title, what in CASES:
     S.append(row)
 
 OUT = OUT_DIR / f"ai_metrics_{TAG}.json"
-OUT.write_text(json.dumps({"model": MODEL, "variant": VARIANT, "rep": REP, "run_id": RUN_ID, "commit": COMMIT,
+OUT.write_text(json.dumps({"model": MODEL, "variant": VARIANT, "rep": REP, "run_id": RUN_ID, "commit": COMMIT, "server_mode": SMODE,
                            "finished": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M"), "env": ENVINFO, "ollama_ps": PS,
                            "instrumented": INSTRUMENTED, "prompt_items": PROMPT_ITEMS, "ref": REF, "rows": S,
                            "runlog_tail": {str(k): v[-800:] for k, v in RUNLOG.items() if not any(r["no"] == k and r["answer"].strip() for r in S)}},

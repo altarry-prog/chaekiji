@@ -52,8 +52,13 @@ A("- 무엇을 재나: 이용자가 제목을 정확히 말하지 않거나 외�
 A("- 실행 환경: GitHub Actions(ubuntu-latest, 사람 손 없음) · " +
   f"CPU {docs[0]['env'].get('cpu')}코어 · GPU 없음 · 메모리 {docs[0]['env'].get('mem')}(전체·사용) · Ollama {docs[0]['env'].get('ollama')} · 인증키·결제 없음")
 A(f"- 실행 기록(공개): {RUN_URL}")
-A(f"- 책이지: 저장소 main 커밋 `{'`, `'.join(commits)}` · 서버 `server.py`(모드 auto: 시연 도서는 그날 새벽 자료, 그 밖의 책은 중계로 그날 조회) · "
+smodes = sorted({d.get("server_mode", "auto") for d in docs})
+A(f"- 책이지: 저장소 main 커밋 `{'`, `'.join(commits)}` · 서버 `server.py`(모드 {', '.join(smodes)}) · "
   "호스트 `server/hosts/ollama_host.py` · 모델에 보이는 도구는 `consult_request` 하나 · 문맥 8192")
+if "snapshot" in smodes:
+    A("- 서버 모드 snapshot: 시연 도서 5종의 그날 새벽 자료만 쓰고 정보나루를 부르지 않는다. 시연 도서 5종의 판정은 auto 모드와 같다. "
+      "같은 날 13:44에 시작한 첫 실행이 시연 도서 밖 책을 정보나루로 조회하다 하루 호출 한도(500건)를 넘겨 취소하고, 정보나루를 부르지 않는 이 방식으로 다시 돌렸다. "
+      "그래서 문의 24건의 기대한 책은 모두 시연 도서 5종이고, 모델이 다른 말을 넘기면 대개 「도서 미확정」으로 끝난다(다른 책으로 답하는 실패는 도구의 찾기 낱말에 걸린 경우만 생긴다).")
 A("- 받을 도서관·이용자 언어: 창구가 정하는 값이라 호스트 인자로 주었다(지금까지의 실측과 같은 방식). 모델이 할 일은 말을 책으로 바꾸고 안내문을 옮기는 것")
 A("- 지시문 두 가지: **지금 지시문**(저장소 main 그대로) · **고친 안**(1·2항만 바꿈: 내용·저자·외국어판 제목을 한국어판 제목으로 바꿔 넘기고, "
   "하나로 정해지지 않으면 되묻기). 고친 안은 이 실측의 복제본에서만 돌렸고 저장소 main에는 없다. 바꾼 문장은 맨 아래에 적었다.")
@@ -73,9 +78,13 @@ def row(label, f):
     A(f"| {label} | " + " | ".join(f(R(k)) for k in ORDER) + " |")
 
 row("도구를 불렀다(명확한 문의 20건)", lambda rs: frac(rs, lambda r: r["called"], clear))
-row("**책을 맞게 알아들었다**(20건)", lambda rs: frac(rs, lambda r: r["book_ok"], clear) + pct(rs, lambda r: r["book_ok"], clear))
+row("**책을 맞게 찾았다**(모델 + 도구, 20건)", lambda rs: frac(rs, lambda r: r["book_ok"], clear) + pct(rs, lambda r: r["book_ok"], clear))
 for cat, label in (("묘사", "  ㄴ 제목 없이 저자·내용(6건)"), ("오타", "  ㄴ 제목 글자 틀림(4건)"), ("외국어", "  ㄴ 외국어(8건)"), ("대조", "  ㄴ 정확한 제목(대조 2건)")):
     row(label, lambda rs, c=cat: frac(rs, lambda r: r["book_ok"], lambda r: r["cat"] == c))
+row("**모델이 한국어판 제목으로 바꿔 넘겼다**(묘사·오타·외국어 18건)", lambda rs: frac(rs, lambda r: r.get("title_arg_ok"), lambda r: clear(r) and r["cat"] != "대조")
+    + pct(rs, lambda r: r.get("title_arg_ok"), lambda r: clear(r) and r["cat"] != "대조"))
+for cat, label in (("묘사", "  ㄴ 제목 없이 저자·내용(6건)"), ("오타", "  ㄴ 제목 글자 틀림(4건)"), ("외국어", "  ㄴ 외국어(8건)")):
+    row(label, lambda rs, c=cat: frac(rs, lambda r: r.get("title_arg_ok"), lambda r: r["cat"] == c))
 row("다른 책으로 답함(위험한 실패)", lambda rs: frac(rs, lambda r: r["wrong_book"], clear))
 row("책을 찾지 못함(안전한 실패)", lambda rs: frac(rs, lambda r: r["not_found"], clear))
 row("**판정 갈래가 기준과 같다**(책을 맞게 알아들은 경우)", lambda rs: frac(rs, lambda r: r["route_ok"], lambda r: r.get("route_ok") is not None))
@@ -88,16 +97,20 @@ row("**안내문 사실 모두 옮김**", lambda rs: frac(rs, lambda r: fact(r, 
 row("번역문에도 사실 모두(한국어 원문 줄 빼고)", lambda rs: frac(rs, lambda r: fact(r, "all", True), lambda r: fact(r, "all", True) is not None))
 row("이용자 언어로 답했다(외국어 9건)", lambda rs: frac(rs, lambda r: r["lang_ok"], lambda r: r["lang"] != "ko"))
 row("**모호한 말에 되물었다**(4건)", lambda rs: frac(rs, lambda r: r["asked"], amb))
+row("  ㄴ 도구를 부르기 전에 모델이 먼저 되물음", lambda rs: frac(rs, lambda r: r.get("asked_before_tool"), amb))
 row("모호한 말에 아무 책이나 골라 답함", lambda rs: frac(rs, lambda r: r.get("answered_some_book"), amb))
 row("중계 조회 불가로 판정 못함(환경)", lambda rs: frac(rs, lambda r: r.get("infra")))
 row("문의 1건 평균 시간(초)", lambda rs: str(round(sum(r["seconds"] for r in rs) / max(1, len(rs)), 1)))
+A("")
+A("「책을 맞게 찾았다」는 모델이 넘긴 말로 도구가 기대한 책을 찾은 것이다. 도구는 시연 도서마다 찾기 낱말(예: 「편의점」·「온실」·「humanacts」)을 들고 있어, "
+  "모델이 제목을 다 말하지 않아도 찾을 때가 있다. 그래서 모델만의 몫은 「한국어판 제목으로 바꿔 넘겼다」(넘긴 말에 본서명이 들어 있음)로 따로 센다.")
 A("")
 A("분모는 해당하는 답만 센다(예: 누리집 주소는 도구가 주소를 준 답, 관 수는 관내 상호대차·예약·책바다 갈래). "
   "안내문 사실은 그 답의 근거가 된 도구 호출의 결과와 견준다(책을 잘못 알아들었어도 그 책의 사실을 옮겼는지 본다).")
 A("")
 A("## 문의별")
 A("")
-A("칸마다 회차 합계: 책 = 책을 맞게 알아들은 횟수, 갈래 = 판정이 기준과 같은 횟수, 사실 = 안내문 사실을 모두 옮긴 횟수, 되물음 = 모호한 말에 되물은 횟수.")
+A("칸마다 회차 합계: 책 = 도구가 기대한 책을 찾은 횟수, 제목 = 모델이 한국어판 제목을 넣어 넘긴 횟수, 갈래 = 판정이 기준과 같은 횟수, 사실 = 안내문 사실을 모두 옮긴 횟수, 되물음 = 모호한 말에 되물은 횟수.")
 A("")
 A(f"| 번호 | 갈래 | 이용자의 말 | 기준(기대한 책 → 판정) | {hdr} |")
 A("|---|---|---|---|" + "---|" * len(ORDER))
@@ -113,7 +126,7 @@ for no in case_ids:
         if not rs:
             cells.append("—"); continue
         if any_r["expect"]:
-            c = f"책 {sum(1 for r in rs if r['book_ok'])}/{len(rs)} · 갈래 {sum(1 for r in rs if r['route_ok'])}/{len(rs)}"
+            c = f"책 {sum(1 for r in rs if r['book_ok'])}/{len(rs)} · 제목 {sum(1 for r in rs if r.get('title_arg_ok'))}/{len(rs)} · 갈래 {sum(1 for r in rs if r['route_ok'])}/{len(rs)}"
             fs = [r for r in rs if fact(r, 'all') is not None]
             if fs:
                 c += f" · 사실 {sum(1 for r in fs if fact(r, 'all'))}/{len(fs)}"

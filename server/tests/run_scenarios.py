@@ -223,6 +223,21 @@ k11 = c.call("consult_request", utterance="불편한 편의점", pickup="해밀�
 k12 = c.call("consult_request", utterance="불편한 편의점", pickup="신중동역칙칙폭폭도서관")
 ok(k11["pickup"] == "해밀" and "해밀도서관에서 받으실 수 있고" in k11["notice"] and k12["pickup"] == "신중동역 칙칙폭폭",
    "㉝ 작은도서관 이름 — 「해밀작은도서관」·「신중동역칙칙폭폭도서관」도 설정 이름으로")
+# [11/1] 회원 조건(member) — 사서가 도서관리시스템에서 읽은 권수·예/아니요만(이름·회원번호 없이). 준 칸의 규정만 판정
+m1 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동",
+            member={"ill_count": 2, "total_loans": 7, "loans_at_pickup": 1, "overdue": False, "same_book_pending": False})
+ok(m1["policy"]["pending"] == [] and m1["policy"]["allowed_so_far"] and sum(1 for x in m1["policy"]["checks"] if x["pass"]) == 7
+   and "창구에서 확인해 드립니다" not in m1["notice"] and "사서가 입력한 회원 조건 5칸" in m1["policy"]["basis"]
+   and "회원 조건: 사서 입력(상호대차 2권 · 대출 7권 · 상동 1권 · 연체·정지 없음 · 같은 책 신청 없음) · 이름·회원번호 없음" in m1["desk_memo"],
+   "㉞ 회원 조건 5칸(사서 입력) — 토큰 없이 규정 7종 모두 판정, 접수 메모에 「사서 입력」과 「이름·회원번호 없음」")
+m2 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", member={"ill_count": "5", "overdue": "아니요"})
+ok(not m2["policy"]["allowed_so_far"] and len(m2["policy"]["pending"]) == 3 and "다만 상호대차 1인 5권(사서 입력: 현재 5/5권)" in m2["notice"]
+   and "남은 규정(통합 대출 20권, 도서관별 5권(직접+상호대차), 동일 도서 중복 신청 없음)은 창구에서 확인해 드립니다." in m2["notice"],
+   "㉟ 회원 조건 일부(글자로 준 권수·「아니요」) — 한도 초과는 「다만 …」으로, 주지 않은 칸의 규정은 이름을 들어 창구 확인")
+m3 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", member={"name": "홍길동", "ill_count": 1})
+m4 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", member={"overdue": "모름"})
+ok("_error" in m3 and "받지 않는 칸: name" in m3["_error"] and "개인정보" in m3["_error"] and "_error" in m4 and "예/아니요" in m4["_error"],
+   "㊱ 회원 조건에 이름 같은 칸이 오면 거부(개인정보를 받지 않음) · 예/아니요가 아닌 값도 거부")
 c.close()
 
 print("── 설정 교체 검증 · 가상시(ill_limit 5→2) ──")

@@ -36,6 +36,12 @@ class FakeOllama(http.server.BaseHTTPRequestHandler):
                 return self._send({"message": {"role": "assistant", "content": "",
                                                "tool_calls": [{"function": {"name": "consult_request",
                                                                             "arguments": {"utterance": "나미야 잡화점의 기적", "pickup": "상동", "lang": "ko", "user": "null"}}}]}})
+        if model == "fake-member":                    # [11/1] 사서가 말하지 않은 회원 조건을 지어내 넘기는 모델
+            if not has_tool_result:
+                return self._send({"message": {"role": "assistant", "content": "",
+                                               "tool_calls": [{"function": {"name": "consult_request",
+                                                                            "arguments": {"utterance": "나미야 잡화점의 기적", "pickup": "상동", "lang": "ko",
+                                                                                          "member": {"ill_count": 0, "overdue": False}}}}]}})
         if model == "fake-loop":                      # [10/18] 설정에 없는 수령관으로 끝없이 되풀이하는 모델(실측에서 본 라마의 행동)
             return self._send({"message": {"role": "assistant", "content": "",
                                            "tool_calls": [{"function": {"name": "consult_request",
@@ -118,5 +124,16 @@ out7 = run("fake-nulluser", "나미야 잡화점의 기적 빌리고 싶어요",
 rows4 = [json.loads(l) for l in open(log3, encoding="utf-8")]
 ok("관내 상호대차" in out7 and "user" not in rows4[-1]["arguments"] and not rows4[-1]["error"],
    "⑧ 모델이 넘긴 회원 토큰(user=\"null\")은 빼고 부름 — 도구 오류 없이 같은 판정")
+log4 = Path(tempfile.mkdtemp()) / "host_log4.ndjson"
+out8 = run("fake-member", "나미야 잡화점의 기적 빌리고 싶어요", str(log4), extra=("--pickup", "상동"))
+rows5 = [json.loads(l) for l in open(log4, encoding="utf-8")]
+ok("관내 상호대차" in out8 and "member" not in rows5[-1]["arguments"] and not rows5[-1]["error"]
+   and any("사서가 주지 않음" in x for x in rows5[-1].get("forced", [])),
+   "⑨ [11/1] 사서가 주지 않은 회원 조건(모델이 지어낸 member)은 빼고 부름 — 회원 규정은 창구 확인 그대로")
+out9 = run("fake-member", "나미야 잡화점의 기적 빌리고 싶어요", str(log4), extra=("--pickup", "상동", "--member", "상호대차=2,연체=아니요"))
+rows6 = [json.loads(l) for l in open(log4, encoding="utf-8")]
+ok(rows6[-1]["arguments"].get("member") == {"ill_count": "2", "overdue": "아니요"} and not rows6[-1]["error"]
+   and "관내 상호대차" in out9 and "호출자 값으로 고정: member" in out9,
+   "⑩ [11/1] --member(사서가 정한 권수·예/아니요)는 모델 값 대신 그대로 넘김 — 도구가 받아 판정(오류 없음)")
 httpd.shutdown()
 print(f"\n호스트 시험 {PASS}건 통과 — 공개 모델에서도 같은 서버·같은 지시문·같은 도구.")

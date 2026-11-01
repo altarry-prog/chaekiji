@@ -123,6 +123,22 @@ def extract_json(text):
                 continue
     return None
 
+MEMBER_ALIAS = {"상호대차": "ill_count", "대출": "total_loans", "수령관": "loans_at_pickup", "연체": "overdue", "중복": "same_book_pending"}
+def parse_member(text):
+    """[11/1] --member 값(사서가 정한 회원 조건, 이름·회원번호 없이) — JSON 또는 「ill_count=2,overdue=no」(한글 칸 이름도: 상호대차=2,연체=아니요).
+    값은 글자 그대로 넘기고, 고르는 일(권수·예/아니요 확인)은 도구가 한다."""
+    text = (text or "").strip()
+    if not text:
+        return None
+    if text.startswith("{"):
+        return json.loads(text)
+    out = {}
+    for part in text.replace("，", ",").split(","):
+        if "=" in part:
+            k, v = part.split("=", 1)
+            out[MEMBER_ALIAS.get(k.strip(), k.strip())] = v.strip()
+    return out
+
 # ── 대화 1회(도구 호출 포함) ───────────────────────────────────────────────────────────
 def run_turn(a, mcp, tools, system, user_text, state, logf):
     protocol = state["protocol"]
@@ -166,6 +182,11 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
                         forced = (forced or []) + [f"{k}: {args.get(k)!r} → {v!r}"]; args[k] = v
                 if "user" in args:                                     # [10/18] 회원 토큰은 모델이 넘기지 않는다(지시문 4) — 3차 실측에서 라마가 user="null"을 넘겨 도구 오류
                     forced = (forced or []) + [f"user: {args.pop('user')!r} → (뺌)"]
+                fixed = parse_member(getattr(a, "member", ""))         # [11/1] 회원 조건도 사서(호출자)가 정한다 — 모델이 지어낸 값을 쓰지 않는다
+                if fixed is not None and args.get("member") != fixed:
+                    forced = (forced or []) + [f"member: {args.get('member')!r} → {fixed!r}"]; args["member"] = fixed
+                elif fixed is None and "member" in args:
+                    forced = (forced or []) + [f"member: {args.pop('member')!r} → (뺌, 사서가 주지 않음)"]
             print(f"▶ 도구 호출 {step}: {name} {json.dumps(args, ensure_ascii=False)}  (모델 {resp['_ms']} ms)"
                   + (f"  ※ 호출자 값으로 고정: {', '.join(forced)}" if forced else ""))
             ms, o = 0, None
@@ -215,6 +236,8 @@ def main():
     ap.add_argument("--relay", default=os.environ.get("CHAEKIJI_RELAY", ""), help="중계 주소(비우면 설정 relay_url)")
     ap.add_argument("--pickup", default="", help="받을 도서관(기본: 설정 home_library)")
     ap.add_argument("--lang", default="ko")
+    ap.add_argument("--member", default="", help="회원 조건(선택, 사서가 도서관리시스템에서 읽은 권수·예/아니요, 이름·회원번호 없이): "
+                                                "예) ill_count=2,overdue=no 또는 상호대차=2,연체=아니요. 주지 않으면 모델이 넘긴 회원 조건은 뺀다")
     ap.add_argument("--ask", default="", help="한 문장만 묻고 끝낸다(없으면 대화형)")
     ap.add_argument("--protocol", default="auto", choices=["auto", "native", "json"])
     ap.add_argument("--tools", default="all", choices=["all", "consult"],

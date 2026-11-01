@@ -122,7 +122,12 @@ ok(r11["found"] is False and r11["route"] == "check" and "연결되지 않아" i
    "④″ 서지 검색부터 실패 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」")
 ok("상호대차 제외 자료 아님" in r2["policy"]["pending"] and "상호대차 제외 자료 아님" not in r["policy"]["pending"],
    "   자료 유형·신착을 모르는 책(정보나루 서지)은 제외 자료 규정도 창구 확인 — 픽스처 도서는 그대로 판정")
-allj = json.dumps([r, r2, r3, r10, r11], ensure_ascii=False)
+r12 = c.call("consult_request", utterance="채식주의자 있나요?", pickup="상동",
+             member={"ill_count": 1, "total_loans": 3, "loans_at_pickup": 0, "overdue": False, "same_book_pending": False})
+ok(r12["policy"]["pending"] == ["상호대차 제외 자료 아님"] and sum(1 for x in r12["policy"]["checks"] if x["pass"] is not None) == 6
+   and "남은 규정(상호대차 제외 자료 아님)은 창구에서 확인해 드립니다." in r12["notice"] and "회원 조건: 사서 입력(" in r12["desk_memo"],
+   "④⁗ [11/1] 회원 조건 5칸을 준 정보나루 서지 도서 — 규정 6종 판정, 자료 유형·신착(정보나루에 없음) 1종만 창구 확인")
+allj = json.dumps([r, r2, r3, r10, r11, r12], ensure_ascii=False)
 ok(FAKE_KEY not in allj and "authKey" not in allj, "⑤ 응답에 인증키 흔적 없음")
 banner = c.banner()
 ok("relay 모드" in banner and "관내 출처 naru" in banner, "   기동 배너 — relay 모드 · 관내 출처 naru")

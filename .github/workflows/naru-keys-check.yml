@@ -30,12 +30,19 @@ jobs:
           K_NARU: ${{ secrets.NARU }}
           K_AUTH_KEY: ${{ secrets.AUTH_KEY }}
           K_API_KEY: ${{ secrets.API_KEY }}
+          K_NARU_KEY3: ${{ secrets.NARU_KEY3 }}
+          K_NARUKEY3: ${{ secrets.NARUKEY3 }}
+          K_NARU_KEY_3: ${{ secrets.NARU_KEY_3 }}
+          K_NARUKEY_3: ${{ secrets.NARUKEY_3 }}
+          K_NARU_KEY4: ${{ secrets.NARU_KEY4 }}
+          K_NARUKEY4: ${{ secrets.NARUKEY4 }}
+          K_NARU_KEY_4: ${{ secrets.NARU_KEY_4 }}
         run: |
           python3 - <<'PY'
           import os, json, urllib.request, urllib.parse
           # 정보나루 키를 넣었을 법한 이름들(이름 목록은 깃허브가 작업에 주지 않아, 짐작한 이름만 본다)
           names = [k[2:] for k in os.environ if k.startswith("K_")]
-          order = ['NARU_KEY', 'NARUKEY', 'NARU_KEY_REFRESH', 'NARU_KEY_ASK', 'NARU_KEY2', 'NARUKEY2', 'NARU_KEY_2', 'NARUKEY_2', 'NARU_KEY1', 'NARUKEY1', 'NARU_API_KEY', 'NARU_AUTH_KEY', 'NARU_KEY_SUB', 'NARU_KEY_STAFF', 'DATA4LIBRARY_KEY', 'LIBRARY_KEY', 'NARU', 'AUTH_KEY', 'API_KEY']
+          order = ['NARU_KEY', 'NARUKEY', 'NARU_KEY_REFRESH', 'NARU_KEY_ASK', 'NARU_KEY2', 'NARUKEY2', 'NARU_KEY_2', 'NARUKEY_2', 'NARU_KEY1', 'NARUKEY1', 'NARU_API_KEY', 'NARU_AUTH_KEY', 'NARU_KEY_SUB', 'NARU_KEY_STAFF', 'DATA4LIBRARY_KEY', 'LIBRARY_KEY', 'NARU', 'AUTH_KEY', 'API_KEY', 'NARU_KEY3', 'NARUKEY3', 'NARU_KEY_3', 'NARUKEY_3', 'NARU_KEY4', 'NARUKEY4', 'NARU_KEY_4']
           names = [n for n in order if n in names]
           keys = {n: os.environ.get("K_" + n, "").strip() for n in names}
           seen = {}

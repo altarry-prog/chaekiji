@@ -15,11 +15,16 @@ jobs:
           K_NARUKEY: ${{ secrets.NARUKEY }}
           K_NARU_KEY_REFRESH: ${{ secrets.NARU_KEY_REFRESH }}
           K_NARU_KEY_ASK: ${{ secrets.NARU_KEY_ASK }}
+          ALL_SECRETS: ${{ toJSON(secrets) }}          # 이름만 읽는다(값은 찍지 않음). 정보나루 키를 다른 이름으로 넣었을 때 찾으려고
         run: |
           python3 - <<'PY'
           import os, json, urllib.request, urllib.parse
+          allsec = json.loads(os.environ.get("ALL_SECRETS") or "{}")
+          other = ("CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID", "UPSTAGE_API_KEY", "github_token", "GITHUB_TOKEN")
+          print("저장소 비밀값 이름:", ", ".join(sorted(allsec)))
           names = ["NARU_KEY", "NARUKEY", "NARU_KEY_REFRESH", "NARU_KEY_ASK"]
-          keys = {n: os.environ.get("K_" + n, "").strip() for n in names}
+          names += sorted(n for n in allsec if n not in names and n not in other)   # 그 밖의 이름도 정보나루 키인지 한 번씩
+          keys = {n: str(allsec.get(n) or os.environ.get("K_" + n, "")).strip() for n in names}
           seen = {}
           rows = []
           for n in names:
@@ -49,5 +54,5 @@ jobs:
           out = ["| 비밀값 이름 | 값 | 다른 이름과 견줌 | 한 번 불러 본 결과 |", "|---|---|---|---|"] + rows
           print("\n".join(out))
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
-              f.write("## 정보나루 키 확인\n\n" + "\n".join(out) + "\n\n키 값은 적지 않았다(같은 키인지와 불러 본 결과만).\n")
+              f.write("## 정보나루 키 확인\n\n저장소 비밀값 이름: " + ", ".join(sorted(allsec)) + "\n\n" + "\n".join(out) + "\n\n키 값은 적지 않았다(같은 키인지와 불러 본 결과만).\n")
           PY

@@ -6,11 +6,12 @@
   var LIBS = ["상동", "꿈빛", "꿈여울", "도당", "동화", "별빛마루", "북부", "송내", "수주", "심곡", "역곡", "역곡밝은", "오정", "원미", "책마루", "한울빛"];
   var POINTS = ["상동역 칙칙폭폭", "숲속", "꿈꾸는새싹", "약대신나는가족", "시정담벼락", "신중동역 칙칙폭폭", "소사칙칙폭폭", "해밀"];
   var LANG_NAME = { ko: "한국어", en: "영어", vi: "베트남어", zh: "중국어", ja: "일본어" };
+  // 예시는 11. 2. Solar 실측(같은 지시문·같은 도구, 문의 24건 × 3회)에서 세 번 모두 책을 찾았거나(1~4) 세 번 모두 되물은(5) 문의다
   var EXAMPLES = [
-    { t: "한강 작가가 광주 이야기 쓴 책 있잖아요, 역곡에서 받을 수 있어요?", p: "역곡", tag: "내용·저자로" },
-    { t: "나미야 잡화점의 기적 빌리고 싶어요", p: "상동", tag: "제목으로" },
+    { t: "서울역 노숙자가 편의점에서 야간 알바하는 소설 있죠? 역곡에서 받고 싶어요", p: "역곡", tag: "줄거리로" },
+    { t: "나미야 잡하점의 기적 빌릴수있나요", p: "상동", tag: "글자 틀림" },
     { t: "Do you have Human Acts by Han Kang? I'd like to pick it up at Sangdong library.", p: "상동", tag: "영어" },
-    { t: "Tôi muốn mượn cuốn \"Cửa hàng tiện lợi bất tiện\".", p: "상동", tag: "베트남어" },
+    { t: "Thư viện có cuốn \"Điều kỳ diệu của tiệm tạp hóa Namiya\" không? Tôi muốn nhận ở thư viện Yeokgok.", p: "역곡", tag: "베트남어" },
     { t: "한강 책 빌리고 싶어요", p: "상동", tag: "모호한 말" }
   ];
   var $ = function (id) { return document.getElementById(id); };

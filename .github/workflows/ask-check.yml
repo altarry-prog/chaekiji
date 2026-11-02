@@ -1,0 +1,78 @@
+# Solar 상담 창(/ask) 실제 확인 — 화면(docs/ask/app.js)의 예시를 실제 중계에 물어 답 원문까지 기록한다(수동 실행만).
+# 화면과 같은 출처(Origin)로 부른다. 예시는 시연 도서라 정보나루 호출은 거의 없고(새벽 자료), 모델 호출은 건마다 2번 안팎이다.
+# 결과: server/lab/out/ask_check_YYYY-MM-DD_HHMM.md(답 원문 포함, 개인정보 없음)를 main에 커밋한다. 키는 이 작업에 없다(중계가 가짐).
+name: ask-check
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ask-check
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 화면의 예시를 실제로 묻고 기록
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, time, datetime, pathlib, urllib.request, urllib.error
+          KST = datetime.timezone(datetime.timedelta(hours=9))
+          URL = "https://chaekiji-relay.altarry2.workers.dev/ask"
+          UA = "chaekiji-ask-check/1.0 (+https://github.com/altarry-prog/chaekiji)"
+          js = pathlib.Path("docs/ask/app.js").read_text(encoding="utf-8")
+          cases = [(json.loads(t), json.loads(p)) for t, p in re.findall(r'\{ t: ("(?:[^"\\]|\\.)*"), p: ("(?:[^"\\]|\\.)*")', js)]
+          rows = []
+          for i, (text, pickup) in enumerate(cases, 1):
+              if i > 1: time.sleep(8)
+              body = json.dumps({"text": text, "pickup": pickup, "lang": "auto"}, ensure_ascii=False).encode()
+              req = urllib.request.Request(URL, data=body, method="POST",
+                    headers={"User-Agent": UA, "Content-Type": "application/json", "Origin": "https://altarry-prog.github.io"})
+              t0 = time.time()
+              try:
+                  with urllib.request.urlopen(req, timeout=120) as r:
+                      st, b = r.status, json.loads(r.read() or b"null")
+              except urllib.error.HTTPError as e:
+                  st, raw = e.code, e.read()[:400].decode("utf-8", "replace")
+                  try: b = json.loads(raw)
+                  except Exception: b = {"text": " ".join(raw.split())[:200]}
+              except Exception as e:
+                  st, b = None, {"text": f"{type(e).__name__}: {str(e)[:120]}"}
+              rows.append({"no": i, "text": text, "pickup": pickup, "status": st, "ms": round((time.time() - t0) * 1000), "body": b})
+              print(i, st, (b or {}).get("tool_calls") if isinstance(b, dict) else b, flush=True)
+          now = datetime.datetime.now(KST)
+          L = [f"# Solar 상담 창 실제 확인 — 화면 예시 {len(rows)}건 ({now:%Y-%m-%d %H:%M} KST)", "",
+               "- 무엇: 화면(`docs/ask/`)의 예시를 실제 중계 `POST /ask`에 화면과 같은 출처로 물었다. 언어는 「자동(쓴 글자로 짐작)」",
+               "- 설정: 말은 Solar Pro 4(업스테이지 API)가 알아듣고, 판정은 원격 판과 같은 도구(`consult_request`)가 한다. 지시문·모델에 보이는 도구·받을 도서관과 언어 고정·온도 0은 11. 2. Solar 실측과 같다",
+               f"- 실행 기록(공개): {os.environ.get('RUN_URL', '')}",
+               "- 아래 답은 모델이 쓴 원문 그대로다(사람이 고치지 않음). 판정 칸은 도구가 정한 값이다. 대출 상태는 정보나루 조회일 전일 기준이며, 실제 접수로 이어지지 않는다", "",
+               "| 번호 | 이용자의 말 | 받을 곳 | 결과 | 모델이 도구에 넘긴 말 | 도구 판정 | 걸린 시간 | 모델 호출·토큰 |", "|---|---|---|---|---|---|---|---|"]
+          for r in rows:
+              b = r["body"] if isinstance(r["body"], dict) else {}
+              tl = b.get("tool") or {}
+              u = b.get("usage") or {}
+              calls = " → ".join(f"「{c.get('utterance')}」" for c in b.get("tool_calls") or []) or "(부르지 않음)"
+              route = (tl.get("route_label") or "-") + (f" · 『{(tl.get('book') or {}).get('title')}』" if tl.get("book") else "")
+              res = "답함" if r["status"] == 200 else f"{r['status']} {b.get('error') or b.get('text') or ''}"
+              L.append(f"| {r['no']} | {r['text']} | {r['pickup']} | {res} | {calls} | {route} | {r['ms'] / 1000:.1f}초 | "
+                       f"{u.get('model_calls', '-')}번 · {u.get('prompt_tokens', '-')}+{u.get('completion_tokens', '-')} |")
+          L += ["", "## 답 원문", ""]
+          for r in rows:
+              b = r["body"] if isinstance(r["body"], dict) else {}
+              L += [f"### {r['no']}. {r['text']}", "", f"받을 곳 {r['pickup']} · 모델 {b.get('model', '-')} · 언어 {b.get('lang', '-')}", ""]
+              L += ["> " + line if line.strip() else ">" for line in (b.get("answer") or "(답 없음)").splitlines()]
+              L.append("")
+          out = pathlib.Path(f"server/lab/out/ask_check_{now:%Y-%m-%d_%H%M}.md")
+          out.write_text("\n".join(L) + "\n", encoding="utf-8")
+          print(out)
+          PY
+      - name: 기록 커밋
+        run: |
+          git config user.name "chaekiji-ask-check"
+          git config user.email "relay@users.noreply.github.com"
+          git add server/lab/out/ask_check_*.md
+          git commit -m "Solar 상담 창 실제 확인 기록(깃허브 액션 ${GITHUB_RUN_ID})" || exit 0
+          for i in 1 2 3 4 5; do git pull --rebase -q origin main && git push && break; sleep 5; done

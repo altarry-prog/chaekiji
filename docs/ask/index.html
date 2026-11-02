@@ -76,7 +76,7 @@ footer{margin-top:16px;color:var(--sub);font-size:.88rem}
 
 <form id="f" novalidate>
   <label class="blk" for="t">이용자의 말</label>
-  <textarea id="t" maxlength="300" rows="3" autocomplete="off" spellcheck="false" placeholder="예) 한강 작가가 광주 이야기 쓴 책 있잖아요, 역곡에서 받을 수 있어요?"></textarea>
+  <textarea id="t" maxlength="300" rows="3" autocomplete="off" spellcheck="false" placeholder="예) 히가시노 게이고 소설인데 잡화점에 고민 편지 보내는 이야기 빌리고 싶어요"></textarea>
   <div class="row">
     <label>받을 도서관
       <select id="p"></select>
@@ -107,6 +107,7 @@ footer{margin-top:16px;color:var(--sub);font-size:.88rem}
   <ul>
     <li>부천시립도서관의 공식 서비스가 아니라, 담당 사서가 직접 만들어 검증하는 시험 화면입니다. 실제 접수로 이어지지 않습니다.</li>
     <li>대출 가능 여부는 도서관 정보나루 조회일의 전일 기준입니다. 신청은 공식 누리집에서 이용자가 로그인해 직접 합니다.</li>
+    <li>같은 설정으로 잰 결과(2026. 11. 2., 고정 문의 24건 × 3회): 이용자의 말로 책을 찾은 것은 60번 가운데 37번이었고, 찾은 37번은 판정이 모두 도구와 같았습니다. 제목 없이 말하거나 외국어 제목으로 물으면 못 찾을 때가 있고, 그때는 되묻거나 「도서 미확정」으로 답합니다(<a href="https://github.com/altarry-prog/chaekiji/blob/main/server/lab/out/ai_metrics_solar_record_actions_2026-11-02_0945.md">실측 기록</a>).</li>
     <li>답의 문장은 AI가 쓰므로 틀릴 수 있습니다. 그래서 도구가 정한 판정(갈래, 책, 조회일, 누리집 주소)을 「책이지 도구가 정한 판정」 상자에 따로 보여 줍니다.</li>
     <li>적은 글은 답을 만들려고 업스테이지 API로 보내집니다. 이 화면과 책이지 중계는 글을 저장하지 않습니다.</li>
     <li>사서용 상담 비서라 답 끝에 접수 메모가 붙습니다. 시험용이라 한 사람이 10분에 6번까지 물을 수 있습니다.</li>

@@ -3,11 +3,10 @@
 # 결과: 기록표와 원 기록을 이 가지(tools/model2)의 server/lab/out/에 커밋한다. main은 건드리지 않는다.
 # 정보나루: 원격 중계를 거쳐 오늘 자료 — 새벽 자료에 있는 책은 호출 0, 없는 책만 한 번(약 17건). 인증키는 쓰지 않는다.
 name: model2
+# [11. 2. 14:00] 수동 실행만. tools/model2의 다른 실측 도구(AI 몫 지표·Solar)를 고칠 때마다 이 10. 18. 실측이 저절로 돌아
+#   정보나루 호출을 쓰고 기록을 덧붙여, 11. 2.에 두 번 돈 것을 취소했다.
 on:
   workflow_dispatch:
-  push:
-    branches: [tools/model2]
-    paths: [".github/workflows/model2.yml", "tools/model2/**"]
 permissions:
   contents: write
 concurrency:

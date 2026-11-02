@@ -398,7 +398,7 @@
 
 **함께 보기**
 
-- 공공 GitLab: 제출본 https://gitlab.aigov.go.kr/altarry/chaekiji-challenge (2026. 11. 9. 등록 예정, 비공개: 심사위원 열람용) · 공개 초안 https://gitlab.aigov.go.kr/altarry/chaekiji (가져오기로 옮긴 사본, 최신은 이 저장소)
+- 공공 GitLab: 제출본 https://gitlab.aigov.go.kr/altarry/chaekiji-challenge (2026. 11. 9. 등록 예정, 비공개: 심사위원 열람용) · 앞서 옮겨 둔 초안 사본은 11. 2.부터 비공개(최신은 이 저장소)
 
 - 데이터 출처: 도서관 정보나루 Open API(국립중앙도서관). 대체자료와 월간 추천은 예시 데이터입니다.
 

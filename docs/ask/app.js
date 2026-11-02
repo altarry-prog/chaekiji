@@ -103,14 +103,21 @@
     out.innerHTML = html;
   }
 
-  function fail(msg) { out.innerHTML = '<p class="note err">' + esc(msg) + "</p>"; }
+  function fail(msg) { out.innerHTML = '<p class="note err" style="margin-top:0">' + esc(msg) + "</p>"; showOut(); }
+  // 좁은 화면(한 줄로 쌓일 때)에서는 답이 묻기 칸 아래에 나오므로 그쪽으로 내려 준다. 넓은 화면은 오른쪽에 바로 보인다
+  function showOut() {
+    if (!window.matchMedia || !window.matchMedia("(max-width: 959px)").matches) return;
+    var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    try { out.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" }); } catch (e) { out.scrollIntoView(); }
+  }
 
   form.addEventListener("submit", function (ev) {
     ev.preventDefault();
     var text = ta.value.trim();
     if (!text) { fail("물을 말을 적어 주세요."); ta.focus(); return; }
     go.disabled = true;
-    out.innerHTML = '<p class="wait"><span class="dot" aria-hidden="true"></span>묻는 중입니다. 보통 5~20초 걸립니다.</p>';
+    out.innerHTML = '<div class="card"><p class="wait" style="margin:0"><span class="dot" aria-hidden="true"></span>묻는 중입니다. 보통 5~20초 걸립니다.</p></div>';
+    showOut();
     var ctl = ("AbortController" in window) ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 90000);
     fetch(RELAY + "/ask", { method: "POST", headers: { "Content-Type": "application/json" }, signal: ctl ? ctl.signal : undefined,

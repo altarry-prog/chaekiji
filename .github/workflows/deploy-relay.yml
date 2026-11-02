@@ -4,6 +4,7 @@
 #   CLOUDFLARE_ACCOUNT_ID — (선택) 계정 ID. 없으면 토큰으로 계정을 찾고, workers.dev 주소 이름이 없으면 만들어 준다
 #   NARU_KEY(또는 NARUKEY) — 이미 있는 정보나루 키. 배포할 때 Cloudflare 비밀값으로 그대로 넘긴다(출력·기록 없음)
 #   UPSTAGE_API_KEY — [11/2] Solar 상담 창(/ask)이 쓰는 업스테이지 키. 정보나루 키와 같은 방식으로 넘긴다(없으면 /ask만 503)
+#   NARU_KEY_ASK — (선택, 11/2) 상담 창 전용 정보나루 키. 있으면 /ask는 이 키로 조회해 하루 500번 한도를 시연 웹·원격 판과 나누지 않는다
 # 결과(주소·확인 결과·실패 까닭)는 relay/last_deploy.json 에 남긴다 — 키·토큰은 없다.
 name: deploy-relay
 on:
@@ -33,6 +34,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}
           UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
+          NARU_KEY_ASK: ${{ secrets.NARU_KEY_ASK }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "Cloudflare 비밀값(CLOUDFLARE_API_TOKEN)이 없어 건너뜁니다"; echo "skipped=true" >> "$GITHUB_OUTPUT"; exit 0; fi
@@ -96,6 +98,9 @@ jobs:
           if [ -n "$UPSTAGE_API_KEY" ]; then
             printf '%s' "$UPSTAGE_API_KEY" | npx --yes wrangler@4.151.0 secret put UPSTAGE_API_KEY > secret2.log 2>&1 || { echo "Solar 키 넣기 실패" >> deploy_err.txt; exit 1; }
           else echo "Solar 키 비밀값이 없어 상담 창(/ask)이 503을 냅니다" >> deploy_err.txt; fi
+          if [ -n "$NARU_KEY_ASK" ]; then
+            printf '%s' "$NARU_KEY_ASK" | npx --yes wrangler@4.151.0 secret put NARU_KEY_ASK > secret3.log 2>&1 || { echo "상담 창 정보나루 키 넣기 실패" >> deploy_err.txt; exit 1; }
+          fi
       - name: 확인(/health · /holdings · /search · /nation · 원격 상담 비서 /mcp)과 기록
         if: steps.deploy.outputs.skipped != 'true'
         env:
@@ -146,7 +151,7 @@ jobs:
                   h = get("/health", 20)
                   if h.get("status") == 200: break
                   time.sleep(10)
-              rec["health"] = brief(h, ("ok", "keyed", "region", "colo"))
+              rec["health"] = brief(h, ("ok", "keyed", "ask", "ask_naru_key", "region", "colo"))
               rec["probe_python_default_name"] = brief(get("/health", 20, ua=None))
               c = get("/health", 20, headers={"Origin": "https://altarry-prog.github.io"})
               rec["cors_web"] = {"status": c.get("status"), "allow_origin": c.get("acao")}

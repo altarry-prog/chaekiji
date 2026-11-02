@@ -173,6 +173,14 @@ _resetAskForTest();
 // 9. /health는 Solar 키가 있는지만 알린다(값 없음)
 const h1 = await (await worker.fetch(new Request("https://relay.test/health"), env)).json();
 const h2 = await (await worker.fetch(new Request("https://relay.test/health"), { NARU_KEY: "FAKE" })).json();
-ok(h1.ask === true && h2.ask === false && !JSON.stringify(h1).includes("UPFAKE"), "/health — Solar 키 유무만(ask: true/false)");
+// 상담 창 전용 정보나루 키(NARU_KEY_ASK)가 있으면 상담 창은 그 키로만 조회한다(모의 정보나루는 FAKE만 받음)
+_resetAskForTest(); log.length = 0;
+script = [toolCall({ utterance: "파친코" }), say("끝")];
+const sep = await ask({ text: "파친코 있어요?" }, { e: { NARU_KEY: "OTHER", NARU_KEY_ASK: "FAKE", UPSTAGE_API_KEY: "UPFAKE" } });
+const h3 = await (await worker.fetch(new Request("https://relay.test/health"), { NARU_KEY: "OTHER", NARU_KEY_ASK: "FAKE" })).json();
+const naruLog = log.filter(u => u.includes("data4library"));
+ok(h1.ask === true && h2.ask === false && !JSON.stringify(h1).includes("UPFAKE") && h1.ask_naru_key === false && h3.ask_naru_key === true &&
+   sep.status === 200 && sep.body.tool && sep.body.tool.book && naruLog.length > 0 && naruLog.every(u => u.includes("authKey=FAKE")) && !sep.text.includes("FAKE"),
+   "/health — Solar 키·상담 창 전용 정보나루 키 유무만 · 전용 키(NARU_KEY_ASK)가 있으면 상담 창은 그 키로만 조회");
 
 console.log(`\nSolar 상담 창 점검 ${n}건 통과`);

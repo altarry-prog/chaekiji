@@ -65,10 +65,12 @@ export default {
       if (!env.NARU_KEY || !env.UPSTAGE_API_KEY) return json({ error: "ask-not-configured" }, 503, H);
       if (!ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, H);
       const ip = req.headers.get("CF-Connecting-IP") || "0";
-      return handleAsk(req, env, ip, {
-        relayCall: (path, p, ctx) => relayCall(path, p.isbn || "", p.q || "", env, ctx),
+      // 상담 창 전용 정보나루 키(NARU_KEY_ASK)가 있으면 그 키로 조회한다 — 하루 500번 한도를 시연 웹·원격 판과 나눠 쓰지 않게(없으면 NARU_KEY)
+      const askEnv = env.NARU_KEY_ASK ? { ...env, NARU_KEY: env.NARU_KEY_ASK } : env;
+      return handleAsk(req, askEnv, ip, {
+        relayCall: (path, p, ctx) => relayCall(path, p.isbn || "", p.q || "", askEnv, ctx),
         allow: () => true,                                     // /ask는 따로 센다(ask.js askAllow)
-        newCtx: () => newCtx(env),
+        newCtx: () => newCtx(askEnv),
       }, H);
     }
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
@@ -76,7 +78,7 @@ export default {
     if (!env.NARU_KEY) return json({ error: "relay-not-configured" }, 503, cors);   // 키 미설정 시 기동 거부
     if (origin && !ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, cors);
 
-    if (url.pathname === "/health") return json({ ok: true, keyed: true, ask: !!env.UPSTAGE_API_KEY, region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
+    if (url.pathname === "/health") return json({ ok: true, keyed: true, ask: !!env.UPSTAGE_API_KEY, ask_naru_key: !!env.NARU_KEY_ASK, region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
     if (!["/holdings", "/search", "/nation"].includes(url.pathname)) return json({ error: "not-found" }, 404, cors);
 
     const ip = req.headers.get("CF-Connecting-IP") || "0";

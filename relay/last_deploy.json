@@ -1,10 +1,10 @@
 {
- "time": "2026-11-02 16:14 KST",
+ "time": "2026-11-02 16:26 KST",
  "result": "ok",
  "url": "https://chaekiji-relay.altarry2.workers.dev",
  "health": {
   "status": 200,
-  "ms": 125,
+  "ms": 103,
   "ok": true,
   "keyed": true,
   "naru_keys": [
@@ -17,17 +17,17 @@
   "ask": true,
   "records": true,
   "region": "31050",
-  "colo": "IAD"
+  "colo": "ORD"
  },
  "naru_keys": {
-  "NARUKEY": "정상",
+  "NARUKEY": "오류",
   "NARU_KEY2": "정상",
   "NARU_KEY3": "승인 전·무효",
   "NARU_KEY4": "승인 전·무효"
  },
  "probe_python_default_name": {
   "status": 403,
-  "ms": 53,
+  "ms": 31,
   "text": "error code: 1010"
  },
  "cors_web": {
@@ -36,16 +36,16 @@
  },
  "holdings_sample": {
   "status": 200,
-  "ms": 5283,
+  "ms": 5326,
   "asof": "2026-11-02",
   "calls": 16,
   "via": "http",
   "cached": false,
-  "upstream_ms": 5221,
-  "call_ms_median": 1844,
-  "call_ms_max": 2961,
-  "placement": "local-IAD",
-  "edge": "IAD",
+  "upstream_ms": 5269,
+  "call_ms_median": 1747,
+  "call_ms_max": 2812,
+  "placement": "local-ORD",
+  "edge": "ORD",
   "isbn": "9788972756194",
   "ok": 9,
   "busy": 4,
@@ -53,21 +53,21 @@
  },
  "search_sample": {
   "status": 200,
-  "ms": 922,
+  "ms": 1584,
   "via": "http",
   "docs": 6,
   "first": "나미야 잡화점의 기적 :히가시노 게이고 장편소설 "
  },
  "nation_sample": {
   "status": 200,
-  "ms": 3189,
+  "ms": 3155,
   "found_count": 200,
   "via": "http"
  },
  "mcp": {
   "initialize": {
    "status": 200,
-   "ms": 87,
+   "ms": 40,
    "protocol": "2025-06-18",
    "server": "0.3.5-remote"
   },
@@ -81,7 +81,7 @@
   ],
   "consult": {
    "status": 200,
-   "ms": 222,
+   "ms": 150,
    "route": "ill",
    "asof": "2026-11-02",
    "basis": "관내: 정보나루 bookExist(매일 갱신 · 2026-11-02 조회 · 전일 기준)",
@@ -90,7 +90,7 @@
  },
  "ask": {
   "status": 200,
-  "ms": 9840,
+  "ms": 10012,
   "model": "solar-pro4-260806",
   "tool_calls": [
    "나미야 잡화점의 기적"
@@ -100,7 +100,7 @@
   "data_calls": 1,
   "usage": {
    "prompt_tokens": 3561,
-   "completion_tokens": 397,
+   "completion_tokens": 400,
    "model_calls": 2
   },
   "lang": "ko",

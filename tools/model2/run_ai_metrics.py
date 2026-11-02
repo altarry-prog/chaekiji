@@ -18,7 +18,7 @@ import os, sys, re, json, time, datetime, pathlib, subprocess, urllib.request
 KST = datetime.timezone(datetime.timedelta(hours=9))
 WORK = pathlib.Path(os.environ.get("WORK_DIR", "/content"))
 MODEL = os.environ.get("AI_MODEL", "gpt-oss:20b")
-VARIANT = os.environ.get("AI_VARIANT", "main")          # main | title | title2
+VARIANT = os.environ.get("AI_VARIANT", "main")          # main | title | title2 | retry
 REP = int(os.environ.get("AI_REP", "1"))
 RUN_ID = os.environ.get("RUN_ID", datetime.datetime.now(KST).strftime("%m%d%H%M"))
 OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
@@ -72,6 +72,12 @@ P2_NEW = ("`utterance`에는 책의 한국어판 제목만 넘깁니다(예: 「
 P2_NEW2 = P2_NEW + (" 제목을 한국어판으로 바꿔 넘겨도 `lang`에는 이용자가 실제로 쓴 언어의 코드를 넣고, "
                     "답과 안내문은 7항대로 그 언어로 씁니다.")
 
+# 지시문 고친 안 3(retry, 11. 2.): 고친 안·고친 안 2는 책 찾기는 늘었지만 외국어 문의의 답이 한국어로 바뀌었다(제목을 먼저 한국어로 바꿔 넘기면
+# 답까지 한국어로 쓰는 경향). 그래서 1·2항은 저장소 그대로 두고, 도구가 책을 못 찾았을 때만 한국어판 제목으로 한 번 더 부르게 하는 문장을 2항 끝에 더한다.
+P2_RETRY = P2_OLD + (" 도구가 책을 찾지 못했다고 오면(`route: unknown`), 이용자가 내용·저자·외국어판 제목으로 말한 책이 무엇인지 알 때는 "
+                     "그 책의 한국어판 제목으로 바꿔 한 번 더 부릅니다(예: 「Almond by Sohn Won-pyung」 → 「아몬드」). "
+                     "그래도 못 찾거나 어느 책인지 하나로 정해지지 않으면 3항대로 되묻습니다. 답의 언어는 처음 물은 이용자의 언어 그대로입니다.")
+
 WORK.mkdir(parents=True, exist_ok=True)
 os.chdir(WORK)
 if not (WORK / "chaekiji").exists():
@@ -90,6 +96,10 @@ if VARIANT in ("title", "title2"):
     if P1_OLD not in ptxt or P2_OLD not in ptxt:
         sys.exit("지시문 1·2항의 문장이 바뀌어 고친 안을 적용할 수 없습니다(실측 중단).")
     ptxt = ptxt.replace(P1_OLD, P1_NEW).replace(P2_OLD, P2_NEW if VARIANT == "title" else P2_NEW2)
+elif VARIANT == "retry":
+    if P2_OLD not in ptxt:
+        sys.exit("지시문 2항의 문장이 바뀌어 고친 안 3을 적용할 수 없습니다(실측 중단).")
+    ptxt = ptxt.replace(P2_OLD, P2_RETRY)
     PROMPT.write_text(ptxt, encoding="utf-8")
 PROMPT_ITEMS = "\n".join(l for l in ptxt.splitlines() if l.startswith(("1. ", "2. ")))
 

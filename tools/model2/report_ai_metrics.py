@@ -13,7 +13,7 @@ if not docs:
     sys.exit("결과 JSON이 없습니다.")
 RUN_ID = docs[0]["run_id"]
 NAME = {"gpt-oss:20b": "GPT-OSS 20B", "exaone3.5:2.4b": "EXAONE 3.5 2.4B"}
-VAR = {"main": "지금 지시문", "title": "고친 안", "title2": "고친 안 2(언어 유지)"}
+VAR = {"main": "지금 지시문", "title": "고친 안", "title2": "고친 안 2(언어 유지)", "retry": "고친 안 3(못 찾으면 한국어판 제목으로 다시)"}
 ORDER = sorted({(d["model"], d["variant"]) for d in docs}, key=lambda k: (k[0] != "gpt-oss:20b", k[1] != "main"))
 by = collections.defaultdict(list)
 for d in docs:
@@ -168,6 +168,14 @@ if "title" in items:
     A("고친 안:")
     A("")
     for l in (items.get("title") or "").splitlines():
+        A(f"> {l}")
+    A("")
+if "retry" in items:
+    A("## 고친 안 3(못 찾으면 한국어판 제목으로 다시)의 지시문(1·2항)")
+    A("")
+    A("1·2항은 저장소 그대로 두고, 도구가 책을 못 찾았을 때만 한국어판 제목으로 한 번 더 부르고 답은 이용자의 언어 그대로 쓰라는 문장을 2항 끝에 더했다. 저장소 main의 지시문은 바꾸지 않았다.")
+    A("")
+    for l in (items.get("retry") or "").splitlines():
         A(f"> {l}")
     A("")
 if "title2" in items:

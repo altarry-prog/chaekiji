@@ -22,6 +22,10 @@
 
 ## 바로 이용해 보기
 
+<a href="https://altarry-prog.github.io/chaekiji/docs/video/"><img src="docs/video/poster.jpg" width="560" alt="책이지 시연영상 표지. 누르면 시연영상(4분 59초)이 바로 재생됩니다. 창구 판정(claude.ai), 공개 모델, 시민 음성 화면, 설치형 순서이며 실제 화면 녹화입니다."></a>
+
+▶ 누르면 시연영상(4분 59초)이 바로 재생됩니다(처음엔 소리 없이, 「소리 켜기」로 음성 해설). 실제 화면 녹화이고 음성 해설은 AI 합성이며, 시연 모델이라 실제 접수로 이어지지 않습니다.
+
 - 🧑‍💼 **창구·전화 판정**(사서용, 설치 없이): [claude.ai에 주소 한 줄로 연결](#설치-없이-이용2분)
 - 📱 **시민 음성 화면**(시연): [휴대폰으로 열기](https://altarry-prog.github.io/chaekiji/)
 - 🤖 **공개 모델 2종**: [코랩에서 실행](https://colab.research.google.com/github/altarry-prog/chaekiji/blob/main/server/lab/colab_model2.ipynb)
@@ -383,7 +387,7 @@
 - 실측 기록 보기: [처리 시간](server/lab/out/consult_timing_2026-10-17.md) · [공개 모델 2종](server/lab/out/) · [전일 기준 유지율](server/lab/out/stability_2026-10-16_2026-10-28.md) · [신청 절차 직원 측정](server/lab/out/apply_steps_staff_2026-10-27.md)
 - 중계와 원격 판: [relay/README.md](relay/README.md)
 - 시민 화면 기능 상세: [docs/시연웹-기능-상세.md](docs/시연웹-기능-상세.md)
-- 시연영상 장면과 자막(영상 4분 58초는 따로 제출): [구성표](docs/시연영상-구성표.md) · [자막](docs/시연영상-자막.srt)
+- 시연영상(4분 59초): [바로 재생](https://altarry-prog.github.io/chaekiji/docs/video/) · [구성표](docs/시연영상-구성표.md) · [자막](docs/시연영상-자막.srt)(제출본은 같은 영상의 1080p 파일)
 - 다음 판 계획: [server/docs/ROADMAP-v0.4.md](server/docs/ROADMAP-v0.4.md)
 - 변경 기록: [CHANGELOG.md](CHANGELOG.md) · [server/CHANGELOG.md](server/CHANGELOG.md)
 

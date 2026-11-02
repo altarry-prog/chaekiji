@@ -111,7 +111,17 @@ elif VARIANT == "retry":
     if P2_OLD not in ptxt:
         sys.exit("지시문 2항의 문장이 바뀌어 고친 안 3을 적용할 수 없습니다(실측 중단).")
     ptxt = ptxt.replace(P2_OLD, P2_RETRY)
-    PROMPT.write_text(ptxt, encoding="utf-8")
+# [11. 2. 13:30 고침] 고친 안을 복제본 지시문 파일에 쓰는 줄이 retry 갈래 안에만 들어가 있어(fe5b84d부터), title·title2·title_lang은
+# 메모리의 글만 바뀌고 서버가 읽는 파일은 저장소 그대로였다(12:25 title_lang 기록이 무효가 된 까닭). 이제 갈래와 상관없이 쓰고,
+# 서버가 실제로 읽을 파일을 다시 읽어 고친 문장이 들어 있는지 확인한 뒤에만 실측한다. 파일 지문(sha256 앞 12자)을 기록에 남긴다.
+PROMPT.write_text(ptxt, encoding="utf-8")
+_served = PROMPT.read_text(encoding="utf-8")
+_need = {"title": [P1_NEW, P2_NEW], "title2": [P1_NEW, P2_NEW2], "title_lang": [P1_NEW, P2_NEW, P7_NEW], "retry": [P2_RETRY]}.get(VARIANT, [P1_OLD, P2_OLD])
+if not all(x in _served for x in _need):
+    sys.exit(f"지시문 파일에 {VARIANT} 문장이 들어가지 않았습니다(실측 중단).")
+import hashlib
+PROMPT_SHA = hashlib.sha256(_served.encode("utf-8")).hexdigest()[:12]
+print("지시문 파일 지문", PROMPT_SHA, "· 갈래", VARIANT, flush=True)
 PROMPT_ITEMS = "\n".join(l for l in ptxt.splitlines() if l.startswith(("1. ", "2. ") + (("7. ",) if VARIANT == "title_lang" else ())))
 
 # 기록용 계측(복제본 호스트): 도구 결과의 서지·주소·소장관·안내문을 기록 줄에 함께 남긴다
@@ -314,7 +324,7 @@ for no, cat, ask, pickup, lang, title, what in CASES:
 OUT = OUT_DIR / f"ai_metrics_{TAG}.json"
 OUT.write_text(json.dumps({"model": MODEL, "variant": VARIANT, "rep": REP, "run_id": RUN_ID, "commit": COMMIT, "server_mode": SMODE,
                            "finished": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M"), "env": ENVINFO, "ollama_ps": PS,
-                           "instrumented": INSTRUMENTED, "prompt_items": PROMPT_ITEMS, "ref": REF, "rows": S,
+                           "instrumented": INSTRUMENTED, "prompt_items": PROMPT_ITEMS, "prompt_sha": PROMPT_SHA, "ref": REF, "rows": S,
                            "runlog_tail": {str(k): v[-800:] for k, v in RUNLOG.items() if not any(r["no"] == k and r["answer"].strip() for r in S)}},
                           ensure_ascii=False, indent=1), encoding="utf-8")
 ok = sum(1 for r in S if r.get("book_ok")); n = sum(1 for r in S if r.get("book_ok") is not None)

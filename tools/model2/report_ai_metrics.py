@@ -157,6 +157,12 @@ A("- 그래픽카드 없는 CPU 서버라 시간이 길다. 시간은 환경 차
 A("- 중계에 닿지 못하면 도구는 「소장 확인 불가」로 답한다. 그런 경우는 「중계 조회 불가」 줄에 따로 세었다.")
 A("")
 items = {d["variant"]: d.get("prompt_items") for d in docs}
+shas = {}
+for d in docs:
+    if d.get("prompt_sha"): shas.setdefault(d["variant"], set()).add(d["prompt_sha"])
+if shas:   # [11. 2.] 서버가 실제로 읽은 지시문 파일의 지문 — 고친 안이 정말 들어갔는지 기록으로 남긴다
+    A("지시문 파일 지문(서버가 실제로 읽은 파일, sha256 앞 12자): " + " · ".join(f"{k} {'/'.join(sorted(v))}" for k, v in sorted(shas.items())))
+    A("")
 if "title" in items:
     A("## 고친 안에서 바꾼 지시문(1·2항)")
     A("")

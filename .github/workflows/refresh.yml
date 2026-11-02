@@ -28,8 +28,9 @@ jobs:
         id: fetch
         continue-on-error: true          # 실패해도 아래에서 실행 기록(까닭)을 남기고, 마지막에 빨간 X로 알린다
         env:
-          # [11/2] 새벽 갱신 전용 키(NARU_KEY_REFRESH)가 있으면 그것을 쓴다 — 하루 500번 한도를 중계와 나누지 않게. 없으면 중계와 같은 키
-          NARU_KEY: ${{ secrets.NARU_KEY_REFRESH || secrets.NARU_KEY || secrets.NARUKEY }}   # 비밀 이름은 NARU_KEY(권장)·NARUKEY 둘 다 받는다
+          # [11/2] 새벽 갱신은 둘째 키를 쓴다 — 하루 500번 한도를 중계(시연 웹·claude.ai 연결·시험 이용 화면)와 나누지 않게.
+          #   전용 키 NARU_KEY_REFRESH > 담당자가 넣어 둔 둘째 키 NARU_KEY2 > 중계와 같은 키(NARU_KEY·NARUKEY) 순서
+          NARU_KEY: ${{ secrets.NARU_KEY_REFRESH || secrets.NARU_KEY2 || secrets.NARU_KEY || secrets.NARUKEY }}
         run: |
           if [ -z "$NARU_KEY" ]; then echo "인증키 비밀값(NARU_KEY 또는 NARUKEY)이 없어 건너뜁니다(Settings → Secrets and variables → Actions)"; exit 0; fi
           python server/lab/refresh_today.py --max-calls 300

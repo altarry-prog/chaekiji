@@ -4,7 +4,8 @@
 #   CLOUDFLARE_ACCOUNT_ID — (선택) 계정 ID. 없으면 토큰으로 계정을 찾고, workers.dev 주소 이름이 없으면 만들어 준다
 #   NARU_KEY(또는 NARUKEY) — 이미 있는 정보나루 키. 배포할 때 Cloudflare 비밀값으로 그대로 넘긴다(출력·기록 없음)
 #   UPSTAGE_API_KEY — [11/2] Solar 상담 창(/ask)이 쓰는 업스테이지 키. 정보나루 키와 같은 방식으로 넘긴다(없으면 /ask만 503)
-#   NARU_KEY_ASK — (선택, 11/2) 상담 창 전용 정보나루 키. 있으면 /ask는 이 키로 조회해 하루 500번 한도를 시연 웹·원격 판과 나누지 않는다
+#   NARU_KEY_ASK — (선택, 11/2) 상담 창 전용 정보나루 키. 없으면 담당자가 넣어 둔 둘째 키 NARU_KEY2를 상담 창에 쓴다.
+#                  상담 창은 이 키로 조회해 하루 500번 한도를 시연 웹·원격 판(NARU_KEY·NARUKEY)과 나누지 않는다
 # 결과(주소·확인 결과·실패 까닭)는 relay/last_deploy.json 에 남긴다 — 키·토큰은 없다.
 name: deploy-relay
 on:
@@ -34,7 +35,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}
           UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
-          NARU_KEY_ASK: ${{ secrets.NARU_KEY_ASK }}
+          NARU_KEY_ASK: ${{ secrets.NARU_KEY_ASK || secrets.NARU_KEY2 }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "Cloudflare 비밀값(CLOUDFLARE_API_TOKEN)이 없어 건너뜁니다"; echo "skipped=true" >> "$GITHUB_OUTPUT"; exit 0; fi

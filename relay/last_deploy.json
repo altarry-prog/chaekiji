@@ -1,21 +1,22 @@
 {
- "time": "2026-11-02 14:15 KST",
+ "time": "2026-11-02 14:38 KST",
  "result": "ok",
  "url": "https://chaekiji-relay.altarry2.workers.dev",
  "health": {
   "status": 200,
-  "ms": 162,
+  "ms": 143,
   "ok": true,
   "keyed": true,
   "ask": true,
   "ask_naru_key": true,
+  "records": true,
   "region": "31050",
-  "colo": "SJC"
+  "colo": "LAX"
  },
  "ask_key_name": "NARU_KEY2",
  "probe_python_default_name": {
   "status": 403,
-  "ms": 22,
+  "ms": 62,
   "text": "error code: 1010"
  },
  "cors_web": {
@@ -24,16 +25,16 @@
  },
  "holdings_sample": {
   "status": 200,
-  "ms": 3560,
+  "ms": 2464,
   "asof": "2026-11-02",
   "calls": 16,
   "via": "http",
   "cached": false,
-  "upstream_ms": 3432,
-  "call_ms_median": 2311,
-  "call_ms_max": 3432,
-  "placement": "remote-IAD",
-  "edge": "SJC",
+  "upstream_ms": 2329,
+  "call_ms_median": 1692,
+  "call_ms_max": 2329,
+  "placement": "local-LAX",
+  "edge": "LAX",
   "isbn": "9788972756194",
   "ok": 9,
   "busy": 4,
@@ -41,21 +42,21 @@
  },
  "search_sample": {
   "status": 200,
-  "ms": 650,
+  "ms": 449,
   "via": "http",
   "docs": 6,
   "first": "나미야 잡화점의 기적 :히가시노 게이고 장편소설 "
  },
  "nation_sample": {
   "status": 200,
-  "ms": 4852,
+  "ms": 5019,
   "found_count": 200,
   "via": "http"
  },
  "mcp": {
   "initialize": {
    "status": 200,
-   "ms": 141,
+   "ms": 76,
    "protocol": "2025-06-18",
    "server": "0.3.5-remote"
   },
@@ -69,7 +70,7 @@
   ],
   "consult": {
    "status": 200,
-   "ms": 132,
+   "ms": 300,
    "route": "ill",
    "asof": "2026-11-02",
    "basis": "관내: 정보나루 bookExist(매일 갱신 · 2026-11-02 조회 · 전일 기준)",
@@ -78,7 +79,7 @@
  },
  "ask": {
   "status": 200,
-  "ms": 16509,
+  "ms": 5855,
   "model": "solar-pro4-260806",
   "tool_calls": [
    "나미야 잡화점의 기적"
@@ -88,12 +89,13 @@
   "data_calls": 1,
   "usage": {
    "prompt_tokens": 3561,
-   "completion_tokens": 400,
+   "completion_tokens": 415,
    "model_calls": 2
   },
   "lang": "ko",
-  "answer_head": "① 갈래: 관내 상호대차\n\n② 이용자 안내문\n『나미야 잡화점의 기적』(히가시노 게이고, 현대문학, 2012)은 상동도서관에 대출 중이지만, 꿈여울도서관 등 부천시"
+  "answer_head": "**갈래: 관내 상호대차**\n\n『나미야 잡화점의 기적』(히가시노 게이고, 현대문학, 2012)은 상동도서관에 대출 중이지만, 꿈여울도서관 등 부천시립도서관 8곳에"
  },
+ "records_check": 200,
  "client_name_probe": {
   "python-httpx/0.28.1": 200,
   "python-requests/2.32.3": 200,

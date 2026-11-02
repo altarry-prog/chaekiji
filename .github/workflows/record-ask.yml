@@ -2,6 +2,9 @@
 # 상담 창 한 번(Solar 호출 1번, 한 IP 10분 6번 한도 안). 결과 영상·답 원문·구간 표시를 하루 보관 파일로만 남김(저장소에 커밋하지 않음).
 name: record-ask
 on:
+  push:                                   # 이 파일을 가지에 올리면 기본값으로 한 번 녹화(수동 실행 등록도 겸함)
+    branches: [tools/video]
+    paths: [".github/workflows/record-ask.yml"]
   workflow_dispatch:
     inputs:
       say:
@@ -29,7 +32,7 @@ jobs:
       - name: 녹화
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: python tools/video/record_ask.py --say "${{ inputs.say }}" --pickup "${{ inputs.pickup }}" --out out_ask
+        run: python tools/video/record_ask.py --say "${{ inputs.say || '한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요' }}" --pickup "${{ inputs.pickup || '역곡' }}" --out out_ask
       - uses: actions/upload-artifact@v4
         with:
           name: ask-clip

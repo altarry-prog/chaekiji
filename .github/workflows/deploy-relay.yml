@@ -102,8 +102,11 @@ jobs:
           export CLOUDFLARE_ACCOUNT_ID=$(sed -n 1p prep.out)
           echo "::add-mask::$CLOUDFLARE_ACCOUNT_ID"
           KV_ID=$(sed -n 3p prep.out)
-          if [ -n "$KV_ID" ]; then printf '\n[[kv_namespaces]]\nbinding = "ASK_RECORDS"\nid = "%s"\n' "$KV_ID" >> wrangler.toml; echo "kv=on" >> "$GITHUB_OUTPUT"; fi
-          npx --yes wrangler@4.151.0 deploy > deploy.log 2>&1; rc=$?
+          # 저장소의 wrangler.toml은 건드리지 않고, 배포용 사본에 기록 저장 공간 연결을 덧붙인다(뒤 단계의 git pull이 막히지 않게)
+          cp wrangler.toml wrangler.deploy.toml
+          if [ -n "$KV_ID" ]; then printf '\n[[kv_namespaces]]\nbinding = "ASK_RECORDS"\nid = "%s"\n' "$KV_ID" >> wrangler.deploy.toml; echo "kv=on" >> "$GITHUB_OUTPUT"; fi
+          npx --yes wrangler@4.151.0 deploy --config wrangler.deploy.toml > deploy.log 2>&1; rc=$?
+          rm -f wrangler.deploy.toml
           url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
           echo "url=$url" >> "$GITHUB_OUTPUT"
           # 실패 까닭 몇 줄만(계정 ID는 가림) — 로그 전체는 남기지 않는다

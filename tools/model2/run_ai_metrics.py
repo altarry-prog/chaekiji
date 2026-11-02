@@ -18,7 +18,7 @@ import os, sys, re, json, time, datetime, pathlib, subprocess, urllib.request
 KST = datetime.timezone(datetime.timedelta(hours=9))
 WORK = pathlib.Path(os.environ.get("WORK_DIR", "/content"))
 MODEL = os.environ.get("AI_MODEL", "gpt-oss:20b")
-VARIANT = os.environ.get("AI_VARIANT", "main")          # main | title | title2 | retry
+VARIANT = os.environ.get("AI_VARIANT", "main")          # main | title | title2 | retry | title_lang
 REP = int(os.environ.get("AI_REP", "1"))
 RUN_ID = os.environ.get("RUN_ID", datetime.datetime.now(KST).strftime("%m%d%H%M"))
 OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
@@ -78,6 +78,13 @@ P2_RETRY = P2_OLD + (" 도구가 책을 찾지 못했다고 오면(`route: unkno
                      "그 책의 한국어판 제목으로 바꿔 한 번 더 부릅니다(예: 「Almond by Sohn Won-pyung」 → 「아몬드」). "
                      "그래도 못 찾거나 어느 책인지 하나로 정해지지 않으면 3항대로 되묻습니다. 답의 언어는 처음 물은 이용자의 언어 그대로입니다.")
 
+# 지시문 고친 안 4(title_lang, 11. 2.): 고친 안(1·2항)에 7항을 세게 고친 것. 앞선 실측에서 책을 찾은 외국어 문의의 답이
+# 도구의 한국어 안내문을 그대로 옮겨 한국어로 남는 일이 많아(「(Tiếng Việt)」라고 적고 한국어를 둠), 직접 번역하라는 말을 7항에 넣는다.
+P7_OLD = "7. 이용자 언어가 한국어가 아니면(`translate_to`) 안내문을 그 언어로 옮기고, 한국어 원문을 바로 아래 함께 둡니다. 짧은 문장, 쉬운 말."
+P7_NEW = ("7. 이용자 언어가 한국어가 아니면(`translate_to`) 판정 한 줄과 안내문을 그 언어로 직접 번역해 먼저 쓰고, 한국어 원문을 바로 아래 함께 둡니다. "
+          "도구의 안내문은 한국어로 오므로 반드시 번역하며, 번역하지 않은 한국어를 외국어 자리에 두지 않습니다. "
+          "조회일·누리집 주소·도서관 이름은 번역문에도 그대로 둡니다. 짧은 문장, 쉬운 말.")
+
 WORK.mkdir(parents=True, exist_ok=True)
 os.chdir(WORK)
 if not (WORK / "chaekiji").exists():
@@ -96,12 +103,16 @@ if VARIANT in ("title", "title2"):
     if P1_OLD not in ptxt or P2_OLD not in ptxt:
         sys.exit("지시문 1·2항의 문장이 바뀌어 고친 안을 적용할 수 없습니다(실측 중단).")
     ptxt = ptxt.replace(P1_OLD, P1_NEW).replace(P2_OLD, P2_NEW if VARIANT == "title" else P2_NEW2)
+elif VARIANT == "title_lang":
+    if P1_OLD not in ptxt or P2_OLD not in ptxt or P7_OLD not in ptxt:
+        sys.exit("지시문 1·2·7항의 문장이 바뀌어 고친 안 4를 적용할 수 없습니다(실측 중단).")
+    ptxt = ptxt.replace(P1_OLD, P1_NEW).replace(P2_OLD, P2_NEW).replace(P7_OLD, P7_NEW)
 elif VARIANT == "retry":
     if P2_OLD not in ptxt:
         sys.exit("지시문 2항의 문장이 바뀌어 고친 안 3을 적용할 수 없습니다(실측 중단).")
     ptxt = ptxt.replace(P2_OLD, P2_RETRY)
     PROMPT.write_text(ptxt, encoding="utf-8")
-PROMPT_ITEMS = "\n".join(l for l in ptxt.splitlines() if l.startswith(("1. ", "2. ")))
+PROMPT_ITEMS = "\n".join(l for l in ptxt.splitlines() if l.startswith(("1. ", "2. ") + (("7. ",) if VARIANT == "title_lang" else ())))
 
 # 기록용 계측(복제본 호스트): 도구 결과의 서지·주소·소장관·안내문을 기록 줄에 함께 남긴다
 HOST = pathlib.Path("hosts/ollama_host.py")

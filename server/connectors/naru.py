@@ -186,6 +186,31 @@ def calls_summary():
     return {"total": len(CALLS), "by_api": by, "ms_total": sum(c["ms"] for c in CALLS)}
 
 # ── 공개 함수 (demo/live 같은 모양) ────────────────────────────────
+def _fixture_match(utterance):
+    """시연 도서 찾기 낱말 맞추기 — (가장 긴 맞은 낱말 길이, 책, 그 낱말). 같은 길이면 목록 앞의 책·앞의 낱말(relay/mcp.js fixtureMatch와 같게)"""
+    q = _norm(utterance)
+    best = None
+    for b in _cat["books"]:
+        score, key = 0, ""
+        for k in b["keys"]:
+            nk = _norm(k)
+            if nk in q and len(nk) > score:
+                score, key = len(nk), nk
+        if score and (best is None or score > best[0]):
+            best = (score, b, key)
+    return best
+
+def weak_fixture(utterance, title):
+    """[11/2] 짧은 찾기 낱말(3자 이하)만 맞고 검색어에 다른 말이 2자 이상 더 있으면 그 낱말, 아니면 None.
+    「편의점 인간」 → 「편의점」(서지 검색으로 확인) · 「불편한 편의점 있나요」·「편의점 있어요」 → None(시연 도서 그대로)"""
+    best = _fixture_match(utterance)
+    if not best or best[0] > 3:
+        return None
+    nt, nk = _norm(title), best[2]
+    if nk not in nt:
+        return None
+    return nk if len(nt.replace(nk, "", 1)) >= 2 else None
+
 def search(utterance: str, mode="demo"):
     if mode == "live":
         return _live_search(utterance)
@@ -195,15 +220,23 @@ def search(utterance: str, mode="demo"):
             fx = search(utterance, mode="demo")       # 실측 서지 5종은 픽스처가 먼저(시연 도서는 늘 같은 답)
             if fx.get("found"):
                 fx["evidence"] = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준"
-                return fx
+                weak = weak_fixture(utterance, title)
+                if not weak:
+                    return fx
+                # [11/2] 짧은 찾기 낱말(「편의점」 등)만 겹치고 다른 말이 더 있으면(「편의점 인간」) 서지 검색 1번으로 확인한다.
+                #   문의 낱말이 다 들어 있는 다른 작품(70점 이상)이 나오면 그 책, 아니면(결과 없음·같은 작품·연결 안 됨) 시연 도서 그대로
+                try:
+                    alt = pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
+                                      first_only=True, min_score=70)
+                except Exception:
+                    return fx
+                if not alt.get("found") or _core_title(alt.get("title"), alt.get("author")) == _core_title(fx.get("title"), fx.get("author")):
+                    return fx
+                alt["evidence"] += f" · 시연 도서 찾기 낱말 「{weak}」만 겹쳐 서지 검색으로 다른 책을 고름"
+                return alt
         return pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
                            unavailable_reason=f"중계 응답 없음: 픽스처 5종에도 없는 도서(검색어 「{title}」)")
-    q = _norm(utterance)
-    best = None
-    for b in _cat["books"]:
-        score = max((len(_norm(k)) for k in b["keys"] if _norm(k) in q), default=0)
-        if score and (best is None or score > best[0]):
-            best = (score, b)
+    best = _fixture_match(utterance)
     if not best:
         return {"found": False, "reason": "픽스처에 없는 도서(모의 모드 한계). live 모드에서는 전국 서지 검색"}
     b = best[1]
@@ -485,8 +518,9 @@ def vol_label(v):
     return f"{dg}권" if dg else str(v if v is not None else "").strip()
 def _book_of(d): return {"isbn13": d.get("isbn13"), "title": d.get("title"), "author": d.get("author"),   # [10/19 밤] 권차가 있으면 함께(후보가 「흔한남매」 여러 권일 때 가릴 수 있게)
                          "publisher": d.get("publisher"), "year": d.get("year"), **({"vol": str(d["vol"])} if d.get("vol") else {})}
-def pick_search(title, search_fn, evidence, unavailable_reason=None):
-    """검색어를 한두 번 바꿔 가며(권차 · 앞뒤 낱말 빼기 · 첫 낱말만, 최대 4회) 문의와 맞는 책을 고른다. 첫 검색이 끊기면 unavailable."""
+def pick_search(title, search_fn, evidence, unavailable_reason=None, first_only=False, min_score=60):
+    """검색어를 한두 번 바꿔 가며(권차 · 앞뒤 낱말 빼기 · 첫 낱말만, 최대 4회) 문의와 맞는 책을 고른다. 첫 검색이 끊기면 unavailable.
+    first_only·min_score: [11/2] 시연 도서 짧은 낱말 확인용 — 첫 검색어 한 번만, 70점 이상만 고른다"""
     base, vol, explicit = split_volume(title)
     toks = title.split()
     if vol:
@@ -494,6 +528,8 @@ def pick_search(title, search_fn, evidence, unavailable_reason=None):
     else:
         plan = [(title, [])] + ([(" ".join(toks[:-1]), toks[-1:]), (" ".join(toks[1:]), toks[:1])] if len(toks) >= 2 else []) \
                + ([(toks[0], toks[1:])] if len(toks) >= 3 else [])   # [11/2] 제목 뒤 저자 둘(「문헌정보학개론 노문자 황금숙」) — 앞 검색이 다 빗나갈 때만
+    if first_only:
+        plan = plan[:1]
     seen, pool, best, saw_docs = set(), [], None, False
     for i, (q, dropped) in enumerate(plan):
         if len(_tnorm(q)) < 2 or q in seen: continue
@@ -512,7 +548,7 @@ def pick_search(title, search_fn, evidence, unavailable_reason=None):
         for p in pool:
             if p["q"] != q: continue
             sc = _score_doc(p["d"], title, base, vol, p["dropped"])
-            if sc >= 60 and (best is None or sc > best["sc"]): best = {**p, "sc": sc}
+            if sc >= min_score and (best is None or sc > best["sc"]): best = {**p, "sc": sc}
         if best and not (vol and not explicit and i == 0): break   # 권차가 낱말 끝 숫자일 때만 두 검색을 함께 견준다
     if best:
         d = best["d"]; ct = _core_title(d.get("title"), d.get("author")); fa = _first_author(d.get("author"))

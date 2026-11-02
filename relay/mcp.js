@@ -143,14 +143,25 @@ function snapshotFresh(snap) {
 }
 
 // ── 찾기(naru.search relay 모드) ──────────────────────────────────────────
-function fixtureSearch(utterance) {
+function fixtureMatch(utterance) {                           // naru._fixture_match — [가장 긴 맞은 낱말 길이, 책, 그 낱말]
   const q = norm(utterance);
   let best = null;
   for (const b of CATALOG) {
-    let score = 0;
-    for (const k of b.keys) { const nk = norm(k); if (q.includes(nk) && nk.length > score) score = nk.length; }
-    if (score && (best === null || score > best[0])) best = [score, b];
+    let score = 0, key = "";
+    for (const k of b.keys) { const nk = norm(k); if (q.includes(nk) && [...nk].length > score) { score = [...nk].length; key = nk; } }
+    if (score && (best === null || score > best[0])) best = [score, b, key];
   }
+  return best;
+}
+export function weakFixture(utterance, title) {               // naru.weak_fixture — [11/2] 짧은 찾기 낱말(3자 이하)만 맞고 다른 말이 2자 이상 더 있음
+  const best = fixtureMatch(utterance);
+  if (!best || best[0] > 3) return null;
+  const nt = norm(title), nk = best[2];
+  if (!nt.includes(nk)) return null;
+  return [...nt.replace(nk, "")].length >= 2 ? nk : null;
+}
+function fixtureSearch(utterance) {
+  const best = fixtureMatch(utterance);
   if (!best) return { found: false, reason: "픽스처에 없는 도서(모의 모드 한계). live 모드에서는 전국 서지 검색" };
   const b = best[1];
   return { found: true, isbn13: b.isbn13, title: b.title, author: b.author, publisher: b.publisher, year: b.year,
@@ -238,14 +249,22 @@ const bookOf = d => ({ isbn13: d.isbn13, title: nn(d.title), author: nn(d.author
 async function searchItem(utterance, deps, ctx) {
   const title = cleanTitle(utterance);
   const [base, vol, explicit] = splitVolume(title);
+  let fx = null, weak = null;
   if (!vol) {                                                  // [10/19] 권차를 말하면 시연 도서(1권) 픽스처로 바로 가지 않는다
-    const fx = fixtureSearch(utterance);
-    if (fx.found) { fx.evidence = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준"; return fx; }
+    const f = fixtureSearch(utterance);
+    if (f.found) {
+      f.evidence = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준";
+      weak = weakFixture(utterance, title);
+      if (!weak) return f;
+      fx = f;                                                  // [11/2] 짧은 찾기 낱말만 겹침(「편의점 인간」) — 서지 검색 1번으로 확인(파이썬 naru.search와 같게)
+    }
   }
   const toks = words(title);
-  const plan = vol ? (explicit ? [[base, []]] : [[title, []], [base, []]])
+  let plan = vol ? (explicit ? [[base, []]] : [[title, []], [base, []]])
                    : [[title, []]].concat(toks.length >= 2 ? [[toks.slice(0, -1).join(" "), toks.slice(-1)], [toks.slice(1).join(" "), toks.slice(0, 1)]] : [])
                                  .concat(toks.length >= 3 ? [[toks[0], toks.slice(1)]] : []);   // [11/2] 제목 뒤 저자 둘 — 앞 검색이 다 빗나갈 때만
+  if (fx) plan = plan.slice(0, 1);                             // 짧은 낱말 확인은 첫 검색어 한 번만, 70점 이상만
+  const minSc = fx ? 70 : 60;
   const seen = new Set(), pool = [];
   let best = null, sawDocs = false;
   for (let i = 0; i < plan.length; i++) {
@@ -255,6 +274,7 @@ async function searchItem(utterance, deps, ctx) {
     let docs;
     try { docs = await relaySearchDocs({ q }, deps, ctx); }
     catch (e) {                                                // [v0.3.5] 「책이 없다」가 아니라 「찾지 못했다(연결 안 됨)」
+      if (fx) return fx;                                       // 짧은 낱말 확인이 끊기면 시연 도서 그대로
       if (i === 0) return { found: false, reason: `중계 응답 없음: 픽스처 5종에도 없는 도서(검색어 「${title}」)`, candidates: [], unavailable: true };
       break;
     }
@@ -263,10 +283,11 @@ async function searchItem(utterance, deps, ctx) {
     for (const p of pool) {
       if (p.q !== q) continue;
       const sc = scoreDoc(p.d, title, base, vol, p.dropped);
-      if (sc >= 60 && (!best || sc > best.sc)) best = { ...p, sc };
+      if (sc >= minSc && (!best || sc > best.sc)) best = { ...p, sc };
     }
     if (best && !(vol && !explicit && i === 0)) break;         // 권차가 낱말 끝 숫자일 때만 두 검색을 함께 견준다
   }
+  if (fx && (!best || coreTitle(best.d.title, best.d.author) === coreTitle(fx.title, fx.author))) return fx;   // 결과 없음·같은 작품이면 시연 도서
   if (best) {
     const d = best.d, ct = coreTitle(d.title, d.author), fa = firstAuthor(d.author);
     const others = [], seenA = [fa];
@@ -295,6 +316,7 @@ async function searchItem(utterance, deps, ctx) {
       if (eds.length >= 2) break;
     }
     if (eds.length) res.same_work_editions = eds;
+    if (fx) res.evidence += ` · 시연 도서 찾기 낱말 「${weak}」만 겹쳐 서지 검색으로 다른 책을 고름`;
     return res;
   }
   if (sawDocs) {

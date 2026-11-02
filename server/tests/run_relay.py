@@ -205,6 +205,15 @@ ok(_naru.clean_title("손원평 아몬드요", places=_LIBN, points=_PTS) == "�
    and _naru.clean_title("아몬드", places=_LIBN, points=_PTS) == "아몬드"
    and _naru.pick_search("문헌정보학개론 노문자 황금숙", _fake, "시험")["isbn13"] == "9788989023906",
    "⑦′ [11/2] 말 끝 「요」·「이요」를 뗌 · 제목 뒤 저자 둘이면 첫 낱말 검색으로 그 저자의 판(문헌정보학개론 2007)")
+_B12 = ["한강 소년이 온다 빌릴 수 있어요?", "불편한 편의점 있나요?", "나미야 잡화점의 기적 역곡에서 받고 싶어요", "설민석 한국사 대모험 1권이요",
+        "지구 끝의 온실 송내에서 받을게요", "채식주의자 있어요?", "작별하지 않는다 꿈빛에서 받고 싶어요", "손원평 아몬드요", "흔한남매 1권 있어요?",
+        "김초엽 우리가 빛의 속도로 갈 수 없다면", "불편한 편의점", "나미야 잡화점의 기적", "The Miracles of the Namiya General Store"]
+ok(all(_naru.weak_fixture(u, _naru.clean_title(u)) is None for u in _B12)
+   and _naru.weak_fixture("편의점 인간", _naru.clean_title("편의점 인간")) == "편의점"
+   and _naru.weak_fixture("소년을 위로해줘", _naru.clean_title("소년을 위로해줘")) == "소년"
+   and _naru.weak_fixture("편의점 있어요?", _naru.clean_title("편의점 있어요?")) is None
+   and _naru.weak_fixture("편의점이요", _naru.clean_title("편의점이요")) is None,
+   "⑦‴ [11/2] 시연 도서 짧은 찾기 낱말(3자 이하)만 겹치고 다른 말이 더 있으면(「편의점 인간」) 서지 검색으로 확인 · 직원 측정 문의(기록지 B)는 그대로")
 _E = "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)"
 p1 = _naru.pick_search("해리 포터와 마법사의 돌", _fake, _E)
 p2 = _naru.pick_search("구름빵 백희나", _fake, _E)

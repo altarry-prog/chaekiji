@@ -1,7 +1,7 @@
 // 원격 상담 비서(relay/mcp.js) 점검 — MCP 규약(초기화·목록·호출·오류)과 판정 몇 가지를 모의 정보나루로 돌려 본다.
 // 실행: node relay/test_mcp.mjs   (네트워크·키 불필요. 파이썬 판과의 대조는 relay/test_mcp_parity.py)
 import worker from "./worker.js";
-import { _resetForTest, snapshotOk, splitVolume, cleanTitle } from "./mcp.js";
+import { _resetForTest, snapshotOk, splitVolume, cleanTitle, weakFixture } from "./mcp.js";
 import { mockFetch, rpc, call } from "./test_naru_mock.mjs";
 import { readFileSync } from "node:fs";
 
@@ -156,6 +156,13 @@ ok(JSON.stringify(splitVolume("흔한남매 1권")) === '["흔한남매","1",tru
 ok(cleanTitle("손원평 아몬드요") === "손원평 아몬드" && cleanTitle("흔한남매 1권이요") === "흔한남매 1권" && cleanTitle("아몬드") === "아몬드" &&
    cleanTitle("엄마 사랑해요") === "엄마 사랑해",
    "[11/2] 말 끝 「요」·「이요」를 뗌(제목 검색은 부분일치라 「…요」로 끝나는 제목도 앞부분으로 찾힘)");
+const B12 = ["한강 소년이 온다 빌릴 수 있어요?", "불편한 편의점 있나요?", "나미야 잡화점의 기적 역곡에서 받고 싶어요", "설민석 한국사 대모험 1권이요",
+             "지구 끝의 온실 송내에서 받을게요", "채식주의자 있어요?", "작별하지 않는다 꿈빛에서 받고 싶어요", "손원평 아몬드요", "흔한남매 1권 있어요?",
+             "김초엽 우리가 빛의 속도로 갈 수 없다면", "불편한 편의점", "나미야 잡화점의 기적", "The Miracles of the Namiya General Store"];
+ok(B12.every(u => weakFixture(u, cleanTitle(u)) === null) && weakFixture("편의점 인간", cleanTitle("편의점 인간")) === "편의점" &&
+   weakFixture("소년을 위로해줘", cleanTitle("소년을 위로해줘")) === "소년" && weakFixture("편의점 있어요?", cleanTitle("편의점 있어요?")) === null &&
+   weakFixture("편의점이요", cleanTitle("편의점이요")) === null,
+   "[11/2] 시연 도서 짧은 찾기 낱말(3자 이하)만 겹치고 다른 말이 더 있으면(「편의점 인간」) 서지 검색으로 확인 · 직원 측정 문의(기록지 B)는 그대로");
 let s1 = await call2("consult_request", { utterance: "해리 포터와 마법사의 돌", pickup: "원미" }, 501);
 ok(s1.book.isbn13 === "9788983920683" && s1.book.title === "해리포터와 마법사의 돌" && s1.book.evidence.includes("2번째") && s1.route === "ill",
    "[10/19] 「해리 포터와 마법사의 돌」 — 검색 첫 결과(혼혈 왕자)가 아니라 같은 책(2번째)을 고름 · 근거에 고른 사실");

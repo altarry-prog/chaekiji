@@ -9,8 +9,8 @@
 운영 서비스가 아니다. 시연·검증용이며 실제 접수는 일어나지 않는다.
 
 ## 실행·시험
-- 한 번에: `run.bat`(윈도우) · `sh run.sh`. 시험 104건(적합성 50 · 실험실 14 · 중계 모드 30 · 공개 모델 호스트 10)
-- 적합성 시험(50건 전부 통과 유지): `python3 tests/run_scenarios.py`
+- 한 번에: `run.bat`(윈도우) · `sh run.sh`. 시험 110건(적합성 53 · 실험실 14 · 중계 모드 31 · 공개 모델 호스트 12)
+- 적합성 시험(53건 전부 통과 유지): `python3 tests/run_scenarios.py`
 - 실험실 점검 시험: `python3 lab/check_store.py`
 - 중계·원격 상담 비서(저장소 루트에서): `node relay/test_worker.mjs` · `node relay/test_mcp.mjs` · `python3 relay/test_mcp_parity.py` · `python3 relay/build_mcp_data.py --check`
 - 서버 수동 실행: `python3 server.py` (stdin으로 JSON-RPC 한 줄씩)

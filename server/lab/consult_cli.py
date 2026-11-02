@@ -7,6 +7,7 @@
 데이터: 환경변수 CHAEKIJI_MODE(기본 auto — 중계 → 2일 이내 매일 갱신 파일 → 8/18 실측 자료). 인증키 불필요.
 실행: python lab/consult_cli.py "한강 소년이 온다 빌리고 싶어요" 역곡
       python lab/consult_cli.py "소년이 온다" 꿈빛 --json      (결과 원문 JSON까지)
+      python lab/consult_cli.py "나미야 잡화점의 기적" 상동 --member 상호대차=2,연체=아니요   (사서가 읽은 회원 조건, 이름·회원번호 없이)
 보이는 모양: 안내문 속 누리집 주소는 「(아래 링크)」로 두고 「◀ 링크:」 줄에 한글을 풀어 보인다(%로 바뀐 글자를 되돌린 같은 주소).
             도구가 돌려준 원문 그대로는 --json으로 본다.
 접수는 하지 않는다 — 이 도구는 판정·안내문·접수 메모까지만 만든다."""
@@ -23,12 +24,18 @@ def main():
     ap.add_argument("pickup", nargs="?", default=None, help="받을 도서관(예: 상동). 비우면 설정의 기본 도서관")
     ap.add_argument("--lang", default="ko")
     ap.add_argument("--json", action="store_true", help="결과 원문(JSON)도 찍기")
+    ap.add_argument("--member", default="", help="[11/1] 회원 조건(선택): 사서가 도서관리시스템에서 읽은 권수·예/아니요만, 이름·회원번호 없이. "
+                                                "예) 상호대차=2,대출=7,수령관=1,연체=아니요,중복=아니요 (영문 칸: ill_count·total_loans·loans_at_pickup·overdue·same_book_pending)")
     a = ap.parse_args()
     env = dict(os.environ, PYTHONUTF8="1")
     env.setdefault("CHAEKIJI_MODE", "auto")
     args = {"utterance": a.utterance, "lang": a.lang}
     if a.pickup:
         args["pickup"] = a.pickup
+    if a.member.strip():                                  # 값은 글자 그대로 넘기고 고르는 일(권수·예/아니요 확인)은 도구가 한다
+        alias = {"상호대차": "ill_count", "대출": "total_loans", "수령관": "loans_at_pickup", "연체": "overdue", "중복": "same_book_pending"}
+        args["member"] = json.loads(a.member) if a.member.strip().startswith("{") else {
+            alias.get(k.strip(), k.strip()): v.strip() for k, v in (x.split("=", 1) for x in a.member.split(",") if "=" in x)}
     lines = [json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize",
                          "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "consult-cli", "version": "1"}}}),
              json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/call",

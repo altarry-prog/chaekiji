@@ -586,6 +586,43 @@
     "utterance": "문헌정보학개론 김수경"
    },
    "why": "[10/19 밤] 판본 보정 준비 — 같은 서명·같은 첫 저자의 다른 판을 same_work_editions로 모음"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "나미야 잡화점의 기적 빌리고 싶어요",
+    "pickup": "상동",
+    "member": {
+     "ill_count": 2,
+     "total_loans": 7,
+     "loans_at_pickup": 1,
+     "overdue": false,
+     "same_book_pending": false
+    }
+   },
+   "why": "[11/1] 회원 조건 5칸(사서 입력, 이름·회원번호 없이) → 픽스처 도서는 규정 7종 모두 판정"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "작별하지 않는다 빌리고 싶어요",
+    "member": {
+     "ill_count": "5",
+     "overdue": "아니요"
+    }
+   },
+   "why": "[11/1] 회원 조건 일부·글자 값 → 한도 초과는 불가, 준 칸만 판정, 정보나루 서지 도서는 제외 자료 규정 창구 확인"
+  },
+  {
+   "tool": "consult_request",
+   "args": {
+    "utterance": "나미야 잡화점의 기적",
+    "member": {
+     "name": "홍길동",
+     "ill_count": 1
+    }
+   },
+   "why": "[11/1] 회원 조건에 개인정보 칸 → 거부(같은 문구)"
   }
  ],
  "fail_q": [

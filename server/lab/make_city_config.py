@@ -15,6 +15,13 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from connectors import naru
 
+def _rel(p):
+    """[10/31] --out이 서버 폴더 밖이어도 안내 줄에서 멈추지 않게(시흥·광명 실측 첫 실행에서 발견)."""
+    try:
+        return p.resolve().relative_to(ROOT)
+    except ValueError:
+        return p
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dtl-region", required=True, help="정보나루 세부지역 코드(예: 11050)")
@@ -34,7 +41,14 @@ def main():
     if not keep:
         sys.exit(f"세부지역 {a.dtl_region}: 도서관 {len(libs)}곳 중 조건에 맞는 곳이 없습니다 — --include/--exclude 조정")
     def short(name):
+        # [10/31] 안내문이 「{이름}도서관」으로 부르므로 「시흥시중앙도서관」 → 「중앙」처럼 시 이름 접두·「도서관」 접미를 뗀다
+        #         (시흥·광명 실측에서 그대로 두면 「시흥시중앙도서관도서관」이 됨을 확인)
         n = re.sub(r"\s+", "", name)
+        for pre in (a.city + "시립", a.city + "시"):
+            if n.startswith(pre) and len(n) > len(pre):
+                n = n[len(pre):]; break
+        if n.endswith("도서관") and len(n) > 3:
+            n = n[:-3]
         return n
     names = {}
     for l in keep:
@@ -67,7 +81,7 @@ def main():
     print(f"{out} — 도서관 {len(names)}곳 (지역 전체 {len(libs)}곳), home_library={home}")
     for n, c in names.items(): print(f"  {n}: {c}")
     print("다음: 이 파일의 【확인】 값을 그 도시 누리집 규정으로 바꾼 뒤\n"
-          f"      python3 lab/measure.py --config {out.relative_to(ROOT)} --titles lab/out/titles.csv --limit 5 --tag {a.city}")
+          f"      python3 lab/measure.py --config {_rel(out)} --titles lab/out/titles.csv --limit 5 --tag {a.city}")
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,0 @@
-번호,조회일,ISBN13,도서명,분관,Open API bookExist 소장,Open API 대출가능(전일),공식 MCP 도구,공식 MCP 소장,공식 MCP 대출가능,일치(Y/N),사용량(호출 수),비고
-1,2026-10-,9788972756194,나미야 잡화점의 기적,상동,,,check_book_availability,,,,,
-2,2026-10-,9788936434120,소년이 온다,상동,,,check_book_availability,,,,,
-3,2026-10-,9791161571188,불편한 편의점,상동,,,check_book_availability,,,,,
-4,2026-10-,9791195794799,설민석의 한국사 대모험,상동,,,check_book_availability,,,,,
-5,2026-10-,9788972756194,나미야 잡화점의 기적,(부천 전체),,,find_book_nearby,,,,,

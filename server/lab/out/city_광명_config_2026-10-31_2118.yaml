@@ -1,0 +1,36 @@
+# 책이지 — 광명 설정(다른 도시 실측 2026-10-31_2118, tools/city/run_city.py)
+# 도서관 코드표: 정보나루 libSrch(dtl_region=31060) · lab/make_city_config.py 초안에서 이름만 줄임(「광명시」 접두·「도서관」 접미)
+# 규정 값: 아래 「확인한 값」 말고는 부천 값을 자리표시로 둔 【확인】 — 그 도시 누리집 규정으로 바꿔야 운영에 쓸 수 있다
+# 확인한 값 hold_days=3: 광명시 공식 블로그(2023. 3.) 「도서 수령 문자를 받고 3일 이내에 대출」
+# 확인한 값 total_limit=7: 기호일보 기사 「기존 대출 권수인 7권」(시점 확인 필요)
+city: 광명
+region_code: '31060'
+home_library: 하안
+libraries:
+  광명: '141080'
+  소하: '141561'
+  연서: '141613'
+  철산: '141405'
+  충현: '141155'
+  하안: '141019'
+rules:
+  ill_limit: 5
+  total_limit: 7
+  per_lib_limit: 5
+  block_if_pickup_on_shelf: true
+  block_if_overdue: true
+  excluded_types:
+  - 부록
+  exclude_new_arrival: false
+ill_eta_days: '1'
+ill_eta_text: ''
+hold_days: 3
+hold_includes_arrival_day: true
+no_pickup_block_days: 7
+reserve_converts_to_ill: true
+pass:
+  max_per_cycle: 3
+  free_routes_only: true
+sso: 【확인】.go.kr
+notify_channels:
+- sms

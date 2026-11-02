@@ -132,6 +132,61 @@ def request_service(user: str, isbn13: str, from_lib: str, pickup: str,
 _ROUTE_LABEL = {"visit": "바로 이용(수령관에 대출 가능)", "ill": "관내 상호대차", "reserve": "예약 권장(관내 소장분 전부 대출 중)",
                 "sea": "책바다(전국 상호대차) 안내", "unknown": "도서 미확정", "check": "소장 확인 불가(창구에서 조회)"}
 _MEMBER_RULE_KEYS = ("권", "연체", "중복")              # 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
+# [11/1] 회원 조건(member) — 사서가 도서관리시스템에서 읽은 숫자·예/아니요만 받는다(이름·회원번호 없이). 규정 이름 앞머리 → 칸
+_MEMBER_FIELDS = (("상호대차 1인", "ill_count"), ("통합 대출", "total_loans"), ("도서관별", "loans_at_pickup"),
+                  ("연체", "overdue"), ("동일 도서 중복", "same_book_pending"))
+_MEMBER_INT = ("ill_count", "total_loans", "loans_at_pickup")
+_MEMBER_BOOL = ("overdue", "same_book_pending")
+_YES = ("true", "yes", "y", "1", "예", "네", "있음", "있다")
+_NO = ("false", "no", "n", "0", "아니요", "아니오", "없음", "없다")
+
+def _member_conditions(member):
+    """[11/1] 회원 조건을 고른다 — 권수는 0 이상의 정수, 연체·중복은 예/아니요. 다른 칸이 오면 거부한다(개인정보를 받지 않음)."""
+    if member is None or member == "" or member == {}:
+        return {}
+    if isinstance(member, str):
+        try:
+            member = _json.loads(member)
+        except ValueError:
+            member = None
+    if not isinstance(member, dict):
+        raise ValueError("회원 조건(member)은 {\"ill_count\": 2, \"overdue\": false} 같은 객체로 줍니다")
+    allowed = _MEMBER_INT + _MEMBER_BOOL
+    bad = [str(k) for k in member if k not in allowed]
+    if bad:
+        raise ValueError(f"회원 조건에 받지 않는 칸: {', '.join(bad)}. 받는 칸은 {', '.join(allowed)}(권수와 예/아니요)뿐이며, "
+                         "이름·회원번호 같은 개인정보는 넣지 않습니다")
+    out = {}
+    for k in allowed:                                   # 칸 순서를 고정한다(접수 메모·원격 판과 같은 순서)
+        v = member.get(k)
+        if v is None:
+            continue
+        if k in _MEMBER_INT:
+            s = v.strip() if isinstance(v, str) else v
+            ok_num = (not isinstance(s, bool)) and ((isinstance(s, int) and s >= 0) or (isinstance(s, float) and s.is_integer() and s >= 0))
+            ok_str = isinstance(s, str) and s.isascii() and s.isdigit()
+            if not (ok_num or ok_str):
+                raise ValueError(f"회원 조건 {k}은(는) 0 이상의 정수(권수)여야 합니다")
+            out[k] = int(s)
+        elif isinstance(v, bool):
+            out[k] = v
+        elif isinstance(v, str) and v.strip().lower() in _YES:
+            out[k] = True
+        elif isinstance(v, str) and v.strip().lower() in _NO:
+            out[k] = False
+        else:
+            raise ValueError(f"회원 조건 {k}은(는) 예/아니요(true/false)여야 합니다")
+    return out
+
+def _member_text(m: dict, pickup: str) -> str:
+    """[11/1] 접수 메모에 남길 회원 조건 한 줄(사서가 준 칸만)."""
+    parts = []
+    if "ill_count" in m: parts.append(f"상호대차 {m['ill_count']}권")
+    if "total_loans" in m: parts.append(f"대출 {m['total_loans']}권")
+    if "loans_at_pickup" in m: parts.append(f"{pickup} {m['loans_at_pickup']}권")
+    if "overdue" in m: parts.append("연체·정지 있음" if m["overdue"] else "연체·정지 없음")
+    if "same_book_pending" in m: parts.append("같은 책 신청 있음" if m["same_book_pending"] else "같은 책 신청 없음")
+    return " · ".join(parts)
 
 def _ill_terms(pickup: str, eta, hold, point: bool = False) -> str:
     """[10/18] 관내 상호대차 안내의 「도착·보관·미수령」 문장 — 값과 문장은 설정에서(ill_eta_text·hold_includes_arrival_day·no_pickup_block_days).
@@ -166,9 +221,14 @@ def _lib_status(avail: dict, lib: str) -> str:
     if lib in avail["loaned_at"]: return "busy"
     return "none"
 
-def _guest_policy(isbn13: str, pickup: str):
-    """회원 토큰 없이 판정할 수 있는 규정만 판정하고, 회원 규정은 「창구 확인」으로 보류한다."""
-    guest = {"ill_count": 0, "total_loans": 0, "loans_at": {}, "overdue_count": 0, "suspended": False, "active_isbns": []}
+def _guest_policy(isbn13: str, pickup: str, member: dict = None):
+    """회원 토큰 없이 판정할 수 있는 규정만 판정하고, 회원 규정은 「창구 확인」으로 보류한다.
+    [11/1] 사서가 회원 조건(member: 권수·연체·중복, 이름·회원번호 없이)을 주면 그 칸에 해당하는 규정도 판정한다."""
+    m = member or {}
+    guest = {"ill_count": m.get("ill_count", 0), "total_loans": m.get("total_loans", 0),
+             "loans_at": ({pickup: m["loans_at_pickup"]} if "loans_at_pickup" in m else {}),
+             "overdue_count": 1 if m.get("overdue") else 0, "suspended": False,
+             "active_isbns": [isbn13] if m.get("same_book_pending") else []}
     if LOCAL_SOURCE == "naru":
         on_shelf = _local_holdings(isbn13)[0].get(pickup) == "ok"
     else:
@@ -177,11 +237,19 @@ def _guest_policy(isbn13: str, pickup: str):
     pending = []
     for c in v["checks"]:
         if any(k in c["rule"] for k in _MEMBER_RULE_KEYS):
+            field = next((f for pre, f in _MEMBER_FIELDS if c["rule"].startswith(pre)), None)
+            if field in m:
+                if field == "overdue":                    # 예/아니요만 받았으므로 건수는 말하지 않는다
+                    c["detail"] = "연체 또는 이용 정지 있음" if m["overdue"] else "연체·정지 없음"
+                c["detail"] = "사서 입력: " + c["detail"]
+                continue
             c["pass"] = None; c["detail"] = "회원 확인 필요(창구에서 도서관리시스템으로 확인)"
             pending.append(c["rule"])
     decided = [c for c in v["checks"] if c["pass"] is not None]
-    return {"allowed_so_far": all(c["pass"] for c in decided), "checks": v["checks"], "pending": pending,
-            "basis": "회원 토큰 없이 판정: 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인"}
+    basis = ("회원 토큰 없이 판정: 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인" if not m else
+             f"회원 토큰 없이 판정: 비치·제외자료 규정과 사서가 입력한 회원 조건 {len(m)}칸(권수·예/아니요, 이름·회원번호 없음)으로 확정"
+             + (", 나머지는 창구 확인" if pending else ""))
+    return {"allowed_so_far": all(c["pass"] for c in decided), "checks": v["checks"], "pending": pending, "basis": basis}
 
 def _unverified_item(item) -> bool:
     """[v0.3.5] 정보나루 서지만으로는 자료 유형(비도서 등)·신착 여부를 알 수 없다 — 픽스처에 없는 책의 서지."""
@@ -212,10 +280,12 @@ def _pickup_name(p):
         if cand and cand in pts: return pts[cand]
     return str(p)
 
-def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: str = None):
+def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: str = None, member: dict = None):
     """[v0.3.4] 상담 묶음 — 이용자의 말 한마디로 ① 도서 특정 ② 관내 소장·대출 상태 ③ 상호대차 가능 여부·갈래 판정
     ④ 이용자 안내문 ⑤ 접수 메모까지 한 번에. 회원 토큰(user)이 있으면 규정 7종을 전부 판정하고, 없으면 회원 규정은 창구 확인으로 보류.
+    [11/1] 토큰 없이도 사서가 회원 조건(member: 권수·연체·중복, 이름·회원번호 없이)을 주면 그 규정까지 판정한다.
     접수는 하지 않는다(접수는 request_service 또는 창구에서 사서가)."""
+    mem = {} if user else _member_conditions(member)  # 토큰이 있으면 토큰의 회원 정보로 판정한다
     pickup = _pickup_name(pickup or CFG["home_library"])
     points = list(CFG.get("pickup_points") or [])
     is_point = pickup in points and pickup not in CFG["libraries"]   # [10/18] 작은도서관 받을 곳 — 정보나루 자료가 없어 서가·도착일·보관은 창구 확인
@@ -261,7 +331,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         pol = check_policy(user, isbn, pickup); pol = {"allowed_so_far": pol["allowed"], "checks": pol["checks"], "pending": [],
                                                         "basis": "회원 토큰으로 규정 7종 전부 판정"}
     else:
-        pol = _guest_policy(isbn, pickup)
+        pol = _guest_policy(isbn, pickup, mem)
     if unknown:                                       # 수령관 비치 여부도 모르므로 비치 규정까지 창구 확인으로 돌린다
         for c in pol["checks"]:
             if "비치" in c["rule"] and c["pass"] is not None:
@@ -314,7 +384,9 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
         notice += " (예시 데이터: 관내에 없는 책의 흐름을 보이려고 꾸민 값이라 이 책의 실제 소장·대출과 다릅니다)"
     else:
         notice += f" (대출 상태는 정보나루 {asof_k} 조회, 전일 기준)"
-    if pol["pending"]:
+    if pol["pending"] and mem:                         # [11/1] 회원 조건을 받았으면 남은 규정만 이름으로 알린다
+        notice += " 남은 규정(" + ", ".join(pol["pending"]) + ")은 창구에서 확인해 드립니다."
+    elif pol["pending"]:
         notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다."
     others = found.get("same_title_others") or []    # [10/19] 같은 제목·다른 저자의 책이 함께 검색됨 — 고른 책을 밝히고 확인을 청한다
     if others:
@@ -355,6 +427,8 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
                   f"근거: {avail['basis']}",
                   f"규정: {sum(1 for c in pol['checks'] if c['pass'] is True)}건 통과 · {sum(1 for c in pol['checks'] if c['pass'] is False)}건 불가 · {len(pol['pending'])}건 창구 확인",
                   "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)"]
+    if mem:                                           # [11/1] 판정에 쓴 회원 조건(사서 입력, 이름·회원번호 없음)
+        memo_lines.insert(-1, f"회원 조건: 사서 입력({_member_text(mem, pickup)}) · 이름·회원번호 없음")
     for b in alt:                                     # [10/19] 판본 보정 — 다른 판의 관내 소장(접수 전 판 확인)
         memo_lines.insert(-1, f"다른 판 관내: {b.get('publisher') or ''} {b.get('year') or ''} ISBN {b['isbn13']}: "
                               f"대출 가능 {', '.join(b['available_at']) or '없음'} / 대출 중 {', '.join(b['loaned_at']) or '없음'}")

@@ -12,7 +12,7 @@ AI 정부 실험실 가상서버(우분투)용으로 만든 것들. 가상서버
 | 3 | `check_store.py` | 저장 계층·감사 기록·관내 출처 전환 점검 시험 14건(네트워크 없음) | 0 |
 | - | `refresh_today.py` · `refresh_list.txt` | [v0.3.4] 매일 1회 조회분 갱신: 픽스처 5종 + 목록의 ISBN, `--max-calls` 상한, `--demo` 연습 | 권당 1+소장관 수 |
 | - | `stability.py` | 전일 기준 자료의 하루 사이 유지율: 매일 새벽 자료(`data/holdings-today.json`)의 깃 이력을 이어지는 두 날씩 견줌, `--write`면 `out/`에 기록표 | 0 |
-| - | `기록지/` | 실측 B·C·D·E 기록지, 자가점검 G | - |
+| - | `기록지/` | 사서 판정 시간 B(11. 3.~4.)·신청 단계 C(10. 27. 마침), 실기기 음성 D(기기별 점검 때 채움), 자가점검 G(10. 31. 마침) | - |
 | - | `codex_config.example.toml` · `vscode_mcp.example.json` · `gitlab-ci.example.yml` | AI 도구·CI 연결 예시 | - |
 
 결과는 `lab/out/`에 쌓인다. 측정 CSV·요약(md)은 저장소에 올린다(개인정보 없음). SQLite·JSONL 상태 파일은 `.gitignore`.
@@ -40,4 +40,4 @@ CHAEKIJI_STORE=~/chaekiji-state.sqlite3 CHAEKIJI_AUDIT=~/chaekiji-audit.jsonl py
 - 클로드 데스크톱: `claude_desktop_config.example.json`
 - Codex CLI: `lab/codex_config.example.toml` → `~/.codex/config.toml`
 - VS Code(Copilot 등): `lab/vscode_mcp.example.json` → `.vscode/mcp.json`
-- 정보나루 공식 MCP(biglib)를 나란히 연결하면 「조회는 국가, 판정·실행은 책이지」 구조가 그대로 보인다(시험 E).
+- 정보나루 공식 MCP(biglib)를 나란히 연결하면 「조회는 국가, 판정·실행은 책이지」 구조가 그대로 보인다. 다만 공식 MCP는 같은 인증키·같은 사용량을 쓰므로 이번 기간에는 나란히 대조하는 시험(시험 E)을 하지 않았다.

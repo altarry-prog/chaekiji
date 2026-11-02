@@ -86,6 +86,19 @@ ok(!c.isError && c.out.found === false && c.out.route === "check" && c.out.notic
    "서지 검색부터 연결 끊김 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」");
 c = await call(worker, env, "consult_request", { utterance: "나미야", user: "tok_demo" });
 ok(c.isError && c.text.includes("회원 토큰을 받지 않습니다"), "회원 토큰을 넘기면 거절(개인정보를 받지 않음)");
+// [11/1] 회원 조건(member) — 사서가 읽은 권수·예/아니요만(이름·회원번호 없이). 준 칸의 규정만 판정(파이썬 판과 같은 규칙·같은 글)
+c = await call(worker, env, "consult_request", { utterance: "나미야 잡화점의 기적 빌리고 싶어요", pickup: "상동",
+  member: { ill_count: 2, total_loans: 7, loans_at_pickup: 1, overdue: false, same_book_pending: false } });
+ok(!c.isError && c.out.policy.pending.length === 0 && c.out.policy.checks.filter(x => x.pass === true).length === 7 &&
+   !c.out.notice.includes("창구에서 확인해 드립니다") && c.out.desk_memo.includes("회원 조건: 사서 입력(상호대차 2권 · 대출 7권 · 상동 1권 · 연체·정지 없음 · 같은 책 신청 없음) · 이름·회원번호 없음"),
+   "[11/1] 회원 조건 5칸(사서 입력) — 규정 7종 모두 판정, 접수 메모에 「사서 입력」·「이름·회원번호 없음」");
+c = await call(worker, env, "consult_request", { utterance: "작별하지 않는다 빌리고 싶어요", member: { ill_count: "5", overdue: "아니요" } });
+ok(!c.isError && !c.out.policy.allowed_so_far && c.out.notice.includes("다만 상호대차 1인 5권(사서 입력: 현재 5/5권)") &&
+   c.out.policy.pending.join() === "통합 대출 20권,도서관별 5권(직접+상호대차),동일 도서 중복 신청 없음,상호대차 제외 자료 아님",
+   "[11/1] 회원 조건 일부·글자 값 — 한도 초과는 「다만 …」, 주지 않은 칸과 자료 유형·신착은 창구 확인");
+c = await call(worker, env, "consult_request", { utterance: "나미야", member: { name: "홍길동" } });
+ok(c.isError && c.text.startsWith("ValueError: 회원 조건에 받지 않는 칸: name") && c.text.includes("개인정보"),
+   "[11/1] 회원 조건에 이름 같은 칸이 오면 거부(개인정보를 받지 않음)");
 c = await call(worker, env, "consult_request", { utterance: "나미야 잡화점의 기적", pickup: "상동역칙칙폭폭" });
 ok(!c.isError && c.out.pickup === "상동역 칙칙폭폭" && c.out.route === "ill" && c.out.notice.includes("상동역 칙칙폭폭도서관에서 받으실 수 있고") &&
    !c.out.notice.includes("도서관에는") && c.out.notice.includes("도착일과 보관 기한은 창구에서 확인") &&

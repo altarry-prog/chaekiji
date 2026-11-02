@@ -23,6 +23,11 @@ const SNAP_CACHE_MS = 10 * 60 * 1000;
 const ROUTE_LABEL = { visit: "바로 이용(수령관에 대출 가능)", ill: "관내 상호대차", reserve: "예약 권장(관내 소장분 전부 대출 중)",
                       sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정", check: "소장 확인 불가(창구에서 조회)" };
 const MEMBER_RULE_KEYS = ["권", "연체", "중복"];                 // 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
+// [11/1] 회원 조건(member) — 사서가 도서관리시스템에서 읽은 권수·예/아니요만(이름·회원번호 없이). tools._member_conditions와 같은 규칙·같은 글
+const MEMBER_FIELDS = [["상호대차 1인", "ill_count"], ["통합 대출", "total_loans"], ["도서관별", "loans_at_pickup"],
+                       ["연체", "overdue"], ["동일 도서 중복", "same_book_pending"]];
+const MEMBER_INT = ["ill_count", "total_loans", "loans_at_pickup"], MEMBER_BOOL = ["overdue", "same_book_pending"];
+const YES = ["true", "yes", "y", "1", "예", "네", "있음", "있다"], NO = ["false", "no", "n", "0", "아니요", "아니오", "없음", "없다"];
 
 const state = { snap: null, snapAt: 0, bib: new Map() };       // 같은 실행 공간 안에서만 쓰는 기억(10분)
 
@@ -402,16 +407,67 @@ function policyCheck(rules, member, onShelf, pickup, item, isbn13) {
   rule("동일 도서 중복 신청 없음", !dup, dup ? "이미 진행 중인 신청 있음" : "진행 중 신청 없음");
   return { allowed: checks.every(c => c.pass), checks };
 }
-function guestPolicy(onShelf, pickup, item, isbn13) {
-  const guest = { ill_count: 0, total_loans: 0, loans_at: {}, overdue_count: 0, suspended: false, active_isbns: [] };
+function memberConditions(member) {                           // tools._member_conditions — 다른 칸이 오면 거부(개인정보를 받지 않음)
+  if (member === undefined || member === null || member === "") return {};
+  if (typeof member === "string") { try { member = JSON.parse(member); } catch (e) { member = null; } }
+  if (!member || typeof member !== "object" || Array.isArray(member))
+    throw new ToolError("ValueError", "회원 조건(member)은 {\"ill_count\": 2, \"overdue\": false} 같은 객체로 줍니다");
+  const allowed = [...MEMBER_INT, ...MEMBER_BOOL];
+  const bad = Object.keys(member).filter(k => !allowed.includes(k));
+  if (bad.length)
+    throw new ToolError("ValueError", `회원 조건에 받지 않는 칸: ${bad.join(", ")}. 받는 칸은 ${allowed.join(", ")}(권수와 예/아니요)뿐이며, ` +
+                                      "이름·회원번호 같은 개인정보는 넣지 않습니다");
+  const out = {};
+  for (const k of allowed) {                                   // 칸 순서를 고정한다(접수 메모·파이썬 판과 같은 순서)
+    const v = member[k];
+    if (v === undefined || v === null) continue;
+    if (MEMBER_INT.includes(k)) {
+      const s = typeof v === "string" ? v.trim() : v;
+      const okNum = typeof s === "number" && Number.isInteger(s) && s >= 0;
+      const okStr = typeof s === "string" && /^[0-9]+$/.test(s);
+      if (!okNum && !okStr) throw new ToolError("ValueError", `회원 조건 ${k}은(는) 0 이상의 정수(권수)여야 합니다`);
+      out[k] = okNum ? s : parseInt(s, 10);
+    } else if (typeof v === "boolean") out[k] = v;
+    else if (typeof v === "string" && YES.includes(v.trim().toLowerCase())) out[k] = true;
+    else if (typeof v === "string" && NO.includes(v.trim().toLowerCase())) out[k] = false;
+    else throw new ToolError("ValueError", `회원 조건 ${k}은(는) 예/아니요(true/false)여야 합니다`);
+  }
+  return out;
+}
+function memberText(m, pickup) {                               // tools._member_text — 접수 메모에 남길 회원 조건 한 줄
+  const parts = [];
+  if ("ill_count" in m) parts.push(`상호대차 ${m.ill_count}권`);
+  if ("total_loans" in m) parts.push(`대출 ${m.total_loans}권`);
+  if ("loans_at_pickup" in m) parts.push(`${pickup} ${m.loans_at_pickup}권`);
+  if ("overdue" in m) parts.push(m.overdue ? "연체·정지 있음" : "연체·정지 없음");
+  if ("same_book_pending" in m) parts.push(m.same_book_pending ? "같은 책 신청 있음" : "같은 책 신청 없음");
+  return parts.join(" · ");
+}
+function guestPolicy(onShelf, pickup, item, isbn13, member) {
+  const m = member || {};
+  const guest = { ill_count: m.ill_count ?? 0, total_loans: m.total_loans ?? 0,
+                  loans_at: ("loans_at_pickup" in m) ? { [pickup]: m.loans_at_pickup } : {},
+                  overdue_count: m.overdue ? 1 : 0, suspended: false, active_isbns: m.same_book_pending ? [isbn13] : [] };
   const v = policyCheck(CFG.rules, guest, onShelf, pickup, item, isbn13);
   const pending = [];
   for (const c of v.checks) {
-    if (MEMBER_RULE_KEYS.some(k => c.rule.includes(k))) { c.pass = null; c.detail = "회원 확인 필요(창구에서 도서관리시스템으로 확인)"; pending.push(c.rule); }
+    if (MEMBER_RULE_KEYS.some(k => c.rule.includes(k))) {
+      const hit = MEMBER_FIELDS.find(([pre]) => c.rule.startsWith(pre));
+      const field = hit ? hit[1] : null;
+      if (field && field in m) {
+        if (field === "overdue") c.detail = m.overdue ? "연체 또는 이용 정지 있음" : "연체·정지 없음";   // 예/아니요만 받았으므로 건수는 말하지 않는다
+        c.detail = "사서 입력: " + c.detail;
+        continue;
+      }
+      c.pass = null; c.detail = "회원 확인 필요(창구에서 도서관리시스템으로 확인)"; pending.push(c.rule);
+    }
   }
   const decided = v.checks.filter(c => c.pass !== null);
-  return { allowed_so_far: decided.every(c => c.pass), checks: v.checks, pending,
-           basis: "회원 토큰 없이 판정: 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인" };
+  const n = Object.keys(m).length;
+  const basis = !n ? "회원 토큰 없이 판정: 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인"
+    : `회원 토큰 없이 판정: 비치·제외자료 규정과 사서가 입력한 회원 조건 ${n}칸(권수·예/아니요, 이름·회원번호 없음)으로 확정` +
+      (pending.length ? ", 나머지는 창구 확인" : "");
+  return { allowed_so_far: decided.every(c => c.pass), checks: v.checks, pending, basis };
 }
 function officialLink(title, isbn13, byTitle = false) {         // tools._official_link — [10/18] ISBN 기본, 소장 확인 불가는 제목 검색
   const tmpl = String((byTitle && CFG.official_search_url_title) || CFG.official_search_url || "").trim();
@@ -425,6 +481,7 @@ export async function consultRequest(args, deps, ctx) {
   const utterance = args.utterance;
   if (typeof utterance !== "string" || !utterance.trim()) throw new ToolError("TypeError", "utterance(이용자의 말 또는 책 제목)가 필요합니다");
   if (args.user) throw new ToolError("ValueError", "원격 상담 비서는 회원 토큰을 받지 않습니다(개인정보 보호). 회원 규정은 창구에서 확인합니다");
+  const mem = memberConditions(args.member);                   // [11/1] 사서가 준 회원 조건(권수·예/아니요)만
   const pickup = pickupName(args.pickup || CFG.home_library);
   const lang = args.lang || "ko";
   const points = CFG.pickup_points || [];
@@ -465,7 +522,7 @@ export async function consultRequest(args, deps, ctx) {
   else if (avail.loaned_at.length || atPickup === "busy") [route, fromLib] = ["reserve", null];
   else [route, fromLib] = ["sea", null];
   const item = await bibinfo(isbn, deps, ctx);
-  const pol = guestPolicy(rt[pickup] === "ok", pickup, item, isbn);
+  const pol = guestPolicy(rt[pickup] === "ok", pickup, item, isbn, mem);
   if (unknown) {                                              // 수령관 비치 여부도 모르므로 비치 규정까지 창구 확인으로
     for (const c of pol.checks) {
       if (c.rule.includes("비치") && c.pass !== null) {
@@ -521,7 +578,9 @@ export async function consultRequest(args, deps, ctx) {
   const example = (HOLD._examples || []).includes(isbn) && !!meta.example;
   if (route !== "check")                                      // 조회한 자료가 없으면 날짜를 찍지 않는다
     notice += example ? " (예시 데이터: 관내에 없는 책의 흐름을 보이려고 꾸민 값이라 이 책의 실제 소장·대출과 다릅니다)" : ` (대출 상태는 정보나루 ${asofK} 조회, 전일 기준)`;
-  if (pol.pending.length) notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다.";
+  const memN = Object.keys(mem).length;
+  if (pol.pending.length && memN) notice += " 남은 규정(" + pol.pending.join(", ") + ")은 창구에서 확인해 드립니다.";   // [11/1] 회원 조건을 받았으면 남은 규정만 이름으로
+  else if (pol.pending.length) notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다.";
   const others = found.same_title_others || [];                // [10/19] 같은 제목·다른 저자의 책이 함께 검색됨 — 고른 책을 밝히고 확인을 청한다
   if (others.length)
     notice += ` 같은 제목의 다른 책도 있습니다(${others.map(b => `${b.author || ""} · ${b.publisher || ""} ${b.year || ""}`).join(" / ")}). ` +
@@ -566,6 +625,7 @@ export async function consultRequest(args, deps, ctx) {
     `규정: ${pol.checks.filter(c => c.pass === true).length}건 통과 · ${pol.checks.filter(c => c.pass === false).length}건 불가 · ${pol.pending.length}건 창구 확인`,
     "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)",
   ];
+  if (memN) memo.splice(memo.length - 1, 0, `회원 조건: 사서 입력(${memberText(mem, pickup)}) · 이름·회원번호 없음`);   // [11/1]
   for (const b of alt)                                         // [10/19] 판본 보정 — 다른 판의 관내 소장(접수 전 판 확인)
     memo.splice(memo.length - 1, 0, `다른 판 관내: ${b.publisher || ""} ${b.year || ""} ISBN ${b.isbn13}: ` +
                                     `대출 가능 ${b.available_at.join(", ") || "없음"} / 대출 중 ${b.loaned_at.join(", ") || "없음"}`);

@@ -1,0 +1,45 @@
+# 다른 도시 실측: 책이지 코드는 그대로 두고 설정 파일만 바꿔 시흥·광명 공공도서관으로 판정이 도는지 잰다(tools/city/run_city.py).
+# 담당자 10. 31. 21:00 「다른 도시는 시흥, 광명」 요청. main은 건드리지 않고 기록은 이 가지(tools/model2)의 server/lab/out/에 커밋한다.
+# 정보나루: 도시마다 설정 초안 1회 + 책 5권 판정(권당 대략 소장관 수 + 3회). 하루 한도(500회) 안에서 한 번만 돌린다.
+# 인증키는 저장소 비밀값(NARU_KEY)으로만 받고 기록·로그에 남기지 않는다.
+name: city-measure
+on:
+  workflow_dispatch:
+  push:
+    branches: [tools/model2]
+    paths: [".github/workflows/city-measure.yml", "tools/city/run_city.py"]
+permissions:
+  contents: write
+concurrency:
+  group: city-measure
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PYTHONUNBUFFERED: "1"
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 시흥·광명 설정 만들기와 판정 5건씩
+        env:
+          NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}
+        run: |
+          sudo mkdir -p /content && sudo chown "$USER" /content
+          python3 tools/city/run_city.py
+      - name: 기록을 이 가지에 커밋
+        if: always()
+        run: |
+          mkdir -p server/lab/out
+          cp /content/chaekiji/server/lab/out/city_* server/lab/out/ 2>/dev/null || true
+          ls -la server/lab/out | grep city_ || echo "기록 파일 없음"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out
+          git commit -m "다른 도시 실측 기록(시흥·광명) — 깃허브 액션(${RUN_URL##*/})" || echo "커밋할 것 없음"
+          git pull --rebase -q origin tools/model2 || true
+          git push

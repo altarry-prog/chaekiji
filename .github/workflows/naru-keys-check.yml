@@ -1,4 +1,5 @@
-# 정보나루 키 확인(수동 실행) — 깃허브 비밀값에 든 정보나루 키들이 서로 다른 키인지, 각각 쓸 수 있는지를 한 번씩만 불러 본다.
+# 정보나루 키 확인(수동 실행) — 중계가 차례로 쓰는 키 넷(NARUKEY → NARU_KEY2 → NARU_KEY3 → NARU_KEY4)이
+# 서로 다른 키인지, 각각 쓸 수 있는지를 한 번씩만 불러 본다(새로 받은 키가 승인됐는지 볼 때).
 # 키 값은 어디에도 찍지 않는다(같은지 여부와 결과 종류만). 정보나루 호출은 키마다 1번(서지 검색 1건)이다.
 name: naru-keys-check
 on:
@@ -11,47 +12,19 @@ jobs:
     steps:
       - name: 키마다 한 번씩 불러 보기
         env:
-          K_NARU_KEY: ${{ secrets.NARU_KEY }}
-          K_NARUKEY: ${{ secrets.NARUKEY }}
-          K_NARU_KEY_REFRESH: ${{ secrets.NARU_KEY_REFRESH }}
-          K_NARU_KEY_ASK: ${{ secrets.NARU_KEY_ASK }}
+          K_NARUKEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}
           K_NARU_KEY2: ${{ secrets.NARU_KEY2 }}
-          K_NARUKEY2: ${{ secrets.NARUKEY2 }}
-          K_NARU_KEY_2: ${{ secrets.NARU_KEY_2 }}
-          K_NARUKEY_2: ${{ secrets.NARUKEY_2 }}
-          K_NARU_KEY1: ${{ secrets.NARU_KEY1 }}
-          K_NARUKEY1: ${{ secrets.NARUKEY1 }}
-          K_NARU_API_KEY: ${{ secrets.NARU_API_KEY }}
-          K_NARU_AUTH_KEY: ${{ secrets.NARU_AUTH_KEY }}
-          K_NARU_KEY_SUB: ${{ secrets.NARU_KEY_SUB }}
-          K_NARU_KEY_STAFF: ${{ secrets.NARU_KEY_STAFF }}
-          K_DATA4LIBRARY_KEY: ${{ secrets.DATA4LIBRARY_KEY }}
-          K_LIBRARY_KEY: ${{ secrets.LIBRARY_KEY }}
-          K_NARU: ${{ secrets.NARU }}
-          K_AUTH_KEY: ${{ secrets.AUTH_KEY }}
-          K_API_KEY: ${{ secrets.API_KEY }}
           K_NARU_KEY3: ${{ secrets.NARU_KEY3 }}
-          K_NARUKEY3: ${{ secrets.NARUKEY3 }}
-          K_NARU_KEY_3: ${{ secrets.NARU_KEY_3 }}
-          K_NARUKEY_3: ${{ secrets.NARUKEY_3 }}
           K_NARU_KEY4: ${{ secrets.NARU_KEY4 }}
-          K_NARUKEY4: ${{ secrets.NARUKEY4 }}
-          K_NARU_KEY_4: ${{ secrets.NARU_KEY_4 }}
         run: |
           python3 - <<'PY'
           import os, json, urllib.request, urllib.parse
-          # 정보나루 키를 넣었을 법한 이름들(이름 목록은 깃허브가 작업에 주지 않아, 짐작한 이름만 본다)
-          names = [k[2:] for k in os.environ if k.startswith("K_")]
-          order = ['NARU_KEY', 'NARUKEY', 'NARU_KEY_REFRESH', 'NARU_KEY_ASK', 'NARU_KEY2', 'NARUKEY2', 'NARU_KEY_2', 'NARUKEY_2', 'NARU_KEY1', 'NARUKEY1', 'NARU_API_KEY', 'NARU_AUTH_KEY', 'NARU_KEY_SUB', 'NARU_KEY_STAFF', 'DATA4LIBRARY_KEY', 'LIBRARY_KEY', 'NARU', 'AUTH_KEY', 'API_KEY', 'NARU_KEY3', 'NARUKEY3', 'NARU_KEY_3', 'NARUKEY_3', 'NARU_KEY4', 'NARUKEY4', 'NARU_KEY_4']
-          names = [n for n in order if n in names]
-          keys = {n: os.environ.get("K_" + n, "").strip() for n in names}
-          seen = {}
-          rows = []
+          names = ["NARUKEY", "NARU_KEY2", "NARU_KEY3", "NARU_KEY4"]       # 중계(relay/worker.js)가 쓰는 순서
+          seen, rows = {}, []
           for n in names:
-              k = keys[n]
+              k = os.environ.get("K_" + n, "").strip()
               if not k:
-                  if n in order[:4]: rows.append(f"| {n} | 없음 | - | - |")
-                  continue
+                  rows.append(f"| {n} | 없음 | - | - |"); continue
               same = [m for m in seen if seen[m] == k]
               seen[n] = k
               if same:
@@ -71,9 +44,8 @@ jobs:
                       break
                   except Exception as e:
                       res = f"연결 실패({type(e).__name__})"
-              rows.append(f"| {n} | 있음 | 앞의 이름들과 다른 키 | {res} |")
-          out = ["| 비밀값 이름 | 값 | 다른 이름과 견줌 | 한 번 불러 본 결과 |", "|---|---|---|---|"] + rows
-          out.append(f"(그 밖에 짐작한 이름 {len(order) - 4}개 가운데 값이 있는 것만 표에 넣음: " + ", ".join(order[4:]) + ")")
+              rows.append(f"| {n} | 있음 | 앞의 키와 다름 | {res} |")
+          out = ["| 비밀값 이름 | 값 | 다른 키와 견줌 | 한 번 불러 본 결과 |", "|---|---|---|---|"] + rows
           print("\n".join(out))
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
               f.write("## 정보나루 키 확인\n\n" + "\n".join(out) + "\n\n키 값은 적지 않았다(같은 키인지와 불러 본 결과만).\n")

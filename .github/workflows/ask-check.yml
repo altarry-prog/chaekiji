@@ -30,7 +30,7 @@ jobs:
               if i > 1: time.sleep(8)
               body = json.dumps({"text": text, "pickup": pickup, "lang": "auto"}, ensure_ascii=False).encode()
               req = urllib.request.Request(URL, data=body, method="POST",
-                    headers={"User-Agent": UA, "Content-Type": "application/json", "Origin": "https://altarry-prog.github.io"})
+                    headers={"User-Agent": UA, "Content-Type": "application/json", "Origin": "https://altarry-prog.github.io", "X-Chaekiji-Check": "1"})
               t0 = time.time()
               try:
                   with urllib.request.urlopen(req, timeout=120) as r:

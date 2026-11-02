@@ -7,7 +7,7 @@
 - 중계(Cloudflare Workers 무료, 2026. 10. 16.~): `https://chaekiji-relay.altarry2.workers.dev`
 - 원격 판(claude.ai 연결용): 같은 주소 끝에 `/mcp`
 - Solar 상담 창(클로드 계정 없이, 시험, 2026. 11. 2.~): 같은 주소의 `POST /ask`, 화면은 [https://altarry-prog.github.io/chaekiji/docs/ask/](https://altarry-prog.github.io/chaekiji/docs/ask/)
-- 운영 점검 7/7 · 중계 점검 20건 · 원격 점검 41건 · 책이지 서버(파이썬)와 대조 34건 · Solar 상담 창 점검 25건(2026. 11. 2.)
+- 운영 점검 7/7 · 중계 점검 20건 · 원격 점검 41건 · 책이지 서버(파이썬)와 대조 34건 · Solar 상담 창 점검 30건(2026. 11. 2.)
 
 > **정직 고지**: 대출 상태는 조회일의 **전일 기준**입니다. 원격 판은 읽기와 판정만 하고 **접수하지 않습니다**. 인증키는 서버 비밀값에만 두고, 어디에도 내보내지 않습니다.
 
@@ -95,6 +95,7 @@
 - `GET /health`: 살아 있는지와 키가 있는지만 답합니다. 키 값은 어디에도 내보내지 않습니다.
 - `POST /mcp`: 원격 판(claude.ai 연결용, MCP Streamable HTTP). 사람이 인터넷 창으로 열면 안내 화면이 나오고, 프로그램의 GET은 규격대로 405입니다.
 - `POST /ask`: Solar 상담 창(11. 2.~, [relay/ask.js](ask.js)). 본문 `{text, pickup, lang}`(lang은 ko·en·vi·zh·ja 또는 auto)을 받아 모델의 답(`answer`)과 도구가 정한 판정(`tool`: 갈래·책·조회일·누리집 주소·안내문·접수 메모)을 따로 돌려줍니다. 지시문·모델에 보이는 도구(consult_request 하나)·받을 도서관과 언어를 화면 값으로 고정하는 규칙·온도 0은 Solar 실측과 같습니다. 시연 웹 출처에서만 받고(출처 없음도 403), 한 IP 10분 6번, 실행 공간 하루 300번, 글 300자까지입니다. 전화번호·회원번호처럼 보이는 글은 모델을 부르지 않고 400으로 돌려보냅니다. 요청 1건의 외부 호출은 모델 4번과 새벽 자료·정보나루 42번 안입니다(Cloudflare 무료 요금제 한도 50).
+- `GET /ask/records?cursor=…` · `GET /ask/stats`: 담당자 기록 모드의 기록 내려받기(오래된 것부터 40건씩 이어 받기)와 모든 이용의 건수(글 없음). 둘 다 머리글 `X-Record-Token`(기록 암호)이 맞아야 하고, 한 IP 10분 30번까지입니다. 기록 암호 비밀값이나 KV 저장 공간이 없으면 503(`records-off`)이고 상담은 그대로 됩니다.
 
 <details>
 <summary>응답 예</summary>
@@ -161,7 +162,7 @@
 
 1. **인증키는 환경변수(`NARU_KEY`, Solar 상담 창은 `UPSTAGE_API_KEY`)에만**: 코드·저장소·응답·로그·오류 문구 어디에도 없습니다. 키가 없으면 기동을 거부합니다(503). 두 키 모두 깃허브 비밀값에서 배포할 때 Cloudflare 비밀값으로 넘깁니다. 정보나루 키는 쓰임별로 나눠 씁니다(11. 2.~): 중계(시연 웹·claude.ai 연결·시험 이용 화면)는 `NARU_KEY`(또는 `NARUKEY`), 새벽 갱신은 둘째 키 `NARU_KEY2`를 써서 하루 500번 한도를 서로 나누지 않습니다. 상담 창은 배포할 때 `NARU_KEY_ASK`·`NARU_KEY3`·`NARU_KEY2`를 차례로 한 번씩 불러 보고 되는 첫 키를 씁니다(승인 전 키는 건너뜀, 어느 이름을 골랐는지는 `last_deploy.json`의 `ask_key_name`). 새벽 갱신 전용 키는 `NARU_KEY_REFRESH`로 넣을 수 있습니다.
 2. **허용 출처만 응답**: 시연 웹 `https://altarry-prog.github.io`(+ 로컬 점검 주소)만 받습니다. 원격 판은 claude.ai도 받습니다. 다른 출처는 403입니다.
-3. **정해 둔 경로만**: `/holdings` `/search` `/nation` `/health`와 원격 판 `/mcp`, Solar 상담 창 `/ask`뿐입니다. 나머지는 404입니다. `/ask`로 받은 글은 업스테이지에 보내 답을 만들 뿐 저장하거나 기록하지 않습니다.
+3. **정해 둔 경로만**: `/holdings` `/search` `/nation` `/health`와 원격 판 `/mcp`, Solar 상담 창 `/ask`뿐입니다. 나머지는 404입니다. `/ask`로 받은 글은 업스테이지에 보내 답을 만들고, 중계는 글 없이 건수(날짜·판정 갈래·언어·걸린 시간)만 KV 저장 공간에 90일 남깁니다. 담당자 기록 모드(머리글 `X-Record-Token`이 Cloudflare 비밀값 `ASK_RECORD_TOKEN`과 같을 때)의 문의만 문장·답·판정까지 같은 저장 공간에 90일 기록하며, 저장소에는 올리지 않습니다.
 4. **호출 상한**: IP당 10분에 60회(429, 상담 1건 = 2~3회)입니다. 같은 조회는 10분 동안 캐시합니다. 서버 relay 모드처럼 브라우저가 아닌 호출은 출처(Origin)가 없어 통과하므로, 이 상한이 남용 방어선입니다.
 5. **최소 가공**: 16관의 `ok|busy|none`과 조회일(호출 수 등 계측 값 포함)만 내려보내고, 「대출 상태는 조회일 전일 기준」 문구를 붙입니다.
 
@@ -187,7 +188,7 @@
 
 - 중계 점검 20건: 정보나루를 흉내 내어 네 경로(서지 검색은 상위 10건·권차 포함), 거절 규칙, http 주소 먼저 쓰기, 멈춘 주소 끊기, 정보나루 오류 문구, 상류 장애를 봅니다(네트워크·키 불필요). 명령: `node relay/test_worker.mjs`
 - 원격 판 규약 41건: `node relay/test_mcp.mjs`
-- Solar 상담 창 25건(모의 Solar·모의 정보나루): `node relay/test_ask.mjs`
+- Solar 상담 창 30건(모의 Solar·모의 정보나루·모의 저장 공간): `node relay/test_ask.mjs`
 - 책이지 서버(파이썬)와 대조 34건: `python3 relay/test_mcp_parity.py`
 - 원격 판 자료가 원본과 같은지: `python3 relay/build_mcp_data.py --check`
 - 실제 주소 운영 점검 7가지(매일 10:07 예약): `python3 relay/health_check.py`

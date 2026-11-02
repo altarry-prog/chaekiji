@@ -174,6 +174,57 @@ export async function askConsult({ text, pickup, lang }, env, deps) {
            data_calls: ctx.n };
 }
 
+// ── 기록(11. 2. 담당자 14:26 「물어본 걸 저장해 두면 나중에 한 번에 실측으로 쓰면 되잖아」) ──────────────────────
+// ① 모든 이용: 글 없이 날짜·판정 갈래·언어·걸린 시간만 센다(KV 키 cnt:…, 값 없이 메타데이터만, 90일 보관).
+// ② 담당자 기록 모드: 화면에서 기록 암호를 넣은 브라우저의 문의만 문장·답·판정까지 기록한다(KV 키 rec:…, 90일 보관).
+//    암호는 Cloudflare 비밀값 ASK_RECORD_TOKEN(깃허브 비밀값에서 배포 때 넘김)과 견준다. 저장 공간은 KV(비공개)이며 저장소에는 올리지 않는다.
+// 내려받기 GET /ask/records(암호 필요, 40건씩 이어 받기) · 건수 GET /ask/stats(암호 필요). 요청 1건의 외부 호출 50번 한도 안에서 나눠 읽는다.
+export const KEEP_SEC = 90 * 24 * 3600;
+const PAGE = 40;
+const recMem = { hits: new Map() };
+function kstStamp(now = Date.now()) { return new Date(now + 9 * 3600e3).toISOString().slice(0, 19); }   // 2026-11-02T14:30:05
+function rand() { return Math.random().toString(36).slice(2, 8); }
+function sameText(a, b) {                                      // 길이가 같을 때 끝까지 견주는 비교(시간 차로 암호를 짐작하지 못하게)
+  a = String(a || ""); b = String(b || "");
+  if (!a || a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+export function recordOn(req, env) {
+  const tok = env.ASK_RECORD_TOKEN || "";
+  return !!(env.ASK_RECORDS && tok.length >= 12 && sameText(req.headers.get("X-Record-Token"), tok));
+}
+function recAllow(ip, now = Date.now()) {                     // 기록 읽기·암호 확인은 한 IP 10분 30번(암호 짐작 막기)
+  const arr = (recMem.hits.get(ip) || []).filter(t => now - t < 600e3);
+  if (arr.length >= 30) return false;
+  arr.push(now); recMem.hits.set(ip, arr); return true;
+}
+export function _resetRecForTest() { recMem.hits.clear(); }
+
+async function keep(env, req, r, extra) {                      // 세기와(모두) 기록(기록 모드만). KV가 없으면 아무것도 하지 않는다
+  if (!env.ASK_RECORDS) return false;
+  const t = kstStamp(), rec = recordOn(req, env), tool = (r && r.tool) || {};
+  const meta = { r: tool.route || "", l: (r && r.lang) || extra.lang || "", ms: r && r.ms ? Math.round(r.ms / 100) / 10 : 0,
+                 ok: r && r.ok ? 1 : 0, tc: r && r.tool_calls ? r.tool_calls.length : 0, rec: rec ? 1 : 0,
+                 k: req.headers.get("X-Chaekiji-Check") ? 1 : 0 };
+  try {
+    await env.ASK_RECORDS.put(`cnt:${t}:${rand()}`, "", { expirationTtl: KEEP_SEC, metadata: meta });
+    if (rec) {
+      const b = tool.book || {};
+      const row = { t, text: extra.text, pickup: extra.pickup, lang: (r && r.lang) || extra.lang, lang_guessed: !!(r && r.lang_guessed),
+        ok: !!(r && r.ok), error: (r && r.error) || null, answer: (r && r.answer) || "", model: (r && r.model) || "",
+        route: tool.route || "", route_label: tool.route_label || "", book_title: b.title || "", book_author: b.author || "",
+        isbn13: b.isbn13 || "", asof: tool.asof || "", official_link: tool.official_link || "",
+        available_at: tool.available_at || [], loaned_at: tool.loaned_at || [], notice: tool.notice || "", desk_memo: tool.desk_memo || "",
+        tool_calls: ((r && r.tool_calls) || []).map(c => c.utterance), ms: (r && r.ms) || 0,
+        usage: (r && r.usage) || null, data_calls: r && r.data_calls != null ? r.data_calls : null };
+      await env.ASK_RECORDS.put(`rec:${t}:${rand()}`, JSON.stringify(row), { expirationTtl: KEEP_SEC });
+    }
+  } catch (e) { return false; }                               // 기록이 안 돼도 답은 돌려준다
+  return rec;
+}
+
 // POST /ask — 본문 {text, pickup, lang(ko|en|vi|zh|ja|auto)}
 export async function handleAsk(req, env, ip, deps, headers) {
   const out = (obj, status) => new Response(JSON.stringify(obj), { status, headers });
@@ -189,11 +240,59 @@ export async function handleAsk(req, env, ip, deps, headers) {
   const lang = LANGS.includes(want) ? want : guessLang(text);
   const why = askAllow(ip);
   if (why) return out({ error: why, message: why === "day-limit" ? "오늘 시험 한도에 닿았습니다. 내일 다시 써 주세요." : "잠시 뒤에 다시 물어 주세요(10분에 6번까지)." }, 429);
+  const extra = { text, pickup, lang };
   try {
-    const r = await askConsult({ text, pickup, lang }, env, deps);
-    return out({ ...r, lang_guessed: !LANGS.includes(want) }, 200);
+    const r = { ...(await askConsult({ text, pickup, lang }, env, deps)), lang_guessed: !LANGS.includes(want) };
+    const recorded = await keep(env, req, r, extra);
+    return out({ ...r, recorded }, 200);
   } catch (e) {
     const code = e instanceof AskError ? e.code : "error";
-    return out({ error: code, detail: (e && e.detail) || [], message: "지금은 답을 만들지 못했습니다. 잠시 뒤에 다시 물어 주세요." }, 502);
+    const fail = { ok: false, error: code, detail: (e && e.detail) || [], lang };
+    const recorded = await keep(env, req, fail, extra);
+    return out({ error: code, detail: fail.detail, recorded, message: "지금은 답을 만들지 못했습니다. 잠시 뒤에 다시 물어 주세요." }, 502);
   }
+}
+
+// GET /ask/records?cursor=… — 담당자 기록 모드에서 저장한 문의(오래된 것부터 40건씩). 암호가 맞아야 한다
+export async function handleRecords(req, env, ip, headers) {
+  const out = (obj, status) => new Response(JSON.stringify(obj), { status, headers });
+  if (!recAllow(ip)) return out({ error: "rate-limit", message: "잠시 뒤에 다시 해 주세요." }, 429);
+  if (!env.ASK_RECORDS || !env.ASK_RECORD_TOKEN) return out({ error: "records-off", message: "기록 기능이 아직 켜지지 않았습니다(기록 암호 비밀값 필요)." }, 503);
+  if (!recordOn(req, env)) return out({ error: "token", message: "기록 암호가 맞지 않습니다." }, 403);
+  const url = new URL(req.url);
+  const cursor = url.searchParams.get("cursor") || undefined;
+  const lim = Math.max(1, Math.min(PAGE, Number(url.searchParams.get("limit")) || PAGE));
+  const page = await env.ASK_RECORDS.list({ prefix: "rec:", cursor, limit: lim });
+  const records = [];
+  for (const k of page.keys) {
+    const v = await env.ASK_RECORDS.get(k.name);
+    if (v) { try { records.push(JSON.parse(v)); } catch (e) { /* 깨진 기록은 건너뜀 */ } }
+  }
+  return out({ records, cursor: page.list_complete ? null : page.cursor, keep_days: KEEP_SEC / 86400 }, 200);
+}
+
+// GET /ask/stats — 모든 이용의 건수(글 없음). 날짜별 합계·판정 갈래·언어·기록 모드 건수·점검 호출 건수
+export async function handleStats(req, env, ip, headers) {
+  const out = (obj, status) => new Response(JSON.stringify(obj), { status, headers });
+  if (!recAllow(ip)) return out({ error: "rate-limit", message: "잠시 뒤에 다시 해 주세요." }, 429);
+  if (!env.ASK_RECORDS || !env.ASK_RECORD_TOKEN) return out({ error: "records-off", message: "기록 기능이 아직 켜지지 않았습니다(기록 암호 비밀값 필요)." }, 503);
+  if (!recordOn(req, env)) return out({ error: "token", message: "기록 암호가 맞지 않습니다." }, 403);
+  const days = {};
+  let cursor, total = 0, pages = 0;
+  do {
+    const page = await env.ASK_RECORDS.list({ prefix: "cnt:", cursor, limit: 1000 });
+    for (const k of page.keys) {
+      const m = k.metadata || {}, day = k.name.slice(4, 14);
+      const d = days[day] || (days[day] = { total: 0, ok: 0, recorded: 0, check: 0, routes: {}, langs: {} });
+      d.total++; total++;
+      if (m.ok) d.ok++;
+      if (m.rec) d.recorded++;
+      if (m.k) d.check++;
+      const rt = m.r || (m.ok ? "none" : "error");
+      d.routes[rt] = (d.routes[rt] || 0) + 1;
+      if (m.l) d.langs[m.l] = (d.langs[m.l] || 0) + 1;
+    }
+    cursor = page.list_complete ? null : page.cursor;
+  } while (cursor && ++pages < 40);
+  return out({ total, days, keep_days: KEEP_SEC / 86400 }, 200);
 }

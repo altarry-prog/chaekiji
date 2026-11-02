@@ -16,6 +16,7 @@
 :root[data-theme="dark"]{--bg:#111513;--fg:#e7eeea;--sub:#a9b7b0;--acc:#86d3bd;--acc-ink:#0d1a16;--soft:#1b2c26;--card:#1a201d;--line:#2d3732;
   --warn:#f2c46d;--warn-bg:#2d2412;--err:#ffb4a8;--err-bg:#3a1d19;--focus:#ffd166}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;word-break:keep-all;overflow-wrap:anywhere}
 main{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
@@ -73,6 +74,13 @@ details p,details pre{margin:6px 0 0;white-space:pre-wrap;font:inherit;font-size
 .about ul{margin:0;padding-left:1.2em;color:var(--sub);font-size:.92rem}
 .about li{margin:3px 0}
 footer{margin-top:16px;color:var(--sub);font-size:.88rem}
+.recbox summary{list-style-position:inside;color:var(--fg)}
+.pill{display:inline-block;margin-left:6px;border:1px solid var(--line);border-radius:999px;padding:1px 10px;font-size:.82rem;color:var(--sub)}
+.pill.on{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+input[type=password]{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 10px;min-height:44px;width:100%}
+.btn2{min-height:44px;border:1px solid var(--acc);border-radius:10px;padding:9px 16px;background:transparent;color:var(--acc);font-weight:700}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.stat{margin:8px 0 0;padding-left:1.1em;font-size:.9rem;color:var(--sub)}
 /* 넓은 화면: 왼쪽 묻기 · 오른쪽 답(담당자 11. 2. 14:15) */
 @media (min-width:960px){.grid{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}.col-in{position:sticky;top:12px}.grid #out{margin-top:0}.grid #out>.card:first-child,.grid #out>.note:first-child{margin-top:0}}
 </style>
@@ -134,10 +142,30 @@ footer{margin-top:16px;color:var(--sub);font-size:.88rem}
     <li>대출 가능 여부는 도서관 정보나루 조회일의 전일 기준입니다. 신청은 공식 누리집에서 이용자가 로그인해 직접 합니다.</li>
     <li>같은 설정으로 잰 결과(2026. 11. 2., 고정 문의 24건 × 3회): 이용자의 말로 책을 찾은 것은 60번 가운데 37번이었고, 찾은 37번은 판정이 모두 도구와 같았습니다. 제목 없이 말하거나 외국어 제목으로 물으면 못 찾을 때가 있고, 그때는 되묻거나 「도서 미확정」으로 답합니다(<a href="https://github.com/altarry-prog/chaekiji/blob/main/server/lab/out/ai_metrics_solar_record_actions_2026-11-02_0945.md">실측 기록</a>).</li>
     <li>답의 문장은 AI가 쓰므로 틀릴 수 있습니다. 그래서 도구가 정한 판정(갈래, 책, 조회일, 누리집 주소)을 「책이지 도구가 정한 판정」 상자에 따로 보여 줍니다.</li>
-    <li>적은 글은 답을 만들려고 업스테이지 API로 보내집니다. 이 화면과 책이지 중계는 글을 저장하지 않습니다.</li>
+    <li>적은 글은 답을 만들려고 업스테이지 API로 보내집니다. 책이지 중계는 모든 이용을 글 없이 건수(날짜·판정 갈래·언어·걸린 시간)로만 세고, 담당자 기록 모드에서 물은 것만 문장과 답까지 비공개 저장 공간에 90일 기록합니다.</li>
     <li>사서용 상담 비서라 답 끝에 접수 메모가 붙습니다. 시험용이라 한 사람이 10분에 6번까지 물을 수 있습니다.</li>
   </ul>
 </section>
+
+<details class="card recbox" id="recbox">
+  <summary><b>담당자 기록 모드</b> <span id="recstate" class="pill">꺼짐</span></summary>
+  <p class="hint" style="margin-top:8px">기록 암호를 넣은 이 브라우저에서 묻는 것만 문장·답·판정까지 비공개 저장 공간에 90일 기록합니다. 나중에 한 번에 내려받아 실측에 씁니다. 다른 사람이 묻는 것은 글 없이 건수만 셉니다.</p>
+  <div class="row" id="recin">
+    <label>기록 암호
+      <input id="rectok" type="password" autocomplete="off" spellcheck="false">
+    </label>
+    <button id="recon" class="btn2" type="button">켜기</button>
+  </div>
+  <div id="recctl" hidden>
+    <p id="recinfo" class="hint"></p>
+    <div class="btns">
+      <button id="recdl" class="btn2" type="button">기록 내려받기(엑셀 CSV)</button>
+      <button id="recstats" class="btn2" type="button">이용 건수 보기</button>
+      <button id="recoff" class="btn2" type="button">끄기</button>
+    </div>
+  </div>
+  <p id="recmsg" class="note" hidden></p>
+</details>
 
 <footer>
   <a href="../../">시연 웹(시민 음성 화면)</a> · <a href="https://altarry-prog.github.io/chaekiji-pilot/">시험 이용 화면(AI 없이 판정만)</a> · <a href="https://github.com/altarry-prog/chaekiji">저장소</a>

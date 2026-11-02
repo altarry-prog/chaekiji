@@ -1,7 +1,7 @@
 // Solar 상담 창(POST /ask, relay/ask.js) 점검 — 업스테이지와 정보나루를 흉내 낸 fetch로 돌린다(네트워크·키 불필요).
 // 실행: node relay/test_ask.mjs
 import worker from "./worker.js";
-import { _resetAskForTest, askAllow, guessLang, looksPersonal, ASK_PER_IP, ASK_PER_DAY, NARU_CAP } from "./ask.js";
+import { _resetAskForTest, _resetRecForTest, askAllow, guessLang, looksPersonal, ASK_PER_IP, ASK_PER_DAY, NARU_CAP, KEEP_SEC } from "./ask.js";
 import { mockFetch } from "./test_naru_mock.mjs";
 import { readFileSync } from "node:fs";
 
@@ -28,10 +28,10 @@ globalThis.fetch = async (url, init = {}) => {
 const env = { NARU_KEY: "FAKE", UPSTAGE_API_KEY: "UPFAKE" };
 const ORIGIN = "https://altarry-prog.github.io";
 let ipn = 0;
-const ask = async (body, { origin = ORIGIN, e = env, ip, method = "POST" } = {}) => {
-  const headers = { "Content-Type": "application/json", "CF-Connecting-IP": ip || `10.0.0.${++ipn}` };
+const ask = async (body, { origin = ORIGIN, e = env, ip, method = "POST", hdr = {}, path = "/ask" } = {}) => {
+  const headers = { "Content-Type": "application/json", "CF-Connecting-IP": ip || `10.0.0.${++ipn}`, ...hdr };
   if (origin) headers.Origin = origin;
-  const r = await worker.fetch(new Request("https://relay.test/ask", { method, headers,
+  const r = await worker.fetch(new Request("https://relay.test" + path, { method, headers,
     body: method === "POST" ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined }), e);
   const text = await r.text();
   return { status: r.status, body: text ? JSON.parse(text) : null, h: Object.fromEntries(r.headers), text };
@@ -182,5 +182,62 @@ const naruLog = log.filter(u => u.includes("data4library"));
 ok(h1.ask === true && h2.ask === false && !JSON.stringify(h1).includes("UPFAKE") && h1.ask_naru_key === false && h3.ask_naru_key === true &&
    sep.status === 200 && sep.body.tool && sep.body.tool.book && naruLog.length > 0 && naruLog.every(u => u.includes("authKey=FAKE")) && !sep.text.includes("FAKE"),
    "/health — Solar 키·상담 창 전용 정보나루 키 유무만 · 전용 키(NARU_KEY_ASK)가 있으면 상담 창은 그 키로만 조회");
+
+// 10. 기록(11. 2. 14:26): 모든 이용은 글 없이 세고, 담당자 기록 모드(기록 암호)만 문장·답까지 남긴다 — 모의 KV
+function mockKV() {
+  const m = new Map();
+  return { m,
+    async put(k, v, o = {}) { m.set(k, { v, meta: o.metadata || null, ttl: o.expirationTtl }); },
+    async get(k) { const x = m.get(k); return x ? x.v : null; },
+    async list({ prefix = "", cursor, limit = 1000 } = {}) {
+      const keys = [...m.keys()].filter(k => k.startsWith(prefix)).sort(), start = cursor ? Number(cursor) : 0;
+      const page = keys.slice(start, start + limit), end = start + page.length;
+      return { keys: page.map(name => ({ name, metadata: m.get(name).meta })), list_complete: end >= keys.length, cursor: end >= keys.length ? undefined : String(end) };
+    } };
+}
+const TOKEN = "test-record-passphrase-123";
+const kv = mockKV();
+const envR = { ...env, ASK_RECORDS: kv, ASK_RECORD_TOKEN: TOKEN };
+const Q = "나미야 잡화점의 기적 기록 시험";
+_resetAskForTest(); _resetRecForTest();
+script = [say("기록 안 하는 답")];
+r = await ask({ text: Q }, { e: envR });
+const cnt0 = [...kv.m.keys()].filter(k => k.startsWith("cnt:")), dump0 = JSON.stringify([...kv.m.entries()]);
+ok(r.status === 200 && r.body.recorded === false && cnt0.length === 1 && ![...kv.m.keys()].some(k => k.startsWith("rec:")) &&
+   !dump0.includes("기록 시험") && kv.m.get(cnt0[0]).meta.ok === 1 && kv.m.get(cnt0[0]).meta.rec === 0 && kv.m.get(cnt0[0]).ttl === KEEP_SEC,
+   "기록 — 기록 암호 없이 물으면 글 없이 건수만(날짜·판정 갈래·언어·시간, 90일 보관)");
+script = [toolCall({ utterance: "나미야 잡화점의 기적" }), say("기록 모드의 답")];
+r = await ask({ text: Q, pickup: "역곡" }, { e: envR, hdr: { "X-Record-Token": TOKEN } });
+const recKeys = [...kv.m.keys()].filter(k => k.startsWith("rec:"));
+const rec1 = recKeys.length ? JSON.parse(kv.m.get(recKeys[0]).v) : {};
+script = [say("틀린 암호")];
+const wrong = await ask({ text: Q }, { e: envR, hdr: { "X-Record-Token": TOKEN.slice(0, -1) + "X" } });
+ok(r.status === 200 && r.body.recorded === true && recKeys.length === 1 && rec1.text === Q && rec1.answer === "기록 모드의 답" &&
+   rec1.route === "ill" && rec1.isbn13 === "9788972756194" && rec1.pickup === "역곡" && rec1.tool_calls[0] === "나미야 잡화점의 기적" &&
+   wrong.body.recorded === false && [...kv.m.keys()].filter(k => k.startsWith("rec:")).length === 1 && !r.text.includes(TOKEN),
+   "기록 — 기록 암호가 맞는 브라우저의 문의만 문장·답·판정·책까지 기록 · 틀린 암호는 기록 안 함");
+for (let i = 0; i < 44; i++) await kv.put(`rec:2026-11-0${(i % 3) + 3}T10:00:${String(i).padStart(2, "0")}:x${i}`, JSON.stringify({ t: "x", text: "가짜" + i }), {});
+const g = (path, hdr = {}, origin = ORIGIN) => ask(null, { e: envR, method: "GET", path, hdr, origin });
+const noTok = await g("/ask/records"), badTok = await g("/ask/records", { "X-Record-Token": "x".repeat(26) }), noOrigin = await g("/ask/records", { "X-Record-Token": TOKEN }, "");
+const p1 = await g("/ask/records", { "X-Record-Token": TOKEN });
+const p2 = await g("/ask/records?cursor=" + encodeURIComponent(p1.body.cursor || ""), { "X-Record-Token": TOKEN });
+ok(noTok.status === 403 && badTok.status === 403 && noOrigin.status === 403 && p1.status === 200 && p1.body.records.length === 40 && !!p1.body.cursor &&
+   p2.body.records.length === 5 && p2.body.cursor === null && p1.body.keep_days === 90,
+   "기록 내려받기 — 암호·출처 확인 · 40건씩 이어 받기(외부 호출 한도 안) · 보관 90일 알림");
+script = [say("점검 호출")];
+await ask({ text: "나미야 잡화점의 기적" }, { e: envR, hdr: { "X-Chaekiji-Check": "1" } });
+const sts = await g("/ask/stats", { "X-Record-Token": TOKEN });
+const lastDay = Object.keys(sts.body.days || {}).sort().pop(), dd = (sts.body.days || {})[lastDay] || {};
+ok(sts.status === 200 && sts.body.total === 4 && dd.total === 4 && dd.recorded === 1 && dd.check === 1 && dd.routes.ill === 1 && dd.langs.ko === 4 && !JSON.stringify(sts.body).includes("기록 시험"),
+   "이용 건수 — 날짜별 합계·판정 갈래·언어·기록 모드·점검 호출을 글 없이 셈(암호 필요)");
+_resetRecForTest();
+script = [say("기록 꺼짐")];
+const off = await ask({ text: Q }, { e: env, hdr: { "X-Record-Token": TOKEN } });
+const offRec = await ask(null, { e: env, method: "GET", path: "/ask/records", hdr: { "X-Record-Token": TOKEN } });
+let lim = 0;
+for (let i = 0; i < 31; i++) lim = (await ask(null, { e: envR, method: "GET", path: "/ask/stats", hdr: { "X-Record-Token": "y".repeat(26) }, ip: "10.7.7.7" })).status;
+ok(off.status === 200 && off.body.recorded === false && offRec.status === 503 && offRec.body.error === "records-off" && lim === 429,
+   "기록 꺼짐(KV·암호 없음)에도 상담은 그대로 · 기록 읽기는 한 IP 10분 30번(암호 짐작 막기)");
+_resetRecForTest();
 
 console.log(`\nSolar 상담 창 점검 ${n}건 통과`);

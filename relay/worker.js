@@ -31,7 +31,7 @@ const CACHE_SEC = 600;        // 같은 ISBN 재조회 캐시(초)
 
 const mem = { hits: new Map(), cache: new Map() };
 import { handleMcp } from "./mcp.js";
-import { handleAsk } from "./ask.js";
+import { handleAsk, handleRecords, handleStats } from "./ask.js";
 
 export default {
   async fetch(req, env) {
@@ -56,11 +56,18 @@ export default {
       for (const [k, v] of Object.entries(mc)) resp.headers.set(k, v);
       return resp;
     }
-    if (url.pathname === "/ask") {                              // [11/2] Solar 상담 창 — 시연 웹과 같은 출처의 화면에서만(출처 없는 호출도 막음)
+    if (url.pathname === "/ask" || url.pathname === "/ask/records" || url.pathname === "/ask/stats") {   // [11/2] Solar 상담 창 — 시연 웹과 같은 출처의 화면에서만(출처 없는 호출도 막음)
       const ac = ALLOW_ORIGINS.includes(origin) ? { "Access-Control-Allow-Origin": origin, "Vary": "Origin",
-        "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "600" } : {};
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, X-Record-Token, X-Chaekiji-Check",
+        "Access-Control-Max-Age": "600" } : {};
       const H = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...ac };
       if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: ac });
+      if (url.pathname !== "/ask") {                            // 담당자 기록 내려받기·건수(GET, 기록 암호 필요)
+        if (req.method !== "GET") return json({ error: "method" }, 405, { ...H, Allow: "GET" });
+        if (!ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, H);
+        const ip = req.headers.get("CF-Connecting-IP") || "0";
+        return url.pathname === "/ask/records" ? handleRecords(req, env, ip, H) : handleStats(req, env, ip, H);
+      }
       if (req.method !== "POST") return json({ error: "method" }, 405, { ...H, Allow: "POST" });
       if (!env.NARU_KEY || !env.UPSTAGE_API_KEY) return json({ error: "ask-not-configured" }, 503, H);
       if (!ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, H);
@@ -78,7 +85,7 @@ export default {
     if (!env.NARU_KEY) return json({ error: "relay-not-configured" }, 503, cors);   // 키 미설정 시 기동 거부
     if (origin && !ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, cors);
 
-    if (url.pathname === "/health") return json({ ok: true, keyed: true, ask: !!env.UPSTAGE_API_KEY, ask_naru_key: !!env.NARU_KEY_ASK, region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
+    if (url.pathname === "/health") return json({ ok: true, keyed: true, ask: !!env.UPSTAGE_API_KEY, ask_naru_key: !!env.NARU_KEY_ASK, records: !!(env.ASK_RECORDS && env.ASK_RECORD_TOKEN), region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
     if (!["/holdings", "/search", "/nation"].includes(url.pathname)) return json({ error: "not-found" }, 404, cors);
 
     const ip = req.headers.get("CF-Connecting-IP") || "0";

@@ -4,6 +4,7 @@
 #   CLOUDFLARE_ACCOUNT_ID — (선택) 계정 ID. 없으면 토큰으로 계정을 찾고, workers.dev 주소 이름이 없으면 만들어 준다
 #   NARU_KEY(또는 NARUKEY) — 이미 있는 정보나루 키. 배포할 때 Cloudflare 비밀값으로 그대로 넘긴다(출력·기록 없음)
 #   UPSTAGE_API_KEY — [11/2] Solar 상담 창(/ask)이 쓰는 업스테이지 키. 정보나루 키와 같은 방식으로 넘긴다(없으면 /ask만 503)
+#   ASK_RECORD_TOKEN — (11/2) 상담 창 「담당자 기록 모드」 암호. 있으면 Cloudflare 비밀값으로 넘기고, 기록은 KV 저장 공간 chaekiji-ask-records(없으면 만듦)에 90일
 #   상담 창(/ask)의 정보나루 키 — [11/2] NARU_KEY_ASK > NARU_KEY3 > NARU_KEY2 가운데 지금 쓸 수 있는 첫 키를 배포 때 한 번씩 불러 보고 고른다
 #                  (승인 전 키는 건너뜀). 상담 창은 이 키로 조회해 하루 500번 한도를 시연 웹·원격 판(NARU_KEY·NARUKEY)과 나누지 않는다
 # 결과(주소·확인 결과·실패 까닭)는 relay/last_deploy.json 에 남긴다 — 키·토큰은 없다.
@@ -38,6 +39,7 @@ jobs:
           C_NARU_KEY_ASK: ${{ secrets.NARU_KEY_ASK }}
           C_NARU_KEY3: ${{ secrets.NARU_KEY3 }}
           C_NARU_KEY2: ${{ secrets.NARU_KEY2 }}
+          ASK_RECORD_TOKEN: ${{ secrets.ASK_RECORD_TOKEN }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "Cloudflare 비밀값(CLOUDFLARE_API_TOKEN)이 없어 건너뜁니다"; echo "skipped=true" >> "$GITHUB_OUTPUT"; exit 0; fi
@@ -84,11 +86,23 @@ jobs:
                   if r.get("success"): name = cand; break
               if not name:
                   raise SystemExit(f"workers.dev 주소 이름을 만들지 못함: {errs(r)} · {diag}. 토큰을 다시 만들 때 「계정 리소스」에서 계정을 고르세요")
-          print(acc); print(name)
+          # [11/2] 상담 창 기록용 KV 저장 공간(chaekiji-ask-records) — 없으면 만든다. 안 되면 기록 없이 배포(상담은 그대로)
+          import sys
+          kv_title, kv_id = "chaekiji-ask-records", ""
+          r = api("GET", f"/accounts/{acc}/storage/kv/namespaces?per_page=100")
+          kv_id = next((n.get("id") for n in (r.get("result") or []) if n.get("title") == kv_title), "") or ""
+          if not kv_id:
+              c = api("POST", f"/accounts/{acc}/storage/kv/namespaces", {"title": kv_title})
+              kv_id = (c.get("result") or {}).get("id") or ""
+              if not kv_id:
+                  print(f"KV 저장 공간을 만들지 못해 상담 창 기록 없이 배포: {errs(c) or errs(r)}", file=sys.stderr)
+          print(acc); print(name); print(kv_id)
           PY
           if [ $? -ne 0 ]; then echo "준비 실패"; exit 1; fi
           export CLOUDFLARE_ACCOUNT_ID=$(sed -n 1p prep.out)
           echo "::add-mask::$CLOUDFLARE_ACCOUNT_ID"
+          KV_ID=$(sed -n 3p prep.out)
+          if [ -n "$KV_ID" ]; then printf '\n[[kv_namespaces]]\nbinding = "ASK_RECORDS"\nid = "%s"\n' "$KV_ID" >> wrangler.toml; echo "kv=on" >> "$GITHUB_OUTPUT"; fi
           npx --yes wrangler@4.151.0 deploy > deploy.log 2>&1; rc=$?
           url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
           echo "url=$url" >> "$GITHUB_OUTPUT"
@@ -131,6 +145,9 @@ jobs:
             NARU_KEY2) ASK_VAL="$C_NARU_KEY2" ;;
             *) ASK_VAL="" ;;
           esac
+          if [ -n "$ASK_RECORD_TOKEN" ]; then
+            printf '%s' "$ASK_RECORD_TOKEN" | npx --yes wrangler@4.151.0 secret put ASK_RECORD_TOKEN > secret4.log 2>&1 || { echo "기록 암호 넣기 실패" >> deploy_err.txt; exit 1; }
+          fi
           if [ -n "$ASK_VAL" ]; then
             printf '%s' "$ASK_VAL" | npx --yes wrangler@4.151.0 secret put NARU_KEY_ASK > secret3.log 2>&1 || { echo "상담 창 정보나루 키 넣기 실패" >> deploy_err.txt; exit 1; }
           fi
@@ -140,6 +157,7 @@ jobs:
           URL: ${{ steps.deploy.outputs.url }}
           OUTCOME: ${{ steps.deploy.outcome }}
           ASK_KEY_NAME: ${{ steps.deploy.outputs.ask_key }}
+          ASK_RECORD_TOKEN: ${{ secrets.ASK_RECORD_TOKEN }}
         run: |
           python3 - <<'PY'
           # 배포한 중계에 실제로 물어보고 결과를 relay/last_deploy.json에 남긴다(키·토큰은 오가지도 남지도 않는다).
@@ -185,7 +203,7 @@ jobs:
                   h = get("/health", 20)
                   if h.get("status") == 200: break
                   time.sleep(10)
-              rec["health"] = brief(h, ("ok", "keyed", "ask", "ask_naru_key", "region", "colo"))
+              rec["health"] = brief(h, ("ok", "keyed", "ask", "ask_naru_key", "records", "region", "colo"))
               rec["ask_key_name"] = os.environ.get("ASK_KEY_NAME") or None   # 상담 창이 쓰는 정보나루 키의 비밀값 이름(값 아님)
               rec["probe_python_default_name"] = brief(get("/health", 20, ua=None))
               c = get("/health", 20, headers={"Origin": "https://altarry-prog.github.io"})
@@ -243,7 +261,7 @@ jobs:
                   t0 = time.time()
                   req = urllib.request.Request(url + "/ask", method="POST",
                         data=json.dumps({"text": "나미야 잡화점의 기적 빌리고 싶어요", "pickup": "상동", "lang": "auto"}, ensure_ascii=False).encode(),
-                        headers={"User-Agent": UA, "Content-Type": "application/json", "Origin": "https://altarry-prog.github.io"})
+                        headers={"User-Agent": UA, "Content-Type": "application/json", "Origin": "https://altarry-prog.github.io", "X-Chaekiji-Check": "1"})
                   try:
                       with urllib.request.urlopen(req, timeout=90) as r:
                           st, b = r.status, json.loads(r.read() or b"null")
@@ -261,6 +279,14 @@ jobs:
                                     "lang": b.get("lang"), "answer_head": (b.get("answer") or "")[:90]}
                   else:
                       rec["ask"] = {"status": st, "ms": ms, **({k: b[k] for k in ("error", "detail", "text") if k in b} if isinstance(b, dict) else {})}
+                  # 담당자 기록 모드 — 암호가 있으면 기록 읽기가 되는지 상태 번호만 남긴다(암호·기록 내용은 남기지 않음)
+                  tok = os.environ.get("ASK_RECORD_TOKEN") or ""
+                  if tok:
+                      req = urllib.request.Request(url + "/ask/records?limit=1", headers={"User-Agent": UA, "Origin": "https://altarry-prog.github.io", "X-Record-Token": tok})
+                      try:
+                          with urllib.request.urlopen(req, timeout=30) as r: rec["records_check"] = r.status
+                      except urllib.error.HTTPError as e: rec["records_check"] = e.code
+                      except Exception as e: rec["records_check"] = type(e).__name__
               # Cloudflare가 막는 프로그램 이름 확인(/health만 — 정보나루 호출 없음). 원격 상담 비서를 부르는 쪽의 이름이 막히면 연결이 안 된다
               rec["client_name_probe"] = {name: get("/health", 15, ua=name).get("status") for name in
                   ["python-httpx/0.28.1", "python-requests/2.32.3", "node", "undici", "Go-http-client/1.1", "axios/1.7.7",

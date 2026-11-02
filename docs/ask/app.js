@@ -99,7 +99,8 @@
     }
     var calls = (d.tool_calls || []).map(function (c) { return "「" + c.utterance + "」"; }).join(", ");
     html += '<p class="meta">모델 ' + esc(d.model) + " · 도구 호출 " + (d.tool_calls || []).length + "번" + (calls ? "(" + esc(calls) + ")" : "") +
-            " · " + (d.ms / 1000).toFixed(1) + "초 · 언어 " + esc(LANG_NAME[d.lang] || d.lang) + (d.lang_guessed ? "(쓴 글자로 짐작)" : "") + "</p>";
+            " · " + (d.ms / 1000).toFixed(1) + "초 · 언어 " + esc(LANG_NAME[d.lang] || d.lang) + (d.lang_guessed ? "(쓴 글자로 짐작)" : "") +
+            (d.recorded ? " · <b>기록됨</b>" : "") + "</p>";
     out.innerHTML = html;
   }
 
@@ -120,7 +121,7 @@
     showOut();
     var ctl = ("AbortController" in window) ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 90000);
-    fetch(RELAY + "/ask", { method: "POST", headers: { "Content-Type": "application/json" }, signal: ctl ? ctl.signal : undefined,
+    fetch(RELAY + "/ask", { method: "POST", headers: Object.assign({ "Content-Type": "application/json" }, recHeaders()), signal: ctl ? ctl.signal : undefined,
                             body: JSON.stringify({ text: text, pickup: sel.value, lang: lang.value }) })
       .then(function (r) { return r.json().catch(function () { return { error: "http", message: "중계가 알 수 없는 답을 주었습니다(" + r.status + ")." }; }); })
       .then(function (d) {
@@ -131,5 +132,83 @@
         fail(e && e.name === "AbortError" ? "90초 안에 답이 오지 않았습니다. 잠시 뒤에 다시 물어 주세요." : "책이지 중계에 닿지 못했습니다. 인터넷 연결을 확인해 주세요.");
       })
       .then(function () { clearTimeout(timer); go.disabled = false; });
+  });
+
+  // ── 담당자 기록 모드(11. 2.) — 기록 암호는 이 브라우저에만 둔다(서버로는 머리글로만 보냄). 글은 중계의 비공개 저장 공간에 90일 ──
+  var REC_KEY = "chaekiji-ask-rec", recTok = "";
+  try { recTok = localStorage.getItem(REC_KEY) || ""; } catch (e) { recTok = ""; }
+  function recHeaders() { return recTok ? { "X-Record-Token": recTok } : {}; }
+  function recGet(path) {
+    return fetch(RELAY + path, { headers: recHeaders() })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, d: d }; }); });
+  }
+  var rs = $("recstate"), rin = $("recin"), rctl = $("recctl"), rinfo = $("recinfo"), rmsg = $("recmsg"), rtok = $("rectok");
+  function recMsg(text, bad) { rmsg.hidden = !text; rmsg.className = "note " + (bad ? "err" : "warn"); rmsg.textContent = text || ""; }
+  function recUI() {
+    var on = !!recTok;
+    rs.textContent = on ? "켜짐" : "꺼짐"; rs.className = "pill" + (on ? " on" : "");
+    rin.hidden = on; rctl.hidden = !on;
+    rinfo.textContent = on ? "이 브라우저에서 묻는 것은 문장·답·판정까지 기록됩니다." : "";
+  }
+  recUI();
+  $("recon").addEventListener("click", function () {
+    var tok = rtok.value.trim();
+    if (tok.length < 12) { recMsg("기록 암호는 12자 이상입니다.", true); return; }
+    recTok = tok;
+    recGet("/ask/records?limit=1").then(function (x) {
+      if (x.status === 200) {
+        try { localStorage.setItem(REC_KEY, tok); } catch (e) { /* 저장이 막힌 브라우저는 이 창에서만 켜짐 */ }
+        rtok.value = ""; recUI(); recMsg("기록 모드를 켰습니다. 지금부터 묻는 것은 기록됩니다.", false);
+      } else { recTok = ""; recUI(); recMsg((x.d && x.d.message) || "기록 암호를 확인하지 못했습니다.", true); }
+    }).catch(function () { recTok = ""; recUI(); recMsg("책이지 중계에 닿지 못했습니다.", true); });
+  });
+  $("recoff").addEventListener("click", function () {
+    recTok = ""; try { localStorage.removeItem(REC_KEY); } catch (e) {}
+    recUI(); recMsg("기록 모드를 껐습니다. 이미 기록된 것은 그대로 남습니다.", false);
+  });
+  function csvCell(v) { var s = Array.isArray(v) ? v.join(", ") : (v == null ? "" : String(v)); return '"' + s.replace(/"/g, '""') + '"'; }
+  var COLS = [["t", "시각"], ["text", "이용자의 말"], ["pickup", "받을 도서관"], ["lang", "언어"], ["ok", "결과"], ["route_label", "판정(도구)"],
+              ["book_title", "책"], ["book_author", "저자"], ["isbn13", "ISBN"], ["asof", "조회일"], ["available_at", "대출 가능 관"],
+              ["answer", "AI 답"], ["tool_calls", "모델이 도구에 넘긴 말"], ["sec", "걸린 시간(초)"], ["model", "모델"], ["in_tok", "입력 토큰"],
+              ["out_tok", "출력 토큰"], ["data_calls", "자료 조회 수"], ["official_link", "누리집 주소"], ["alpas", "알파스 확인(직접 적기)"],
+              ["same", "같음/다름"], ["why", "다르면 까닭"]];
+  $("recdl").addEventListener("click", function () {
+    var all = [], btn = this; btn.disabled = true; recMsg("기록을 모으는 중입니다…", false);
+    function next(cursor) {
+      return recGet("/ask/records" + (cursor ? "?cursor=" + encodeURIComponent(cursor) : "")).then(function (x) {
+        if (x.status !== 200) throw new Error((x.d && x.d.message) || "기록을 받지 못했습니다.");
+        all = all.concat(x.d.records || []);
+        return x.d.cursor ? next(x.d.cursor) : null;
+      });
+    }
+    next(null).then(function () {
+      var rows = [COLS.map(function (c) { return csvCell(c[1]); }).join(",")];
+      all.forEach(function (r) {
+        var u = r.usage || {};
+        var v = { sec: r.ms ? (r.ms / 1000).toFixed(1) : "", in_tok: u.prompt_tokens || "", out_tok: u.completion_tokens || "",
+                  ok: r.ok ? "답함" : ("오류 " + (r.error || "")), alpas: "", same: "", why: "" };
+        rows.push(COLS.map(function (c) { return csvCell(c[0] in v ? v[c[0]] : r[c[0]]); }).join(","));
+      });
+      var blob = new Blob(["﻿" + rows.join("\r\n")], { type: "text/csv;charset=utf-8" });
+      var a = document.createElement("a"), d = new Date();
+      a.href = URL.createObjectURL(blob);
+      a.download = "chaekiji-ask-records_" + d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + ".csv";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+      recMsg("기록 " + all.length + "건을 내려받았습니다(엑셀에서 열 수 있는 CSV).", false);
+    }).catch(function (e) { recMsg(e.message || "기록을 받지 못했습니다.", true); })
+      .then(function () { btn.disabled = false; });
+  });
+  var RLABEL = { visit: "바로 이용", ill: "관내 상호대차", reserve: "예약 권장", sea: "책바다 안내", unknown: "도서 미확정", check: "소장 확인 불가", none: "도구 안 부름", error: "오류" };
+  $("recstats").addEventListener("click", function () {
+    recGet("/ask/stats").then(function (x) {
+      if (x.status !== 200) { recMsg((x.d && x.d.message) || "건수를 받지 못했습니다.", true); return; }
+      var days = Object.keys(x.d.days || {}).sort().reverse().slice(0, 14);
+      var html = "<b>모든 이용 " + x.d.total + "건</b>(글 없이 센 것, 최근 14일까지 표시)<ul class=\"stat\">" + days.map(function (k) {
+        var d = x.d.days[k], parts = Object.keys(d.routes).map(function (rt) { return (RLABEL[rt] || rt) + " " + d.routes[rt]; });
+        return "<li>" + (+k.slice(5, 7)) + ". " + (+k.slice(8, 10)) + ". " + d.total + "건(기록 " + d.recorded + " · 점검 " + d.check + ") · " + esc(parts.join(" · ")) + "</li>";
+      }).join("") + "</ul>";
+      rmsg.hidden = false; rmsg.className = "note warn"; rmsg.innerHTML = html;
+    }).catch(function () { recMsg("책이지 중계에 닿지 못했습니다.", true); });
   });
 })();

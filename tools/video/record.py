@@ -362,7 +362,7 @@ async def main():
         P1 = A1.get("pickup", "상동")
         here1 = "대출 중" if re.search(rf"수령관: {P1} \((?:현재|조회일 기준) 대출 중\)", "\n".join(T1)) else "없음"   # [10/28] 접수 메모가 「(조회일 기준 대출 중)」으로 바뀜
         rule1 = re.search(r"규정: (\d+)건 통과 · (\d+)건 불가 · (\d+)건 창구 확인", "\n".join(T1))
-        rtxt = f"규정 {rule1.group(1)}건 통과 · {rule1.group(3)}건 창구 확인" if rule1 else "규정 확인"
+        rtxt = "책·ISBN · 소장관 · 받을 도서관"   # [11/2 17시] 「규정 2건 통과 · 5건 창구 확인」은 보는 사람이 알아듣기 어려워 뺌(팀장 의견, 담당자 17:07). 명령 창 출력은 실제 그대로
         scene("05", "5 명령 창 1(관내 상호대차)", f"명령 창(기록 재생) {A1['title']} · {P1}, 오른쪽 「읽는 법」 칸에서 판정·근거 → 안내문 → 접수 메모를 차례로 강조")
         await crumb("<b>흐름 1</b> / 3 · 같은 도구를 PC에서 직접 부르기")
         await ev("term('명령 창 · 책이지 도구를 한 번 부르기(server/lab/consult_cli.py)'); termNarrow(1); only('term','read','bar')")
@@ -387,7 +387,7 @@ async def main():
         await bar("이용자에게 읽어 줄 안내문", "조회일과 공식 누리집의 그 책 화면 주소가 붙습니다")
         await W(g5[1])
         await ev("termFocus(['◀ 접수 메모','   도서:','   갈래:','   수령관:','   대출 가능 관:','   근거:','   규정:','   접수:']); readOn([3])")
-        await bar("사서가 옮겨 적는 접수 메모", f"{rtxt} · 접수는 창구에서 사서가 합니다")
+        await bar("사서가 옮겨 적는 접수 메모", "책·소장관·받을 도서관을 한 번에 · 접수는 창구에서 사서가 합니다")
         await W(g5[2])
         await hold("05")
 

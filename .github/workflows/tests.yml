@@ -1,5 +1,5 @@
 # GitHub Actions — 커밋할 때마다 참조 서버(server/)의 시험 110건(적합성 53·실험실 14·중계 모드 31·호스트 12)과
-# 중계·원격 상담 비서(relay/) 점검(중계 서버 20 · 원격 상담 비서 41 · 파이썬 판 대조 34)을 자동 실행(공개 저장소는 무료).
+# 중계·원격 상담 비서(relay/) 점검(중계 서버 20 · 원격 상담 비서 41 · 파이썬 판 대조 34 · Solar 상담 창 25)을 자동 실행(공개 저장소는 무료).
 # 결과는 저장소 Actions 탭과 README 배지로 보인다:
 #   ![tests](https://github.com/altarry-prog/chaekiji/actions/workflows/tests.yml/badge.svg)
 name: tests
@@ -35,6 +35,8 @@ jobs:
         run: node ../relay/test_mcp.mjs
       - name: 원격 상담 비서 ↔ 파이썬 판 대조 34건 (같은 입력 → 같은 판정·안내문)
         run: python3 ../relay/test_mcp_parity.py
+      - name: Solar 상담 창(/ask) 점검 25건 (모의 Solar · 모의 정보나루)
+        run: node ../relay/test_ask.mjs
       - name: 원격 상담 비서 자료 파일이 server/ 원본과 같은지
         run: python3 ../relay/build_mcp_data.py --check
       - name: 측정 스크립트 연습 실행 (픽스처)

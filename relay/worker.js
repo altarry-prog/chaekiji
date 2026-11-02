@@ -10,6 +10,8 @@
  *   GET /health                         → {ok:true}  (키 유무만 알려주고 값은 절대 내보내지 않음)
  *   POST /mcp                           → 원격 상담 비서(MCP Streamable HTTP) — relay/mcp.js      [10/16]
  *                                          claude.ai 커스텀 커넥터에 이 주소를 넣으면 설치 없이 상담 비서를 쓴다
+ *   POST /ask                           → Solar 상담 창(클로드 계정 없이) — relay/ask.js           [11/2]
+ *                                          Solar Pro 4가 말을 알아듣고 판정은 /mcp와 같은 consult_request. 화면은 docs/ask/
  * 그 밖의 경로는 404.
  * 시연 웹(브라우저)은 Origin 검사, MCP 서버(relay 모드)는 Origin이 없어 통과 — 호출 상한으로 남용을 막는다. */
 
@@ -29,6 +31,7 @@ const CACHE_SEC = 600;        // 같은 ISBN 재조회 캐시(초)
 
 const mem = { hits: new Map(), cache: new Map() };
 import { handleMcp } from "./mcp.js";
+import { handleAsk } from "./ask.js";
 
 export default {
   async fetch(req, env) {
@@ -53,12 +56,27 @@ export default {
       for (const [k, v] of Object.entries(mc)) resp.headers.set(k, v);
       return resp;
     }
+    if (url.pathname === "/ask") {                              // [11/2] Solar 상담 창 — 시연 웹과 같은 출처의 화면에서만(출처 없는 호출도 막음)
+      const ac = ALLOW_ORIGINS.includes(origin) ? { "Access-Control-Allow-Origin": origin, "Vary": "Origin",
+        "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "600" } : {};
+      const H = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...ac };
+      if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: ac });
+      if (req.method !== "POST") return json({ error: "method" }, 405, { ...H, Allow: "POST" });
+      if (!env.NARU_KEY || !env.UPSTAGE_API_KEY) return json({ error: "ask-not-configured" }, 503, H);
+      if (!ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, H);
+      const ip = req.headers.get("CF-Connecting-IP") || "0";
+      return handleAsk(req, env, ip, {
+        relayCall: (path, p, ctx) => relayCall(path, p.isbn || "", p.q || "", env, ctx),
+        allow: () => true,                                     // /ask는 따로 센다(ask.js askAllow)
+        newCtx: () => newCtx(env),
+      }, H);
+    }
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (req.method !== "GET") return json({ error: "method" }, 405, cors);
     if (!env.NARU_KEY) return json({ error: "relay-not-configured" }, 503, cors);   // 키 미설정 시 기동 거부
     if (origin && !ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, cors);
 
-    if (url.pathname === "/health") return json({ ok: true, keyed: true, region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
+    if (url.pathname === "/health") return json({ ok: true, keyed: true, ask: !!env.UPSTAGE_API_KEY, region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
     if (!["/holdings", "/search", "/nation"].includes(url.pathname)) return json({ error: "not-found" }, 404, cors);
 
     const ip = req.headers.get("CF-Connecting-IP") || "0";
@@ -137,7 +155,7 @@ async function naru(api, params, key, ctx) {
     if (attempt) await new Promise(res => setTimeout(res, 1500));
     for (const base of bases) {
       const tag = base.startsWith("https:") ? "https" : "http";
-      if (ctx.n >= SUBREQ_CAP) { ctx.fails.push("budget"); throw upstreamError(ctx); }
+      if (ctx.n >= (ctx.cap || SUBREQ_CAP)) { ctx.fails.push("budget"); throw upstreamError(ctx); }   // [11/2] /ask는 모델 호출 몫을 남겨 42
       ctx.n++;
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), ctx.wait || WAIT_MS[tag]);

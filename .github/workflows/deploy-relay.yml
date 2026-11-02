@@ -3,13 +3,14 @@
 #   CLOUDFLARE_API_TOKEN  — Cloudflare 「My Profile → API Tokens → Edit Cloudflare Workers」 템플릿으로 만든 토큰(이것만 있으면 된다)
 #   CLOUDFLARE_ACCOUNT_ID — (선택) 계정 ID. 없으면 토큰으로 계정을 찾고, workers.dev 주소 이름이 없으면 만들어 준다
 #   NARU_KEY(또는 NARUKEY) — 이미 있는 정보나루 키. 배포할 때 Cloudflare 비밀값으로 그대로 넘긴다(출력·기록 없음)
+#   UPSTAGE_API_KEY — [11/2] Solar 상담 창(/ask)이 쓰는 업스테이지 키. 정보나루 키와 같은 방식으로 넘긴다(없으면 /ask만 503)
 # 결과(주소·확인 결과·실패 까닭)는 relay/last_deploy.json 에 남긴다 — 키·토큰은 없다.
 name: deploy-relay
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["relay/worker.js", "relay/mcp.js", "relay/mcp_data.js", "relay/wrangler.toml", ".github/workflows/deploy-relay.yml"]
+    paths: ["relay/worker.js", "relay/mcp.js", "relay/mcp_data.js", "relay/ask.js", "relay/wrangler.toml", ".github/workflows/deploy-relay.yml"]
 permissions:
   contents: write
 concurrency:
@@ -31,6 +32,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}
+          UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "Cloudflare 비밀값(CLOUDFLARE_API_TOKEN)이 없어 건너뜁니다"; echo "skipped=true" >> "$GITHUB_OUTPUT"; exit 0; fi
@@ -91,6 +93,9 @@ jobs:
           if [ -n "$NARU_KEY" ]; then
             printf '%s' "$NARU_KEY" | npx --yes wrangler@4.151.0 secret put NARU_KEY > secret.log 2>&1 || { echo "키 넣기 실패" >> deploy_err.txt; exit 1; }
           else echo "정보나루 키 비밀값이 없어 중계가 503을 냅니다" >> deploy_err.txt; fi
+          if [ -n "$UPSTAGE_API_KEY" ]; then
+            printf '%s' "$UPSTAGE_API_KEY" | npx --yes wrangler@4.151.0 secret put UPSTAGE_API_KEY > secret2.log 2>&1 || { echo "Solar 키 넣기 실패" >> deploy_err.txt; exit 1; }
+          else echo "Solar 키 비밀값이 없어 상담 창(/ask)이 503을 냅니다" >> deploy_err.txt; fi
       - name: 확인(/health · /holdings · /search · /nation · 원격 상담 비서 /mcp)과 기록
         if: steps.deploy.outputs.skipped != 'true'
         env:
@@ -194,6 +199,28 @@ jobs:
                   else:
                       m["consult"] = {"status": st, "ms": ms, "text": b if not isinstance(b, dict) else b.get("error")}
                   rec["mcp"] = m
+                  # [11/2] Solar 상담 창(/ask) — 시연 도서 1건(새벽 자료라 정보나루 0회, 모델 2번 안팎 · 약 1원). 화면과 같은 출처로 부른다
+                  t0 = time.time()
+                  req = urllib.request.Request(url + "/ask", method="POST",
+                        data=json.dumps({"text": "나미야 잡화점의 기적 빌리고 싶어요", "pickup": "상동", "lang": "auto"}, ensure_ascii=False).encode(),
+                        headers={"User-Agent": UA, "Content-Type": "application/json", "Origin": "https://altarry-prog.github.io"})
+                  try:
+                      with urllib.request.urlopen(req, timeout=90) as r:
+                          st, b = r.status, json.loads(r.read() or b"null")
+                  except urllib.error.HTTPError as e:
+                      st, t = e.code, e.read()[:300].decode("utf-8", "replace")
+                      try: b = json.loads(t)
+                      except Exception: b = {"text": " ".join(t.split())[:160]}
+                  except Exception as e:
+                      st, b = None, {"text": f"{type(e).__name__}: {str(e)[:100]}"}
+                  ms = round((time.time() - t0) * 1000)
+                  if st == 200 and isinstance(b, dict):
+                      tl = b.get("tool") or {}
+                      rec["ask"] = {"status": st, "ms": ms, "model": b.get("model"), "tool_calls": [c.get("utterance") for c in b.get("tool_calls") or []],
+                                    "route": tl.get("route"), "asof": tl.get("asof"), "data_calls": b.get("data_calls"), "usage": b.get("usage"),
+                                    "lang": b.get("lang"), "answer_head": (b.get("answer") or "")[:90]}
+                  else:
+                      rec["ask"] = {"status": st, "ms": ms, **({k: b[k] for k in ("error", "detail", "text") if k in b} if isinstance(b, dict) else {})}
               # Cloudflare가 막는 프로그램 이름 확인(/health만 — 정보나루 호출 없음). 원격 상담 비서를 부르는 쪽의 이름이 막히면 연결이 안 된다
               rec["client_name_probe"] = {name: get("/health", 15, ua=name).get("status") for name in
                   ["python-httpx/0.28.1", "python-requests/2.32.3", "node", "undici", "Go-http-client/1.1", "axios/1.7.7",

@@ -4,8 +4,8 @@
 #   CLOUDFLARE_ACCOUNT_ID — (선택) 계정 ID. 없으면 토큰으로 계정을 찾고, workers.dev 주소 이름이 없으면 만들어 준다
 #   NARU_KEY(또는 NARUKEY) — 이미 있는 정보나루 키. 배포할 때 Cloudflare 비밀값으로 그대로 넘긴다(출력·기록 없음)
 #   UPSTAGE_API_KEY — [11/2] Solar 상담 창(/ask)이 쓰는 업스테이지 키. 정보나루 키와 같은 방식으로 넘긴다(없으면 /ask만 503)
-#   NARU_KEY_ASK — (선택, 11/2) 상담 창 전용 정보나루 키. 없으면 담당자가 넣어 둔 둘째 키 NARU_KEY2를 상담 창에 쓴다.
-#                  상담 창은 이 키로 조회해 하루 500번 한도를 시연 웹·원격 판(NARU_KEY·NARUKEY)과 나누지 않는다
+#   상담 창(/ask)의 정보나루 키 — [11/2] NARU_KEY_ASK > NARU_KEY3 > NARU_KEY2 가운데 지금 쓸 수 있는 첫 키를 배포 때 한 번씩 불러 보고 고른다
+#                  (승인 전 키는 건너뜀). 상담 창은 이 키로 조회해 하루 500번 한도를 시연 웹·원격 판(NARU_KEY·NARUKEY)과 나누지 않는다
 # 결과(주소·확인 결과·실패 까닭)는 relay/last_deploy.json 에 남긴다 — 키·토큰은 없다.
 name: deploy-relay
 on:
@@ -35,7 +35,9 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NARU_KEY: ${{ secrets.NARU_KEY || secrets.NARUKEY }}
           UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
-          NARU_KEY_ASK: ${{ secrets.NARU_KEY_ASK || secrets.NARU_KEY2 }}
+          C_NARU_KEY_ASK: ${{ secrets.NARU_KEY_ASK }}
+          C_NARU_KEY3: ${{ secrets.NARU_KEY3 }}
+          C_NARU_KEY2: ${{ secrets.NARU_KEY2 }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
             echo "Cloudflare 비밀값(CLOUDFLARE_API_TOKEN)이 없어 건너뜁니다"; echo "skipped=true" >> "$GITHUB_OUTPUT"; exit 0; fi
@@ -99,14 +101,45 @@ jobs:
           if [ -n "$UPSTAGE_API_KEY" ]; then
             printf '%s' "$UPSTAGE_API_KEY" | npx --yes wrangler@4.151.0 secret put UPSTAGE_API_KEY > secret2.log 2>&1 || { echo "Solar 키 넣기 실패" >> deploy_err.txt; exit 1; }
           else echo "Solar 키 비밀값이 없어 상담 창(/ask)이 503을 냅니다" >> deploy_err.txt; fi
-          if [ -n "$NARU_KEY_ASK" ]; then
-            printf '%s' "$NARU_KEY_ASK" | npx --yes wrangler@4.151.0 secret put NARU_KEY_ASK > secret3.log 2>&1 || { echo "상담 창 정보나루 키 넣기 실패" >> deploy_err.txt; exit 1; }
+          # 상담 창 키 고르기 — 비밀값 이름 순서대로 정보나루를 한 번씩 불러 보고(서지 검색 1건) 되는 첫 키를 쓴다. 승인 전 키는 건너뛴다
+          ASK_PICK=$(python3 - <<'PY'
+          import os, json, urllib.request, urllib.parse
+          for name in ("NARU_KEY_ASK", "NARU_KEY3", "NARU_KEY2"):
+              k = os.environ.get("C_" + name, "").strip()
+              if not k:
+                  continue
+              q = urllib.parse.urlencode({"authKey": k, "title": "나미야 잡화점의 기적", "pageSize": 1, "format": "json"})
+              ok = False
+              for base in ("http://data4library.kr/api/", "https://data4library.kr/api/"):
+                  try:
+                      req = urllib.request.Request(base + "srchBooks?" + q, headers={"User-Agent": "chaekiji-relay-deploy/1.0"})
+                      with urllib.request.urlopen(req, timeout=20) as r:
+                          d = json.load(r)
+                      ok = not (d.get("response") or d).get("error")
+                      break
+                  except Exception:
+                      continue
+              if ok:
+                  print(name)
+                  break
+          PY
+          )
+          echo "ask_key=$ASK_PICK" >> "$GITHUB_OUTPUT"
+          case "$ASK_PICK" in
+            NARU_KEY_ASK) ASK_VAL="$C_NARU_KEY_ASK" ;;
+            NARU_KEY3) ASK_VAL="$C_NARU_KEY3" ;;
+            NARU_KEY2) ASK_VAL="$C_NARU_KEY2" ;;
+            *) ASK_VAL="" ;;
+          esac
+          if [ -n "$ASK_VAL" ]; then
+            printf '%s' "$ASK_VAL" | npx --yes wrangler@4.151.0 secret put NARU_KEY_ASK > secret3.log 2>&1 || { echo "상담 창 정보나루 키 넣기 실패" >> deploy_err.txt; exit 1; }
           fi
       - name: 확인(/health · /holdings · /search · /nation · 원격 상담 비서 /mcp)과 기록
         if: steps.deploy.outputs.skipped != 'true'
         env:
           URL: ${{ steps.deploy.outputs.url }}
           OUTCOME: ${{ steps.deploy.outcome }}
+          ASK_KEY_NAME: ${{ steps.deploy.outputs.ask_key }}
         run: |
           python3 - <<'PY'
           # 배포한 중계에 실제로 물어보고 결과를 relay/last_deploy.json에 남긴다(키·토큰은 오가지도 남지도 않는다).
@@ -153,6 +186,7 @@ jobs:
                   if h.get("status") == 200: break
                   time.sleep(10)
               rec["health"] = brief(h, ("ok", "keyed", "ask", "ask_naru_key", "region", "colo"))
+              rec["ask_key_name"] = os.environ.get("ASK_KEY_NAME") or None   # 상담 창이 쓰는 정보나루 키의 비밀값 이름(값 아님)
               rec["probe_python_default_name"] = brief(get("/health", 20, ua=None))
               c = get("/health", 20, headers={"Origin": "https://altarry-prog.github.io"})
               rec["cors_web"] = {"status": c.get("status"), "allow_origin": c.get("acao")}

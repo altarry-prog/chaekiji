@@ -1,0 +1,37 @@
+# 시연영상 흐름 2: 공개된 Solar 상담 창의 실제 화면을 녹화(작업 공간의 망에서는 중계 주소가 막혀 깃허브 액션에서 함).
+# 상담 창 한 번(Solar 호출 1번, 한 IP 10분 6번 한도 안). 결과 영상·답 원문·구간 표시를 하루 보관 파일로만 남김(저장소에 커밋하지 않음).
+name: record-ask
+on:
+  workflow_dispatch:
+    inputs:
+      say:
+        description: "이용자의 말(구동안내서 흐름 2와 같게)"
+        default: "한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요"
+      pickup:
+        description: "받을 도서관"
+        default: "역곡"
+permissions:
+  contents: read
+jobs:
+  rec:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 준비(플레이라이트·한글 글꼴)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk >/dev/null
+          pip install -q playwright==1.48.0
+          python -m playwright install --with-deps chromium >/dev/null
+      - name: 녹화
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python tools/video/record_ask.py --say "${{ inputs.say }}" --pickup "${{ inputs.pickup }}" --out out_ask
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ask-clip
+          path: out_ask/
+          retention-days: 1

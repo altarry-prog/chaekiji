@@ -6,13 +6,15 @@
   var LIBS = ["상동", "꿈빛", "꿈여울", "도당", "동화", "별빛마루", "북부", "송내", "수주", "심곡", "역곡", "역곡밝은", "오정", "원미", "책마루", "한울빛"];
   var POINTS = ["상동역 칙칙폭폭", "숲속", "꿈꾸는새싹", "약대신나는가족", "시정담벼락", "신중동역 칙칙폭폭", "소사칙칙폭폭", "해밀"];
   var LANG_NAME = { ko: "한국어", en: "영어", vi: "베트남어", zh: "중국어", ja: "일본어" };
-  // 예시는 11. 2. Solar 실측(같은 지시문·같은 도구, 문의 24건 × 3회)에서 세 번 모두 책을 찾았거나(1~4) 세 번 모두 되물은(5) 문의다
+  // 예시는 11. 2. Solar 실측(같은 지시문·같은 도구, 문의 24건 × 3회)에서 세 번 모두 책을 찾았거나(1~4) 세 번 모두 되물은(5) 문의다.
+  // [13:50] 「한강 책 빌리고 싶어요」는 실측(새벽 자료만 쓰는 방식)에서는 되물었지만, 실제 중계에서는 정보나루 검색이 부제에 「한강」이 든 책을 골라
+  //   되묻지 않았다(작가 이름만 말하면 한 권을 고르는 도구 쪽 한계, README 3절). 그래서 되묻는 예시를 바꿨다.
   var EXAMPLES = [
     { t: "서울역 노숙자가 편의점에서 야간 알바하는 소설 있죠? 역곡에서 받고 싶어요", p: "역곡", tag: "줄거리로" },
     { t: "나미야 잡하점의 기적 빌릴수있나요", p: "상동", tag: "글자 틀림" },
     { t: "Do you have Human Acts by Han Kang? I'd like to pick it up at Sangdong library.", p: "상동", tag: "영어" },
     { t: "Thư viện có cuốn \"Điều kỳ diệu của tiệm tạp hóa Namiya\" không? Tôi muốn nhận ở thư viện Yeokgok.", p: "역곡", tag: "베트남어" },
-    { t: "한강 책 빌리고 싶어요", p: "상동", tag: "모호한 말" }
+    { t: "요즘 많이 읽는 소설 하나 빌려 주세요", p: "상동", tag: "모호한 말" }
   ];
   var $ = function (id) { return document.getElementById(id); };
   var form = $("f"), ta = $("t"), sel = $("p"), lang = $("l"), go = $("go"), out = $("out"), cnt = $("cnt");
@@ -43,6 +45,16 @@
   function count() { cnt.textContent = String(ta.value.length); }
   ta.addEventListener("input", count);
 
+  // 답이 이용자 언어로 쓰였는지 글자 종류로 본다(중계 ask.js guessLang과 같은 기준, 주소는 빼고 셈). 번역의 정확성은 보지 않는다
+  function inLang(text, lang) {
+    var t = String(text || "").replace(/https?:\/\/\S+/g, " ");
+    if (lang === "en") return (t.match(/\b[A-Za-z]{3,}\b/g) || []).length >= 8;
+    if (lang === "vi") return /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(t);
+    if (lang === "ja") return /[\u3040-\u30ff]/.test(t);
+    if (lang === "zh") return (t.match(/[\u4e00-\u9fff]/g) || []).length >= 10;
+    return true;
+  }
+
   // 모델의 답 — 글자 그대로 보이고, 도구가 준 누리집 주소와 똑같은 주소만 누를 수 있게 한다(모델이 지어낸 주소는 글로만)
   function answerHtml(text, link) {
     var h = esc(text);
@@ -55,6 +67,8 @@
     html += '<article class="card ans"><h2>Solar Pro 4의 답 <small>AI가 쓴 글</small></h2>';
     html += d.answer ? '<p class="txt">' + answerHtml(d.answer, t && t.official_link) + "</p>"
                      : '<p class="note warn">AI가 답 글을 쓰지 못했습니다. 아래 도구 판정을 보시거나 다시 물어 주세요.</p>';
+    if (d.answer && d.lang !== "ko" && !inLang(d.answer, d.lang))
+      html += '<p class="note warn">AI 답이 이용자 언어(' + esc(LANG_NAME[d.lang] || d.lang) + ')로 쓰이지 않았습니다. 지시문만으로는 번역이 고르지 않아(실측), 도구가 번역 문장을 함께 주는 방식을 다음 과제로 두었습니다.</p>';
     if (t && t.official_link && d.answer && d.answer.indexOf(t.official_link) < 0)
       html += '<p class="note warn">AI 답에 누리집 주소가 그대로 옮겨지지 않았습니다. 아래 상자의 주소가 도구가 정한 것입니다.</p>';
     html += "</article>";

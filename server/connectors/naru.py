@@ -127,6 +127,10 @@ def clean_title(utterance: str, places=None, points=None) -> str:
     t = " ".join(t.split())
     t = _drop_places(t, PLACES if places is None else places)
     t = _drop_points(t, POINTS if points is None else points)
+    for suf, keep in (("이요", 1), ("요", 2)):                  # [11/2] 말 끝의 높임 「요」(「손원평 아몬드요」·「흔한남매 1권이요」)를 뗀다.
+        last = t.split(" ")[-1] if t else ""                    #   제목 검색은 부분일치라 「…요」로 끝나는 제목도 앞부분으로 찾힌다
+        if t.endswith(suf) and len(last) - len(suf) >= keep:
+            t = t[: -len(suf)].rstrip(); break
     if t.endswith(" 책"): t = t[:-2].rstrip()                   # 낱말 「책」은 떼고, 「그림책」처럼 붙은 것은 둔다
     for suf in ("이라고", "라고", "이란", "란", "은", "는", "을", "를", "이", "가"):
         if len(t) > 3 and t.endswith(suf) and not t.endswith(" " + suf):
@@ -482,13 +486,14 @@ def vol_label(v):
 def _book_of(d): return {"isbn13": d.get("isbn13"), "title": d.get("title"), "author": d.get("author"),   # [10/19 밤] 권차가 있으면 함께(후보가 「흔한남매」 여러 권일 때 가릴 수 있게)
                          "publisher": d.get("publisher"), "year": d.get("year"), **({"vol": str(d["vol"])} if d.get("vol") else {})}
 def pick_search(title, search_fn, evidence, unavailable_reason=None):
-    """검색어를 한두 번 바꿔 가며(권차 · 앞뒤 낱말 빼기, 최대 3회) 문의와 맞는 책을 고른다. 첫 검색이 끊기면 unavailable."""
+    """검색어를 한두 번 바꿔 가며(권차 · 앞뒤 낱말 빼기 · 첫 낱말만, 최대 4회) 문의와 맞는 책을 고른다. 첫 검색이 끊기면 unavailable."""
     base, vol, explicit = split_volume(title)
     toks = title.split()
     if vol:
         plan = [(base, [])] if explicit else [(title, []), (base, [])]
     else:
-        plan = [(title, [])] + ([(" ".join(toks[:-1]), toks[-1:]), (" ".join(toks[1:]), toks[:1])] if len(toks) >= 2 else [])
+        plan = [(title, [])] + ([(" ".join(toks[:-1]), toks[-1:]), (" ".join(toks[1:]), toks[:1])] if len(toks) >= 2 else []) \
+               + ([(toks[0], toks[1:])] if len(toks) >= 3 else [])   # [11/2] 제목 뒤 저자 둘(「문헌정보학개론 노문자 황금숙」) — 앞 검색이 다 빗나갈 때만
     seen, pool, best, saw_docs = set(), [], None, False
     for i, (q, dropped) in enumerate(plan):
         if len(_tnorm(q)) < 2 or q in seen: continue

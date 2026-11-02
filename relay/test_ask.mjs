@@ -1,6 +1,6 @@
 // Solar 상담 창(POST /ask, relay/ask.js) 점검 — 업스테이지와 정보나루를 흉내 낸 fetch로 돌린다(네트워크·키 불필요).
 // 실행: node relay/test_ask.mjs
-import worker from "./worker.js";
+import worker, { _resetKeysForTest } from "./worker.js";
 import { _resetAskForTest, _resetRecForTest, askAllow, guessLang, looksPersonal, ASK_PER_IP, ASK_PER_DAY, NARU_CAP, KEEP_SEC } from "./ask.js";
 import { mockFetch } from "./test_naru_mock.mjs";
 import { readFileSync } from "node:fs";
@@ -173,15 +173,24 @@ _resetAskForTest();
 // 9. /health는 Solar 키가 있는지만 알린다(값 없음)
 const h1 = await (await worker.fetch(new Request("https://relay.test/health"), env)).json();
 const h2 = await (await worker.fetch(new Request("https://relay.test/health"), { NARU_KEY: "FAKE" })).json();
-// 상담 창 전용 정보나루 키(NARU_KEY_ASK)가 있으면 상담 창은 그 키로만 조회한다(모의 정보나루는 FAKE만 받음)
-_resetAskForTest(); log.length = 0;
+// [11/2 오후] 상담 창도 시연 웹·원격 판과 같은 키 순서(NARU_KEY → NARU_KEY2 → …)로 조회한다 — 앞 키가 승인 전이면 다음 키로.
+//   옛 상담 창 전용 키(NARU_KEY_ASK)는 더 쓰지 않는다
+_resetAskForTest(); _resetKeysForTest(); log.length = 0;
 script = [toolCall({ utterance: "파친코" }), say("끝")];
-const sep = await ask({ text: "파친코 있어요?" }, { e: { NARU_KEY: "OTHER", NARU_KEY_ASK: "FAKE", UPSTAGE_API_KEY: "UPFAKE" } });
-const h3 = await (await worker.fetch(new Request("https://relay.test/health"), { NARU_KEY: "OTHER", NARU_KEY_ASK: "FAKE" })).json();
+const prevFetch = globalThis.fetch;
+globalThis.fetch = async (url, init) => (String(url).includes("data4library") && new URL(String(url)).searchParams.get("authKey") === "IDLE")
+  ? (log.push(String(url)), new Response(JSON.stringify({ response: { error: "API 활성화 상태가 아닙니다" } }), { status: 200 }))
+  : prevFetch(url, init);
+const sep = await ask({ text: "파친코 있어요?" }, { e: { NARU_KEY: "IDLE", NARU_KEY2: "FAKE", NARU_KEY_ASK: "OTHER", UPSTAGE_API_KEY: "UPFAKE" } });
+globalThis.fetch = prevFetch;
+const h3 = await (await worker.fetch(new Request("https://relay.test/health"), { NARU_KEY: "IDLE", NARU_KEY2: "FAKE" })).json();
 const naruLog = log.filter(u => u.includes("data4library"));
-ok(h1.ask === true && h2.ask === false && !JSON.stringify(h1).includes("UPFAKE") && h1.ask_naru_key === false && h3.ask_naru_key === true &&
-   sep.status === 200 && sep.body.tool && sep.body.tool.book && naruLog.length > 0 && naruLog.every(u => u.includes("authKey=FAKE")) && !sep.text.includes("FAKE"),
-   "/health — Solar 키·상담 창 전용 정보나루 키 유무만 · 전용 키(NARU_KEY_ASK)가 있으면 상담 창은 그 키로만 조회");
+ok(h1.ask === true && h2.ask === false && !JSON.stringify(h1).includes("UPFAKE") && JSON.stringify(h3.naru_keys) === '["NARU_KEY","NARU_KEY2"]' &&
+   !JSON.stringify(h3).includes("FAKE") && !JSON.stringify(h3).includes("IDLE") &&
+   sep.status === 200 && sep.body.tool && sep.body.tool.book && naruLog.some(u => u.includes("authKey=IDLE")) && naruLog.some(u => u.includes("authKey=FAKE")) &&
+   !naruLog.some(u => u.includes("authKey=OTHER")) && !sep.text.includes("FAKE") && !sep.text.includes("IDLE"),
+   "/health — 키 이름만 · 상담 창도 같은 키 순서(앞 키가 승인 전이면 다음 키) · 옛 전용 키(NARU_KEY_ASK)는 쓰지 않음");
+_resetKeysForTest();
 
 // 10. 기록(11. 2. 14:26): 모든 이용은 글 없이 세고, 담당자 기록 모드(기록 암호)만 문장·답까지 남긴다 — 모의 KV
 function mockKV() {

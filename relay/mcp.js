@@ -105,6 +105,10 @@ export function cleanTitle(utterance) {                        // naru.clean_tit
   t = words(t).join(" ");
   t = dropPlaces(t, Object.keys(CFG.libraries));               // [10/18] 수령관 말을 검색어에서 뺀다(파이썬 naru.PLACES와 같은 이름·순서)
   t = dropPoints(t, CFG.pickup_points || []);                  // [10/19] 작은도서관 받을 곳 이름도(파이썬 naru.POINTS)
+  for (const [suf, keep] of [["이요", 1], ["요", 2]]) {        // [11/2] 말 끝의 높임 「요」(「손원평 아몬드요」·「흔한남매 1권이요」) — 파이썬 판과 같은 규칙
+    const last = t.split(" ").pop() || "";
+    if (t.endsWith(suf) && [...last].length - suf.length >= keep) { t = t.slice(0, -suf.length).trimEnd(); break; }
+  }
   if (t.endsWith(" 책")) t = t.slice(0, -2).trimEnd();
   for (const suf of ["이라고", "라고", "이란", "란", "은", "는", "을", "를", "이", "가"]) {
     if ([...t].length > 3 && t.endsWith(suf) && !t.endsWith(" " + suf)) { t = t.slice(0, -suf.length).trimEnd(); break; }
@@ -240,7 +244,8 @@ async function searchItem(utterance, deps, ctx) {
   }
   const toks = words(title);
   const plan = vol ? (explicit ? [[base, []]] : [[title, []], [base, []]])
-                   : [[title, []]].concat(toks.length >= 2 ? [[toks.slice(0, -1).join(" "), toks.slice(-1)], [toks.slice(1).join(" "), toks.slice(0, 1)]] : []);
+                   : [[title, []]].concat(toks.length >= 2 ? [[toks.slice(0, -1).join(" "), toks.slice(-1)], [toks.slice(1).join(" "), toks.slice(0, 1)]] : [])
+                                 .concat(toks.length >= 3 ? [[toks[0], toks.slice(1)]] : []);   // [11/2] 제목 뒤 저자 둘 — 앞 검색이 다 빗나갈 때만
   const seen = new Set(), pool = [];
   let best = null, sawDocs = false;
   for (let i = 0; i < plan.length; i++) {

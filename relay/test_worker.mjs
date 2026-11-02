@@ -1,6 +1,6 @@
 // worker.js 점검 — 정보나루를 흉내 낸 fetch로 네 경로를 돌려 본다(네트워크·키 불필요).
 // 실행: node relay/test_worker.mjs
-import worker from "./worker.js";
+import worker, { naruKeys, keyErrorKind, heldKeys, _resetKeysForTest } from "./worker.js";
 const calls = [];
 globalThis.fetch = async (url) => {
   calls.push(url);
@@ -87,6 +87,7 @@ globalThis.fetch = async (url) => { calls.push(url); return new Response(JSON.st
 r = await get("/holdings?isbn=9791190090018");
 ok(r.status === 502 && r.body.error === "upstream" && !r.body.libs && r.body.detail.some(x => x.startsWith("naru:")) && !JSON.stringify(r.body).includes("FAKE"),
    "정보나루 오류 문구 → 502(「없음」으로 바꾸지 않음) · 실패 종류만 · 키 없음");
+_resetKeysForTest();                                       // 위에서 한도 초과로 쉬게 한 키를 풀어 둔다(아래 시험이 같은 키를 씀)
 // ③ 상류가 계속 막히면 외부 호출을 45회 안에서 멈추고, 실패 종류만 알린다(키·주소 없음)
 let tries = 0;
 globalThis.fetch = async () => { tries++; throw new TypeError("Network connection lost. https://data4library.kr/api/x?authKey=FAKE"); };
@@ -95,4 +96,64 @@ globalThis.fetch = realFetch;
 ok(r.status === 502 && tries > 0 && tries <= 45 && r.body.detail.length > 0
    && !JSON.stringify(r.body).includes("FAKE") && !JSON.stringify(r.body).includes("data4library"),
    `상류 장애 → 502 · 외부 호출 ${tries}회(45회 이하) · 키·주소 없음`);
+
+// ── [11/2 오후] 정보나루 키 넷을 차례로(NARU_KEY → NARU_KEY2 → NARU_KEY3 → NARU_KEY4) ──
+// 모의 정보나루: FAKE만 정상, QUOTA는 한도 초과, IDLE은 승인 전, ODD1·ODD2는 키와 상관없는 같은 오류, ODD3만 다른 오류
+const keyMock = async (url) => {
+  const k = new URL(url).searchParams.get("authKey");
+  if (k === "FAKE") return realFetch(url);                  // 정상 키 — 처음 모의 정보나루(호출 기록은 그쪽이 남김)
+  calls.push(url);
+  const err = { QUOTA: "일일 호출 한도를 초과했습니다", IDLE: "API 활성화 상태가 아닙니다", ODD1: "잘못된 요청", ODD2: "잘못된 요청", ODD3: "알 수 없는 오류" }[k];
+  if (err) return new Response(JSON.stringify({ response: { error: err } }), { status: 200 });
+  return new Response("{}", { status: 403 });
+};
+ok(keyErrorKind("일일 호출 한도를 초과했습니다") === "quota" && keyErrorKind("API 활성화 상태가 아닙니다") === "key" &&
+   keyErrorKind("인증키가 유효하지 않습니다") === "key" && keyErrorKind("요청 시간 초과") === null && keyErrorKind("잘못된 요청") === null,
+   "키 오류 가르기 — 한도 초과는 quota, 승인 전·무효는 key, 「시간 초과」 같은 그 밖의 오류는 키 탓으로 보지 않음");
+ok(JSON.stringify(naruKeys({ NARU_KEY: "A", NARU_KEY2: "", NARU_KEY3: "A", NARU_KEY4: "B" }).map(k => k.name)) === '["NARU_KEY","NARU_KEY4"]',
+   "키 순서 NARU_KEY → NARU_KEY2 → NARU_KEY3 → NARU_KEY4 · 빈 칸과 같은 값은 한 번만");
+// ① 첫 키가 한도 초과면 같은 호출을 다음 키로, 그날은 그 키를 건너뜀(이름만 알림)
+_resetKeysForTest(); globalThis.fetch = keyMock;
+let e2 = { NARU_KEY: "QUOTA", NARU_KEY2: "FAKE" }, kb = calls.length;
+r = await get("/search?q=" + encodeURIComponent("채식주의자 첫째"), {}, e2);
+let used = calls.slice(kb).map(u => new URL(u).searchParams.get("authKey"));
+let r2 = await get("/search?q=" + encodeURIComponent("채식주의자 한강"), {}, e2);
+let used2 = calls.slice(kb + used.length).map(u => new URL(u).searchParams.get("authKey"));
+let hh = await get("/health", {}, e2);
+ok(r.status === 200 && r.body.docs.length === 1 && r.body.key_name === "NARU_KEY2" && JSON.stringify(used) === '["QUOTA","FAKE"]' &&
+   r2.status === 200 && used2.length > 0 && !used2.includes("QUOTA") &&
+   JSON.stringify(hh.body.naru_keys) === '["NARU_KEY","NARU_KEY2"]' && hh.body.naru_held.NARU_KEY === "quota" &&
+   !JSON.stringify([r.body, r2.body, hh.body]).includes("QUOTA") && !JSON.stringify(hh.body).includes("FAKE"),
+   "첫 키가 한도 초과 → 같은 호출을 둘째 키로 · 그날은 첫 키를 건너뜀 · /health는 키 이름과 까닭만");
+// ② 승인 전 키(NARU_KEY3)는 1시간 건너뛰고 다음 키(NARU_KEY4)로 — 승인되면 1시간 안에 다시 쓰임
+_resetKeysForTest();
+r = await get("/search?q=" + encodeURIComponent("채식주의자 둘째"), {}, { NARU_KEY3: "IDLE", NARU_KEY4: "FAKE" });
+let held = heldKeys();
+ok(r.status === 200 && r.body.key_name === "NARU_KEY4" && held.NARU_KEY3 === "key" && !heldKeys(Date.now() + 3601e3).NARU_KEY3,
+   "승인 전 키 → 다음 키로 · 1시간만 건너뜀(승인되면 다시 배포 없이 쓰임)");
+// ③ 두 키가 같은 오류(키와 상관없는 오류)면 멈추고 아무 키도 막지 않음 — 키 넷을 헛되이 쉬게 하지 않음
+_resetKeysForTest(); kb = calls.length;
+r = await get("/search?q=" + encodeURIComponent("채식주의자 셋째"), {}, { NARU_KEY: "ODD1", NARU_KEY2: "ODD2", NARU_KEY3: "FAKE" });
+used = calls.slice(kb).map(u => new URL(u).searchParams.get("authKey"));
+ok(r.status === 502 && JSON.stringify(used) === '["ODD1","ODD2"]' && Object.keys(heldKeys()).length === 0 && !JSON.stringify(r.body).includes("ODD"),
+   "두 키가 같은 오류 → 셋째 키까지 가지 않고 502 · 어떤 키도 막지 않음");
+// ④ 앞 키만 낯선 오류였고 다음 키가 되면 앞 키만 10분 쉼
+_resetKeysForTest();
+r = await get("/search?q=" + encodeURIComponent("채식주의자 넷째"), {}, { NARU_KEY: "ODD3", NARU_KEY2: "FAKE" });
+held = heldKeys();
+ok(r.status === 200 && r.body.key_name === "NARU_KEY2" && held.NARU_KEY === "other" && !heldKeys(Date.now() + 601e3).NARU_KEY,
+   "앞 키만 낯선 오류 → 다음 키로 · 앞 키는 10분만 쉼");
+// ⑤ 16관 조회: 첫 키가 막혔을 때 16번을 한꺼번에 막힌 키로 보내지 않음(한 관으로 키를 정한 뒤 나머지)
+_resetKeysForTest(); kb = calls.length;
+r = await get("/holdings?isbn=9791190090049", {}, { NARU_KEY: "QUOTA", NARU_KEY2: "FAKE" });
+used = calls.slice(kb).map(u => new URL(u).searchParams.get("authKey"));
+ok(r.status === 200 && r.body.libs["141065"] === "ok" && r.body.key_name === "NARU_KEY2" && used.filter(k => k === "QUOTA").length === 1 && used.length === 17,
+   `16관 조회 — 막힌 첫 키는 1번만 부르고 둘째 키로 16번(외부 호출 ${used.length}번)`);
+// ⑥ 넣어 둔 키가 모두 쉬는 중이면 정보나루를 부르지 않고 502
+kb = calls.length;
+r = await get("/search?q=" + encodeURIComponent("아몬드"), {}, { NARU_KEY: "QUOTA" });
+ok(r.status === 502 && calls.length === kb && r.body.detail.includes("keys:held"),
+   "모든 키가 쉬는 중 → 정보나루를 부르지 않고 502(keys:held)");
+globalThis.fetch = realFetch; _resetKeysForTest();
+
 console.log(`\n중계 점검 ${n}건 통과`);

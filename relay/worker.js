@@ -1,5 +1,7 @@
 /* 책이지 정보나루 중계 — Cloudflare Workers 판 (무료 호스팅 · 1파일)
- * 시연 웹 → 이 중계 → 정보나루 Open API. 인증키는 Workers 「환경변수(Secret) NARU_KEY」에만 둔다.
+ * 시연 웹 → 이 중계 → 정보나루 Open API. 인증키는 Workers 「환경변수(Secret)」에만 둔다.
+ * [11/2 오후] 키 넷을 차례로 쓴다: NARU_KEY(깃허브 NARUKEY) → NARU_KEY2 → NARU_KEY3 → NARU_KEY4.
+ *   앞 키가 한도 초과·승인 전·무효로 막히면 같은 호출을 다음 키로 다시 한다(아래 naruKeys·naru 참고).
  * 설계: server/docs/정보나루-중계-설계.md  (허용 출처 · 경로 화이트리스트 · 호출 상한 · 최소 가공 · 키 흔적 없음)
  *
  * 제공 경로(화이트리스트):
@@ -45,7 +47,7 @@ export default {
         "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, Mcp-Session-Id, MCP-Protocol-Version",
         "Access-Control-Max-Age": "600" } : {};
       if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: mc });
-      if (!env.NARU_KEY) return json({ error: "relay-not-configured" }, 503, mc);
+      if (!naruKeys(env).length) return json({ error: "relay-not-configured" }, 503, mc);
       if (origin && !MCP_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, {});
       const ip = req.headers.get("CF-Connecting-IP") || "0";
       const resp = await handleMcp(req, {
@@ -69,23 +71,25 @@ export default {
         return url.pathname === "/ask/records" ? handleRecords(req, env, ip, H) : handleStats(req, env, ip, H);
       }
       if (req.method !== "POST") return json({ error: "method" }, 405, { ...H, Allow: "POST" });
-      if (!env.NARU_KEY || !env.UPSTAGE_API_KEY) return json({ error: "ask-not-configured" }, 503, H);
+      if (!naruKeys(env).length || !env.UPSTAGE_API_KEY) return json({ error: "ask-not-configured" }, 503, H);
       if (!ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, H);
       const ip = req.headers.get("CF-Connecting-IP") || "0";
-      // 상담 창 전용 정보나루 키(NARU_KEY_ASK)가 있으면 그 키로 조회한다 — 하루 500번 한도를 시연 웹·원격 판과 나눠 쓰지 않게(없으면 NARU_KEY)
-      const askEnv = env.NARU_KEY_ASK ? { ...env, NARU_KEY: env.NARU_KEY_ASK } : env;
-      return handleAsk(req, askEnv, ip, {
-        relayCall: (path, p, ctx) => relayCall(path, p.isbn || "", p.q || "", askEnv, ctx),
+      // [11/2 오후] 상담 창도 시연 웹·원격 판과 같은 키 순서(NARU_KEY → NARU_KEY2 → NARU_KEY3 → NARU_KEY4)로 조회한다.
+      //   앞 키가 막히면 다음 키로 넘어가므로 쓰임별 전용 키(옛 NARU_KEY_ASK)는 더 쓰지 않는다
+      return handleAsk(req, env, ip, {
+        relayCall: (path, p, ctx) => relayCall(path, p.isbn || "", p.q || "", env, ctx),
         allow: () => true,                                     // /ask는 따로 센다(ask.js askAllow)
-        newCtx: () => newCtx(askEnv),
+        newCtx: () => newCtx(env),
       }, H);
     }
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (req.method !== "GET") return json({ error: "method" }, 405, cors);
-    if (!env.NARU_KEY) return json({ error: "relay-not-configured" }, 503, cors);   // 키 미설정 시 기동 거부
+    if (!naruKeys(env).length) return json({ error: "relay-not-configured" }, 503, cors);   // 키 미설정 시 기동 거부
     if (origin && !ALLOW_ORIGINS.includes(origin)) return json({ error: "origin" }, 403, cors);
 
-    if (url.pathname === "/health") return json({ ok: true, keyed: true, ask: !!env.UPSTAGE_API_KEY, ask_naru_key: !!env.NARU_KEY_ASK, records: !!(env.ASK_RECORDS && env.ASK_RECORD_TOKEN), region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
+    // 키는 이름만 알린다(값은 절대 내보내지 않음): 넣어 둔 키 이름과, 이 실행 공간에서 지금 건너뛰는 키와 까닭
+    if (url.pathname === "/health") return json({ ok: true, keyed: true, naru_keys: naruKeys(env).map(k => k.name), naru_held: heldKeys(),
+      ask: !!env.UPSTAGE_API_KEY, records: !!(env.ASK_RECORDS && env.ASK_RECORD_TOKEN), region: DTL_REGION, colo: (req.cf && req.cf.colo) || null }, 200, cors);
     if (!["/holdings", "/search", "/nation"].includes(url.pathname)) return json({ error: "not-found" }, 404, cors);
 
     const ip = req.headers.get("CF-Connecting-IP") || "0";
@@ -116,11 +120,12 @@ async function relayCall(path, isbn, q, env, ctx) {
   const hit = mem.cache.get(key);
   if (hit && Date.now() - hit.t < CACHE_SEC * 1000) return { ...hit.v, cached: true };
   let v;
-  if (path === "/holdings") v = await holdings(isbn, env.NARU_KEY, ctx);
-  else if (path === "/search") v = await search(q, isbn, env.NARU_KEY, ctx);
-  else if (path === "/nation") v = await nation(isbn, env.NARU_KEY, ctx);
+  const keys = naruKeys(env);
+  if (path === "/holdings") v = await holdings(isbn, keys, ctx);
+  else if (path === "/search") v = await search(q, isbn, keys, ctx);
+  else if (path === "/nation") v = await nation(isbn, keys, ctx);
   else throw new Error("path");
-  v = { ...v, via: ctx.via };
+  v = { ...v, via: ctx.via, key_name: ctx.keyName || null };   // 어느 키로 받았는지 이름만(값 아님)
   mem.cache.set(key, { t: Date.now(), v });
   return { ...v, cached: false };
 }
@@ -130,18 +135,18 @@ function kstDate() {
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-${String(now.getUTCDate()).padStart(2, "0")}`;
 }
 
-async function search(q, isbn, key, ctx) {
+async function search(q, isbn, keys, ctx) {
   // 서지 검색 — 제목 부분일치 상위 10건(대출 많은 순, [10/19] 5 → 10 · 권차 vol 함께). 자료유형·신착 여부는 정보나루가 주지 않는다.
   const params = isbn ? { isbn13: isbn, pageSize: 1 } : { title: q, exactMatch: "false", pageSize: 10 };
-  const r = await naru("srchBooks", params, key, ctx);
+  const r = await naru("srchBooks", params, keys, ctx);
   const docs = (r.docs || []).map(x => x.doc || x).filter(d => d.isbn13).map(d => ({
     isbn13: String(d.isbn13), title: d.bookname, author: d.authors, publisher: d.publisher, year: d.publication_year,
     ...(d.vol ? { vol: String(d.vol) } : {}) }));
   return { query: isbn || q, docs, asof: kstDate(), basis: "정보나루 srchBooks" };
 }
 
-async function nation(isbn, key, ctx) {
-  const r = await naru("libSrchByBook", { isbn, region: REGION, pageSize: 200 }, key, ctx);
+async function nation(isbn, keys, ctx) {
+  const r = await naru("libSrchByBook", { isbn, region: REGION, pageSize: 200 }, keys, ctx);
   return { isbn, found_count: (r.libs || []).length, asof: kstDate(), basis: "정보나루 libSrchByBook(경기 광역 예시) · 전일 기준" };
 }
 
@@ -157,7 +162,67 @@ const NARU_BASES = ["http://data4library.kr/api/", "https://data4library.kr/api/
 const WAIT_MS = { https: 2500, http: 12000 };
 const SUBREQ_CAP = 45;
 let BASE_OK = null;
-async function naru(api, params, key, ctx) {
+
+// ── [11/2 오후] 정보나루 키 넷을 차례로 쓰기(담당자 15:52 「NARUKEY, NARU_KEY2, NARU_KEY3, NARU_KEY4 차례로 다 활용」) ──
+// 키마다 하루 500번(호출 서버 IP 미등록)이라, 앞 키가 막히면 같은 호출을 다음 키로 다시 한다.
+//   · 오류 문구에 「한도·횟수·건수」가 있으면 그날 자정(한국 시각)까지, 「활성·승인·인증키·유효」가 있으면 1시간 그 키를 건너뛴다
+//     (승인 전 키가 승인되면 1시간 안에 저절로 다시 쓰인다 — 다시 배포할 필요 없음)
+//   · 그 밖의 오류는 다음 키로 한 번 더 해 보고, 다음 키도 같은 문구면 키 문제가 아니라고 보고 멈춘다(키 넷을 헛되이 막지 않게).
+//     다음 키가 되면 앞 키만 10분 쉬게 한다
+//   · 기억은 같은 실행 공간(isolate) 안에서만 한다(저장 공간 호출을 늘리지 않으려고). 키 값은 어디에도 남기지 않고 이름만 쓴다
+export const KEY_NAMES = ["NARU_KEY", "NARU_KEY2", "NARU_KEY3", "NARU_KEY4"];
+const keyHold = new Map();                       // 키 이름 → { until(ms), why: quota|key|other }
+const LAST_GOOD = { name: null, t: 0 };          // 마지막으로 통한 키(16관 조회를 한꺼번에 보내도 되는지 볼 때)
+export function naruKeys(env) {                  // 넣어 둔 키를 순서대로(빈 칸·같은 값은 뺌)
+  const seen = new Set(), out = [];
+  for (const name of KEY_NAMES) {
+    const k = String((env && env[name]) || "").trim();
+    if (!k || seen.has(k)) continue;
+    seen.add(k); out.push({ name, key: k });
+  }
+  return out;
+}
+export function keyErrorKind(msg) {
+  const m = String(msg || "");
+  if (/한도|횟수|건수|사용량|이용량|limit|exceed|quota/i.test(m)) return "quota";
+  if (/활성|승인|인증키|인증 키|유효하지|등록되지|미등록|권한|invalid|unauthor|forbidden|key/i.test(m)) return "key";
+  return null;
+}
+function nextKstMidnight(now) { return (Math.floor((now + 9 * 3600e3) / 86400e3) + 1) * 86400e3 - 9 * 3600e3; }
+function holdKey(name, why, now = Date.now()) {
+  keyHold.set(name, { until: why === "quota" ? nextKstMidnight(now) : now + (why === "key" ? 3600e3 : 600e3), why });
+}
+function isHeld(name, now = Date.now()) { const h = keyHold.get(name); return !!(h && h.until > now); }
+export function heldKeys(now = Date.now()) {     // /health용 — 이름과 까닭만
+  const out = {};
+  for (const [name, h] of keyHold) if (h.until > now) out[name] = h.why;
+  return out;
+}
+export function _resetKeysForTest() { keyHold.clear(); LAST_GOOD.name = null; LAST_GOOD.t = 0; BASE_OK = null; }
+
+async function naru(api, params, keys, ctx) {
+  const list = (keys || []).filter(k => !isHeld(k.name));
+  if (!list.length) { ctx.fails.push("keys:held"); throw upstreamError(ctx); }      // 넣어 둔 키가 모두 쉬는 중
+  let prev = null;                               // 앞 키의 오류 { name, msg, kind }
+  for (const k of list) {
+    if (isHeld(k.name)) continue;                // 동시에 돈 다른 호출이 방금 막아 둔 키
+    const r = await naruOnce(api, params, k.key, ctx);
+    if (r.resp) {
+      if (prev && !prev.kind) holdKey(prev.name, "other");
+      LAST_GOOD.name = k.name; LAST_GOOD.t = Date.now(); ctx.keyName = k.name;
+      return r.resp;
+    }
+    const kind = keyErrorKind(r.err);
+    ctx.fails.push(`naru:${k.name}:${kind || hide(r.err, k.key).slice(0, 40)}`);
+    if (kind) holdKey(k.name, kind);
+    else if (prev && !prev.kind && prev.msg === r.err) throw upstreamError(ctx);    // 두 키가 같은 오류 — 키 문제가 아니다
+    prev = { name: k.name, msg: r.err, kind };
+  }
+  throw upstreamError(ctx);
+}
+
+// 키 하나로 한 번 부르기 — 주소(http·https)를 바꿔 가며. 정보나루가 오류 문구를 주면 { err }로 돌려 키를 바꿀지 위에서 정한다
+async function naruOnce(api, params, key, ctx) {
   const q = new URLSearchParams({ ...params, authKey: key, format: "json" });
   const bases = BASE_OK ? [BASE_OK, ...NARU_BASES.filter(b => b !== BASE_OK)] : NARU_BASES;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -178,13 +243,10 @@ async function naru(api, params, key, ctx) {
       } catch (e) { ctx.fails.push(`${tag}:${clean(e, key)}`); continue; }
       finally { clearTimeout(timer); }
       const resp = (d && d.response) || d || {};
-      if (resp.error) {                       // 키·한도 오류는 주소를 바꿔 다시 해도 같다 — 바로 멈춘다
-        ctx.fails.push(`naru:${hide(String(resp.error), key).slice(0, 60)}`);
-        throw upstreamError(ctx);
-      }
+      if (resp.error) return { err: String(resp.error) };   // 키·한도 오류는 주소를 바꿔 다시 해도 같다 — 키를 바꿀지는 naru가 정한다
       BASE_OK = base; ctx.via = tag;
       if (ctx.times) ctx.times.push(Date.now() - s0);      // 호출 한 번의 시간(ms) — 느린 곳을 찾으려고(키·주소 없음)
-      return resp;
+      return { resp };
     }
   }
   throw upstreamError(ctx);
@@ -198,7 +260,7 @@ function clean(e, key) {   // 실패 종류 — 이름과 짧은 설명만. 키�
 function hide(s, key) { return key ? s.split(key).join("***") : s; }
 function upstreamError(ctx) { const e = new Error("upstream"); e.detail = ctx.fails.slice(-8); return e; }
 
-async function holdings(isbn, key, ctx) {
+async function holdings(isbn, keys, ctx) {
   // 16관 bookExist를 한꺼번에 부른다 — 왕복 한 번.
   // [10/16 바꿈] 처음에는 「부천 지역 소장관 목록(libSrchByBook) 1회 → 소장관마다 bookExist」였다(파이썬 판·매일 갱신과 같은 절차).
   //   실측(문의 15건)에서 목록 밖 책이 가운데값 14.9초였고, 소장관 목록 조회가 그중 가장 느렸다.
@@ -206,10 +268,15 @@ async function holdings(isbn, key, ctx) {
   const t0 = Date.now();
   const libs = {};
   for (const c of LIBS) libs[c] = "none";
-  await Promise.all(LIBS.map(async c => {
-    const r = (await naru("bookExist", { libCode: c, isbn13: isbn }, key, ctx)).result || {};
+  const one = async c => {
+    const r = (await naru("bookExist", { libCode: c, isbn13: isbn }, keys, ctx)).result || {};
     if (r.hasBook === "Y") libs[c] = r.loanAvailable === "Y" ? "ok" : "busy";
-  }));
+  };
+  // [11/2 오후] 첫 키가 30분 안에 통한 적이 없으면 한 관을 먼저 불러 쓸 키를 정한 뒤 나머지를 한꺼번에 보낸다
+  //   (막힌 키로 16번을 한꺼번에 보내면 호출 상한 45번을 헛되이 쓰게 되어서)
+  const first = (keys || []).find(k => !isHeld(k.name));
+  if (first && LAST_GOOD.name === first.name && Date.now() - LAST_GOOD.t < 30 * 60e3) await Promise.all(LIBS.map(one));
+  else { await one(LIBS[0]); await Promise.all(LIBS.slice(1).map(one)); }
   const ts = [...(ctx.times || [])].sort((a, b) => a - b);
   return { isbn, asof: kstDate(), basis: "정보나루 bookExist · 대출 상태는 조회일 전일 기준", libs, calls: LIBS.length,
            upstream_ms: Date.now() - t0, call_ms_median: ts.length ? ts[Math.floor(ts.length / 2)] : null, call_ms_max: ts.length ? ts[ts.length - 1] : null };

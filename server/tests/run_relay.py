@@ -200,6 +200,11 @@ ok(_naru.split_volume("흔한남매 1권") == ("흔한남매", "1", True) and _n
    and _naru.clean_title("불편한 편의점 빌리고 싶대요, 송내에서 받는대요", places=_LIBN, points=_PTS) == "불편한 편의점"
    and _naru.clean_title("숲속 작은 집", places=_LIBN, points=_PTS) == "숲속 작은 집",
    "⑦ [10/19] 권차 나누기(「2026」·「1984」는 권차 아님) · 말끝·작은도서관 이름 걷기(「숲속 작은 집」 같은 제목은 그대로)")
+ok(_naru.clean_title("손원평 아몬드요", places=_LIBN, points=_PTS) == "손원평 아몬드"
+   and _naru.clean_title("흔한남매 1권이요", places=_LIBN, points=_PTS) == "흔한남매 1권"
+   and _naru.clean_title("아몬드", places=_LIBN, points=_PTS) == "아몬드"
+   and _naru.pick_search("문헌정보학개론 노문자 황금숙", _fake, "시험")["isbn13"] == "9788989023906",
+   "⑦′ [11/2] 말 끝 「요」·「이요」를 뗌 · 제목 뒤 저자 둘이면 첫 낱말 검색으로 그 저자의 판(문헌정보학개론 2007)")
 _E = "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)"
 p1 = _naru.pick_search("해리 포터와 마법사의 돌", _fake, _E)
 p2 = _naru.pick_search("구름빵 백희나", _fake, _E)

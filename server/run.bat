@@ -33,7 +33,7 @@ echo == 실험실 점검(14건) ==
 %PY% lab\check_store.py
 if errorlevel 1 goto fail
 echo.
-echo == 중계 모드 시험(31건, 모의 중계) ==
+echo == 중계 모드 시험(33건, 모의 중계) ==
 %PY% tests\run_relay.py
 if errorlevel 1 goto fail
 echo.

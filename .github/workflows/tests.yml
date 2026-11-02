@@ -29,7 +29,7 @@ jobs:
         run: python3 tests/run_relay.py
       - name: 공개 모델 호스트 시험 12건 (모의 Ollama)
         run: python3 tests/run_host.py
-      - name: 중계 코드(worker.js) 점검 20건 (모의 정보나루)
+      - name: 중계 코드(worker.js) 점검 28건 (모의 정보나루)
         run: node ../relay/test_worker.mjs
       - name: 원격 상담 비서(/mcp) 점검 43건 (모의 정보나루)
         run: node ../relay/test_mcp.mjs

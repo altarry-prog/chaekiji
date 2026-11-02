@@ -29,7 +29,7 @@ echo
 echo "== 실험실 점검(14건) =="
 "$PY" lab/check_store.py
 echo
-echo "== 중계 모드 시험(31건, 모의 중계) =="
+echo "== 중계 모드 시험(33건, 모의 중계) =="
 "$PY" tests/run_relay.py
 echo
 echo "== 공개 모델 호스트 시험(12건, 모의 Ollama) =="

@@ -29,11 +29,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - name: MeloTTS 설치
-        run: |
-          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
-          pip install -q git+https://github.com/myshell-ai/MeloTTS.git
-          python -m unidic download
       # [11. 2.] 원고를 고친 장면만 다시 만든다(나머지 장면 음성과 길이는 그대로 → 영상 5분 안 유지).
       # push면 이번에 바뀐 원고만, 수동 실행이면 only에 적은 장면만, 둘 다 없으면 예전처럼 모두.
       - name: 다시 만들 장면 정하기
@@ -44,11 +39,21 @@ jobs:
           S=tools/video/narration/script
           ONLY="$ONLY_IN"
           if [ "${{ github.event_name }}" = "push" ] && [ -z "$ONLY" ] && [ -n "$BEFORE" ] && git cat-file -e "$BEFORE" 2>/dev/null; then
-            ONLY=$(git diff --name-only "$BEFORE" HEAD -- "$S" | grep '\.txt$' | xargs -r -n1 basename | sed 's/\.txt$//' | paste -sd, -)
+            ONLY=$(git -c core.quotePath=false diff --name-only "$BEFORE" HEAD -- "$S" | grep '\.txt$' | xargs -r -n1 basename | sed 's/\.txt$//' | paste -sd, -)
+          fi
+          if [ "${{ github.event_name }}" = "push" ] && [ -z "$ONLY" ]; then
+            echo "SKIP=1" >> "$GITHUB_ENV"; echo "원고가 바뀌지 않아 음성을 다시 만들지 않습니다"; exit 0
           fi
           echo "ONLY=$ONLY" >> "$GITHUB_ENV"
           echo "다시 만들 장면: ${ONLY:-모두}"
+      - name: MeloTTS 설치
+        if: env.SKIP != '1'
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+          pip install -q git+https://github.com/myshell-ai/MeloTTS.git
+          python -m unidic download
       - name: 음성 만들기(장면마다 3번)
+        if: env.SKIP != '1'
         env:
           SPEEDS: "1.0"
           TAKES: "3"
@@ -63,6 +68,7 @@ jobs:
             python tools/video/tts_melo.py "$S" "$O"
           fi
       - name: 받아쓰기 점검(따로 둔 환경)
+        if: env.SKIP != '1'
         run: |
           python -m venv /tmp/asr
           /tmp/asr/bin/pip install -q faster-whisper==1.2.1 requests
@@ -72,6 +78,7 @@ jobs:
             /tmp/asr/bin/python tools/video/asr_check.py tools/video/narration/script tools/video/narration/audio/script
           fi
       - name: 가장 또렷한 것 고르기 + 전체 이어듣기
+        if: env.SKIP != '1'
         run: |
           O=tools/video/narration/audio/script
           if [ -n "$ONLY" ]; then
@@ -81,6 +88,7 @@ jobs:
             python3 tools/video/pick_best.py "$O"
           fi
       - name: 결과 올리기
+        if: env.SKIP != '1'
         run: |
           git config user.name "chaekiji-tts"
           git config user.email "tts@users.noreply.github.com"

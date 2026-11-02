@@ -49,7 +49,7 @@ if not A.no_video:
     title = "책이지: 상호대차 AI 에이전트 시연영상" + ("(초안)" if draft else "")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst,
                     "-vf", "fps=30,scale=1920:1080:flags=lanczos,format=yuv420p",
-                    "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-profile:v", "high",
+                    "-c:v", "libx264", "-preset", os.environ.get("X264_PRESET", "slow"), "-crf", "20", "-profile:v", "high",   # [11. 2.] X264_PRESET=veryfast면 빨리(같은 화질 값)
                     "-movflags", "+faststart", "-metadata", f"title={title}", base + ".mp4"], check=True)
     print("영상", base + ".mp4", f"{os.path.getsize(base + '.mp4') / 1e6:.1f}MB")
     # 1-2) 내레이션 — 장면 시작 시각(record.py의 narr)에 그 장면 음성을 얹는다. 장면끼리 겹치지 않으므로 그대로 더한다

@@ -18,7 +18,7 @@ import os, sys, re, json, time, datetime, pathlib, subprocess, urllib.request
 KST = datetime.timezone(datetime.timedelta(hours=9))
 WORK = pathlib.Path(os.environ.get("WORK_DIR", "/content"))
 MODEL = os.environ.get("AI_MODEL", "gpt-oss:20b")
-VARIANT = os.environ.get("AI_VARIANT", "main")          # main | title
+VARIANT = os.environ.get("AI_VARIANT", "main")          # main | title | title2
 REP = int(os.environ.get("AI_REP", "1"))
 RUN_ID = os.environ.get("RUN_ID", datetime.datetime.now(KST).strftime("%m%d%H%M"))
 OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
@@ -67,6 +67,11 @@ P2_NEW = ("`utterance`에는 책의 한국어판 제목만 넘깁니다(예: 「
           "(예: 「김영하 작가가 쓴, 기억을 잃어 가는 연쇄살인범 이야기」 → 「살인자의 기억법」, 「Almond by Sohn Won-pyung」 → 「아몬드」). "
           "저자 이름만 듣는 등 어느 책인지 하나로 정해지지 않으면 도구를 부르지 말고 어느 책인지 되묻습니다.")
 
+# 지시문 고친 안 2(title2, 11. 2.): 고친 안에서 Solar의 외국어 답이 26/27에서 13/27로 줄어, 제목만 한국어판으로 바꿔 넘기고
+# 언어 코드와 답의 언어는 이용자가 쓴 말 그대로 두라는 한 문장을 2항 끝에 더한다(1항은 고친 안과 같음).
+P2_NEW2 = P2_NEW + (" 제목을 한국어판으로 바꿔 넘겨도 `lang`에는 이용자가 실제로 쓴 언어의 코드를 넣고, "
+                    "답과 안내문은 7항대로 그 언어로 씁니다.")
+
 WORK.mkdir(parents=True, exist_ok=True)
 os.chdir(WORK)
 if not (WORK / "chaekiji").exists():
@@ -81,10 +86,10 @@ print("저장소 main", COMMIT, "· 모델", MODEL, "· 지시문", VARIANT, "·
 # 지시문 고친 안 적용(복제본만)
 PROMPT = pathlib.Path("prompts/상담비서-지시문.md")
 ptxt = PROMPT.read_text(encoding="utf-8")
-if VARIANT == "title":
+if VARIANT in ("title", "title2"):
     if P1_OLD not in ptxt or P2_OLD not in ptxt:
         sys.exit("지시문 1·2항의 문장이 바뀌어 고친 안을 적용할 수 없습니다(실측 중단).")
-    ptxt = ptxt.replace(P1_OLD, P1_NEW).replace(P2_OLD, P2_NEW)
+    ptxt = ptxt.replace(P1_OLD, P1_NEW).replace(P2_OLD, P2_NEW if VARIANT == "title" else P2_NEW2)
     PROMPT.write_text(ptxt, encoding="utf-8")
 PROMPT_ITEMS = "\n".join(l for l in ptxt.splitlines() if l.startswith(("1. ", "2. ")))
 

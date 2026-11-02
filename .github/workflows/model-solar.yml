@@ -3,11 +3,18 @@
 # 서버는 snapshot 모드라 정보나루를 부르지 않는다(호출 0). 키는 깃허브 Secrets의 UPSTAGE_API_KEY(값은 기록하지 않음).
 # 키가 아직 없으면 확인 단계에서 멈추고 아무것도 하지 않는다.
 name: model-solar
+# [11. 2.] 수동 실행만(지시문·회차를 고를 수 있게). 예: gh workflow run model-solar.yml --ref tools/model2 -f variants='["title2"]'
 on:
   workflow_dispatch:
-  push:
-    branches: [tools/model2]
-    paths: [".github/workflows/model-solar.yml", "tools/solar/**"]
+    inputs:
+      variants:
+        description: '지시문(JSON 목록): main · title · title2'
+        required: false
+        default: '["main","title"]'
+      reps:
+        description: '회차(JSON 목록)'
+        required: false
+        default: '[1,2,3]'
 permissions:
   contents: write
 concurrency:
@@ -42,8 +49,8 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        variant: ["main", "title"]
-        rep: [1, 2, 3]
+        variant: ${{ fromJSON(github.event.inputs.variants || '["main","title"]') }}
+        rep: ${{ fromJSON(github.event.inputs.reps || '[1,2,3]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 150
     env:
@@ -92,6 +99,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      VARIANTS: ${{ github.event.inputs.variants || '["main","title"]' }}
+      REPS: ${{ github.event.inputs.reps || '[1,2,3]' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -113,5 +122,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add server/lab/out
-          git commit -m "Solar Pro 4 AI가 맡는 몫 지표 기록: 문의 24건 × 지시문 2종 × 3회(깃허브 액션 ${RUN_URL##*/})" || { echo "커밋할 것 없음"; exit 0; }
+          git commit -m "Solar Pro 4 AI가 맡는 몫 지표 기록: 문의 24건 × 지시문 ${VARIANTS} × 회차 ${REPS}(깃허브 액션 ${RUN_URL##*/})" || { echo "커밋할 것 없음"; exit 0; }
           for i in 1 2 3 4 5; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push && break; sleep 5; done

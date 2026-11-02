@@ -13,7 +13,7 @@ if not docs:
     sys.exit("결과 JSON이 없습니다.")
 RUN_ID = docs[0]["run_id"]
 NAME = {"gpt-oss:20b": "GPT-OSS 20B", "exaone3.5:2.4b": "EXAONE 3.5 2.4B"}
-VAR = {"main": "지금 지시문", "title": "고친 안"}
+VAR = {"main": "지금 지시문", "title": "고친 안", "title2": "고친 안 2(언어 유지)"}
 ORDER = sorted({(d["model"], d["variant"]) for d in docs}, key=lambda k: (k[0] != "gpt-oss:20b", k[1] != "main"))
 by = collections.defaultdict(list)
 for d in docs:
@@ -168,6 +168,14 @@ if "title" in items:
     A("고친 안:")
     A("")
     for l in (items.get("title") or "").splitlines():
+        A(f"> {l}")
+    A("")
+if "title2" in items:
+    A("## 고친 안 2(언어 유지)의 지시문(1·2항)")
+    A("")
+    A("고친 안의 2항 끝에 「제목을 한국어판으로 바꿔 넘겨도 언어 코드와 답의 언어는 이용자가 쓴 말 그대로」 한 문장을 더했다. 저장소 main의 지시문은 바꾸지 않았다.")
+    A("")
+    for l in (items.get("title2") or "").splitlines():
         A(f"> {l}")
     A("")
 A("---")

@@ -1,0 +1,126 @@
+# Solar Pro 4(업스테이지 API)로 「AI가 맡는 몫 지표」(문의 24건 × 지시문 2종 × 3회)를 돌린다.
+# 공개 모델 지표(ai-metrics.yml)와 같은 실행 도구·채점을 쓰고, 모델 자리에만 업스테이지 중계(tools/solar/upstage_ollama_proxy.py)를 붙인다.
+# 서버는 snapshot 모드라 정보나루를 부르지 않는다(호출 0). 키는 깃허브 Secrets의 UPSTAGE_API_KEY(값은 기록하지 않음).
+# 키가 아직 없으면 확인 단계에서 멈추고 아무것도 하지 않는다.
+name: model-solar
+# [11. 2.] 수동 실행만(지시문·회차를 고를 수 있게). 예: gh workflow run model-solar.yml --ref tools/model2 -f variants='["title2"]'
+on:
+  workflow_dispatch:
+    inputs:
+      variants:
+        description: '지시문(JSON 목록): main · title · title2'
+        required: false
+        default: '["main","title"]'
+      reps:
+        description: '회차(JSON 목록)'
+        required: false
+        default: '[1,2,3]'
+permissions:
+  contents: write
+concurrency:
+  group: model-solar
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      ok: ${{ steps.k.outputs.ok }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: k
+        name: 키 확인 · 연결 한 번(모델 이름·도구 호출 지원)
+        env:
+          UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
+          SOLAR_USAGE_FILE: /tmp/solar_usage_check.json
+        run: |
+          if [ -z "$UPSTAGE_API_KEY" ]; then
+            echo "UPSTAGE_API_KEY가 아직 깃허브 Secrets에 없습니다. 넣은 뒤 다시 돌립니다."
+            echo "ok=0" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          python3 tools/solar/upstage_ollama_proxy.py --check
+          echo "ok=1" >> "$GITHUB_OUTPUT"
+  run:
+    needs: check
+    if: needs.check.outputs.ok == '1'
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        variant: ${{ fromJSON(github.event.inputs.variants || '["main","title"]') }}
+        rep: ${{ fromJSON(github.event.inputs.reps || '[1,2,3]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      PYTHONUNBUFFERED: "1"
+      RUN_ID: ${{ github.run_id }}
+      AI_MODEL: solar-pro4
+      AI_VARIANT: ${{ matrix.variant }}
+      AI_REP: ${{ matrix.rep }}
+      AI_MIN_GAP: "2"
+      AI_SERVER_MODE: snapshot
+      OLLAMA_URL: http://127.0.0.1:11434
+      WORK_DIR: /content
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 작업 폴더
+        run: sudo mkdir -p /content && sudo chown "$USER" /content
+      - name: 업스테이지 중계 시작(키는 이 단계에만)
+        env:
+          UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
+          SOLAR_USAGE_FILE: /content/solar_usage_${{ matrix.variant }}_r${{ matrix.rep }}.json
+        run: |
+          nohup python3 tools/solar/upstage_ollama_proxy.py > /content/proxy.log 2>&1 &
+          for i in $(seq 1 30); do curl -s http://127.0.0.1:11434/api/version && break; sleep 1; done
+      - name: 문의 24건(이 작업의 지시문·회차)
+        run: python3 tools/model2/run_ai_metrics.py
+      - name: 중계 기록(요청 수·토큰 수, 키 없음)
+        if: always()
+        run: |
+          tail -n 40 /content/proxy.log || true
+          mkdir -p /content/chaekiji/server/lab/out
+          cp /content/solar_usage_*.json /content/chaekiji/server/lab/out/ai_metrics_solar_usage_${{ matrix.variant }}_r${{ matrix.rep }}.json 2>/dev/null || true
+      - name: 결과 올리기
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sol-${{ strategy.job-index }}
+          path: /content/chaekiji/server/lab/out/ai_metrics_*
+          if-no-files-found: warn
+          retention-days: 30
+  report:
+    needs: [check, run]
+    if: always() && needs.check.outputs.ok == '1'
+    runs-on: ubuntu-latest
+    env:
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      VARIANTS: ${{ github.event.inputs.variants || '["main","title"]' }}
+      REPS: ${{ github.event.inputs.reps || '[1,2,3]' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sol-*
+          path: sol
+          merge-multiple: true
+      - name: 기록표 만들기
+        run: |
+          ls sol | head -60
+          mkdir -p server/lab/out
+          cp sol/ai_metrics_* server/lab/out/
+          python3 tools/solar/report_solar.py sol server/lab/out "$RUN_URL"
+      - name: 기록을 이 가지에 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out
+          git commit -m "Solar Pro 4 AI가 맡는 몫 지표 기록: 문의 24건 × 지시문 ${VARIANTS} × 회차 ${REPS}(깃허브 액션 ${RUN_URL##*/})" || { echo "커밋할 것 없음"; exit 0; }
+          for i in 1 2 3 4 5; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push && break; sleep 5; done

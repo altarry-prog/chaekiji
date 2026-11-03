@@ -21,16 +21,16 @@ TOOLS = [
   "inputSchema": S({"properties": {"utterance": {"type": "string"}, "lang": {"type": "string"}},
                     "required": ["utterance"]})},
  {"name": "check_availability",
-  "description": "관내 소장·대출 상태를 확인하고(정보나루 조회일 전일 기준, 모드에 따라 매일 갱신 자료·모의 자료), 관내에 없으면 전국(정보나루·전일 기준)을 본다.",
+  "description": "관내 소장·대출 상태를 확인하고(정보나루 조회일 하루 전 기준, 모드에 따라 매일 갱신 자료·모의 자료), 관내에 없으면 전국(정보나루·하루 전 기준)을 본다.",
   "inputSchema": S({"properties": {"isbn13": {"type": "string"}, "realtime": {"type": "boolean"}},
                     "required": ["isbn13"]})},
  {"name": "check_policy",
-  "description": "상호대차 규정 7종(비치·한도 3종·연체정지·제외자료·중복)을 판정하고 규정별 근거를 돌려준다.",
+  "description": "상호대차 규정 7종(비치·한도 3종·연체정지·제외자료·중복)을 확인하고 규정별 근거를 돌려준다.",
   "inputSchema": S({"properties": {"user": {"type": "string"}, "isbn13": {"type": "string"},
                                    "pickup": {"type": "string"}},
                     "required": ["user", "isbn13", "pickup"]})},
  {"name": "request_service",
-  "description": "신청 실행. 권한은 즉시 확인(confirmed_by_user) 또는 사전 위임(mandate_id) 중 하나이며, 어느 경로든 실행 직전 규정을 재판정한다. 위임 실행은 위임 범위(무료 경로·주기당 권수)를 벗어나면 스스로 건너뛴다. client_ref를 주면 같은 요청 재수신 시 새 신청 대신 기존 접수를 반환한다(이중 방지).",
+  "description": "신청 실행. 권한은 즉시 확인(confirmed_by_user) 또는 사전 위임(mandate_id) 중 하나이며, 어느 경로든 실행 직전 규정을 다시 확인한다. 위임 실행은 위임 범위(무료 경로·주기당 권수)를 벗어나면 스스로 건너뛴다. client_ref를 주면 같은 요청 재수신 시 새 신청 대신 기존 접수를 반환한다(이중 방지).",
   "inputSchema": S({"properties": {"user": {"type": "string"}, "isbn13": {"type": "string"},
                                    "from_lib": {"type": "string"}, "pickup": {"type": "string"},
                                    "confirmed_by_user": {"type": "boolean"},
@@ -71,7 +71,7 @@ TOOLS = [
                                    "pickup": {"type": "string", "description": "받을 도서관 이름(기본: 설정의 home_library)"},
                                    "lang": {"type": "string", "description": "이용자 언어 코드(기본 ko). ko가 아니면 translate_to로 돌려줌"},
                                    "user": {"type": "string", "description": "회원 토큰(선택). 없으면 회원 규정은 창구 확인"},
-                                   "member": {"type": "object", "description": "회원 조건(선택): 사서가 도서관리시스템에서 읽은 권수·예/아니요만. 이름·회원번호는 넣지 않는다. 준 칸의 규정만 판정",
+                                   "member": {"type": "object", "description": "회원 조건(선택): 사서가 도서관리시스템에서 읽은 권수·예/아니요만. 이름·회원번호는 넣지 않는다. 준 칸의 규정만 확인",
                                               "properties": {"ill_count": {"type": "integer", "description": "진행 중인 상호대차 권수"},
                                                              "total_loans": {"type": "integer", "description": "대출 중인 전체 권수"},
                                                              "loans_at_pickup": {"type": "integer", "description": "받을 도서관에서 대출 중인 권수(직접+상호대차)"},
@@ -83,7 +83,7 @@ TOOLS = [
 PROMPT_FILE = Path(__file__).resolve().parent / "prompts" / "상담비서-지시문.md"
 PROMPTS = [
  {"name": "consult",
-  "description": "창구·전화 상담: 문의를 받아 책을 찾고 소장·대출 상태와 상호대차 가능 여부를 판정해 사서가 읽어 줄 안내문을 만든다(접수는 사서가).",
+  "description": "창구·전화 상담: 문의를 받아 책을 찾고 소장·대출 상태와 상호대차 가능 여부를 확인해 사서가 읽어 줄 안내문을 만든다(접수는 사서가).",
   "arguments": [{"name": "pickup", "description": "받을 도서관(기본 상동)", "required": False},
                 {"name": "lang", "description": "이용자 언어 코드(기본 ko)", "required": False}]},
 ]
@@ -94,7 +94,7 @@ def prompt_text(name, args):
         body = PROMPT_FILE.read_text(encoding="utf-8")
         body = body.split("\n", 2)[2] if body.startswith("#") else body   # 머리 제목 줄은 뺀다
     except OSError:
-        body = "당신은 책이지 상담 비서입니다. consult_request(utterance, pickup, lang) 한 번으로 판정·안내문·접수 메모를 받고, 접수는 사서가 합니다. 개인정보는 넣지 않습니다. 받을 도서관 「{pickup}」, 이용자 언어 「{lang}」."
+        body = "당신은 책이지 상담 비서입니다. consult_request(utterance, pickup, lang) 한 번으로 결과·안내문·접수 메모를 받고, 접수는 사서가 합니다. 개인정보는 넣지 않습니다. 받을 도서관 「{pickup}」, 이용자 언어 「{lang}」."
     return body.replace("{pickup}", args.get("pickup") or tools.CFG["home_library"]).replace("{lang}", args.get("lang") or "ko").strip()
 IMPL = {"search_item": tools.search_item, "check_availability": tools.check_availability,
         "check_policy": tools.check_policy, "request_service": tools.request_service,

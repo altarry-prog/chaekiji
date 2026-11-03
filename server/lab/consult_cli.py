@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""상담 비서를 명령 창에서 한 번 부르기 — 모델 없이, 도구(consult_request)가 돌려주는 판정·안내문·접수 메모를 읽기 쉽게 보인다.
+"""상담 비서를 명령 창에서 한 번 부르기 — 모델 없이, 도구(consult_request)가 돌려주는 결과·안내문·접수 메모를 읽기 쉽게 보인다.
 
 무엇을 하나: server.py를 띄워 MCP 요청(initialize → tools/call consult_request)을 보내고, 돌아온 결과를 사람이 읽는 모양으로 찍는다.
             claude.ai·클로드 데스크톱·공개 모델 호스트가 부르는 것과 같은 도구, 같은 요청이다(모델이 하는 말 다듬기만 빠진다).
@@ -10,7 +10,7 @@
       python lab/consult_cli.py "나미야 잡화점의 기적" 상동 --member 상호대차=2,연체=아니요   (사서가 읽은 회원 조건, 이름·회원번호 없이)
 보이는 모양: 안내문 속 누리집 주소는 「(아래 링크)」로 두고 「◀ 링크:」 줄에 한글을 풀어 보인다(%로 바뀐 글자를 되돌린 같은 주소).
             도구가 돌려준 원문 그대로는 --json으로 본다.
-접수는 하지 않는다 — 이 도구는 판정·안내문·접수 메모까지만 만든다."""
+접수는 하지 않는다 — 이 도구는 결과·안내문·접수 메모까지만 만든다."""
 import argparse, json, os, re, subprocess, sys
 from pathlib import Path
 from urllib.parse import unquote
@@ -51,7 +51,7 @@ def main():
     if res.get("isError"):
         print("◀ 오류: " + text); sys.exit(1)
     o = json.loads(text)
-    print(f"◀ 판정: {o['route_label']}" + (f"(소장관 {o['from_lib']})" if o.get("route") == "ill" else ""))
+    print(f"◀ 결과: {o.get('verdict') or o['route_label']}" + (f" · 책이 있는 도서관 {o['from_lib']}" if o.get("route") == "ill" else ""))   # [11/3] 판정 한 줄(verdict)
     if o.get("book"):
         b = o["book"]; print(f"◀ 책: 『{b['title']}』 {b.get('author') or ''} · ISBN {b['isbn13']}")
     av = o.get("availability") or {}

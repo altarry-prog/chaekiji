@@ -200,6 +200,20 @@ ok(_naru.split_volume("흔한남매 1권") == ("흔한남매", "1", True) and _n
    and _naru.clean_title("불편한 편의점 빌리고 싶대요, 송내에서 받는대요", places=_LIBN, points=_PTS) == "불편한 편의점"
    and _naru.clean_title("숲속 작은 집", places=_LIBN, points=_PTS) == "숲속 작은 집",
    "⑦ [10/19] 권차 나누기(「2026」·「1984」는 권차 아님) · 말끝·작은도서관 이름 걷기(「숲속 작은 집」 같은 제목은 그대로)")
+ok(_naru.clean_title("손원평 아몬드요", places=_LIBN, points=_PTS) == "손원평 아몬드"
+   and _naru.clean_title("흔한남매 1권이요", places=_LIBN, points=_PTS) == "흔한남매 1권"
+   and _naru.clean_title("아몬드", places=_LIBN, points=_PTS) == "아몬드"
+   and _naru.pick_search("문헌정보학개론 노문자 황금숙", _fake, "시험")["isbn13"] == "9788989023906",
+   "⑦′ [11/2] 말 끝 「요」·「이요」를 뗌 · 제목 뒤 저자 둘이면 첫 낱말 검색으로 그 저자의 판(문헌정보학개론 2007)")
+_B12 = ["한강 소년이 온다 빌릴 수 있어요?", "불편한 편의점 있나요?", "나미야 잡화점의 기적 역곡에서 받고 싶어요", "설민석 한국사 대모험 1권이요",
+        "지구 끝의 온실 송내에서 받을게요", "채식주의자 있어요?", "작별하지 않는다 꿈빛에서 받고 싶어요", "손원평 아몬드요", "흔한남매 1권 있어요?",
+        "김초엽 우리가 빛의 속도로 갈 수 없다면", "불편한 편의점", "나미야 잡화점의 기적", "The Miracles of the Namiya General Store"]
+ok(all(_naru.weak_fixture(u, _naru.clean_title(u)) is None for u in _B12)
+   and _naru.weak_fixture("편의점 인간", _naru.clean_title("편의점 인간")) == "편의점"
+   and _naru.weak_fixture("소년을 위로해줘", _naru.clean_title("소년을 위로해줘")) == "소년"
+   and _naru.weak_fixture("편의점 있어요?", _naru.clean_title("편의점 있어요?")) is None
+   and _naru.weak_fixture("편의점이요", _naru.clean_title("편의점이요")) is None,
+   "⑦‴ [11/2] 시연 도서 짧은 찾기 낱말(3자 이하)만 겹치고 다른 말이 더 있으면(「편의점 인간」) 서지 검색으로 확인 · 직원 측정 문의(기록지 B)는 그대로")
 _E = "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)"
 p1 = _naru.pick_search("해리 포터와 마법사의 돌", _fake, _E)
 p2 = _naru.pick_search("구름빵 백희나", _fake, _E)
@@ -209,9 +223,11 @@ p3 = _naru.pick_search("흔한남매 1권", _fake, _E)
 p4 = _naru.pick_search("불편한 편의점 2", _fake, _E)
 p3b = _naru.pick_search("흔한남매 9권", _fake, _E)
 ok(p3["found"] and p3["isbn13"] == "9790000000103" and p4["found"] and p4["isbn13"] == "9791161572062" and p3b["found"] is False
+   and _naru.search("불편한 편의점 2", mode="demo")["found"] is False and _naru.search("불편한 편의점 1권이요", mode="demo")["found"]
+   and _naru.search("설민석 한국사 대모험 3권", mode="snapshot")["found"] is False
    and _naru._core_title("구름빵 : 키 크는 빵 주세요", "GIMC|DPS") != _naru._core_title("구름빵", "글·그림: 백희나")
    and _naru._core_title("채식주의자:한강 연작소설", "한강") == "채식주의자",
-   "   ⑦″ 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 2권(시연 도서 1권이 아님), 없는 권·권 모르는 판은 고르지 않음 · 부서명이 작품을 가르면 다른 책")
+   "   ⑦″ 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 2권(시연 도서 1권이 아님, 중계 없는 모의·스냅샷 모드에서도 1권으로 답하지 않음 11. 3.), 없는 권·권 모르는 판은 고르지 않음 · 부서명이 작품을 가르면 다른 책")
 p5 = _naru.pick_search("문헌정보학개론", _fake, _E)
 p6 = _naru.pick_search("문헌정보학개론 정동열", _fake, _E)
 ok(p5["found"] and len(p5["same_title_others"]) == 3 and p6["found"] is False and len(p6["candidate_books"]) == 3,

@@ -78,7 +78,7 @@ ok(alt["audiobook"] and alt["chaeknarae_eligible"],
 
 g = c.call("check_availability", isbn13="9791191824001")
 ok(not g["available_at"] and g["nation"]["found_count"] == 6,
-   "＋ 관내 전무 도서 → 전국 폴백(정보나루 · 전일 기준 명시)")
+   "＋ 관내 전무 도서 → 전국 폴백(정보나루 · 하루 전 기준 명시)")
 
 print("── 책이지 패스 · 사전 위임 자동 실행 ──")
 sg = c.call("suggest_items", user="tok_kimsj", count=3)
@@ -186,10 +186,11 @@ print("── v0.3.4 · 상담 묶음(consult_request) — 창구·전화에서 
 k1 = c.call("consult_request", utterance="나미야 잡화점의 기적 빌리고 싶어요", pickup="상동")
 ok(k1["found"] and k1["route"] == "ill" and k1["from_lib"] in k1["availability"]["available_at"] and k1["from_lib"] != "상동",
    f"㉔ 말 한마디 → 찾기·소장·규정 한 번에 — 갈래 「{k1['route_label']}」 · 소장관 {k1['from_lib']}")
-ok(len(k1["policy"]["pending"]) == 5 and k1["policy"]["allowed_so_far"] and "창구에서 확인" in k1["notice"],
-   "    회원 토큰 없음 — 비치·제외자료만 확정, 한도 3종·연체·중복은 창구 확인으로 보류")
-ok("전일 기준" in k1["notice"] and "2026. 8. 18." in k1["notice"] and "접수하지 않음" in k1["desk_memo"],
-   "    안내문에 조회일·전일 기준 명시 · 접수 메모에 「이 도구는 접수하지 않음」")
+ok(len(k1["policy"]["pending"]) == 5 and k1["policy"]["allowed_so_far"] and "창구에서 확인" in k1["notice"]
+   and k1["verdict"] == "관내 상호대차 · 창구 확인: 회원 조건",
+   "    회원 토큰 없음 — 비치·제외자료만 확정, 한도 3종·연체·중복은 창구 확인으로 보류(판정 한 줄에도 「창구 확인: 회원 조건」, 11. 3.)")
+ok("하루 전 기준" in k1["notice"] and "2026. 8. 18." in k1["notice"] and "접수하지 않음" in k1["desk_memo"],
+   "    안내문에 조회일·하루 전 기준 명시 · 접수 메모에 「이 도구는 접수하지 않음」")
 # [10/18] 부천 설정의 링크 틀이 제목 → ISBN으로 바뀜(담당자가 자료검색 ISBN 검색 확인) — 기대값만 그 판본 주소로, 기준은 그대로
 ok((k1.get("official_link") or "") == "https://alpasq.bcl.go.kr/search/keyword/9788972756194"
    and k1["official_link"] in k1["notice"] and "접수는 이용자가 직접" in k1["notice"],
@@ -199,7 +200,7 @@ ok(k2["route"] == "visit" and "바로 대출" in k2["notice"] and "다만" not i
    "㉕ 수령관 서가에 있는 책 — 「바로 이용」, 상호대차 아님(비치 규정을 되풀이하지 않음)")
 k3 = c.call("consult_request", utterance="지구 끝의 온실", pickup="상동")
 ok(k3["route"] == "sea" and k3["availability"]["nation"]["found_count"] == 6 and "책바다" in k3["notice"]
-   and k3["official_link"] is None and "누리집" not in k3["notice"] and "예시 데이터" in k3["notice"] and "조회, 전일 기준" not in k3["notice"],
+   and k3["official_link"] is None and "누리집" not in k3["notice"] and "예시 데이터" in k3["notice"] and "조회, 하루 전 기준" not in k3["notice"],
    "㉖ 관내 전무(예시 장면) — 「책바다 안내」 + 전국 소장 수 · 누리집 링크 없음 · 안내문이 「예시 데이터」라고 밝힘")
 k4 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", user="tok_kimsj")
 ok(k4["policy"]["pending"] == [] and k4["policy"]["allowed_so_far"] and k4["next_tool"]["tool"] == "request_service",
@@ -228,11 +229,13 @@ m1 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup
             member={"ill_count": 2, "total_loans": 7, "loans_at_pickup": 1, "overdue": False, "same_book_pending": False})
 ok(m1["policy"]["pending"] == [] and m1["policy"]["allowed_so_far"] and sum(1 for x in m1["policy"]["checks"] if x["pass"]) == 7
    and "창구에서 확인해 드립니다" not in m1["notice"] and "사서가 입력한 회원 조건 5칸" in m1["policy"]["basis"]
-   and "회원 조건: 사서 입력(상호대차 2권 · 대출 7권 · 상동 1권 · 연체·정지 없음 · 같은 책 신청 없음) · 이름·회원번호 없음" in m1["desk_memo"],
+   and "회원 조건: 사서 입력(상호대차 2권 · 대출 7권 · 상동 1권 · 연체·정지 없음 · 같은 책 신청 없음) · 이름·회원번호 없음" in m1["desk_memo"]
+   and m1["verdict"] == "관내 상호대차 · 규정 7가지 통과",
    "㉞ 회원 조건 5칸(사서 입력) — 토큰 없이 규정 7종 모두 판정, 접수 메모에 「사서 입력」과 「이름·회원번호 없음」")
 m2 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", member={"ill_count": "5", "overdue": "아니요"})
 ok(not m2["policy"]["allowed_so_far"] and len(m2["policy"]["pending"]) == 3 and "다만 상호대차 1인 5권(사서 입력: 현재 5/5권)" in m2["notice"]
-   and "남은 규정(통합 대출 20권, 도서관별 5권(직접+상호대차), 동일 도서 중복 신청 없음)은 창구에서 확인해 드립니다." in m2["notice"],
+   and "남은 규정(통합 대출 20권, 도서관별 5권(직접+상호대차), 동일 도서 중복 신청 없음)은 창구에서 확인해 드립니다." in m2["notice"]
+   and m2["verdict"] == "관내 상호대차 · 규정에 걸림: 상호대차 1인 5권",
    "㉟ 회원 조건 일부(글자로 준 권수·「아니요」) — 한도 초과는 「다만 …」으로, 주지 않은 칸의 규정은 이름을 들어 창구 확인")
 m3 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", member={"name": "홍길동", "ill_count": 1})
 m4 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", member={"overdue": "모름"})

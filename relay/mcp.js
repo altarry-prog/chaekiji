@@ -20,9 +20,18 @@ const SNAPSHOT_MAX_DAYS = 2;
 // [10/27] 동결을 10. 30. 18시로 앞당김(담당자 결정) → 10. 30. 이후 자료
 const FROZEN_FROM = "2026-10-30", FROZEN_UNTIL = "2026-11-26";
 const SNAP_CACHE_MS = 10 * 60 * 1000;
-const ROUTE_LABEL = { visit: "바로 이용(수령관에 대출 가능)", ill: "관내 상호대차", reserve: "예약 권장(관내 소장분 전부 대출 중)",
+const ROUTE_LABEL = { visit: "바로 이용(받을 도서관에 대출 가능)", ill: "관내 상호대차", reserve: "예약 권장(시립도서관에 있는 책이 모두 대출 중)",
                       sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정", check: "소장 확인 불가(창구에서 조회)" };
 const MEMBER_RULE_KEYS = ["권", "연체", "중복"];                 // 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
+// [11/3] 판정 한 줄(verdict) — tools._verdict와 같은 글. 관내 상호대차일 때만 걸리는 규정·창구에서 확인할 것을 덧붙인다
+function verdictOf(route, pol, bad) {
+  const label = ROUTE_LABEL[route];
+  if (route !== "ill") return label;
+  if (bad.length) return `${label} · 규정에 걸림: ` + bad.map(c => c.rule).join(", ");
+  const what = [["회원 조건", r => MEMBER_RULE_KEYS.some(k => r.includes(k))], ["자료 유형", r => r.includes("제외")], ["받을 도서관에 있는지", r => r.includes("비치")]]
+    .filter(([, hit]) => pol.pending.some(hit)).map(([name]) => name);
+  return what.length ? `${label} · 창구 확인: ` + what.join(", ") : `${label} · 규정 ${pol.checks.length}가지 통과`;
+}
 // [11/1] 회원 조건(member) — 사서가 도서관리시스템에서 읽은 권수·예/아니요만(이름·회원번호 없이). tools._member_conditions와 같은 규칙·같은 글
 const MEMBER_FIELDS = [["상호대차 1인", "ill_count"], ["통합 대출", "total_loans"], ["도서관별", "loans_at_pickup"],
                        ["연체", "overdue"], ["동일 도서 중복", "same_book_pending"]];
@@ -105,6 +114,10 @@ export function cleanTitle(utterance) {                        // naru.clean_tit
   t = words(t).join(" ");
   t = dropPlaces(t, Object.keys(CFG.libraries));               // [10/18] 수령관 말을 검색어에서 뺀다(파이썬 naru.PLACES와 같은 이름·순서)
   t = dropPoints(t, CFG.pickup_points || []);                  // [10/19] 작은도서관 받을 곳 이름도(파이썬 naru.POINTS)
+  for (const [suf, keep] of [["이요", 1], ["요", 2]]) {        // [11/2] 말 끝의 높임 「요」(「손원평 아몬드요」·「흔한남매 1권이요」) — 파이썬 판과 같은 규칙
+    const last = t.split(" ").pop() || "";
+    if (t.endsWith(suf) && [...last].length - suf.length >= keep) { t = t.slice(0, -suf.length).trimEnd(); break; }
+  }
   if (t.endsWith(" 책")) t = t.slice(0, -2).trimEnd();
   for (const suf of ["이라고", "라고", "이란", "란", "은", "는", "을", "를", "이", "가"]) {
     if ([...t].length > 3 && t.endsWith(suf) && !t.endsWith(" " + suf)) { t = t.slice(0, -suf.length).trimEnd(); break; }
@@ -139,14 +152,25 @@ function snapshotFresh(snap) {
 }
 
 // ── 찾기(naru.search relay 모드) ──────────────────────────────────────────
-function fixtureSearch(utterance) {
+function fixtureMatch(utterance) {                           // naru._fixture_match — [가장 긴 맞은 낱말 길이, 책, 그 낱말]
   const q = norm(utterance);
   let best = null;
   for (const b of CATALOG) {
-    let score = 0;
-    for (const k of b.keys) { const nk = norm(k); if (q.includes(nk) && nk.length > score) score = nk.length; }
-    if (score && (best === null || score > best[0])) best = [score, b];
+    let score = 0, key = "";
+    for (const k of b.keys) { const nk = norm(k); if (q.includes(nk) && [...nk].length > score) { score = [...nk].length; key = nk; } }
+    if (score && (best === null || score > best[0])) best = [score, b, key];
   }
+  return best;
+}
+export function weakFixture(utterance, title) {               // naru.weak_fixture — [11/2] 짧은 찾기 낱말(3자 이하)만 맞고 다른 말이 2자 이상 더 있음
+  const best = fixtureMatch(utterance);
+  if (!best || best[0] > 3) return null;
+  const nt = norm(title), nk = best[2];
+  if (!nt.includes(nk)) return null;
+  return [...nt.replace(nk, "")].length >= 2 ? nk : null;
+}
+function fixtureSearch(utterance) {
+  const best = fixtureMatch(utterance);
   if (!best) return { found: false, reason: "픽스처에 없는 도서(모의 모드 한계). live 모드에서는 전국 서지 검색" };
   const b = best[1];
   return { found: true, isbn13: b.isbn13, title: b.title, author: b.author, publisher: b.publisher, year: b.year,
@@ -156,7 +180,7 @@ async function relaySearchDocs(params, deps, ctx) {             // naru._relay_s
   const r = await deps.relayCall("/search", params, ctx);
   const docs = r.docs || [];
   for (const x of docs) if (x.isbn13) state.bib.set(x.isbn13, { ...x, type: "일반", new_arrival: false,
-    basis: "정보나루 srchBooks(중계): 자료유형·신착은 미제공(판정 보류)" });
+    basis: "정보나루 srchBooks(중계): 자료유형·신착은 미제공(확인 보류)" });
   return docs;
 }
 // ── [10/19] 서지 고르기(naru.pick_doc) — 검색 결과 첫 번째(대출 많은 순)를 그대로 쓰지 않고 문의와 견줘 고른다 ──────────
@@ -234,13 +258,22 @@ const bookOf = d => ({ isbn13: d.isbn13, title: nn(d.title), author: nn(d.author
 async function searchItem(utterance, deps, ctx) {
   const title = cleanTitle(utterance);
   const [base, vol, explicit] = splitVolume(title);
+  let fx = null, weak = null;
   if (!vol) {                                                  // [10/19] 권차를 말하면 시연 도서(1권) 픽스처로 바로 가지 않는다
-    const fx = fixtureSearch(utterance);
-    if (fx.found) { fx.evidence = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준"; return fx; }
+    const f = fixtureSearch(utterance);
+    if (f.found) {
+      f.evidence = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준";
+      weak = weakFixture(utterance, title);
+      if (!weak) return f;
+      fx = f;                                                  // [11/2] 짧은 찾기 낱말만 겹침(「편의점 인간」) — 서지 검색 1번으로 확인(파이썬 naru.search와 같게)
+    }
   }
   const toks = words(title);
-  const plan = vol ? (explicit ? [[base, []]] : [[title, []], [base, []]])
-                   : [[title, []]].concat(toks.length >= 2 ? [[toks.slice(0, -1).join(" "), toks.slice(-1)], [toks.slice(1).join(" "), toks.slice(0, 1)]] : []);
+  let plan = vol ? (explicit ? [[base, []]] : [[title, []], [base, []]])
+                   : [[title, []]].concat(toks.length >= 2 ? [[toks.slice(0, -1).join(" "), toks.slice(-1)], [toks.slice(1).join(" "), toks.slice(0, 1)]] : [])
+                                 .concat(toks.length >= 3 ? [[toks[0], toks.slice(1)]] : []);   // [11/2] 제목 뒤 저자 둘 — 앞 검색이 다 빗나갈 때만
+  if (fx) plan = plan.slice(0, 1);                             // 짧은 낱말 확인은 첫 검색어 한 번만, 70점 이상만
+  const minSc = fx ? 70 : 60;
   const seen = new Set(), pool = [];
   let best = null, sawDocs = false;
   for (let i = 0; i < plan.length; i++) {
@@ -250,6 +283,7 @@ async function searchItem(utterance, deps, ctx) {
     let docs;
     try { docs = await relaySearchDocs({ q }, deps, ctx); }
     catch (e) {                                                // [v0.3.5] 「책이 없다」가 아니라 「찾지 못했다(연결 안 됨)」
+      if (fx) return fx;                                       // 짧은 낱말 확인이 끊기면 시연 도서 그대로
       if (i === 0) return { found: false, reason: `중계 응답 없음: 픽스처 5종에도 없는 도서(검색어 「${title}」)`, candidates: [], unavailable: true };
       break;
     }
@@ -258,10 +292,11 @@ async function searchItem(utterance, deps, ctx) {
     for (const p of pool) {
       if (p.q !== q) continue;
       const sc = scoreDoc(p.d, title, base, vol, p.dropped);
-      if (sc >= 60 && (!best || sc > best.sc)) best = { ...p, sc };
+      if (sc >= minSc && (!best || sc > best.sc)) best = { ...p, sc };
     }
     if (best && !(vol && !explicit && i === 0)) break;         // 권차가 낱말 끝 숫자일 때만 두 검색을 함께 견준다
   }
+  if (fx && (!best || coreTitle(best.d.title, best.d.author) === coreTitle(fx.title, fx.author))) return fx;   // 결과 없음·같은 작품이면 시연 도서
   if (best) {
     const d = best.d, ct = coreTitle(d.title, d.author), fa = firstAuthor(d.author);
     const others = [], seenA = [fa];
@@ -290,6 +325,7 @@ async function searchItem(utterance, deps, ctx) {
       if (eds.length >= 2) break;
     }
     if (eds.length) res.same_work_editions = eds;
+    if (fx) res.evidence += ` · 시연 도서 찾기 낱말 「${weak}」만 겹쳐 서지 검색으로 다른 책을 고름`;
     return res;
   }
   if (sawDocs) {
@@ -315,7 +351,7 @@ async function holdingsLocal(isbn13, deps, ctx) {
   if (snapshotFresh(snap) && snap.holdings[isbn13]) {         // 오늘 새벽 자료에 있으면 그것으로(정보나루 호출·한도 절약)
     const h = snap.holdings[isbn13];
     const out = Object.fromEntries(Object.keys(LIBS).map(n => [n, h[n] || "none"]));
-    return { out, meta: { basis: `관내: 정보나루 bookExist(매일 갱신 · ${snap.asof} 조회 · 전일 기준)`, asof: snap.asof,
+    return { out, meta: { basis: `관내: 정보나루 bookExist(매일 갱신 · ${snap.asof} 조회 · 하루 전 기준)`, asof: snap.asof,
                           holding_count: countHeld(out), calls: 0, cached: true } };
   }
   try {
@@ -323,7 +359,7 @@ async function holdingsLocal(isbn13, deps, ctx) {
     const libs = r.libs || {};
     const out = Object.fromEntries(Object.entries(LIBS).map(([n, code]) => [n, libs[String(code)] || "none"]));
     const asof = r.asof || kstDay();
-    return { out, meta: { basis: `관내: 정보나루 bookExist(중계 · ${asof} 조회 · 전일 기준)`, asof,
+    return { out, meta: { basis: `관내: 정보나루 bookExist(중계 · ${asof} 조회 · 하루 전 기준)`, asof,
                           holding_count: countHeld(out), calls: nn(r.calls), cached: !!r.cached } };
   } catch (e) {                                              // 정보나루가 안 되면 8/18 실측 픽스처로 — 근거 문구에 그대로 적는다
     if (!Object.prototype.hasOwnProperty.call(HOLD.holdings || {}, isbn13) || (HOLD._examples || []).includes(isbn13)) {   // [v0.3.5] 실측 픽스처가 없으면 「확인 불가」(naru._unknown)
@@ -335,7 +371,7 @@ async function holdingsLocal(isbn13, deps, ctx) {
     const out = Object.fromEntries(Object.keys(LIBS).map(n => [n, h[n] || "none"]));
     const ex = (HOLD._examples || []).includes(isbn13);
     const basis = (ex ? "관내: 예시 데이터(관내에 없는 책의 흐름을 보이려고 꾸민 값, 이 책의 실제 소장과 다름)"
-                      : "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 전일 기준)") + " · 중계 응답 없음 → 픽스처로 복귀";
+                      : "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 하루 전 기준)") + " · 중계 응답 없음 → 픽스처로 복귀";
     return { out, meta: { basis, asof: FIX_ASOF, holding_count: countHeld(out), calls: 0, cached: false, example: ex } };
   }
 }
@@ -348,11 +384,11 @@ async function nationRemote(isbn13, deps, ctx) {              // naru.availabili
   if (snapshotFresh(snap) && Object.prototype.hasOwnProperty.call(snap.nation || {}, isbn13)) {
     const n = snap.nation[isbn13];
     if (n !== null && n !== undefined)
-      return { basis: `전일 기준 · 정보나루(매일 갱신 · ${snap.asof} 조회)`, found_count: n.count ?? 0, note: "경기 광역 예시", asof: snap.asof };
+      return { basis: `하루 전 기준 · 정보나루(매일 갱신 · ${snap.asof} 조회)`, found_count: n.count ?? 0, note: "경기 광역 예시", asof: snap.asof };
   }
   try {
     const r = await deps.relayCall("/nation", { isbn: isbn13 }, ctx);
-    return { basis: `전일 기준 · 정보나루(중계 · ${r.asof || kstDay()} 조회)`, found_count: r.found_count ?? 0, note: "경기 광역 예시", asof: nn(r.asof) };
+    return { basis: `하루 전 기준 · 정보나루(중계 · ${r.asof || kstDay()} 조회)`, found_count: r.found_count ?? 0, note: "경기 광역 예시", asof: nn(r.asof) };
   } catch (e) {
     const out = fixtureNation(isbn13); out.note += " · 중계 응답 없음 → 픽스처로 복귀"; return out;
   }
@@ -374,7 +410,7 @@ async function checkAvailability(isbn13, deps, ctx) {          // tools.check_av
   const ok = Object.keys(rt).filter(l => rt[l] === "ok").sort();
   const busy = Object.keys(rt).filter(l => rt[l] === "busy").sort();
   const res = { city: CFG.city, home_library: home, home_status: rt[home] || "none", available_at: ok, loaned_at: busy,
-                basis: meta.basis || "관내: 정보나루(전일 기준)", holding_count: nn(meta.holding_count), naru_calls: nn(meta.calls) };
+                basis: meta.basis || "관내: 정보나루(하루 전 기준)", holding_count: nn(meta.holding_count), naru_calls: nn(meta.calls) };
   if (meta.unavailable) { res.status_unknown = true; return { res, rt, meta }; }   // [v0.3.5] 관내를 모르면 전국으로 넘기지 않는다
   if (!ok.length) res.nation = await nationRemote(isbn13, deps, ctx);
   return { res, rt, meta };
@@ -385,7 +421,7 @@ function policyCheck(rules, member, onShelf, pickup, item, isbn13) {
   const checks = [];
   const rule = (name, passed, detail) => checks.push({ rule: name, pass: !!passed, detail });
   if (rules.block_if_pickup_on_shelf ?? true)
-    rule("수령관 동일도서 비치 시 신청 불가", !onShelf, onShelf ? "수령관 서가에 비치 중" : "수령관 소장본 서가에 없음(대출중 또는 미소장)");
+    rule("수령관 동일도서 비치 시 신청 불가", !onShelf, onShelf ? "받을 도서관 서가에 있음" : "받을 도서관 서가에 없음(대출 중이거나 소장하지 않음)");
   rule(`상호대차 1인 ${rules.ill_limit}권`, member.ill_count < rules.ill_limit, `현재 ${member.ill_count}/${rules.ill_limit}권`);
   rule(`통합 대출 ${rules.total_limit}권`, member.total_loans < rules.total_limit, `현재 ${member.total_loans}/${rules.total_limit}권`);
   const at = (member.loans_at || {})[pickup] || 0;
@@ -401,7 +437,7 @@ function policyCheck(rules, member, onShelf, pickup, item, isbn13) {
     const badType = excl.includes(t), badNew = exna && na;
     const detail = badType ? ("자료 유형 " + t + ": 제외 대상") : (badNew ? "신착 자료: 신착 제외 기간" : `유형 ${t} · 신착 아님`);
     rule("상호대차 제외 자료 아님", !(badType || badNew), detail);
-  } else rule("상호대차 제외 자료 아님", true, "서지 미확인: 제외 판정 보류(통과 처리)");
+  } else rule("상호대차 제외 자료 아님", true, "서지 미확인: 제외 여부 확인 보류(통과 처리)");
   const act = member.active_isbns || [];
   const dup = !!isbn13 && act.includes(isbn13);
   rule("동일 도서 중복 신청 없음", !dup, dup ? "이미 진행 중인 신청 있음" : "진행 중 신청 없음");
@@ -464,8 +500,8 @@ function guestPolicy(onShelf, pickup, item, isbn13, member) {
   }
   const decided = v.checks.filter(c => c.pass !== null);
   const n = Object.keys(m).length;
-  const basis = !n ? "회원 토큰 없이 판정: 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인"
-    : `회원 토큰 없이 판정: 비치·제외자료 규정과 사서가 입력한 회원 조건 ${n}칸(권수·예/아니요, 이름·회원번호 없음)으로 확정` +
+  const basis = !n ? "회원 토큰 없이 확인: 비치·제외자료 규정만 확정, 한도·연체·중복은 창구 확인"
+    : `회원 토큰 없이 확인: 비치·제외자료 규정과 사서가 입력한 회원 조건 ${n}칸(권수·예/아니요, 이름·회원번호 없음)으로 확정` +
       (pending.length ? ", 나머지는 창구 확인" : "");
   return { allowed_so_far: decided.every(c => c.pass), checks: v.checks, pending, basis };
 }
@@ -487,18 +523,18 @@ export async function consultRequest(args, deps, ctx) {
   const points = CFG.pickup_points || [];
   const isPoint = points.includes(pickup) && !Object.prototype.hasOwnProperty.call(LIBS, pickup);   // [10/18] 작은도서관 받을 곳
   if (!Object.prototype.hasOwnProperty.call(LIBS, pickup) && !isPoint)
-    throw new ToolError("ValueError", `수령관 「${pickup}」은(는) 설정에 없는 도서관입니다: ${[...Object.keys(LIBS), ...points].join(", ")}`);
+    throw new ToolError("ValueError", `받을 도서관 「${pickup}」은(는) 설정에 없는 도서관입니다: ${[...Object.keys(LIBS), ...points].join(", ")}`);
   const eta = CFG.ill_eta_days ?? "2~3", hold = CFG.hold_days ?? 3;
   const found = await searchItem(utterance, deps, ctx);
   const base = { utterance, pickup, lang, mode: "relay",
-                 disclaimer: "대출 가능 여부는 정보나루 조회일 전일 기준이며, 최종 확인과 접수는 창구에서 합니다." };
+                 disclaimer: "대출 가능 여부는 정보나루 조회일 하루 전 기준이며, 최종 확인과 접수는 창구에서 합니다." };
   if (!found.found && found.unavailable) {                    // [v0.3.5] 정보나루에 닿지 못해 찾지 못함 — 되묻지 말고 창구 조회
-    return { ...base, found: false, route: "check", route_label: ROUTE_LABEL.check, book: null, reason: nn(found.reason), candidates: [],
+    return { ...base, found: false, route: "check", route_label: ROUTE_LABEL.check, verdict: ROUTE_LABEL.check, book: null, reason: nn(found.reason), candidates: [],
              notice: "지금 정보나루에 연결되지 않아 책을 찾지 못했습니다. 창구에서 도서관리시스템으로 찾아 드리겠습니다.",
              desk_memo: `[조회 불가] 문의 「${utterance}」: 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회` };
   }
   if (!found.found) {
-    const out = { ...base, found: false, route: "unknown", route_label: ROUTE_LABEL.unknown, book: null, reason: nn(found.reason),
+    const out = { ...base, found: false, route: "unknown", route_label: ROUTE_LABEL.unknown, verdict: ROUTE_LABEL.unknown, book: null, reason: nn(found.reason),
                   candidates: found.candidates || [],
                   notice: "말씀하신 책을 아직 찾지 못했습니다. 저자나 출판사, 대략의 내용을 조금 더 알려 주시겠어요?",
                   desk_memo: `[미확정] 문의 「${utterance}」: 서지 재확인 필요` };
@@ -534,7 +570,7 @@ export async function consultRequest(args, deps, ctx) {
   if (isPoint) {                                              // [10/18] 작은도서관 서가 비치 여부는 정보나루에 없다
     for (const c of pol.checks) {
       if (c.rule.includes("비치") && c.pass !== null) {
-        c.pass = null; c.detail = "작은도서관 서가 비치 여부는 정보나루에 없어 창구에서 확인"; pol.pending.push(c.rule);
+        c.pass = null; c.detail = "작은도서관 서가에 있는지는 정보나루에 없어 창구에서 확인"; pol.pending.push(c.rule);
       }
     }
     pol.allowed_so_far = pol.checks.filter(c => c.pass !== null).every(c => c.pass);
@@ -554,7 +590,7 @@ export async function consultRequest(args, deps, ctx) {
   const t_ = `『${disp}』${eun(disp)}`;
   let notice;
   if (route === "visit") {
-    notice = `${t_} ${pickup}도서관에 대출 가능 상태로 있어 방문하시면 바로 대출하실 수 있습니다. ` +   // [10/28] 「지금 … 서가에 있어」는 전일 기준 자료와 맞지 않음
+    notice = `${t_} ${pickup}도서관에 대출 가능 상태로 있어 방문하시면 바로 대출하실 수 있습니다. ` +   // [10/28] 「지금 … 서가에 있어」는 하루 전 기준 자료와 맞지 않음
              `받으실 도서관에 있는 자료는 상호대차 신청 대상이 아닙니다.`;
   } else if (route === "ill" && isPoint) {                     // [10/18] 작은도서관에서 받기 — 그곳 소장 여부는 말하지 않는다(모름)
     notice = `${t_} ${fromLib}도서관 등 ${CFG.city}시립도서관 ${nOk}곳에 대출 가능 상태입니다. ` + illTerms(pickup, eta, hold, true);
@@ -577,7 +613,7 @@ export async function consultRequest(args, deps, ctx) {
   }
   const example = (HOLD._examples || []).includes(isbn) && !!meta.example;
   if (route !== "check")                                      // 조회한 자료가 없으면 날짜를 찍지 않는다
-    notice += example ? " (예시 데이터: 관내에 없는 책의 흐름을 보이려고 꾸민 값이라 이 책의 실제 소장·대출과 다릅니다)" : ` (대출 상태는 정보나루 ${asofK} 조회, 전일 기준)`;
+    notice += example ? " (예시 데이터: 관내에 없는 책의 흐름을 보이려고 꾸민 값이라 이 책의 실제 소장·대출과 다릅니다)" : ` (대출 상태는 정보나루 ${asofK} 조회, 하루 전 기준)`;
   const memN = Object.keys(mem).length;
   if (pol.pending.length && memN) notice += " 남은 규정(" + pol.pending.join(", ") + ")은 창구에서 확인해 드립니다.";   // [11/1] 회원 조건을 받았으면 남은 규정만 이름으로
   else if (pol.pending.length) notice += " 회원 한도·연체 여부는 창구에서 확인해 드립니다.";
@@ -598,7 +634,7 @@ export async function consultRequest(args, deps, ctx) {
   if (alt.length) {
     const altWhere = b => {
       const ed = [b.publisher || "", b.year ? `${b.year}년` : ""].filter(x => x).join(" ") || `ISBN ${b.isbn13}`;
-      if (b.available_at.includes(pickup)) return `${ed} 판은 ${pickup}도서관에 대출 가능 상태로 있습니다`;   // [10/28 저녁] 전일 기준(파이썬 판과 같은 글)
+      if (b.available_at.includes(pickup)) return `${ed} 판은 ${pickup}도서관에 대출 가능 상태로 있습니다`;   // [10/28 저녁] 하루 전 기준(파이썬 판과 같은 글)
       if (b.available_at.length) return `${ed} 판은 ${b.available_at[0]}도서관 등 ${b.available_at.length}곳에 대출 가능합니다`;
       return `${ed} 판은 ${b.loaned_at.length}곳이 소장하고 있지만 모두 대출 중입니다`;
     };
@@ -616,11 +652,11 @@ export async function consultRequest(args, deps, ctx) {
   }
   const memo = [
     `도서: ${String(title).trim()}${found.vol ? ` [${volLabel(found.vol)}]` : ""} (${found.author || ""}) ISBN ${isbn}` + (others.length ? ` · 같은 제목 다른 책 ${others.length}건, 저자 확인` : ""),
-    `갈래: ${ROUTE_LABEL[route]}` + (fromLib ? ` · 소장관 ${fromLib}` : ""),
-    isPoint ? `수령관: ${pickup}도서관 (작은도서관: 서가 비치·도착일·보관 기한은 창구 확인)`
-            : `수령관: ${pickup} (${atPickup === "ok" ? "조회일 기준 서가 비치" : atPickup === "busy" ? "조회일 기준 대출 중" : unknown ? "확인 불가" : "조회일 기준 미소장"})`,
-    unknown ? "대출 가능 관: 확인 불가 / 대출 중: 확인 불가"
-            : `대출 가능 관: ${avail.available_at.join(", ") || "없음"} / 대출 중: ${avail.loaned_at.join(", ") || "없음"}`,
+    `빌리는 방법: ${ROUTE_LABEL[route]}` + (fromLib ? ` · 책이 있는 도서관 ${fromLib}` : ""),
+    isPoint ? `받을 도서관: ${pickup}도서관 (작은도서관: 서가에 있는지·도착일·보관 기한은 창구 확인)`
+            : `받을 도서관: ${pickup} (${atPickup === "ok" ? "조회일 기준 서가에 있음" : atPickup === "busy" ? "조회일 기준 대출 중" : unknown ? "확인 불가" : "조회일 기준 소장 없음"})`,
+    unknown ? "대출 가능 도서관: 확인 불가 / 대출 중: 확인 불가"
+            : `대출 가능 도서관: ${avail.available_at.join(", ") || "없음"} / 대출 중: ${avail.loaned_at.join(", ") || "없음"}`,
     `근거: ${avail.basis}`,
     `규정: ${pol.checks.filter(c => c.pass === true).length}건 통과 · ${pol.checks.filter(c => c.pass === false).length}건 불가 · ${pol.pending.length}건 창구 확인`,
     "접수: 창구에서 도서관리시스템 입력(이 도구는 접수하지 않음)",
@@ -629,7 +665,7 @@ export async function consultRequest(args, deps, ctx) {
   for (const b of alt)                                         // [10/19] 판본 보정 — 다른 판의 관내 소장(접수 전 판 확인)
     memo.splice(memo.length - 1, 0, `다른 판 관내: ${b.publisher || ""} ${b.year || ""} ISBN ${b.isbn13}: ` +
                                     `대출 가능 ${b.available_at.join(", ") || "없음"} / 대출 중 ${b.loaned_at.join(", ") || "없음"}`);
-  return { ...base, found: true, route, route_label: ROUTE_LABEL[route], from_lib: fromLib,
+  return { ...base, found: true, route, route_label: ROUTE_LABEL[route], verdict: verdictOf(route, pol, bad), from_lib: fromLib,
            book: { isbn13: isbn, title, author: nn(found.author), publisher: nn(found.publisher), year: nn(found.year), evidence: nn(found.evidence),
                    ...(found.vol ? { vol: found.vol } : {}) },
            availability: { at_pickup: atPickup, available_at: avail.available_at, loaned_at: avail.loaned_at, nation, basis: avail.basis, asof },
@@ -652,10 +688,10 @@ const IMPL = {
 };
 
 // ── MCP 상자(JSON-RPC over HTTP) ─────────────────────────────────────────
-export const INSTRUCTIONS = "책이지 원격 판(부천시립도서관 상호대차 판정 · 시연·검증용, 접수 기능 없음).\n" +
+export const INSTRUCTIONS = "책이지 인터넷 판(부천시립도서관 상호대차 확인 · 시연·검증용, 접수 기능 없음).\n" +
   PROMPT_BODY.split("{pickup}").join(CFG.home_library + "(사서가 다른 도서관을 말하면 그 도서관)")
              .split("{lang}").join("ko(이용자가 다른 언어를 쓰면 그 언어 코드)").trim();
-const TOOL_LIST = TOOLS.map(t => ({ ...t, annotations: { title: t.name === "consult_request" ? "상호대차 상담(판정·안내문)" :
+const TOOL_LIST = TOOLS.map(t => ({ ...t, annotations: { title: t.name === "consult_request" ? "상호대차 상담(확인·안내문)" :
   t.name === "search_item" ? "도서 찾기" : "소장·대출 상태", readOnlyHint: true, openWorldHint: true } }));
 
 function rpcResult(id, result) { return { jsonrpc: "2.0", id, result }; }
@@ -706,20 +742,20 @@ function guidePage(req) {
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const addr = esc(new URL(req.url).origin + "/mcp");
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>책이지 원격 판: 커넥터 주소</title><style>
+<title>책이지 인터넷 판: 커넥터 주소</title><style>
 body{margin:0;background:#f4f7f5;color:#1d2421;font:16px/1.65 system-ui,-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;word-break:keep-all}
 main{max-width:640px;margin:0 auto;padding:28px 18px 40px}h1{font-size:22px;line-height:1.35;margin:0 0 12px;color:#11463a}
 .box{background:#fff;border:1px solid #d5dfda;border-radius:12px;padding:16px 18px;margin:16px 0}ol{margin:0;padding-left:22px}li{margin:6px 0}
 code{background:#eef3f0;border-radius:4px;padding:1px 5px;font-size:.95em;overflow-wrap:anywhere}.n{color:#55615b;font-size:14px}a{color:#0b5c8a}
 </style></head><body><main>
 <h1>이 주소는 claude.ai 커넥터에 넣는 주소입니다</h1>
-<p>인터넷 창으로 열면 이 안내만 보이는 것이 정상입니다. AI 프로그램(MCP 클라이언트)이 이 주소로 질문을 보내면, 책이지가 부천시립도서관 상호대차 판정과 안내문을 돌려줍니다.</p>
+<p>인터넷 창으로 열면 이 안내만 보이는 것이 정상입니다. AI 프로그램(MCP 클라이언트)이 이 주소로 질문을 보내면, 책이지가 부천시립도서관 상호대차 확인 결과와 안내문을 돌려줍니다.</p>
 <div class="box"><b>붙이는 법</b><ol>
 <li>claude.ai → 사용자 정의 → 커넥터 → 「+ 추가」 → 「커스텀 커넥터 추가」</li>
 <li>이름 「책이지」, 주소 <code>${addr}</code> → 「계속」 → 감지된 인증 설정이 나오면 다시 「계속」 → 인증 방식 「로그인 없음」 → 「추가」</li>
 <li>새 대화의 「+」 → 커넥터에서 켜고, 이용자의 말을 그대로 입력(예: 한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요)</li>
 </ol></div>
-<p class="n">시연·검증용입니다. 접수는 하지 않으며, 대출 상태는 정보나루 조회일 전일 기준입니다. 무료 요금제는 커스텀 커넥터를 1개까지 쓸 수 있습니다.</p>
+<p class="n">시연·검증용입니다. 접수는 하지 않으며, 대출 상태는 정보나루 조회일 하루 전 기준입니다. 무료 요금제는 커스텀 커넥터를 1개까지 쓸 수 있습니다.</p>
 <p class="n">시민용 시연 웹 <a href="https://altarry-prog.github.io/chaekiji/">altarry-prog.github.io/chaekiji</a> · 소스 <a href="https://github.com/altarry-prog/chaekiji">github.com/altarry-prog/chaekiji</a></p>
 </main></body></html>`;
 }

@@ -1,0 +1,90 @@
+# AI가 맡는 몫 지표: 고정 문의 24건(제목 없이 한 말 6·오타 4·외국어 8·정확한 제목 2·모호한 말 4)을
+# 공개 모델 2종(GPT-OSS 20B · EXAONE 3.5 2.4B) × 지시문 2종(저장소 그대로 · 1·2항 고친 안) × 3회로 돌려 기계로 채점한다.
+# 작업 하나가 (모델, 지시문, 회차) 하나를 돌고(run_ai_metrics.py), 마지막 작업이 결과를 모아 기록표를 만든다(report_ai_metrics.py).
+# 담당자 11. 1. 13:28 「ㅇㅇ 해줘」(AI 몫 지표). main은 건드리지 않고 기록은 이 가지(tools/model2)의 server/lab/out/에 커밋한다.
+# 인증키·결제 없음. 서버 모드 snapshot: 시연 도서 5종의 그날 새벽 자료만 쓰고 정보나루를 부르지 않는다(호출 0).
+# 11. 1. 13:44 첫 실행(auto 모드)은 시연 도서 밖 책 조회로 정보나루 하루 한도(500건)를 넘겨 취소했다.
+name: ai-metrics
+# [11. 2. 13:55] 수동 실행만. 실측 도구를 고쳐 올릴 때마다 CPU 모델 실측(1시간 반)이 저절로 돌아, 11. 2.에 세 번 돌았다
+#   (그 가운데 12:18 실행은 고친 지시문이 파일에 써지지 않던 판이라 취소, 13:28 실행도 필요 없어 취소).
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ai-metrics
+  cancel-in-progress: false
+jobs:
+  run:
+    strategy:
+      fail-fast: false
+      matrix:
+        model: ["gpt-oss:20b", "exaone3.5:2.4b"]
+        variant: ["main", "title"]
+        rep: [1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      PYTHONUNBUFFERED: "1"
+      RUN_ID: ${{ github.run_id }}
+      AI_MODEL: ${{ matrix.model }}
+      AI_VARIANT: ${{ matrix.variant }}
+      AI_REP: ${{ matrix.rep }}
+      WORK_DIR: /content
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 디스크 비우기 · 서버 사양
+        run: |
+          df -h / | tail -1
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost || true
+          df -h / | tail -1; free -h | head -2; nproc
+          sudo mkdir -p /content && sudo chown "$USER" /content
+      - name: Ollama 설치·시작, 모델 받기
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          if ! curl -s http://127.0.0.1:11434/api/version > /dev/null; then (ollama serve > /content/ollama_serve.log 2>&1 &); fi
+          for i in $(seq 1 90); do curl -s http://127.0.0.1:11434/api/version && break; sleep 1; done
+          echo; time ollama pull "$AI_MODEL" > /dev/null 2>&1
+          ollama list
+      - name: 문의 24건(이 작업의 모델·지시문·회차)
+        run: python3 tools/model2/run_ai_metrics.py
+      - name: 결과 올리기
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aim-${{ strategy.job-index }}
+          path: /content/chaekiji/server/lab/out/ai_metrics_*
+          if-no-files-found: warn
+          retention-days: 30
+  report:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: aim-*
+          path: aim
+          merge-multiple: true
+      - name: 기록표 만들기
+        run: |
+          ls aim | head -60
+          mkdir -p server/lab/out
+          cp aim/ai_metrics_* server/lab/out/
+          python3 tools/model2/report_ai_metrics.py aim server/lab/out "$RUN_URL"
+      - name: 기록을 이 가지에 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out
+          git commit -m "AI가 맡는 몫 지표 기록: 공개 모델 2종 × 지시문 2종 × 3회(깃허브 액션 ${RUN_URL##*/})" || { echo "커밋할 것 없음"; exit 0; }
+          for i in 1 2 3 4 5; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push && break; sleep 5; done

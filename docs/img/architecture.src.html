@@ -6,7 +6,8 @@
 <!-- docs/img/architecture.png의 원본. 2026. 10. 27. 다시 그림: 담당자 「구조 그림이 갑자기 커져서 가독성이 떨어진다」.
      PC에서 README 글자와 비슷한 크기로 보이게 폭을 900으로 줄이고 여백을 좁힘(README에서 <img width="420">, 그림 속 본문이 약 17px).
      휴대폰은 화면 폭에 맞춰 줄어들어 본문이 약 14px. 한글이 낱말 중간에서 줄바꿈되지 않게(word-break: keep-all),
-     색만으로 구분하지 않게(층 이름·표시를 글자로). 긴줄표 대신 쌍점. 찍기: Playwright로 900px 폭, 배율 2, 64색 PNG. -->
+     색만으로 구분하지 않게(층 이름·표시를 글자로). 긴줄표 대신 쌍점. 찍기: Playwright로 900px 폭, 배율 2, 64색 PNG.
+     2026. 11. 3. 쉬운 말(담당자 11:23): 「규정 판정」을 「규정 확인」으로, 「전일 기준」을 「하루 전 기준」으로. -->
 <style>
   :root { --ink:#16201c; --sub:#3d4a44; --line:#c9d4cf; --green:#1b5a4b; --mint:#e8f2ee; --sand:#f4efe6; --gray:#eef0f2; }
   * { box-sizing:border-box; margin:0; padding:0; }
@@ -50,7 +51,7 @@
   <section class="layer l2">
     <div class="head"><span class="no">②</span><span class="name">AI 모델</span><span class="tag">바꿔 끼움</span></div>
     <ul>
-      <li><b>클로드 · 엑사원 · 라마</b></li>
+      <li><b>클로드 · GPT-OSS · 엑사원 · Solar</b></li>
       <li><span class="s">말을 알아듣고 도구를 고르는 일만 합니다</span></li>
     </ul>
   </section>
@@ -59,7 +60,7 @@
   <section class="layer l3">
     <div class="head"><span class="no">③</span><span class="name">책이지 도구</span><span class="tag me">이 저장소</span></div>
     <ul>
-      <li><b>찾기 → 소장 확인 → 규정 판정 → 안내문</b></li>
+      <li><b>찾기 → 소장 확인 → 규정 확인 → 안내문</b></li>
       <li><span class="s">규정 숫자는 코드가 아니라 설정 파일에</span></li>
     </ul>
   </section>
@@ -68,7 +69,7 @@
   <section class="layer l4">
     <div class="head"><span class="no">④</span><span class="name">데이터</span><span class="tag">실제와 모의를 구분</span></div>
     <ul>
-      <li><b>도서관 정보나루:</b> <span class="s">실제 공개 데이터 · 대출 상태는 전일 기준</span></li>
+      <li><b>도서관 정보나루:</b> <span class="s">실제 공개 데이터 · 대출 상태는 하루 전 기준</span></li>
       <li><b>도서관리시스템:</b> <span class="s">모의 · 연동 명세 함수 7개</span></li>
     </ul>
   </section>

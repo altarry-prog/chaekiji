@@ -1,7 +1,7 @@
 // 원격 상담 비서(relay/mcp.js) 점검 — MCP 규약(초기화·목록·호출·오류)과 판정 몇 가지를 모의 정보나루로 돌려 본다.
 // 실행: node relay/test_mcp.mjs   (네트워크·키 불필요. 파이썬 판과의 대조는 relay/test_mcp_parity.py)
 import worker from "./worker.js";
-import { _resetForTest, snapshotOk, splitVolume, cleanTitle } from "./mcp.js";
+import { _resetForTest, snapshotOk, splitVolume, cleanTitle, weakFixture } from "./mcp.js";
 import { mockFetch, rpc, call } from "./test_naru_mock.mjs";
 import { readFileSync } from "node:fs";
 
@@ -62,16 +62,16 @@ ok(r.body.error.code === -32602, "접수 도구(request_service)는 원격 판�
 log.length = 0;
 let c = await call(worker, env, "consult_request", { utterance: "나미야 잡화점의 기적 빌리고 싶어요", pickup: "상동" });
 ok(!c.isError && c.out.route === "ill" && c.out.from_lib === "꿈여울" && c.out.availability.asof === today &&
-   c.out.notice.includes(`정보나루 ${+today.slice(0, 4)}. ${+today.slice(5, 7)}. ${+today.slice(8, 10)}. 조회, 전일 기준`) &&
-   !log.some(u => u.includes("data4library")),
-   "나미야 — 오늘 새벽 자료로 판정(정보나루 호출 0회) · 관내 상호대차 · 안내문에 조회일");
+   c.out.notice.includes(`정보나루 ${+today.slice(0, 4)}. ${+today.slice(5, 7)}. ${+today.slice(8, 10)}. 조회, 하루 전 기준`) &&
+   !log.some(u => u.includes("data4library")) && c.out.verdict === "관내 상호대차 · 창구 확인: 회원 조건",
+   "나미야 — 오늘 새벽 자료로 판정(정보나루 호출 0회) · 관내 상호대차 · 안내문에 조회일 · 판정 한 줄에 「창구 확인: 회원 조건」(11. 3.)");
 ok(c.out.official_link === "https://alpasq.bcl.go.kr/search/keyword/9788972756194" &&   // [10/18] 부천 링크 틀 제목 → ISBN(그 판본 화면까지)
    c.out.notice.includes("공식 누리집에서 이 책 보기·신청") && c.out.desk_memo.includes("접수: 창구에서"),
    "   공식 누리집 링크 · 접수 메모(접수는 창구)");
 c = await call(worker, env, "consult_request", { utterance: "작별하지 않는다 빌리고 싶어요" });
 ok(!c.isError && c.out.pickup === "상동" && c.out.route === "ill" && c.out.book.isbn13 === "9788954682152" &&
    c.out.availability.available_at.join() === "꿈빛,원미" && c.out.policy.pending.length === 6 &&
-   c.out.policy.pending.includes("상호대차 제외 자료 아님"),
+   c.out.policy.pending.includes("상호대차 제외 자료 아님") && c.out.verdict === "관내 상호대차 · 창구 확인: 회원 조건, 자료 유형",
    "목록 밖 책 — 정보나루 서지 검색 → 그 자리 조회 → 관내 상호대차 · 회원 규정 5건 + 자료 유형·신착(정보나루에 없음)은 창구 확인");
 c = await call(worker, env, "consult_request", { utterance: "희랍어 시간 있나요?", pickup: "상동" });
 ok(!c.isError && c.out.route === "check" && c.out.notice.includes("확인하지 못했습니다") && !c.out.notice.includes("소장되어 있지 않습니다") &&
@@ -82,7 +82,7 @@ ok(c.out.official_link === "https://alpasq.bcl.go.kr/search/keyword/" + encodeUR
    "   [10/18] 소장 확인 불가인 책의 누리집 링크는 제목 검색(그 판본이 없을 수도 있어 ISBN 대신)");
 c = await call(worker, env, "consult_request", { utterance: "흐르는 강물처럼", pickup: "상동" });
 ok(!c.isError && c.out.found === false && c.out.route === "check" && c.out.notice.includes("연결되지 않아") &&
-   c.out.desk_memo.startsWith("[조회 불가]"),
+   c.out.desk_memo.startsWith("[조회 불가]") && c.out.verdict === "소장 확인 불가(창구에서 조회)",
    "서지 검색부터 연결 끊김 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」");
 c = await call(worker, env, "consult_request", { utterance: "나미야", user: "tok_demo" });
 ok(c.isError && c.text.includes("회원 토큰을 받지 않습니다"), "회원 토큰을 넘기면 거절(개인정보를 받지 않음)");
@@ -90,11 +90,13 @@ ok(c.isError && c.text.includes("회원 토큰을 받지 않습니다"), "회원
 c = await call(worker, env, "consult_request", { utterance: "나미야 잡화점의 기적 빌리고 싶어요", pickup: "상동",
   member: { ill_count: 2, total_loans: 7, loans_at_pickup: 1, overdue: false, same_book_pending: false } });
 ok(!c.isError && c.out.policy.pending.length === 0 && c.out.policy.checks.filter(x => x.pass === true).length === 7 &&
-   !c.out.notice.includes("창구에서 확인해 드립니다") && c.out.desk_memo.includes("회원 조건: 사서 입력(상호대차 2권 · 대출 7권 · 상동 1권 · 연체·정지 없음 · 같은 책 신청 없음) · 이름·회원번호 없음"),
+   !c.out.notice.includes("창구에서 확인해 드립니다") && c.out.desk_memo.includes("회원 조건: 사서 입력(상호대차 2권 · 대출 7권 · 상동 1권 · 연체·정지 없음 · 같은 책 신청 없음) · 이름·회원번호 없음") &&
+   c.out.verdict === "관내 상호대차 · 규정 7가지 통과",
    "[11/1] 회원 조건 5칸(사서 입력) — 규정 7종 모두 판정, 접수 메모에 「사서 입력」·「이름·회원번호 없음」");
 c = await call(worker, env, "consult_request", { utterance: "작별하지 않는다 빌리고 싶어요", member: { ill_count: "5", overdue: "아니요" } });
 ok(!c.isError && !c.out.policy.allowed_so_far && c.out.notice.includes("다만 상호대차 1인 5권(사서 입력: 현재 5/5권)") &&
-   c.out.policy.pending.join() === "통합 대출 20권,도서관별 5권(직접+상호대차),동일 도서 중복 신청 없음,상호대차 제외 자료 아님",
+   c.out.policy.pending.join() === "통합 대출 20권,도서관별 5권(직접+상호대차),동일 도서 중복 신청 없음,상호대차 제외 자료 아님" &&
+   c.out.verdict === "관내 상호대차 · 규정에 걸림: 상호대차 1인 5권",
    "[11/1] 회원 조건 일부·글자 값 — 한도 초과는 「다만 …」, 주지 않은 칸과 자료 유형·신착은 창구 확인");
 c = await call(worker, env, "consult_request", { utterance: "나미야", member: { name: "홍길동" } });
 ok(c.isError && c.text.startsWith("ValueError: 회원 조건에 받지 않는 칸: name") && c.text.includes("개인정보"),
@@ -102,10 +104,11 @@ ok(c.isError && c.text.startsWith("ValueError: 회원 조건에 받지 않는 �
 c = await call(worker, env, "consult_request", { utterance: "나미야 잡화점의 기적", pickup: "상동역칙칙폭폭" });
 ok(!c.isError && c.out.pickup === "상동역 칙칙폭폭" && c.out.route === "ill" && c.out.notice.includes("상동역 칙칙폭폭도서관에서 받으실 수 있고") &&
    !c.out.notice.includes("도서관에는") && c.out.notice.includes("도착일과 보관 기한은 창구에서 확인") &&
-   c.out.policy.pending.some(x => x.includes("비치")) && c.out.desk_memo.includes("작은도서관"),
+   c.out.policy.pending.some(x => x.includes("비치")) && c.out.desk_memo.includes("작은도서관") &&
+   c.out.verdict === "관내 상호대차 · 창구 확인: 회원 조건, 받을 도서관에 있는지",
    "[10/18] 작은도서관 받을 곳 — 관내 상호대차로 판정, 그곳 서가 비치·도착일·보관은 창구 확인(파이썬 판과 같음)");
 c = await call(worker, env, "consult_request", { utterance: "나미야", pickup: "없는관" });
-ok(c.isError && c.text.startsWith("ValueError: 수령관 「없는관」"), "설정에 없는 수령관 → 오류(파이썬 판과 같은 문구)");
+ok(c.isError && c.text.startsWith("ValueError: 받을 도서관 「없는관」"), "설정에 없는 받을 도서관 → 오류(파이썬 판과 같은 문구)");
 c = await call(worker, env, "search_item", { utterance: "채식주의자 상호대차 되나요?" });
 ok(!c.isError && c.out.found && c.out.query === "채식주의자" && c.out.isbn13 === "9788936433598",
    "[10/18] 문장째 넘어온 「채식주의자 상호대차 되나요?」 → 검색어 「채식주의자」(「되나요」까지 걷어냄)");
@@ -153,6 +156,16 @@ ok(JSON.stringify(splitVolume("흔한남매 1권")) === '["흔한남매","1",tru
    cleanTitle("양귀자 모순 빌리고 싶은데 상동역 칙칙폭폭에서 받을게요") === "양귀자 모순" &&
    cleanTitle("불편한 편의점 빌리고 싶대요, 송내에서 받는대요") === "불편한 편의점" && cleanTitle("숲속 작은 집") === "숲속 작은 집",
    "[10/19] 권차 나누기(「1권」·끝 숫자, 「2026」·「1984」는 권차 아님) · 말끝·작은도서관 이름 걷기(「숲속 작은 집」 같은 제목은 그대로)");
+ok(cleanTitle("손원평 아몬드요") === "손원평 아몬드" && cleanTitle("흔한남매 1권이요") === "흔한남매 1권" && cleanTitle("아몬드") === "아몬드" &&
+   cleanTitle("엄마 사랑해요") === "엄마 사랑해",
+   "[11/2] 말 끝 「요」·「이요」를 뗌(제목 검색은 부분일치라 「…요」로 끝나는 제목도 앞부분으로 찾힘)");
+const B12 = ["한강 소년이 온다 빌릴 수 있어요?", "불편한 편의점 있나요?", "나미야 잡화점의 기적 역곡에서 받고 싶어요", "설민석 한국사 대모험 1권이요",
+             "지구 끝의 온실 송내에서 받을게요", "채식주의자 있어요?", "작별하지 않는다 꿈빛에서 받고 싶어요", "손원평 아몬드요", "흔한남매 1권 있어요?",
+             "김초엽 우리가 빛의 속도로 갈 수 없다면", "불편한 편의점", "나미야 잡화점의 기적", "The Miracles of the Namiya General Store"];
+ok(B12.every(u => weakFixture(u, cleanTitle(u)) === null) && weakFixture("편의점 인간", cleanTitle("편의점 인간")) === "편의점" &&
+   weakFixture("소년을 위로해줘", cleanTitle("소년을 위로해줘")) === "소년" && weakFixture("편의점 있어요?", cleanTitle("편의점 있어요?")) === null &&
+   weakFixture("편의점이요", cleanTitle("편의점이요")) === null,
+   "[11/2] 시연 도서 짧은 찾기 낱말(3자 이하)만 겹치고 다른 말이 더 있으면(「편의점 인간」) 서지 검색으로 확인 · 직원 측정 문의(기록지 B)는 그대로");
 let s1 = await call2("consult_request", { utterance: "해리 포터와 마법사의 돌", pickup: "원미" }, 501);
 ok(s1.book.isbn13 === "9788983920683" && s1.book.title === "해리포터와 마법사의 돌" && s1.book.evidence.includes("2번째") && s1.route === "ill",
    "[10/19] 「해리 포터와 마법사의 돌」 — 검색 첫 결과(혼혈 왕자)가 아니라 같은 책(2번째)을 고름 · 근거에 고른 사실");

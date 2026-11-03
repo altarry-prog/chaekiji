@@ -112,21 +112,21 @@ ok(r3d["pickup"] == "꿈빛" and r3d["route"] == "visit", "   [10/18] 「부천�
 r10 = c.call("consult_request", utterance="희랍어 시간 있나요?", pickup="상동")
 ok(r10["found"] and r10["route"] == "check" and "확인하지 못했습니다" in r10["notice"] and "소장되어 있지 않습니다" not in r10["notice"]
    and r10["availability"]["nation"] is None and any("비치" in x for x in r10["policy"]["pending"]) and "확인 불가" in r10["desk_memo"],
-   "④′ 그 책 조회만 실패 + 픽스처에도 없는 책 — 「미소장 → 책바다」가 아니라 「소장 확인 불가 → 창구 조회」(비치 규정도 창구 확인)")
+   "④′ 그 책 조회만 실패 + 픽스처에도 없는 책 — 「미소장 → 책바다」가 아니라 「소장 확인 불가 → 안내데스크 조회」(비치 규정도 안내데스크 확인)")
 from urllib.parse import quote as _q
 ok(r10["official_link"] == "https://alpasq.bcl.go.kr/search/keyword/" + _q(r10["book"]["title"], safe="")
    and (r["official_link"] or "").endswith("/" + r["book"]["isbn13"]),
    "④‴ [10/18] 누리집 링크 — 소장을 확인한 책은 ISBN(그 판본 화면), 소장 확인 불가인 책은 제목 검색(그 판본이 없을 수도 있어)")
 r11 = c.call("consult_request", utterance="흐르는 강물처럼", pickup="상동")
 ok(r11["found"] is False and r11["route"] == "check" and "연결되지 않아" in r11["notice"] and r11["desk_memo"].startswith("[조회 불가]"),
-   "④″ 서지 검색부터 실패 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 창구 조회」")
+   "④″ 서지 검색부터 실패 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 안내데스크 조회」")
 ok("상호대차 제외 자료 아님" in r2["policy"]["pending"] and "상호대차 제외 자료 아님" not in r["policy"]["pending"],
-   "   자료 유형·신착을 모르는 책(정보나루 서지)은 제외 자료 규정도 창구 확인 — 픽스처 도서는 그대로 판정")
+   "   자료 유형·신착을 모르는 책(정보나루 서지)은 제외 자료 규정도 안내데스크 확인 — 픽스처 도서는 그대로 판정")
 r12 = c.call("consult_request", utterance="채식주의자 있나요?", pickup="상동",
              member={"ill_count": 1, "total_loans": 3, "loans_at_pickup": 0, "overdue": False, "same_book_pending": False})
 ok(r12["policy"]["pending"] == ["상호대차 제외 자료 아님"] and sum(1 for x in r12["policy"]["checks"] if x["pass"] is not None) == 6
-   and "남은 규정(상호대차 제외 자료 아님)은 창구에서 확인해 드립니다." in r12["notice"] and "회원 조건: 사서 입력(" in r12["desk_memo"],
-   "④⁗ [11/1] 회원 조건 5칸을 준 정보나루 서지 도서 — 규정 6종 판정, 자료 유형·신착(정보나루에 없음) 1종만 창구 확인")
+   and "남은 규정(상호대차 제외 자료 아님)은 안내데스크에서 확인해 드립니다." in r12["notice"] and "회원 조건: 사서 입력(" in r12["desk_memo"],
+   "④⁗ [11/1] 회원 조건 5칸을 준 정보나루 서지 도서 — 규정 6종 판정, 자료 유형·신착(정보나루에 없음) 1종만 안내데스크 확인")
 allj = json.dumps([r, r2, r3, r10, r11, r12], ensure_ascii=False)
 ok(FAKE_KEY not in allj and "authKey" not in allj, "⑤ 응답에 인증키 흔적 없음")
 banner = c.banner()
@@ -145,7 +145,7 @@ ok(r5["mode"] == "demo", "① auto → 중계 죽어 있으면 demo 선택")
 r5b = c3.call("consult_request", utterance="데미안 빌리고 싶어요", pickup="상동")
 ok(r5b["found"] is False and r5b["route"] == "check" and "연결되지 않아" in r5b["notice"] and "저자나 출판사" not in r5b["notice"]
    and r5b["desk_memo"].startswith("[조회 불가]") and "auto → demo" in r5b["reason"],
-   "   [10/19 밤] auto인데 중계에 닿지 못하면 시연 도서 밖의 책은 되묻지 않고 「조회 불가 → 창구」(처음 보는 AI 리허설 지적)")
+   "   [10/19 밤] auto인데 중계에 닿지 못하면 시연 도서 밖의 책은 되묻지 않고 「조회 불가 → 안내데스크」(처음 보는 AI 리허설 지적)")
 c3.banner()
 print("── 매일 갱신 스냅샷(refresh_today.py 결과) ──")
 tmp = Path(tempfile.mkdtemp())
@@ -238,6 +238,13 @@ ok(p8["found"] and p8["isbn13"] == "9791187268512" and [b["isbn13"] for b in p8.
    "   ⑦⁵ [10/19 밤] 판본 보정 준비 — 같은 작품의 다른 판(같은 서명·같은 첫 저자)을 따로 모음: 「문헌정보학개론 김수경」 2021 → 2024 판, 저자가 다른 같은 제목 책은 판이 아님")
 def _boom(q): raise RuntimeError("연결 끊김")
 p7 = _naru.pick_search("아무 책", _boom, _E, unavailable_reason="중계 응답 없음")
-ok(p7["found"] is False and p7.get("unavailable") is True and _naru.pick_search("아무도 모르는 제목", _fake, _E)["candidates"] == [],
-   "   ⑦⁗ 첫 검색이 끊기면 「없음」이 아니라 unavailable(v0.3.5 그대로) · 결과가 없으면 후보 없이 못 찾음")
+_rs0 = _naru._relay_search
+_naru._relay_search = lambda **k: _boom(None)
+try:
+    w7 = _naru.search("편의점 인간", mode="relay")
+finally:
+    _naru._relay_search = _rs0
+ok(p7["found"] is False and p7.get("unavailable") is True and _naru.pick_search("아무도 모르는 제목", _fake, _E)["candidates"] == []
+   and w7["found"] is False and w7.get("unavailable") is True,
+   "   ⑦⁗ 첫 검색이 끊기면 「없음」이 아니라 unavailable(v0.3.5 그대로) · 결과가 없으면 후보 없이 못 찾음 · [11/3] 짧은 낱말만 겹친 문의도 확인이 끊기면 시연 도서로 단정하지 않음")
 print(f"\n중계 시험 {PASS}건 통과 — 키 없이 오늘 데이터, 중계가 멈춰도 멈추지 않는다.")

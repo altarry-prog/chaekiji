@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<!-- 책이지 시연 웹 v1.12.25 (2026. 11. 3.) · 캐시 chaekiji-v51 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
+<!-- 책이지 시연 웹 v1.12.26 (2026. 11. 3.) · 캐시 chaekiji-v52 · 판이 바뀌면 이 줄도 고친다(운영 점검이 첫 판 표시를 읽음) -->
 <noscript><style>.screen.on,.gate-in{animation:none!important}</style></noscript>
 <script>/* v1.12.11: 시작 안전장치 ① — 시작 중 오류를 모아 둔다(맨 끝 ②가 안내 띠에 씀). 오래된 브라우저에서도 돌게 옛 문법만 */
 window.__CJ_ERR=[];try{window.addEventListener("error",function(e){try{if(window.__CJ_ERR.length<3)window.__CJ_ERR.push(String((e&&e.message)||"오류")+((e&&e.lineno)?" (줄 "+e.lineno+")":""));}catch(x){}});}catch(x){}
@@ -1099,6 +1099,7 @@ const RELAY = "https://chaekiji-relay.altarry2.workers.dev";
    탭이 강제 종료될 수 있음(Electron이 같은 문제를 고친 기록).
    담당자 15:43 「원인마다 해결 방법」: 광고 차단이 단순 배치로도 화면 틀을 숨기면 틀의 이름을 바꿔 피함(.cjx), 10초 안에 다 받지 못하면
    연결 알림(다시 불러오기 · 휴대폰 데이터 · 그림으로 둘러보기, 다 받으면 지움). 판정·자료 흐름은 그대로 */
+/* v1.12.26(2026. 11. 3., 캐시 v52): 구동 심사(15시) 지적 — 직접 입력에서 짧은 찾기 낱말 하나만 겹치면(「편의점 인간」·「설민석의 조선왕조실록」·「온실가스 줄이기」) 시연 도서로 단정하던 것을, 「예시 5권만 찾을 수 있어요」 안내와 홈페이지 검색 링크로 */
 /* v1.12.25(2026. 11. 3., 캐시 v51): 독립 검토(12:20) 지적 — 「대신 한 일」의 「규정상 신청 없이 바로 대출」이 책이지가 대출까지 한 것처럼 읽힘 → 「규정상 신청 없이 바로 빌릴 수 있음 확인」(방문 안내·위치 안내 두 곳, 다른 9개 언어는 원래 「확인」의 뜻이라 그대로) */
 /* v1.12.24(2026. 11. 3., 캐시 v50): 담당자 11:23 「쉽게 다 바꿔줘 지금 말들이 너무 어려워」. 한국어 화면·음성의 어려운 낱말만 바꿈: ⓘ 안내 「판정」 칸을 「규정 확인」으로(수령관 비치 → 받을 도서관에 같은 책, 한도 3종 → 권수 한도 3가지, 제외 자료 → 빌려주지 않는 자료, 중복 신청 → 이중 신청),
    「정보나루 자료로 판정해요」 → 「확인해요」, 「수령 도서관이자 판정의 기준」 → 「책을 받을 도서관이자 확인의 기준」, 신청 확인의 「수령 도서관」 → 「받을 도서관」(화면·음성), 「수령 기한」 → 「찾아갈 기한」, 「수령 방법」 → 「받는 방법」, 「기한 내 미수령 시」 → 「기한 안에 찾아가지 않으면」, 「책나래 우편 수령」 → 「책나래 우편으로 받기」, 「전일 기준」 → 「하루 전 기준」, 「대신 한 일」의 「규정상 신청 불필요 판정」 → 「규정상 신청 없이 바로 대출」, 「신청 경로 판정」 → 「빌리는 방법 정함」.
@@ -3237,9 +3238,17 @@ function _lcs(a, b){ /* 최장 공통 부분문자열 길이 — 짧은 문자�
     for(let j = 1; j <= b.length; j++){ if(a[i-1] === b[j-1]){ cur[j] = prev[j-1] + 1; if(cur[j] > best) best = cur[j]; } }
     prev = cur; }
   return best; }
+/* v1.12.26: 짧은 한글 찾기 낱말(3자 이하) 하나만 겹치고 요청·받을 곳 말을 뺀 뒤 다른 말이 2자 이상 남으면 그 사례로 단정하지 않는다(서버 naru.weak_fixture와 같은 생각).
+   외국어 짧은 낱말(少年·温室·便利店 등)은 그 나라 제목(少年来了 등)을 그대로 맞혀야 하므로 이 확인을 하지 않는다 */
+function _weakHit(text, i){ const t = _norm(text); const ks = CASES[i].key.map(_norm).filter(k => k && t.indexOf(k) >= 0);
+  if(ks.length !== 1 || [...ks[0]].length > 3 || !/[가-힣]/.test(ks[0])) return false;
+  const core = String(text||'').replace(/[?？.!,。]/g,' ')
+    .replace(/\s*(빌리고 ?싶(어요|은데요|습니다)|빌릴 ?수 ?있(어요|나요|을까요)|찾아 ?(주세요|줘)|있(나요|어요|을까요|습니까)|대출 ?(되나요|할 ?수 ?있나요)|읽고 ?싶어요|보고 ?싶어요)\s*$/,'')
+    .replace(/\s*\S+?(도서관)?(에서|으로|로)\s*받\S*\s*$/,'');
+  return [..._norm(core).replace(ks[0], '')].length >= 2; }
 function matchCase(text){ const t = _norm(text); if(!t) return -1; let hit = -1, score = 0;
   CASES.forEach((c,i) => { const n = c.key.filter(k => t.indexOf(_norm(k)) >= 0).length; if(n > score){ score = n; hit = i; } });
-  if(hit >= 0) return hit;
+  if(hit >= 0 && !_weakHit(text, hit)) return hit;
   /* 2차: 어느 언어의 예시 제목이든 — 통째로 들어 있거나 제목의 6할 이상이 이어서 들어 있으면 그 사례로 */
   let best = -1, bestR = 0;
   _titles().forEach(([i, title]) => { if(title.length < 4) return; const r = t.indexOf(title) >= 0 ? 1 : _lcs(t, title) / title.length; if(r > bestR){ bestR = r; best = i; } });

@@ -217,7 +217,7 @@ def search(utterance: str, mode="demo"):
     if mode == "relay":
         title = clean_title(utterance)
         if not split_volume(title)[1]:                # [10/19] 권차를 말하면 시연 도서(1권) 픽스처로 바로 가지 않는다
-            fx = search(utterance, mode="demo")       # 실측 서지 5종은 픽스처가 먼저(시연 도서는 늘 같은 답)
+            fx = _fixture_search(utterance)            # 실측 서지 5종은 픽스처가 먼저(시연 도서는 늘 같은 답)
             if fx.get("found"):
                 fx["evidence"] = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준"
                 weak = weak_fixture(utterance, title)
@@ -228,14 +228,26 @@ def search(utterance: str, mode="demo"):
                 try:
                     alt = pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
                                       first_only=True, min_score=70)
-                except Exception:
-                    return fx
-                if not alt.get("found") or _core_title(alt.get("title"), alt.get("author")) == _core_title(fx.get("title"), fx.get("author")):
+                except Exception:                         # [11/3] 확인이 끊기면 시연 도서로 단정하지 않는다(구동 심사: 「편의점 인간」→ 불편한 편의점)
+                    return {"found": False, "reason": f"중계 응답 없음: 시연 도서 찾기 낱말 「{weak}」만 겹쳐 확인하지 못함(검색어 「{title}」)",
+                            "candidates": [], "unavailable": True}
+                if not alt.get("found"):                  # [11/3] 맞는 책을 못 고르면 시연 도서가 아니라 되묻기
+                    return alt
+                if _core_title(alt.get("title"), alt.get("author")) == _core_title(fx.get("title"), fx.get("author")):
                     return fx
                 alt["evidence"] += f" · 시연 도서 찾기 낱말 「{weak}」만 겹쳐 서지 검색으로 다른 책을 고름"
                 return alt
         return pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
                            unavailable_reason=f"중계 응답 없음: 픽스처 5종에도 없는 도서(검색어 「{title}」)")
+    fx = _fixture_search(utterance)
+    weak = weak_fixture(utterance, clean_title(utterance)) if fx.get("found") else None
+    if weak:                                          # [11/3] 중계 없이 돌 때도 짧은 낱말만 겹치면 단정하지 않는다(「설민석의 조선왕조실록」 등)
+        return {"found": False, "candidates": [],
+                "reason": f"시연 도서 찾기 낱말 「{weak}」만 겹침: 모의 모드는 시연 도서 5종만 찾아 다른 책일 수 있음. 제목·저자를 더 알려 주세요"}
+    return fx
+
+def _fixture_search(utterance):
+    """시연 도서 5종(실측 서지 픽스처)에서 찾기 — 권차가 다르면 찾지 않음."""
     best = _fixture_match(utterance)
     if not best:
         return {"found": False, "reason": "픽스처에 없는 도서(모의 모드 한계). live 모드에서는 전국 서지 검색"}
@@ -303,7 +315,7 @@ def availability_nation(isbn13: str, mode="demo"):
 def _unknown(libraries: dict, why: str) -> dict:
     """[v0.3.5] 소장·대출 상태를 알 수 없을 때 — 모든 관을 unknown으로 돌려주고 LAST_META에 unavailable을 남긴다.
     정보나루가 안 되는데 그 책이 픽스처에도 없으면, 예전처럼 「미소장」(none)으로 채우면 「16곳에 없음 → 책바다」라는
-    틀린 안내가 나간다(2026. 10. 16. 독립 검토에서 발견). 모르면 모른다고 하고 창구 조회로 넘긴다."""
+    틀린 안내가 나간다(2026. 10. 16. 독립 검토에서 발견). 모르면 모른다고 하고 안내데스크 조회로 넘긴다."""
     global LAST_META
     LAST_META = {"basis": f"관내: {why}, 소장·대출 상태 확인 불가", "asof": _today(),
                  "holding_count": None, "calls": 0, "cached": False, "unavailable": True}

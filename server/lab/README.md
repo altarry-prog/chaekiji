@@ -8,7 +8,7 @@ AI 정부 실험실 가상서버(우분투)용으로 만든 것들. 가상서버
 | 1 | `naru_probe.py` | 첫 실호출: 키 확인, `exactMatch` 값 비교, bookExist·libSrchByBook 모양 확인 | 5회 |
 | 2 | `make_titles.py` | 인기대출도서로 측정용 목록(`out/titles.csv`) 생성 | 1~2회 |
 | 2 | `measure.py` | 도서 1종당 호출 수·소요 시간 측정, 요약표, 측정 A 기록지 표본 생성 (`--demo`로 연습) | 도서당 2~18회 |
-| 3 | `make_city_config.py` | 다른 도시 도서관 번호표로 `config/<도시>.yaml` 초안 | 1회 |
+| 3 | `make_city_config.py` | 다른 도시 도서관 번호 목록으로 `config/<도시>.yaml` 초안 | 1회 |
 | 3 | `check_store.py` | 저장 계층·감사 기록·관내 출처 전환 점검 시험 14건(네트워크 없음) | 0 |
 | - | `refresh_today.py` · `refresh_list.txt` | [v0.3.4] 매일 1회 조회분 갱신: 픽스처 5종 + 목록의 ISBN, `--max-calls` 상한, `--demo` 연습 | 권당 1+책이 있는 도서관 수 |
 | - | `stability.py` | 하루 전 기준 자료의 하루 사이 유지율: 매일 새벽 자료(`data/holdings-today.json`)의 깃 이력을 이어지는 두 날씩 견줌, `--write`면 `out/`에 기록표 | 0 |

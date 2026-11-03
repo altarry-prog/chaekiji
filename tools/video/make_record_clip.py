@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""흐름 2 장면용 클립 — 저장소에 있는 공개 모델 실측 기록표(server/lab/out/)를 그대로 화면에 띄워 넘겨 보는 영상(clips/model2.webm).
+"""흐름 2 장면용 클립 — 저장소에 있는 AI 몫 지표 기록표(server/lab/out/)를 그대로 화면에 띄워 넘겨 보는 영상(clips/model2.webm).
 
-코랩 실행 화면을 녹화하지 못해(행정망 PC에서 코랩이 열리지 않음) 그 자리에 「실제 기록표」를 보인다.
+[11. 2.] 공통기반 지원(예정) 모델 3종(GPT-OSS·엑사원·Solar)의 AI 몫 지표(고정 문의 24건 × 3회, 11. 1.~2.)로 바꿈.
+예전 판은 10. 18. 공개 모델 실측 기록표(코랩 노트북 코드를 깃허브 액션에서 돌린 것)를 보였다(이 파일의 깃 이력).
 기록표 글은 한 글자도 바꾸지 않고, 마크다운을 화면용으로만 그린다. 자막은 clips/model2.json.
 
-  python3 tools/video/make_record_clip.py      # → tools/video/clips/model2.webm (약 22초, 1280x720)
+  python3 tools/video/make_record_clip.py      # → tools/video/clips/model2.webm (약 11초, 1280x720)
 
 필요: pip install markdown playwright · ffmpeg 없어도 됨(플레이라이트가 webm으로 바로 씀)."""
 import os, asyncio, shutil, glob, markdown
@@ -33,6 +34,7 @@ code{font-family:M,monospace;font-size:15px;background:#eff1f3;padding:1px 5px;b
 details{margin:8px 0;padding:6px 12px;background:#fbfbfc;border:1px solid #e5e8eb;border-radius:6px;font-size:16px}
 summary{font-weight:600;cursor:pointer}
 .hl{outline:4px solid #f2b705;outline-offset:3px;border-radius:4px;transition:outline-color .3s}
+thead th{position:sticky;top:43px;z-index:1;box-shadow:0 1px 0 #d0d7de}   /* [11. 2.] 아래로 넘겨도 모델 이름 칸이 보이게 */
 """
 
 
@@ -49,38 +51,35 @@ EASE = """([y,ms])=>new Promise(r=>{const el=document.scrollingElement;const y0=
  const step=t=>{const k=Math.min(1,(t-t0)/ms);const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;el.scrollTop=y0+(y-y0)*e;if(k<1)requestAnimationFrame(step);else r();};requestAnimationFrame(step);})"""
 
 
+async def hl_rows(pg, words):
+    await pg.evaluate("""ws=>{const rows=[...document.querySelectorAll('main table')][0].querySelectorAll('tr');
+      rows.forEach(r=>{const c=r.querySelector('td');if(c&&ws.some(w=>c.textContent.includes(w)))r.classList.add('hl')})}""", words)
+
+
 async def main():
     tmp = os.path.join(HERE, "rec", "clipwork")
     shutil.rmtree(tmp, ignore_errors=True); os.makedirs(tmp)
-    idx = os.path.join(tmp, "index.html"); rec = os.path.join(tmp, "record.html")
+    idx = os.path.join(tmp, "index.html"); r1 = os.path.join(tmp, "open.html"); r2 = os.path.join(tmp, "solar.html")
     open(idx, "w", encoding="utf-8").write(page(os.path.join(OUT, "README.md"), "실측 기록 목록"))
-    open(rec, "w", encoding="utf-8").write(page(os.path.join(OUT, "model2_record_actions_2026-10-18_1446.md"), "4차 기록표(사람이 고치지 않은 원 기록)"))
+    open(r1, "w", encoding="utf-8").write(page(os.path.join(OUT, "ai_metrics_record_actions_2026-11-01_1529.md"), "GPT-OSS·엑사원 기록표(11. 1.)"))
+    open(r2, "w", encoding="utf-8").write(page(os.path.join(OUT, "ai_metrics_solar_record_actions_2026-11-02_0945.md"), "Solar 기록표(11. 2.)"))
     async with async_playwright() as p:
         b = await p.chromium.launch()
         ctx = await b.new_context(viewport={"width": W, "height": H}, record_video_dir=tmp, record_video_size={"width": W, "height": H})
         pg = await ctx.new_page()
-        await pg.goto("file://" + idx); await pg.evaluate("document.fonts.ready"); await pg.wait_for_timeout(300)
-        # 0~6초: 목록 — 공개 모델 네 차례 표
-        tb = pg.locator("table").first
-        await tb.scroll_into_view_if_needed(); y = await pg.evaluate("e=>e.getBoundingClientRect().top+scrollY-150", await tb.element_handle())
-        await pg.evaluate(EASE, [y, 900]); await pg.wait_for_timeout(300)
-        await pg.evaluate("e=>e.classList.add('hl')", await tb.element_handle())
-        await pg.wait_for_timeout(4600)
-        # 6~14초: 4차 기록표 — 한눈에 표
-        await pg.goto("file://" + rec); await pg.evaluate("document.fonts.ready"); await pg.wait_for_timeout(300)
-        t1 = pg.locator("table").first
-        y = await pg.evaluate("e=>e.getBoundingClientRect().top+scrollY-170", await t1.element_handle())
-        await pg.evaluate(EASE, [y, 1000])
-        await pg.evaluate("e=>e.classList.add('hl')", await t1.element_handle())
-        await pg.wait_for_timeout(6500)
-        # 14~22초: 문의 5(베트남어) — 판정은 같지만 답 원문은 한국어, 도서관 이름도 틀림
-        h = pg.locator("h2", has_text="문의 5").first
-        await pg.evaluate("()=>document.querySelectorAll('details').forEach(d=>{if(d.closest('main')&&[...document.querySelectorAll('h2')].findIndex(x=>x.textContent.includes('문의 5'))>=0)d.open=false})")
-        await pg.evaluate("()=>{const hs=[...document.querySelectorAll('h2')];const i=hs.findIndex(x=>x.textContent.includes('문의 5'));let n=hs[i].nextElementSibling;while(n&&n.tagName!=='H2'){if(n.tagName==='DETAILS')n.open=true;n=n.nextElementSibling}}")
-        y = await pg.evaluate("e=>e.getBoundingClientRect().top+scrollY-70", await h.element_handle())
-        await pg.evaluate(EASE, [y, 1400]); await pg.wait_for_timeout(2600)
-        y2 = await pg.evaluate("e=>e.getBoundingClientRect().top+scrollY+260", await h.element_handle())
-        await pg.evaluate(EASE, [y2, 1600]); await pg.wait_for_timeout(2600)
+        # [11. 3.] 5분 안에 Solar 상담 창 화면을 더하려고 두 쪽만(약 11초): 공개 모델 2종 표 → Solar 표
+        # 0~5.5초: GPT-OSS·엑사원 기록표 「한눈에」 — 다른 책으로 답함 · 판정 갈래 · 안내문 사실
+        await pg.goto("file://" + r1); await pg.evaluate("document.fonts.ready"); await pg.wait_for_timeout(200)
+        t1 = pg.locator("main table").first
+        await hl_rows(pg, ["다른 책으로 답함", "판정 갈래가 기준과 같다", "안내문 사실 모두 옮김"])
+        y = await pg.evaluate("e=>{const r=[...e.querySelectorAll('tr')].find(t=>t.textContent.includes('다른 책으로 답함'));return r.getBoundingClientRect().top+scrollY-300}", await t1.element_handle())
+        await pg.evaluate(EASE, [y, 900]); await pg.wait_for_timeout(4300)
+        # 5.5~11초: Solar 기록표 「한눈에」 — 한국어판 제목으로 바꿔 넘김 · 판정 갈래 · 안내문 사실
+        await pg.goto("file://" + r2); await pg.evaluate("document.fonts.ready"); await pg.wait_for_timeout(200)
+        t2 = pg.locator("main table").first
+        await hl_rows(pg, ["한국어판 제목으로 바꿔 넘겼다", "판정 갈래가 기준과 같다", "안내문 사실 모두 옮김"])
+        y = await pg.evaluate("e=>{const r=[...e.querySelectorAll('tr')].find(t=>t.textContent.includes('한국어판 제목으로'));return r.getBoundingClientRect().top+scrollY-200}", await t2.element_handle())
+        await pg.evaluate(EASE, [y, 900]); await pg.wait_for_timeout(4300)
         vid = await pg.video.path()
         await ctx.close(); await b.close()
     dst = os.path.join(HERE, "clips", "model2.webm")

@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(HERE, "clips", "ask_raw")
 m = json.load(open(os.path.join(RAW, "marks.json"), encoding="utf-8"))
 k = m["marks"]
-a0, a1, b1, c1 = max(0.0, k["type"] - 0.5), k["click"] + 0.8, k["done"], k["end"]
+a0, a1, b1, c1 = max(0.0, k["click"] - 2.2), k["click"] + 0.8, k["done"], k["end"] - 1.5   # 입력 끝부분부터, 끝의 1.5초는 뺌(5분 안, 숫자 칸을 더 오래 보이려고)
 wait = b1 - a1
 speed = max(1.0, wait / 2.0)
 d1, d2, d3 = a1 - a0, (b1 - a1) / speed, c1 - b1

@@ -429,12 +429,12 @@ async def main():
                               {"v": "106", "u": "번", "l": "책을 맞게 넘긴 경우", "n": "모두 같은 판정(판정은 도구가 정함, 2026. 11. 1.~2.)", "hot": True}],
                              "말을 책으로 바꾸는 몫은 모델마다 달라 <b>한국어판 제목으로 바꿔 넘긴 것은 54번 중 0~12번</b>이고, 다른 책으로 답한 3번(엑사원)은 접수 메모의 책 이름·ISBN으로 사서가 확인합니다."])
         cue("공통기반 지원(예정) 모델 3종에 같은 지시문·같은 도구", "GPT-OSS 20B · 엑사원 3.5 2.4B · Solar Pro 4 · 책을 맞게 넘기면 판정은 도구가 정해 모두 같음")
-        g8 = share("08", [0.02, 0.02, 0.03, 0.04], [0.6, 0.6, 0.8, 1.0])
+        g8 = share("08", [0.02, 0.02, 0.03, 0.04], [0.45, 0.45, 0.6, 0.8])   # [11. 3.] 5분 안
         for i in range(3):
             await W(g8[i]); await ev(f"numsOn({i})")
         # [10/30] 1.2~1.4초만 보이던 자막 두 줄(1차 검수 A 28)은 빼고, 같은 말은 화면 글과 이어지는 기록표 클립 자막(8초씩)이 맡는다
         await W(g8[3]); await ev("numsNote()")
-        await W(600)   # [11. 3.] 0.8초에서(Solar 화면이 더해져 5분 안)
+        await W(2200)   # [11. 3.] 숫자 칸(106번)을 읽을 시간 — 대신 Solar 화면 앞부분·기록표 첫 0.5초를 줄임(5분 안)
         m = clip_meta("model2")
         if m:
             await play_clip(m)
@@ -442,7 +442,7 @@ async def main():
             await slot("공개 모델 실측 기록표", "clips/model2.webm이 없습니다(make_record_clip.py)")
             await W(5000)
         await acdp.send("Page.startScreencast", {"format": "jpeg", "quality": 90, "maxWidth": 468, "maxHeight": 948, "everyNthFrame": 1})
-        await hold("08", pad=0.3)
+        await hold("08", pad=0.15)
 
         # ── 9. 흐름 3: 시민 음성 화면(왼쪽 위에 단계 표시) ──
         scene("09", "9 흐름 3 시작", "왼쪽 단계 표시(처음 안내·판정·신청 확인·접수(시연)·누구나)와 설명 + 오른쪽 휴대폰(시연 웹 v1.12.20 실제 조작)")
@@ -602,7 +602,7 @@ async def main():
                             ["책이지: 상호대차 AI 에이전트", "말 한마디로<br>내 손안에 책이", L12, "팀 책이지 · 부천시립상동도서관",
                              "음성 해설: AI 합성(MeloTTS)" if NARR and not A.mute else "", "/tools/video/cmp/qr_demo.png", "휴대폰으로 시연 웹 열기"])
         cue("말 한마디로 내 손안에 책이", " · ".join(f"{a} {b}" for a, b in L12) + " · 팀 책이지 · 부천시립상동도서관")
-        await W(5000)
+        await W(4500)   # [11. 3.] 5초에서(5분 안)
         await hold("12", pad=0.4)   # [10/30] 0.9→0.6, 17:55 0.4로(5분 안)
         t_end = now(); mark("종료")
         await W(300)

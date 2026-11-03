@@ -83,7 +83,10 @@ async def main():
         vid = await pg.video.path()
         await ctx.close(); await b.close()
     dst = os.path.join(HERE, "clips", "model2.webm")
-    shutil.move(vid, dst)
+    # [11. 3.] 첫 쪽을 여는 0.5초(글꼴이 오기 전 빈 화면)는 잘라 냄
+    import subprocess
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", "0.5", "-i", vid, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "30", "-row-mt", "1", "-an", dst], check=True)
+    os.remove(vid)
     print("clip", dst, os.path.getsize(dst) // 1024, "KB")
 
 

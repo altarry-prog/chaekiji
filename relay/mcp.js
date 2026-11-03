@@ -23,7 +23,7 @@ const SNAP_CACHE_MS = 10 * 60 * 1000;
 const ROUTE_LABEL = { visit: "바로 이용(받을 도서관에 대출 가능)", ill: "관내 상호대차", reserve: "예약 권장(시립도서관에 있는 책이 모두 대출 중)",
                       sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정", check: "소장 확인 불가(창구에서 조회)" };
 const MEMBER_RULE_KEYS = ["권", "연체", "중복"];                 // 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
-// [11/4] 판정 한 줄(verdict) — tools._verdict와 같은 글. 관내 상호대차일 때만 걸리는 규정·창구에서 확인할 것을 덧붙인다
+// [11/3] 판정 한 줄(verdict) — tools._verdict와 같은 글. 관내 상호대차일 때만 걸리는 규정·창구에서 확인할 것을 덧붙인다
 function verdictOf(route, pol, bad) {
   const label = ROUTE_LABEL[route];
   if (route !== "ill") return label;

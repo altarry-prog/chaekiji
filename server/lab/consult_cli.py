@@ -51,7 +51,7 @@ def main():
     if res.get("isError"):
         print("◀ 오류: " + text); sys.exit(1)
     o = json.loads(text)
-    print(f"◀ 결과: {o.get('verdict') or o['route_label']}" + (f" · 책이 있는 도서관 {o['from_lib']}" if o.get("route") == "ill" else ""))   # [11/4] 판정 한 줄(verdict)
+    print(f"◀ 결과: {o.get('verdict') or o['route_label']}" + (f" · 책이 있는 도서관 {o['from_lib']}" if o.get("route") == "ill" else ""))   # [11/3] 판정 한 줄(verdict)
     if o.get("book"):
         b = o["book"]; print(f"◀ 책: 『{b['title']}』 {b.get('author') or ''} · ISBN {b['isbn13']}")
     av = o.get("availability") or {}

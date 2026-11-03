@@ -227,7 +227,7 @@ ok(p3["found"] and p3["isbn13"] == "9790000000103" and p4["found"] and p4["isbn1
    and _naru.search("설민석 한국사 대모험 3권", mode="snapshot")["found"] is False
    and _naru._core_title("구름빵 : 키 크는 빵 주세요", "GIMC|DPS") != _naru._core_title("구름빵", "글·그림: 백희나")
    and _naru._core_title("채식주의자:한강 연작소설", "한강") == "채식주의자",
-   "   ⑦″ 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 2권(시연 도서 1권이 아님, 중계 없는 모의·스냅샷 모드에서도 1권으로 답하지 않음 11. 4.), 없는 권·권 모르는 판은 고르지 않음 · 부서명이 작품을 가르면 다른 책")
+   "   ⑦″ 권차 — 「흔한남매 1권」은 1권(모의 권차), 「불편한 편의점 2」는 2권(시연 도서 1권이 아님, 중계 없는 모의·스냅샷 모드에서도 1권으로 답하지 않음 11. 3.), 없는 권·권 모르는 판은 고르지 않음 · 부서명이 작품을 가르면 다른 책")
 p5 = _naru.pick_search("문헌정보학개론", _fake, _E)
 p6 = _naru.pick_search("문헌정보학개론 정동열", _fake, _E)
 ok(p5["found"] and len(p5["same_title_others"]) == 3 and p6["found"] is False and len(p6["candidate_books"]) == 3,

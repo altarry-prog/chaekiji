@@ -121,7 +121,7 @@ function parseArgs(a) {
 // 화면에 돌려줄 도구 판정 요점(모델의 답과 나란히 보여 준다)
 function toolBrief(o) {
   const b = o.book || {};
-  return { route: o.route, route_label: o.route_label, verdict: o.verdict || o.route_label, pickup: o.pickup,   // [11/4] 판정 한 줄
+  return { route: o.route, route_label: o.route_label, verdict: o.verdict || o.route_label, pickup: o.pickup,   // [11/3] 판정 한 줄
            book: o.book ? { title: b.title, author: b.author, publisher: b.publisher, year: b.year, isbn13: b.isbn13 } : null,
            asof: (o.availability || {}).asof || null, available_at: (o.availability || {}).available_at || [],
            loaned_at: (o.availability || {}).loaned_at || [], official_link: o.official_link || null,

@@ -64,7 +64,7 @@ let c = await call(worker, env, "consult_request", { utterance: "나미야 잡�
 ok(!c.isError && c.out.route === "ill" && c.out.from_lib === "꿈여울" && c.out.availability.asof === today &&
    c.out.notice.includes(`정보나루 ${+today.slice(0, 4)}. ${+today.slice(5, 7)}. ${+today.slice(8, 10)}. 조회, 하루 전 기준`) &&
    !log.some(u => u.includes("data4library")) && c.out.verdict === "관내 상호대차 · 창구 확인: 회원 조건",
-   "나미야 — 오늘 새벽 자료로 판정(정보나루 호출 0회) · 관내 상호대차 · 안내문에 조회일 · 판정 한 줄에 「창구 확인: 회원 조건」(11. 4.)");
+   "나미야 — 오늘 새벽 자료로 판정(정보나루 호출 0회) · 관내 상호대차 · 안내문에 조회일 · 판정 한 줄에 「창구 확인: 회원 조건」(11. 3.)");
 ok(c.out.official_link === "https://alpasq.bcl.go.kr/search/keyword/9788972756194" &&   // [10/18] 부천 링크 틀 제목 → ISBN(그 판본 화면까지)
    c.out.notice.includes("공식 누리집에서 이 책 보기·신청") && c.out.desk_memo.includes("접수: 창구에서"),
    "   공식 누리집 링크 · 접수 메모(접수는 창구)");

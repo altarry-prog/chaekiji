@@ -1,6 +1,6 @@
-# Solar Pro 4 실측 도구
+# Solar Pro 4 측정 도구
 
-업스테이지 Solar Pro 4(참가 안내서가 행정안전부 AI 공통기반 지원(예정) 모델로 든 솔라 계열)로 「AI가 맡는 몫 지표」를 돌립니다. 공개 모델 지표(`tools/model2/run_ai_metrics.py`, 문의 24건 × 지시문 2종 × 3회)와 같은 실행 도구·채점·호스트(`server/hosts/ollama_host.py`)를 쓰고, 모델 자리에만 작은 중계를 붙입니다.
+업스테이지 Solar Pro 4(참가 안내서가 행정안전부 AI 공통기반 지원(예정) 모델로 든 솔라 계열)로 「AI가 맡는 몫 지표」를 돌립니다. 공개 모델 지표(`tools/model2/run_ai_metrics.py`, 문의 24건 × 지시문 2종 × 3회)와 같은 실행 도구·채점·호스트(`server/hosts/ollama_host.py`)를 쓰고, 모델 자리에만 작은 연결 프로그램을 붙입니다.
 
 - `upstage_ollama_proxy.py`: 127.0.0.1:11434에서 Ollama 모양 요청(/api/chat)을 받아 업스테이지 API(오픈AI 모양, `solar-pro4`)로 옮겨 보내고 답을 돌려줍니다. `--check`는 연결·모델 이름·도구 호출 지원을 한 번 확인합니다.
 - `report_solar.py`: 공개 모델 지표의 기록표 코드를 그대로 쓰고, 모델이 API로 돌아간다는 글만 바꿉니다. 기록 파일은 `server/lab/out/ai_metrics_solar_record_actions_*.md`.

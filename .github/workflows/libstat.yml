@@ -1,0 +1,39 @@
+# 전국 공공도서관 상호대차 실적을 국가도서관통계시스템 공개 API(키 없음)로 합산한다(담당자 11. 3. 10:35).
+# 작업 공간에서는 mcst.go.kr이 막혀 깃허브 액션에서 돈다. 정보나루를 부르지 않고 main을 건드리지 않는다. 결과는 이 가지에 커밋.
+name: libstat
+on:
+  workflow_dispatch:
+    inputs:
+      years:
+        description: '통계 연도(쉼표로)'
+        required: false
+        default: '2024,2025'
+  push:
+    branches: [tools/model2]
+    paths: [".github/workflows/libstat.yml", "tools/model2/libstat_ill.py"]
+permissions:
+  contents: write
+concurrency:
+  group: libstat
+  cancel-in-progress: false
+jobs:
+  sum:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tools/model2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 합산(2024·2025)
+        run: python3 tools/model2/libstat_ill.py server/lab/out "${{ github.event.inputs.years || '2024,2025' }}"
+      - name: 기록을 이 가지에 커밋
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out/libstat_ill* || true
+          git commit -m "전국 공공도서관 상호대차 실적 합산(국가도서관통계 API, 깃허브 액션 ${{ github.run_id }})" || { echo "커밋할 것 없음"; exit 0; }
+          for i in 1 2 3 4 5; do git pull --rebase -q origin tools/model2 && git push origin HEAD:tools/model2 && break; sleep 5; done

@@ -15,7 +15,7 @@ v0.3.1 (실험실 판, 2026. 9.)
 v0.3.4 (상담 비서 판, 2026. 10.)
 - relay 모드: 키가 없는 쪽(심사위원·다른 기관)이 우리 중계(relay/)에 물어 오늘 데이터를 받는다.
   중계가 응답하지 않으면 그 호출만 픽스처로 떨어지고 근거 문구에 그 사실을 적는다.
-- LAST_META.asof: 어느 모드든 「몇 월 며칠 조회분」인지 날짜를 함께 돌려준다(안내문의 전일 기준 표시용).
+- LAST_META.asof: 어느 모드든 「몇 월 며칠 조회분」인지 날짜를 함께 돌려준다(안내문의 하루 전 기준 표시용).
 - snapshot: lab/refresh_today.py가 매일 써 두는 fixtures/holdings-today.json(어제 기준 조회분)을 읽는다.
   auto 모드는 중계 → 신선한 스냅샷(2일 이내) → 8/18 픽스처 순으로 고른다. relay 모드도 스냅샷에 있는 책은 중계를 부르지 않는다(한도 절약)."""
 import json, os, re, time, datetime, socket, urllib.error, urllib.parse, urllib.request
@@ -61,7 +61,7 @@ def snapshot_ok(asof: datetime.date, today: datetime.date) -> bool:
     return FROZEN_FROM <= asof <= today <= FROZEN_UNTIL
 
 def snapshot_fresh() -> bool:
-    """오늘 조회분 파일이 있고 2일 안쪽이면 참(대출 상태는 어차피 전일 기준이라 하루 지난 것까지 쓴다). 심사 기간에는 동결일(10. 30.) 이후 자료도 참."""
+    """오늘 조회분 파일이 있고 2일 안쪽이면 참(대출 상태는 어차피 하루 전 기준이라 하루 지난 것까지 쓴다). 심사 기간에는 동결일(10. 30.) 이후 자료도 참."""
     if not _snap or not _snap.get("holdings"): return False
     try:
         d = datetime.date.fromisoformat(_snap["asof"])
@@ -171,7 +171,7 @@ def _relay_search(utterance=None, isbn13=None):
     docs = r.get("docs", [])
     for x in docs:
         if x.get("isbn13"): _BIB_CACHE[x["isbn13"]] = {**x, "type": "일반", "new_arrival": False,
-                                                       "basis": "정보나루 srchBooks(중계): 자료유형·신착은 미제공(판정 보류)"}
+                                                       "basis": "정보나루 srchBooks(중계): 자료유형·신착은 미제공(확인 보류)"}
     return docs
 
 # ── 계측 ──────────────────────────────────────────────────────────
@@ -275,7 +275,7 @@ def _bib_from_doc(d):
     return {"isbn13": d.get("isbn13"), "title": d.get("bookname"), "author": d.get("authors"),
             "publisher": d.get("publisher"), "year": d.get("publication_year"),
             "type": "일반", "new_arrival": False,
-            "basis": "정보나루 srchBooks(live): 자료유형·신착은 미제공(판정 보류)"}
+            "basis": "정보나루 srchBooks(live): 자료유형·신착은 미제공(확인 보류)"}
 
 def availability_nation(isbn13: str, mode="demo"):
     yday = (datetime.datetime.now(KST).date() - datetime.timedelta(days=1)).isoformat()
@@ -284,14 +284,14 @@ def availability_nation(isbn13: str, mode="demo"):
     if mode == "snapshot" or (mode == "relay" and snapshot_fresh() and isbn13 in (_snap.get("nation") or {})):
         n = (_snap.get("nation") or {}).get(isbn13) if snapshot_fresh() else None
         if n is not None:
-            return {"basis": f"전일 기준 · 정보나루(매일 갱신 · {_snap['asof']} 조회)", "found_count": n.get("count", 0),
+            return {"basis": f"하루 전 기준 · 정보나루(매일 갱신 · {_snap['asof']} 조회)", "found_count": n.get("count", 0),
                     "note": "경기 광역 예시", "asof": _snap["asof"]}
         if mode == "snapshot":
             return availability_nation(isbn13, mode="demo")
     if mode == "relay":
         try:
             r = _relay("/nation", isbn=isbn13)
-            return {"basis": f"전일 기준 · 정보나루(중계 · {r.get('asof', _today())} 조회)",
+            return {"basis": f"하루 전 기준 · 정보나루(중계 · {r.get('asof', _today())} 조회)",
                     "found_count": r.get("found_count", 0), "note": "경기 광역 예시", "asof": r.get("asof")}
         except Exception:
             out = availability_nation(isbn13, mode="demo"); out["note"] += " · 중계 응답 없음 → 픽스처로 복귀"
@@ -318,7 +318,7 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
     if mode in ("relay", "snapshot"):
         sh = _snapshot_holdings(isbn13, libraries)        # 오늘 조회분에 있으면 그걸로(중계 호출·한도 절약)
         if sh is not None:
-            LAST_META = {"basis": f"관내: 정보나루 bookExist(매일 갱신 · {_snap['asof']} 조회 · 전일 기준)", "asof": _snap["asof"],
+            LAST_META = {"basis": f"관내: 정보나루 bookExist(매일 갱신 · {_snap['asof']} 조회 · 하루 전 기준)", "asof": _snap["asof"],
                          "holding_count": sum(1 for v in sh.values() if v != "none"), "calls": 0, "cached": True}
             return sh
         if mode == "snapshot":
@@ -338,7 +338,7 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
             libs = r.get("libs", {})
             out = {name: libs.get(str(code), "none") for name, code in libraries.items()}
             asof = r.get("asof") or _today()
-            LAST_META = {"basis": f"관내: 정보나루 bookExist(중계 · {asof} 조회 · 전일 기준)", "asof": asof,
+            LAST_META = {"basis": f"관내: 정보나루 bookExist(중계 · {asof} 조회 · 하루 전 기준)", "asof": asof,
                          "holding_count": sum(1 for v in out.values() if v != "none"),
                          "calls": r.get("calls"), "cached": bool(r.get("cached"))}
             _HOLD_CACHE[key] = (time.time(), dict(out), dict(LAST_META))
@@ -355,7 +355,7 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
         out = {name: h.get(name, "none") for name in libraries}
         ex = isbn13 in _hold.get("_examples", [])          # 실측이 아닌 예시 장면용 값
         LAST_META = {"basis": ("관내: 예시 데이터(관내에 없는 책의 흐름을 보이려고 꾸민 값, 이 책의 실제 소장과 다름)" if ex
-                               else "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 전일 기준)"), "asof": FIX_ASOF,
+                               else "관내: 정보나루 bookExist(2026. 8. 18. 실측 픽스처 · 하루 전 기준)"), "asof": FIX_ASOF,
                      "holding_count": sum(1 for v in out.values() if v != "none"), "calls": 0, "cached": False, "example": ex}
         return out
     key = (isbn13, region_code)
@@ -378,7 +378,7 @@ def holdings_local(isbn13: str, libraries: dict, region_code: str, mode="demo") 
         r = _get("bookExist", libCode=libraries[name], isbn13=isbn13).get("result", {})
         if r.get("hasBook") == "Y":
             out[name] = "ok" if r.get("loanAvailable") == "Y" else "busy"
-    LAST_META = {"basis": f"관내: 정보나루 bookExist(live · {_today()} 조회 · 전일 기준)", "asof": _today(),
+    LAST_META = {"basis": f"관내: 정보나루 bookExist(live · {_today()} 조회 · 하루 전 기준)", "asof": _today(),
                  "holding_count": len(holding), "calls": len(CALLS) - n0, "cached": False,
                  "region_libs_found": len(resp.get("libs", []))}
     _HOLD_CACHE[key] = (time.time(), dict(out), dict(LAST_META))
@@ -591,4 +591,4 @@ def pick_search(title, search_fn, evidence, unavailable_reason=None, first_only=
 def _live_nation(isbn13):
     resp = _get("libSrchByBook", isbn=isbn13, region="31", pageSize=200)
     libs = resp.get("libs", [])
-    return {"basis": "전일 기준 · 정보나루(live)", "found_count": len(libs), "note": "경기 광역 예시"}
+    return {"basis": "하루 전 기준 · 정보나루(live)", "found_count": len(libs), "note": "경기 광역 예시"}

@@ -10,7 +10,7 @@ def check(rules: dict, member: dict, pickup_on_shelf: bool, pickup: str,
 
     if rules.get("block_if_pickup_on_shelf", True):
         rule("수령관 동일도서 비치 시 신청 불가", not pickup_on_shelf,
-             "수령관 서가에 비치 중" if pickup_on_shelf else "수령관 소장본 서가에 없음(대출중 또는 미소장)")
+             "받을 도서관 서가에 있음" if pickup_on_shelf else "받을 도서관 서가에 없음(대출 중이거나 소장하지 않음)")
     rule(f"상호대차 1인 {rules['ill_limit']}권",
          member["ill_count"] < rules["ill_limit"], f"현재 {member['ill_count']}/{rules['ill_limit']}권")
     rule(f"통합 대출 {rules['total_limit']}권",
@@ -38,7 +38,7 @@ def check(rules: dict, member: dict, pickup_on_shelf: bool, pickup: str,
                  ("신착 자료: 신착 제외 기간" if bad_new else f"유형 {t} · 신착 아님")
         rule("상호대차 제외 자료 아님", not (bad_type or bad_new), detail)
     else:
-        rule("상호대차 제외 자료 아님", True, "서지 미확인: 제외 판정 보류(통과 처리)")
+        rule("상호대차 제외 자료 아님", True, "서지 미확인: 제외 여부 확인 보류(통과 처리)")
 
     # [v0.3] 중복 — 같은 도서에 진행 중 신청이 있으면 새 신청을 막는다.
     act = member.get("active_isbns", [])

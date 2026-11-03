@@ -62,7 +62,7 @@ ok(r.body.error.code === -32602, "접수 도구(request_service)는 원격 판�
 log.length = 0;
 let c = await call(worker, env, "consult_request", { utterance: "나미야 잡화점의 기적 빌리고 싶어요", pickup: "상동" });
 ok(!c.isError && c.out.route === "ill" && c.out.from_lib === "꿈여울" && c.out.availability.asof === today &&
-   c.out.notice.includes(`정보나루 ${+today.slice(0, 4)}. ${+today.slice(5, 7)}. ${+today.slice(8, 10)}. 조회, 전일 기준`) &&
+   c.out.notice.includes(`정보나루 ${+today.slice(0, 4)}. ${+today.slice(5, 7)}. ${+today.slice(8, 10)}. 조회, 하루 전 기준`) &&
    !log.some(u => u.includes("data4library")) && c.out.verdict === "관내 상호대차 · 창구 확인: 회원 조건",
    "나미야 — 오늘 새벽 자료로 판정(정보나루 호출 0회) · 관내 상호대차 · 안내문에 조회일 · 판정 한 줄에 「창구 확인: 회원 조건」(11. 4.)");
 ok(c.out.official_link === "https://alpasq.bcl.go.kr/search/keyword/9788972756194" &&   // [10/18] 부천 링크 틀 제목 → ISBN(그 판본 화면까지)
@@ -105,10 +105,10 @@ c = await call(worker, env, "consult_request", { utterance: "나미야 잡화점
 ok(!c.isError && c.out.pickup === "상동역 칙칙폭폭" && c.out.route === "ill" && c.out.notice.includes("상동역 칙칙폭폭도서관에서 받으실 수 있고") &&
    !c.out.notice.includes("도서관에는") && c.out.notice.includes("도착일과 보관 기한은 창구에서 확인") &&
    c.out.policy.pending.some(x => x.includes("비치")) && c.out.desk_memo.includes("작은도서관") &&
-   c.out.verdict === "관내 상호대차 · 창구 확인: 회원 조건, 서가 비치",
+   c.out.verdict === "관내 상호대차 · 창구 확인: 회원 조건, 받을 도서관에 있는지",
    "[10/18] 작은도서관 받을 곳 — 관내 상호대차로 판정, 그곳 서가 비치·도착일·보관은 창구 확인(파이썬 판과 같음)");
 c = await call(worker, env, "consult_request", { utterance: "나미야", pickup: "없는관" });
-ok(c.isError && c.text.startsWith("ValueError: 수령관 「없는관」"), "설정에 없는 수령관 → 오류(파이썬 판과 같은 문구)");
+ok(c.isError && c.text.startsWith("ValueError: 받을 도서관 「없는관」"), "설정에 없는 받을 도서관 → 오류(파이썬 판과 같은 문구)");
 c = await call(worker, env, "search_item", { utterance: "채식주의자 상호대차 되나요?" });
 ok(!c.isError && c.out.found && c.out.query === "채식주의자" && c.out.isbn13 === "9788936433598",
    "[10/18] 문장째 넘어온 「채식주의자 상호대차 되나요?」 → 검색어 「채식주의자」(「되나요」까지 걷어냄)");

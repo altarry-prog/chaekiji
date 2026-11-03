@@ -1,4 +1,4 @@
-/* 책이지 Solar 상담 창 — 화면 쪽. 중계(relay/ask.js)의 POST /ask를 부르고, 모델의 답과 도구가 정한 판정을 나란히 보여 준다.
+/* 책이지 Solar 상담 창 — 화면 쪽. 중계(relay/ask.js)의 POST /ask를 부르고, 모델의 답과 도구가 낸 결과를 나란히 보여 준다.
  * 묻는 글은 화면에 남기지 않는다(새로 고치면 사라짐). 키는 화면에 없다(중계의 Cloudflare 비밀값). */
 (function () {
   "use strict";
@@ -66,7 +66,7 @@
     var t = d.tool, html = "";
     html += '<article class="card ans"><h2>Solar Pro 4의 답 <small>AI가 쓴 글</small></h2>';
     html += d.answer ? '<p class="txt">' + answerHtml(d.answer, t && t.official_link) + "</p>"
-                     : '<p class="note warn">AI가 답 글을 쓰지 못했습니다. 아래 도구 판정을 보시거나 다시 물어 주세요.</p>';
+                     : '<p class="note warn">AI가 답 글을 쓰지 못했습니다. 아래 도구 결과를 보시거나 다시 물어 주세요.</p>';
     if (d.answer && d.lang !== "ko" && !inLang(d.answer, d.lang))
       html += '<p class="note warn">AI 답이 이용자 언어(' + esc(LANG_NAME[d.lang] || d.lang) + ')로 쓰이지 않았습니다. 지시문만으로는 번역이 고르지 않아(실측), 도구가 번역 문장을 함께 주는 방식을 다음 과제로 두었습니다.</p>';
     if (t && t.official_link && d.answer && d.answer.indexOf(t.official_link) < 0)
@@ -75,7 +75,7 @@
 
     if (t) {
       var b = t.book || {};
-      html += '<article class="card tool"><h2>책이지 도구가 정한 판정 <small>consult_request · 원격 판과 같은 판정</small></h2>';
+      html += '<article class="card tool"><h2>책이지 도구가 낸 결과 <small>consult_request · 인터넷 판과 같은 결과</small></h2>';
       html += '<p style="margin:0"><span class="badge">' + esc(t.verdict || t.route_label || t.route) + "</span></p><dl>";   // [11/4] 판정 한 줄
       if (t.book) {
         html += "<dt>책</dt><dd>『" + esc(b.title) + "』" + (b.author ? " " + esc(b.author) : "") +
@@ -88,14 +88,14 @@
         html += "<dt>대출 가능</dt><dd>" + (t.available_at.length ? esc(t.available_at.join(", ")) : "없음") + "</dd>";
         if (t.loaned_at.length) html += "<dt>대출 중</dt><dd>" + esc(t.loaned_at.join(", ")) + "</dd>";
       }
-      if (t.asof && t.route !== "check" && t.route !== "unknown") html += "<dt>기준</dt><dd>정보나루 " + esc(day(t.asof)) + " 조회, 전일 기준</dd>";
+      if (t.asof && t.route !== "check" && t.route !== "unknown") html += "<dt>기준</dt><dd>정보나루 " + esc(day(t.asof)) + " 조회, 하루 전 기준</dd>";
       html += "</dl>";
       if (t.official_link) html += '<a class="link" href="' + esc(t.official_link) + '" target="_blank" rel="noopener">공식 누리집에서 이 책 보기 ↗</a>';
       if (t.notice) html += "<details><summary>도구의 안내문(한국어 원문)</summary><p>" + esc(t.notice) + "</p></details>";
       if (t.desk_memo) html += "<details><summary>접수 메모(사서용)</summary><pre>" + esc(t.desk_memo) + "</pre></details>";
       html += "</article>";
     } else {
-      html += '<article class="card tool"><h2>책이지 도구가 정한 판정</h2><p style="margin:0">이번에는 AI가 도구를 부르지 않았습니다(어느 책인지 되물은 경우 등). 책 제목이나 저자를 더 적어 다시 물어 주세요.</p></article>';
+      html += '<article class="card tool"><h2>책이지 도구가 낸 결과</h2><p style="margin:0">이번에는 AI가 도구를 부르지 않았습니다(어느 책인지 되물은 경우 등). 책 제목이나 저자를 더 적어 다시 물어 주세요.</p></article>';
     }
     var calls = (d.tool_calls || []).map(function (c) { return "「" + c.utterance + "」"; }).join(", ");
     html += '<p class="meta">모델 ' + esc(d.model) + " · 도구 호출 " + (d.tool_calls || []).length + "번" + (calls ? "(" + esc(calls) + ")" : "") +
@@ -148,7 +148,7 @@
     var on = !!recTok;
     rs.textContent = on ? "켜짐" : "꺼짐"; rs.className = "pill" + (on ? " on" : "");
     rin.hidden = on; rctl.hidden = !on;
-    rinfo.textContent = on ? "이 브라우저에서 묻는 것은 문장·답·판정까지 기록됩니다." : "";
+    rinfo.textContent = on ? "이 브라우저에서 묻는 것은 문장·답·결과까지 기록됩니다." : "";
   }
   recUI();
   $("recon").addEventListener("click", function () {
@@ -167,7 +167,7 @@
     recUI(); recMsg("기록 모드를 껐습니다. 이미 기록된 것은 그대로 남습니다.", false);
   });
   function csvCell(v) { var s = Array.isArray(v) ? v.join(", ") : (v == null ? "" : String(v)); return '"' + s.replace(/"/g, '""') + '"'; }
-  var COLS = [["t", "시각"], ["text", "이용자의 말"], ["pickup", "받을 도서관"], ["lang", "언어"], ["ok", "결과"], ["route_label", "판정(도구)"], ["verdict", "판정 한 줄(도구, 11. 4.~)"],
+  var COLS = [["t", "시각"], ["text", "이용자의 말"], ["pickup", "받을 도서관"], ["lang", "언어"], ["ok", "결과"], ["route_label", "빌리는 방법(도구)"], ["verdict", "결과 한 줄(도구, 11. 4.~)"],
               ["book_title", "책"], ["book_author", "저자"], ["isbn13", "ISBN"], ["asof", "조회일"], ["available_at", "대출 가능 관"],
               ["answer", "AI 답"], ["tool_calls", "모델이 도구에 넘긴 말"], ["sec", "걸린 시간(초)"], ["model", "모델"], ["in_tok", "입력 토큰"],
               ["out_tok", "출력 토큰"], ["data_calls", "자료 조회 수"], ["official_link", "누리집 주소"], ["alpas", "알파스 확인(직접 적기)"],

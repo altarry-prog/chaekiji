@@ -147,7 +147,7 @@ async function search(q, isbn, keys, ctx) {
 
 async function nation(isbn, keys, ctx) {
   const r = await naru("libSrchByBook", { isbn, region: REGION, pageSize: 200 }, keys, ctx);
-  return { isbn, found_count: (r.libs || []).length, asof: kstDate(), basis: "정보나루 libSrchByBook(경기 광역 예시) · 전일 기준" };
+  return { isbn, found_count: (r.libs || []).length, asof: kstDate(), basis: "정보나루 libSrchByBook(경기 광역 예시) · 하루 전 기준" };
 }
 
 // 정보나루 매뉴얼(v20260210)의 호출 주소는 http다. https를 먼저 시도하고, 안 되면 http로 넘어간다.
@@ -278,7 +278,7 @@ async function holdings(isbn, keys, ctx) {
   if (first && LAST_GOOD.name === first.name && Date.now() - LAST_GOOD.t < 30 * 60e3) await Promise.all(LIBS.map(one));
   else { await one(LIBS[0]); await Promise.all(LIBS.slice(1).map(one)); }
   const ts = [...(ctx.times || [])].sort((a, b) => a - b);
-  return { isbn, asof: kstDate(), basis: "정보나루 bookExist · 대출 상태는 조회일 전일 기준", libs, calls: LIBS.length,
+  return { isbn, asof: kstDate(), basis: "정보나루 bookExist · 대출 상태는 조회일 하루 전 기준", libs, calls: LIBS.length,
            upstream_ms: Date.now() - t0, call_ms_median: ts.length ? ts[Math.floor(ts.length / 2)] : null, call_ms_max: ts.length ? ts[ts.length - 1] : null };
 }
 

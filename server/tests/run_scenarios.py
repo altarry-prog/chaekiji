@@ -78,7 +78,7 @@ ok(alt["audiobook"] and alt["chaeknarae_eligible"],
 
 g = c.call("check_availability", isbn13="9791191824001")
 ok(not g["available_at"] and g["nation"]["found_count"] == 6,
-   "＋ 관내 전무 도서 → 전국 폴백(정보나루 · 전일 기준 명시)")
+   "＋ 관내 전무 도서 → 전국 폴백(정보나루 · 하루 전 기준 명시)")
 
 print("── 책이지 패스 · 사전 위임 자동 실행 ──")
 sg = c.call("suggest_items", user="tok_kimsj", count=3)
@@ -189,8 +189,8 @@ ok(k1["found"] and k1["route"] == "ill" and k1["from_lib"] in k1["availability"]
 ok(len(k1["policy"]["pending"]) == 5 and k1["policy"]["allowed_so_far"] and "창구에서 확인" in k1["notice"]
    and k1["verdict"] == "관내 상호대차 · 창구 확인: 회원 조건",
    "    회원 토큰 없음 — 비치·제외자료만 확정, 한도 3종·연체·중복은 창구 확인으로 보류(판정 한 줄에도 「창구 확인: 회원 조건」, 11. 4.)")
-ok("전일 기준" in k1["notice"] and "2026. 8. 18." in k1["notice"] and "접수하지 않음" in k1["desk_memo"],
-   "    안내문에 조회일·전일 기준 명시 · 접수 메모에 「이 도구는 접수하지 않음」")
+ok("하루 전 기준" in k1["notice"] and "2026. 8. 18." in k1["notice"] and "접수하지 않음" in k1["desk_memo"],
+   "    안내문에 조회일·하루 전 기준 명시 · 접수 메모에 「이 도구는 접수하지 않음」")
 # [10/18] 부천 설정의 링크 틀이 제목 → ISBN으로 바뀜(담당자가 자료검색 ISBN 검색 확인) — 기대값만 그 판본 주소로, 기준은 그대로
 ok((k1.get("official_link") or "") == "https://alpasq.bcl.go.kr/search/keyword/9788972756194"
    and k1["official_link"] in k1["notice"] and "접수는 이용자가 직접" in k1["notice"],
@@ -200,7 +200,7 @@ ok(k2["route"] == "visit" and "바로 대출" in k2["notice"] and "다만" not i
    "㉕ 수령관 서가에 있는 책 — 「바로 이용」, 상호대차 아님(비치 규정을 되풀이하지 않음)")
 k3 = c.call("consult_request", utterance="지구 끝의 온실", pickup="상동")
 ok(k3["route"] == "sea" and k3["availability"]["nation"]["found_count"] == 6 and "책바다" in k3["notice"]
-   and k3["official_link"] is None and "누리집" not in k3["notice"] and "예시 데이터" in k3["notice"] and "조회, 전일 기준" not in k3["notice"],
+   and k3["official_link"] is None and "누리집" not in k3["notice"] and "예시 데이터" in k3["notice"] and "조회, 하루 전 기준" not in k3["notice"],
    "㉖ 관내 전무(예시 장면) — 「책바다 안내」 + 전국 소장 수 · 누리집 링크 없음 · 안내문이 「예시 데이터」라고 밝힘")
 k4 = c.call("consult_request", utterance="나미야 잡화점의 기적", pickup="상동", user="tok_kimsj")
 ok(k4["policy"]["pending"] == [] and k4["policy"]["allowed_so_far"] and k4["next_tool"]["tool"] == "request_service",

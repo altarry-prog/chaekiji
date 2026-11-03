@@ -26,10 +26,10 @@ order = ["9788936434120", "9791161571188", "9791195794799", "9791191824001", "97
 H = snap["holdings"]
 
 
-def pick(want, pickup=None):
+def pick(want, pickup=None, exclude=()):
     pickup = pickup or PICKUP
     for isbn in order:
-        if isbn in SKIP or isbn not in H or isbn not in cat:
+        if isbn in SKIP or isbn in exclude or isbn not in H or isbn not in cat:
             continue
         st = H[isbn]
         here = st.get(pickup)
@@ -51,10 +51,11 @@ def run(env_extra, args, out):
 
 
 def meta(text, title, utter, pickup=None):
-    # 판정 줄: 「관내 상호대차(소장관 꿈빛)」·「바로 이용(수령관 서가에 있음)」(10. 27.부터 긴줄표 대신 괄호)
-    route = re.search(r"^◀ 판정: ([^(\n—]+)", text, re.M)
-    holder = re.search(r"^◀ 판정: [^\n]*소장관 ([^)\s]+)", text, re.M)
-    avail = re.search(r"대출 가능 관: ([^/\n]+)", text)
+    # 결과 줄: 11. 3.부터 「◀ 결과: 관내 상호대차 · 창구 확인: 회원 조건 · 책이 있는 도서관 꿈빛」·「◀ 결과: 바로 이용(받을 도서관에 대출 가능)」
+    # (그 전 판 「◀ 판정: 관내 상호대차(소장관 꿈빛)」·「대출 가능 관:」도 읽음)
+    route = re.search(r"^◀ (?:판정|결과): ([^(\n—·]+)", text, re.M)
+    holder = re.search(r"^◀ (?:판정|결과): [^\n]*(?:소장관|책이 있는 도서관) ([^)\s·]+)", text, re.M)
+    avail = re.search(r"대출 가능 (?:관|도서관): ([^/\n]+)", text)
     libs = [x.strip() for x in avail.group(1).split(",")] if avail else []
     asof = re.search(r"(\d{4})-(\d{2})-(\d{2}) 조회", text)
     return {"title": title, "utterance": utter, "pickup": pickup or PICKUP, "route": route.group(1).strip() if route else "",
@@ -62,7 +63,8 @@ def meta(text, title, utter, pickup=None):
             "available": libs, "asof": f"{int(asof.group(1))}. {int(asof.group(2))}. {int(asof.group(3))}." if asof else ""}
 
 
-i1, i2 = pick("ill"), pick("visit", PICKUP2)
+i1 = pick("ill")
+i2 = pick("visit", PICKUP2, exclude={i1}) or pick("visit", PICKUP2)   # 두 장면이 같은 책이 되지 않게(11. 3.)
 if not i1 or not i2:
     sys.exit(f"오늘 자료({snap.get('asof')})로는 {PICKUP} 기준 두 장면을 고를 수 없습니다(ill={i1} visit={i2})")
 u1 = f"{cat[i1]['title']} 빌리고 싶어요"

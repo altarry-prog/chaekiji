@@ -17,7 +17,7 @@ async def main(a):
     os.makedirs(a.out, exist_ok=True)
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        ctx = await b.new_context(viewport={"width": 1280, "height": 720}, device_scale_factor=1, locale="ko-KR",
+        ctx = await b.new_context(viewport={"width": 1280, "height": 720}, device_scale_factor=1, locale="ko-KR", bypass_csp=True,   # 상담 창의 보안 정책(CSP)이 대기 함수를 막아 녹화 도구에서만 풂
                                   record_video_dir=a.out, record_video_size={"width": 1280, "height": 720})
         t0 = time.time(); marks = {}
         pg = await ctx.new_page()

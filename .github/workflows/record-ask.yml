@@ -4,7 +4,7 @@ name: record-ask
 on:
   push:                                   # 이 파일을 가지에 올리면 기본값으로 한 번 녹화(수동 실행 등록도 겸함)
     branches: [tools/video]
-    paths: [".github/workflows/record-ask.yml"]
+    paths: [".github/workflows/record-ask.yml", "tools/video/record_ask.py"]
   workflow_dispatch:
     inputs:
       say:

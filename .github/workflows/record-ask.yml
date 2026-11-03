@@ -1,5 +1,6 @@
 # 시연영상 흐름 2: 공개된 Solar 상담 창의 실제 화면을 녹화(작업 공간의 망에서는 중계 주소가 막혀 깃허브 액션에서 함).
-# 상담 창 한 번(Solar 호출 1번, 한 IP 10분 6번 한도 안). 결과 영상·답 원문·구간 표시를 하루 보관 파일로만 남김(저장소에 커밋하지 않음).
+# 상담 창 한 번(Solar 호출 1번, 한 IP 10분 6번 한도 안). 결과 영상·답 원문·구간 표시는 이 가지(tools/video)의 clips/ask_raw/에 커밋
+# (작업 공간의 망에서 하루 보관 파일 내려받기가 막혀서. main에는 넣지 않음).
 name: record-ask
 on:
   push:                                   # 이 파일을 가지에 올리면 기본값으로 한 번 녹화(수동 실행 등록도 겸함)
@@ -14,7 +15,7 @@ on:
         description: "받을 도서관"
         default: "역곡"
 permissions:
-  contents: read
+  contents: write
 jobs:
   rec:
     runs-on: ubuntu-latest
@@ -33,8 +34,10 @@ jobs:
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: python tools/video/record_ask.py --say "${{ inputs.say || '한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요' }}" --pickup "${{ inputs.pickup || '역곡' }}" --out out_ask
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ask-clip
-          path: out_ask/
-          retention-days: 1
+      - name: 가지에 올림(tools/video, clips/ask_raw/)
+        run: |
+          mkdir -p tools/video/clips/ask_raw
+          cp out_ask/solar_raw.webm out_ask/marks.json tools/video/clips/ask_raw/
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/video/clips/ask_raw
+          git commit -q -m "Solar 상담 창 녹화 원본(record-ask, $(date -u +%F))" && git push -q origin HEAD:tools/video

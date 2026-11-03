@@ -121,7 +121,7 @@ function parseArgs(a) {
 // 화면에 돌려줄 도구 판정 요점(모델의 답과 나란히 보여 준다)
 function toolBrief(o) {
   const b = o.book || {};
-  return { route: o.route, route_label: o.route_label, pickup: o.pickup,
+  return { route: o.route, route_label: o.route_label, verdict: o.verdict || o.route_label, pickup: o.pickup,   // [11/4] 판정 한 줄
            book: o.book ? { title: b.title, author: b.author, publisher: b.publisher, year: b.year, isbn13: b.isbn13 } : null,
            asof: (o.availability || {}).asof || null, available_at: (o.availability || {}).available_at || [],
            loaned_at: (o.availability || {}).loaned_at || [], official_link: o.official_link || null,
@@ -215,7 +215,7 @@ async function keep(env, req, r, extra) {                      // 세기와(모�
       const b = tool.book || {};
       const row = { t, text: extra.text, pickup: extra.pickup, lang: (r && r.lang) || extra.lang, lang_guessed: !!(r && r.lang_guessed),
         ok: !!(r && r.ok), error: (r && r.error) || null, answer: (r && r.answer) || "", model: (r && r.model) || "",
-        route: tool.route || "", route_label: tool.route_label || "", book_title: b.title || "", book_author: b.author || "",
+        route: tool.route || "", route_label: tool.route_label || "", verdict: tool.verdict || "", book_title: b.title || "", book_author: b.author || "",
         isbn13: b.isbn13 || "", asof: tool.asof || "", official_link: tool.official_link || "",
         available_at: tool.available_at || [], loaned_at: tool.loaned_at || [], notice: tool.notice || "", desk_memo: tool.desk_memo || "",
         tool_calls: ((r && r.tool_calls) || []).map(c => c.utterance), ms: (r && r.ms) || 0,

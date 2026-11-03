@@ -132,6 +132,19 @@ def request_service(user: str, isbn13: str, from_lib: str, pickup: str,
 _ROUTE_LABEL = {"visit": "바로 이용(수령관에 대출 가능)", "ill": "관내 상호대차", "reserve": "예약 권장(관내 소장분 전부 대출 중)",
                 "sea": "책바다(전국 상호대차) 안내", "unknown": "도서 미확정", "check": "소장 확인 불가(창구에서 조회)"}
 _MEMBER_RULE_KEYS = ("권", "연체", "중복")              # 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
+
+def _verdict(route, pol, bad):
+    """[11/4] 판정 한 줄(verdict) — 갈래 이름만 두면 회원 조건을 받지 않은 「관내 상호대차」가 신청 가능으로 읽힌다(11. 2. 독립 심사).
+    관내 상호대차일 때만 걸리는 규정, 창구에서 확인할 것(회원 조건·자료 유형·서가 비치)을 덧붙인다. relay/mcp.js verdictOf와 같은 글."""
+    label = _ROUTE_LABEL[route]
+    if route != "ill":
+        return label
+    if bad:
+        return f"{label} · 규정에 걸림: " + ", ".join(c["rule"] for c in bad)
+    what = [name for name, hit in (("회원 조건", lambda r: any(k in r for k in _MEMBER_RULE_KEYS)),
+                                   ("자료 유형", lambda r: "제외" in r), ("서가 비치", lambda r: "비치" in r))
+            if any(hit(r) for r in pol["pending"])]
+    return f"{label} · 창구 확인: " + ", ".join(what) if what else f"{label} · 규정 {len(pol['checks'])}가지 통과"
 # [11/1] 회원 조건(member) — 사서가 도서관리시스템에서 읽은 숫자·예/아니요만 받는다(이름·회원번호 없이). 규정 이름 앞머리 → 칸
 _MEMBER_FIELDS = (("상호대차 1인", "ill_count"), ("통합 대출", "total_loans"), ("도서관별", "loans_at_pickup"),
                   ("연체", "overdue"), ("동일 도서 중복", "same_book_pending"))
@@ -296,12 +309,12 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     base = {"utterance": utterance, "pickup": pickup, "lang": lang, "mode": MODE,
             "disclaimer": "대출 가능 여부는 정보나루 조회일 전일 기준이며, 최종 확인과 접수는 창구에서 합니다."}
     if not found.get("found") and found.get("unavailable"):   # [v0.3.5] 정보나루에 닿지 못해 찾지 못함 — 되묻지 말고 창구 조회
-        return {**base, "found": False, "route": "check", "route_label": _ROUTE_LABEL["check"],
+        return {**base, "found": False, "route": "check", "route_label": _ROUTE_LABEL["check"], "verdict": _ROUTE_LABEL["check"],
                 "book": None, "reason": found.get("reason"), "candidates": [],
                 "notice": "지금 정보나루에 연결되지 않아 책을 찾지 못했습니다. 창구에서 도서관리시스템으로 찾아 드리겠습니다.",
                 "desk_memo": f"[조회 불가] 문의 「{utterance}」: 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회"}
     if not found.get("found"):
-        out = {**base, "found": False, "route": "unknown", "route_label": _ROUTE_LABEL["unknown"],
+        out = {**base, "found": False, "route": "unknown", "route_label": _ROUTE_LABEL["unknown"], "verdict": _ROUTE_LABEL["unknown"],
                "book": None, "reason": found.get("reason"), "candidates": found.get("candidates", []),
                "notice": "말씀하신 책을 아직 찾지 못했습니다. 저자나 출판사, 대략의 내용을 조금 더 알려 주시겠어요?",
                "desk_memo": f"[미확정] 문의 「{utterance}」: 서지 재확인 필요"}
@@ -436,7 +449,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     if route == "ill" and user:
         next_tool = {"tool": "request_service", "arguments": {"user": user, "isbn13": isbn, "from_lib": from_lib, "pickup": pickup,
                                                               "confirmed_by_user": True}, "note": "이용자 확인 뒤에만"}
-    return {**base, "found": True, "route": route, "route_label": _ROUTE_LABEL[route], "from_lib": from_lib,
+    return {**base, "found": True, "route": route, "route_label": _ROUTE_LABEL[route], "verdict": _verdict(route, pol, bad), "from_lib": from_lib,
             "book": {"isbn13": isbn, "title": title, "author": found.get("author"), "publisher": found.get("publisher"),
                      "year": found.get("year"), "evidence": found.get("evidence"), **({"vol": found["vol"]} if found.get("vol") else {})},
             "availability": {"at_pickup": at_pickup, "available_at": avail["available_at"], "loaned_at": avail["loaned_at"],

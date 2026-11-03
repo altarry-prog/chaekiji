@@ -76,7 +76,7 @@
     if (t) {
       var b = t.book || {};
       html += '<article class="card tool"><h2>책이지 도구가 정한 판정 <small>consult_request · 원격 판과 같은 판정</small></h2>';
-      html += '<p style="margin:0"><span class="badge">' + esc(t.route_label || t.route) + "</span></p><dl>";
+      html += '<p style="margin:0"><span class="badge">' + esc(t.verdict || t.route_label || t.route) + "</span></p><dl>";   // [11/4] 판정 한 줄
       if (t.book) {
         html += "<dt>책</dt><dd>『" + esc(b.title) + "』" + (b.author ? " " + esc(b.author) : "") +
                 (b.isbn13 ? '<br><small style="color:var(--sub)">' + esc([b.publisher, b.year].filter(Boolean).join(" ")) + " · ISBN " + esc(b.isbn13) + "</small>" : "") + "</dd>";
@@ -167,7 +167,7 @@
     recUI(); recMsg("기록 모드를 껐습니다. 이미 기록된 것은 그대로 남습니다.", false);
   });
   function csvCell(v) { var s = Array.isArray(v) ? v.join(", ") : (v == null ? "" : String(v)); return '"' + s.replace(/"/g, '""') + '"'; }
-  var COLS = [["t", "시각"], ["text", "이용자의 말"], ["pickup", "받을 도서관"], ["lang", "언어"], ["ok", "결과"], ["route_label", "판정(도구)"],
+  var COLS = [["t", "시각"], ["text", "이용자의 말"], ["pickup", "받을 도서관"], ["lang", "언어"], ["ok", "결과"], ["route_label", "판정(도구)"], ["verdict", "판정 한 줄(도구, 11. 4.~)"],
               ["book_title", "책"], ["book_author", "저자"], ["isbn13", "ISBN"], ["asof", "조회일"], ["available_at", "대출 가능 관"],
               ["answer", "AI 답"], ["tool_calls", "모델이 도구에 넘긴 말"], ["sec", "걸린 시간(초)"], ["model", "모델"], ["in_tok", "입력 토큰"],
               ["out_tok", "출력 토큰"], ["data_calls", "자료 조회 수"], ["official_link", "누리집 주소"], ["alpas", "알파스 확인(직접 적기)"],

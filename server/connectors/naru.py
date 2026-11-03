@@ -239,6 +239,9 @@ def search(utterance: str, mode="demo"):
     best = _fixture_match(utterance)
     if not best:
         return {"found": False, "reason": "픽스처에 없는 도서(모의 모드 한계). live 모드에서는 전국 서지 검색"}
+    vol = split_volume(clean_title(utterance))[1]
+    if vol and vol != str(best[1].get("vol") or "1"):   # [11/4] 「불편한 편의점 2」를 시연 도서(1권)로 답하던 것(중계 없는 설치형, 11. 2. 독립 심사)
+        return {"found": False, "reason": f"시연 도서와 다른 권({vol}권)을 물음 — 모의 모드는 시연 도서 5종만 찾음. live 모드에서는 전국 서지 검색"}
     b = best[1]
     return {"found": True, "isbn13": b["isbn13"], "title": b["title"], "author": b["author"],
             "publisher": b["publisher"], "year": b["year"], "candidates": [b["isbn13"]],

@@ -23,6 +23,15 @@ const SNAP_CACHE_MS = 10 * 60 * 1000;
 const ROUTE_LABEL = { visit: "바로 이용(수령관에 대출 가능)", ill: "관내 상호대차", reserve: "예약 권장(관내 소장분 전부 대출 중)",
                       sea: "책바다(전국 상호대차) 안내", unknown: "도서 미확정", check: "소장 확인 불가(창구에서 조회)" };
 const MEMBER_RULE_KEYS = ["권", "연체", "중복"];                 // 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
+// [11/4] 판정 한 줄(verdict) — tools._verdict와 같은 글. 관내 상호대차일 때만 걸리는 규정·창구에서 확인할 것을 덧붙인다
+function verdictOf(route, pol, bad) {
+  const label = ROUTE_LABEL[route];
+  if (route !== "ill") return label;
+  if (bad.length) return `${label} · 규정에 걸림: ` + bad.map(c => c.rule).join(", ");
+  const what = [["회원 조건", r => MEMBER_RULE_KEYS.some(k => r.includes(k))], ["자료 유형", r => r.includes("제외")], ["서가 비치", r => r.includes("비치")]]
+    .filter(([, hit]) => pol.pending.some(hit)).map(([name]) => name);
+  return what.length ? `${label} · 창구 확인: ` + what.join(", ") : `${label} · 규정 ${pol.checks.length}가지 통과`;
+}
 // [11/1] 회원 조건(member) — 사서가 도서관리시스템에서 읽은 권수·예/아니요만(이름·회원번호 없이). tools._member_conditions와 같은 규칙·같은 글
 const MEMBER_FIELDS = [["상호대차 1인", "ill_count"], ["통합 대출", "total_loans"], ["도서관별", "loans_at_pickup"],
                        ["연체", "overdue"], ["동일 도서 중복", "same_book_pending"]];
@@ -520,12 +529,12 @@ export async function consultRequest(args, deps, ctx) {
   const base = { utterance, pickup, lang, mode: "relay",
                  disclaimer: "대출 가능 여부는 정보나루 조회일 전일 기준이며, 최종 확인과 접수는 창구에서 합니다." };
   if (!found.found && found.unavailable) {                    // [v0.3.5] 정보나루에 닿지 못해 찾지 못함 — 되묻지 말고 창구 조회
-    return { ...base, found: false, route: "check", route_label: ROUTE_LABEL.check, book: null, reason: nn(found.reason), candidates: [],
+    return { ...base, found: false, route: "check", route_label: ROUTE_LABEL.check, verdict: ROUTE_LABEL.check, book: null, reason: nn(found.reason), candidates: [],
              notice: "지금 정보나루에 연결되지 않아 책을 찾지 못했습니다. 창구에서 도서관리시스템으로 찾아 드리겠습니다.",
              desk_memo: `[조회 불가] 문의 「${utterance}」: 정보나루 연결 안 됨, 창구에서 도서관리시스템으로 조회` };
   }
   if (!found.found) {
-    const out = { ...base, found: false, route: "unknown", route_label: ROUTE_LABEL.unknown, book: null, reason: nn(found.reason),
+    const out = { ...base, found: false, route: "unknown", route_label: ROUTE_LABEL.unknown, verdict: ROUTE_LABEL.unknown, book: null, reason: nn(found.reason),
                   candidates: found.candidates || [],
                   notice: "말씀하신 책을 아직 찾지 못했습니다. 저자나 출판사, 대략의 내용을 조금 더 알려 주시겠어요?",
                   desk_memo: `[미확정] 문의 「${utterance}」: 서지 재확인 필요` };
@@ -656,7 +665,7 @@ export async function consultRequest(args, deps, ctx) {
   for (const b of alt)                                         // [10/19] 판본 보정 — 다른 판의 관내 소장(접수 전 판 확인)
     memo.splice(memo.length - 1, 0, `다른 판 관내: ${b.publisher || ""} ${b.year || ""} ISBN ${b.isbn13}: ` +
                                     `대출 가능 ${b.available_at.join(", ") || "없음"} / 대출 중 ${b.loaned_at.join(", ") || "없음"}`);
-  return { ...base, found: true, route, route_label: ROUTE_LABEL[route], from_lib: fromLib,
+  return { ...base, found: true, route, route_label: ROUTE_LABEL[route], verdict: verdictOf(route, pol, bad), from_lib: fromLib,
            book: { isbn13: isbn, title, author: nn(found.author), publisher: nn(found.publisher), year: nn(found.year), evidence: nn(found.evidence),
                    ...(found.vol ? { vol: found.vol } : {}) },
            availability: { at_pickup: atPickup, available_at: avail.available_at, loaned_at: avail.loaned_at, nation, basis: avail.basis, asof },

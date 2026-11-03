@@ -105,7 +105,7 @@
     /search   → {"docs":[{"isbn13","title","author","publisher","year"},…],"asof"}
     /nation   → {"found_count":12,"asof"}
     /health   → {"ok":true,"keyed":true,"ask":true}
-    /ask      → {"answer","tool":{"route","route_label","book","asof","official_link","notice","desk_memo"},"model","ms","usage"}
+    /ask      → {"answer","tool":{"route","route_label","verdict","book","asof","official_link","notice","desk_memo"},"model","ms","usage"}
 
 </details>
 

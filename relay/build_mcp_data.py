@@ -76,7 +76,7 @@ if __name__ == "__main__":
         now = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
         if now != text:
             sys.exit("relay/mcp_data.js가 server/의 원본과 다릅니다 — python3 relay/build_mcp_data.py 로 다시 만드세요")
-        print("원격 상담 비서 자료 파일 — server/ 원본과 같음")
+        print("인터넷 판 자료 파일 — server/ 원본과 같음")
     else:
         OUT.write_text(text, encoding="utf-8")
         print(f"썼음: {OUT.relative_to(ROOT)} ({len(text):,}자)")

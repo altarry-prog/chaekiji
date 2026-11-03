@@ -51,7 +51,7 @@ ok(b["isbn13"] == "9788972756194", f"① search_item — 『{b['title']}』 ISBN
 
 a = c.call("check_availability", isbn13=b["isbn13"])
 ok(a["home_status"] == "busy" and len(a["available_at"]) == 8,
-   f"② check_availability — 상동 대출중 · 관내 {len(a['available_at'])}곳 가능(실시간·모의)")
+   f"② check_availability — 상동 대출중 · 관내 {len(a['available_at'])}곳 가능(모의)")
 
 v = c.call("check_policy", user="tok_kimsj", isbn13=b["isbn13"], pickup="상동")
 ok(v["allowed"] and len(v["checks"]) == 7, "③ check_policy — 규정 7종 전부 통과 (2/5권)")
@@ -69,16 +69,16 @@ v2 = c.call("check_policy", user="tok_kimsj", isbn13=b["isbn13"], pickup="상동
 ok(v2["checks"][1]["detail"].startswith("현재 3/5"), "    실행 후 한도 3/5로 갱신 확인")
 
 n1 = c.call("notify_user", user="tok_kimsj", event="arrival", message="신청하신 책이 도착했습니다")
-ok(n1["queued"] and n1["channel"] == "voice_call",
-   "⑤ notify_user — 선호 채널(음성전화)로 발송")
+ok(n1["queued"] and n1["channel"] == "voice_call" and "모의" in n1["basis"],
+   "⑤ notify_user — 선호 채널(음성전화)로 발송(모의)")
 
 alt = c.call("find_alternative", isbn13="9788936434120")
 ok(alt["audiobook"] and alt["chaeknarae_eligible"],
    "＋ find_alternative — 오디오북 존재 → 책나래 분기 가능(모의)")
 
 g = c.call("check_availability", isbn13="9791191824001")
-ok(not g["available_at"] and g["nation"]["found_count"] == 6,
-   "＋ 관내 전무 도서 → 전국 폴백(정보나루 · 하루 전 기준 명시)")
+ok(not g["available_at"] and g["nation"]["found_count"] == 6 and "예시" in g["nation"]["basis"] and "정보나루 조회 아님" in g["nation"]["basis"],
+   "＋ 관내 전무 도서 → 전국 폴백(예시 값은 정보나루 조회가 아니라고 밝힘)")
 
 print("── 책이지 패스 · 사전 위임 자동 실행 ──")
 sg = c.call("suggest_items", user="tok_kimsj", count=3)
@@ -210,10 +210,12 @@ ok(not k5["policy"]["allowed_so_far"] and "연체" in k5["notice"], "㉘ 연체 
 k6 = c.call("consult_request", utterance="아무도 모르는 책", pickup="상동")
 k6w = [c.call("consult_request", utterance=u, pickup="상동") for u in ("편의점 인간", "설민석의 조선왕조실록", "온실가스 줄이기")]
 k6m = c.call("consult_request", utterance="제 번호 010-1234-5678 회원번호 12345678 아무도 모르는 책", pickup="상동")
+k6i = c.call("consult_request", utterance="+82 10-1234-5678 회원번호 2231 아무도 모르는 책", pickup="상동")
 ok(k6["found"] is False and k6["route"] == "unknown" and "알려 주시겠어요" in k6["notice"]
    and all(x["route"] == "unknown" for x in k6w)
-   and "010-1234-5678" not in k6m["desk_memo"] and "12345678" not in k6m["desk_memo"] and "(번호 가림)" in k6m["desk_memo"],
-   "㉙ 못 찾은 책 — 지어내지 않고 되묻기 안내 · [11/3] 시연 도서 짧은 낱말만 겹치면(「편의점 인간」 등) 단정하지 않음 · 접수 메모의 전화번호·긴 숫자 가림")
+   and "010-1234-5678" not in k6m["desk_memo"] and "12345678" not in k6m["desk_memo"] and "(번호 가림)" in k6m["desk_memo"]
+   and not any(x in json.dumps(k6i, ensure_ascii=False) for x in ("1234-5678", "2231")) and "(번호 가림)" in k6i["utterance"],
+   "㉙ 못 찾은 책 — 지어내지 않고 되묻기 안내 · [11/3] 시연 도서 짧은 낱말만 겹치면(「편의점 인간」 등) 단정하지 않음 · 전화번호(국가번호 꼴)·회원번호·긴 숫자는 메모·응답·검색어 어디에도 남기지 않음")
 k7 = c.call("consult_request", utterance="불편한 편의점", pickup="역곡", lang="vi")
 ok(k7["translate_to"] == "vi" and k7["route"] == "ill", "㉚ 이용자 언어 vi — translate_to로 호스트 모델이 옮기게 넘김")
 k8 = c.call("consult_request", utterance="불편한 편의점", pickup="없는관")

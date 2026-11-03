@@ -22,7 +22,7 @@ TOOLS = [
                     "required": ["utterance"]})},
  {"name": "check_availability",
   "description": "관내 소장·대출 상태를 확인하고(정보나루 조회일 하루 전 기준, 모드에 따라 매일 갱신 자료·모의 자료), 관내에 없으면 전국(정보나루·하루 전 기준)을 본다.",
-  "inputSchema": S({"properties": {"isbn13": {"type": "string"}, "realtime": {"type": "boolean"}},
+  "inputSchema": S({"properties": {"isbn13": {"type": "string"}},
                     "required": ["isbn13"]})},
  {"name": "check_policy",
   "description": "상호대차 규정 7종(비치·한도 3종·연체정지·제외자료·중복)을 확인하고 규정별 근거를 돌려준다.",
@@ -66,7 +66,7 @@ TOOLS = [
                                    "pickup": {"type": "string"}},
                     "required": ["user", "op"]})},
  {"name": "consult_request",
-  "description": "[v0.3.4 상담 묶음] 안내데스크·전화 상담용. 이용자의 말(가능하면 책 제목)과 받을 도서관을 주면 도서 특정 → 관내 소장·대출 상태 → 상호대차 가능 여부·갈래(바로 이용/관내 상호대차/예약/책바다/소장 확인 불가) 판정 → 이용자 안내문 → 접수 메모까지 한 번에 돌려준다. 접수는 하지 않는다. 회원 토큰(user)이 있으면 규정 7종 전부. 토큰이 없으면 비치·제외자료 규정을 판정하고, 사서가 도서관리시스템에서 읽은 회원 조건(member: 권수·연체·중복, 이름·회원번호 없이)을 주면 한도·연체·중복까지 판정하며, 주지 않은 칸의 규정은 안내데스크 확인으로 보류.",
+  "description": "[v0.3.4 상담 묶음] 안내데스크·전화 상담용. 이용자의 말(가능하면 책 제목)과 받을 도서관을 주면 도서 특정 → 관내 소장·대출 상태 → 빌리는 방법(바로 이용/관내 상호대차/예약 권장/책바다 안내/소장 확인 불가/도서 미확정) 확인과 결과 한 줄(verdict) → 이용자 안내문 → 접수 메모까지 한 번에 돌려준다. 접수는 하지 않는다. 회원 토큰(user)이 있으면 규정 7종 전부. 토큰이 없으면 비치·제외자료 규정을 확인하고, 사서가 도서관리시스템에서 읽은 회원 조건(member: 권수·연체·중복, 이름·회원번호 없이)을 주면 한도·연체·중복까지 확인하며, 주지 않은 칸의 규정은 안내데스크 확인으로 보류.",
   "inputSchema": S({"properties": {"utterance": {"type": "string", "description": "이용자의 말 또는 책 제목"},
                                    "pickup": {"type": "string", "description": "받을 도서관 이름(기본: 설정의 home_library)"},
                                    "lang": {"type": "string", "description": "이용자 언어 코드(기본 ko). ko가 아니면 translate_to로 돌려줌"},
@@ -134,6 +134,9 @@ def handle(req):
         name, args = p.get("name"), p.get("arguments") or {}
         if name == "request_service" and "from" in args:   # 편의: from → from_lib
             args["from_lib"] = args.pop("from")
+        props = next((t["inputSchema"].get("properties", {}) for t in TOOLS if t["name"] == name), None)
+        if props is not None:                               # [11/3] 목록에 없는 인자는 버린다(인터넷 판과 같게, 코드 점검)
+            args = {k: v for k, v in args.items() if k in props}
         try:
             out = IMPL[name](**args)
             audit.record(name, args, out, False)            # [v0.3.1] 감사 기록(켜져 있을 때만)

@@ -9,7 +9,7 @@ def check(rules: dict, member: dict, pickup_on_shelf: bool, pickup: str,
         checks.append({"rule": name, "pass": bool(passed), "detail": detail})
 
     if rules.get("block_if_pickup_on_shelf", True):
-        rule("수령관 동일도서 비치 시 신청 불가", not pickup_on_shelf,
+        rule("받을 도서관 같은 책 비치 시 신청 불가", not pickup_on_shelf,
              "받을 도서관 서가에 있음" if pickup_on_shelf else "받을 도서관 서가에 없음(대출 중이거나 소장하지 않음)")
     rule(f"상호대차 1인 {rules['ill_limit']}권",
          member["ill_count"] < rules["ill_limit"], f"현재 {member['ill_count']}/{rules['ill_limit']}권")

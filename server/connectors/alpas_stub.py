@@ -8,7 +8,7 @@ v0.3 — 신청은 접수로 끝나지 않는다. 실무의 생애주기를 계�
   requested(접수) → confirmed(자료 확보) → in_transit(이송 중)
   → arrived(도착·수령 대기, 보관기한) → loaned(대출 완료)
   예외: failed(서가 부재·대출 경합) / canceled(이용자·미수령·실패)
-모의 데이터는 fixtures/에 있으며 상태 변화는 메모리에만 기록된다."""
+모의 데이터는 fixtures/에 있으며 상태 변화는 메모리에만 기록된다(CHAEKIJI_STORE를 주면 store.py가 파일에 저장)."""
 import json, datetime
 from pathlib import Path
 

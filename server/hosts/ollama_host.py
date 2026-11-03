@@ -229,10 +229,10 @@ def run_turn(a, mcp, tools, system, user_text, state, logf):
 
 def main():
     ap = argparse.ArgumentParser(description="책이지 MCP 서버 × Ollama 공개 모델 호스트")
-    ap.add_argument("--model", default="exaone3.5:2.4b", help="Ollama 모델 이름(예: exaone3.5:2.4b, llama3.2:3b, gemma3:4b)")
+    ap.add_argument("--model", default="exaone3.5:2.4b", help="Ollama 모델 이름(예: exaone3.5:2.4b, gpt-oss:20b)")
     ap.add_argument("--ollama", default=os.environ.get("OLLAMA_HOST", "http://localhost:11434"))
     ap.add_argument("--server", default=str(ROOT / "server.py"))
-    ap.add_argument("--mode", default=os.environ.get("CHAEKIJI_MODE", "auto"), help="서버 데이터 원천: auto|demo|relay|live")
+    ap.add_argument("--mode", default=os.environ.get("CHAEKIJI_MODE", "auto"), help="서버 데이터 원천: auto|demo|relay|snapshot|live")
     ap.add_argument("--relay", default=os.environ.get("CHAEKIJI_RELAY", ""), help="중계 주소(비우면 설정 relay_url)")
     ap.add_argument("--pickup", default="", help="받을 도서관(기본: 설정 home_library)")
     ap.add_argument("--lang", default="ko")

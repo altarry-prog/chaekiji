@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""원격 상담 비서(/mcp) 처리 시간 실측 — 이용자 문의 15건을 실제 주소로 보내 걸린 시간과 판정을 기록한다.
+"""인터넷 판 상담 도구(/mcp) 처리 시간 실측 — 이용자 문의 15건을 실제 주소로 보내 걸린 시간과 결과를 기록한다.
 
 무엇을 재나: 상담 묶음 도구(consult_request) 한 번이 답을 돌려줄 때까지의 시간(벽시계, 네트워크 포함).
   사람이 문의를 듣고 도서관리시스템에서 확인하는 시간은 재지 않는다(그건 사람의 시험으로만 잴 수 있다).
@@ -71,7 +71,7 @@ def main():
     ms = [r["ms"] for r in ok]
     by = {}
     for r in ok: by.setdefault(r["source"], []).append(r["ms"])
-    summary = {"time": now.strftime("%Y-%m-%d %H:%M KST"), "where": "깃허브 액션(미국 쪽 서버) → Cloudflare(원격 상담 비서) → 정보나루",
+    summary = {"time": now.strftime("%Y-%m-%d %H:%M KST"), "where": "깃허브 액션(미국 쪽 서버) → Cloudflare(인터넷 판) → 정보나루",
                "url": a.url, "cases": len(rows), "ok": len(ok), "init_ms": init_ms,
                "median_ms": round(statistics.median(ms)) if ms else None, "mean_ms": round(statistics.mean(ms)) if ms else None,
                "max_ms": max(ms) if ms else None, "min_ms": min(ms) if ms else None,
@@ -81,7 +81,7 @@ def main():
     day = now.strftime("%Y-%m-%d")
     (out / f"consult_timing_{day}.json").write_text(json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
     sec = lambda v: "—" if v is None else f"{v / 1000:.1f}초"
-    L = [f"# 원격 상담 비서 처리 시간 실측 — {summary['time']}", "",
+    L = [f"# 인터넷 판 상담 도구 처리 시간 실측 — {summary['time']}", "",
          f"- 무엇을: 이용자 문의 {len(rows)}건을 상담 묶음 도구(`consult_request`)에 한 건씩 보내 답이 올 때까지의 시간(네트워크 포함)",
          f"- 어디서: {summary['where']} · 한국에서 부르면 더 빠를 것으로 추정",
          "- 재지 않은 것: 사람이 문의를 듣고 도서관리시스템에서 확인하는 시간 — 사람의 시험으로만 잴 수 있다",
@@ -90,8 +90,8 @@ def main():
          f"- 성공 {len(ok)}/{len(rows)}건 · 가운데값 **{sec(summary['median_ms'])}** · 평균 {sec(summary['mean_ms'])} · 가장 오래 {sec(summary['max_ms'])}"]
     for k, v in summary["by_source"].items():
         L.append(f"- {k}: {v['n']}건 · 가운데값 {sec(v['median_ms'])}")
-    L.append("- 판정 갈래: " + " · ".join(f"{k} {n}건" for k, n in summary["routes"].items()))
-    L += ["", "## 문의별", "", "| 번호 | 문의 | 판정 | 자료 | 시간 |", "|---|---|---|---|---|"]
+    L.append("- 빌리는 방법: " + " · ".join(f"{k} {n}건" for k, n in summary["routes"].items()))
+    L += ["", "## 문의별", "", "| 번호 | 문의 | 결과 | 자료 | 시간 |", "|---|---|---|---|---|"]
     for r in rows:
         if r["ok"]:
             t = r.get("title") or "(못 찾음)"

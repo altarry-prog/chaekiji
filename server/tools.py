@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""표준 도구 10종(핵심 8종 + 확장 2종) — MCP 서버가 노출하는 전부.
+"""도구 11종(핵심 8종 + 확장 2종 + 상담 묶음 1종) — MCP 서버가 노출하는 전부.
 에이전트는 이 함수들의 이름과 인자만 알며,
 그 뒤의 정보나루·알파스·규정·금고는 커넥터가 처리한다.
 v0.3: 신청 이후의 생애주기(추적·취소)와 규정 3종(연체·제외자료·중복)이 계약에 들어왔다.
@@ -42,9 +42,16 @@ def _persist():
     store.save(_MANDATES, _MSEQ, alpas._requests, alpas._members)
 
 def _mask(s):
-    """[11/3] 접수 메모에 옮기는 이용자의 말에서 전화번호·긴 숫자(ISBN은 남김)를 가린다(구동 심사)."""
-    s = re.sub(r"(?<!\d)0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)", "(번호 가림)", str(s))
+    """[11/3] 이용자의 말에서 전화번호(국가번호 꼴 포함)·회원번호·긴 숫자(ISBN-13은 남김)를 가린다.
+    접수 메모·응답의 문의·정보나루 검색어 모두 가린 글을 쓴다(relay/mcp.js maskPrivate와 같은 규칙)."""
+    s = re.sub(r"(?<!\d)\+?82[-.\s]?\(?0?\)?1\d[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)", "(번호 가림)", str(s))
+    s = re.sub(r"(?<!\d)0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)", "(번호 가림)", s)
+    s = re.sub(r"((?:회원|회원증|대출증|카드)\s*번호\s*[:：]?\s*)[0-9A-Za-z-]{2,}", r"\1(번호 가림)", s)
     return re.sub(r"\d{8,}", lambda m: m.group(0) if re.fullmatch(r"97[89]\d{10}", m.group(0)) else "(번호 가림)", s)
+
+def _query(s):
+    """검색에 넘길 말 — 가린 자리는 지운다(번호가 정보나루 검색어로 나가지 않게)."""
+    return re.sub(r"\s+", " ", _mask(s).replace("(번호 가림)", " ")).strip()
 
 def _local_holdings(isbn13: str):
     """관내 {관이름: ok|busy|none}과 근거 문구. 출처는 LOCAL_SOURCE로 고른다."""
@@ -53,11 +60,14 @@ def _local_holdings(isbn13: str):
         return rt, naru.LAST_META.get("basis", "관내: 정보나루(하루 전 기준)")
     if isbn13 in naru._hold.get("_examples", []):        # 실측이 아닌 예시 장면용 값
         return alpas.holdings_realtime(isbn13), "관내: 예시 데이터(관내에 없는 책의 흐름을 보이려고 꾸민 값, 이 책의 실제 소장과 다름)"
-    # demo: 도서관리시스템 실시간 연동을 흉내 낸 모의 커넥터 — 값은 픽스처(정보나루 실측)이므로 안내문의 조회일과 같은 출처를 밝힌다
+    # demo: 도서관리시스템 연동을 흉내 낸 모의 커넥터 — 값은 픽스처(정보나루 실측)이므로 안내문의 조회일과 같은 출처를 밝힌다
     y, m, d = naru.FIX_ASOF.split("-")
-    return alpas.holdings_realtime(isbn13), f"관내: 도서관리시스템 실시간 연동 모의(값은 {y}. {int(m)}. {int(d)}. 정보나루 실측)"
+    return alpas.holdings_realtime(isbn13), f"관내: 도서관리시스템 연동 모의(값은 {y}. {int(m)}. {int(d)}. 정보나루 실측 · 하루 전 기준)"
 
 def search_item(utterance: str, lang: str = "ko"):
+    if not isinstance(utterance, str) or not utterance.strip():
+        raise TypeError("utterance가 필요합니다")
+    utterance = _query(utterance)                     # [11/3] 번호는 검색어로 내보내지 않는다(코드 점검)
     r = naru.search(utterance, mode=MODE)
     if AUTO_FELL_BACK and not r.get("found") and not r.get("unavailable"):
         # [10/19 밤] 리허설 지적 — auto인데 중계에 닿지 못해 시연 도서 5종만 찾을 수 있을 때, 그 밖의 책은 「저자를 알려 달라」고 되묻지 않고
@@ -67,7 +77,10 @@ def search_item(utterance: str, lang: str = "ko"):
              "candidates": [], "unavailable": True}
     return r
 
-def check_availability(isbn13: str, realtime: bool = True):
+def check_availability(isbn13: str):
+    isbn13 = re.sub(r"\D", "", str(isbn13 or ""))   # [11/3] 붙임표 ISBN도 받는다(relay/mcp.js와 같게)
+    if not re.fullmatch(r"97[89]\d{10}", isbn13):
+        raise ValueError("isbn13(13자리 ISBN)이 필요합니다")
     home = CFG["home_library"]
     rt, basis = _local_holdings(isbn13)
     ok  = sorted([l for l, s in rt.items() if s == "ok"])
@@ -303,6 +316,9 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     ④ 이용자 안내문 ⑤ 접수 메모까지 한 번에. 회원 토큰(user)이 있으면 규정 7종을 전부 판정하고, 없으면 회원 규정은 안내데스크 확인으로 보류.
     [11/1] 토큰 없이도 사서가 회원 조건(member: 권수·연체·중복, 이름·회원번호 없이)을 주면 그 규정까지 판정한다.
     접수는 하지 않는다(접수는 request_service 또는 안내데스크에서 사서가)."""
+    if not isinstance(utterance, str) or not utterance.strip():
+        raise TypeError("utterance(이용자의 말 또는 책 제목)가 필요합니다")
+    utterance = _mask(utterance)                      # [11/3] 응답·메모에는 가린 말만(코드 점검)
     mem = {} if user else _member_conditions(member)  # 토큰이 있으면 토큰의 회원 정보로 판정한다
     pickup = _pickup_name(pickup or CFG["home_library"])
     points = list(CFG.get("pickup_points") or [])
@@ -396,7 +412,7 @@ def consult_request(utterance: str, pickup: str = None, lang: str = "ko", user: 
     else:
         cnt = (nation or {}).get("found_count")
         notice = (f"{t_} {CFG['city']}시립도서관 {len(CFG['libraries'])}곳에 소장되어 있지 않습니다. 전국 상호대차(책바다)로 신청하실 수 있으며 "
-                  f"왕복 택배비가 듭니다." + (f" 정보나루 기준 다른 지역 {cnt}곳 소장입니다." if cnt else ""))
+                  f"왕복 택배비가 듭니다." + ((f" 다른 지역 도서관 {cnt}곳에 있습니다." if (nation or {}).get("example") else f" 정보나루 기준 경기도 도서관 {cnt}곳에 있습니다.") if cnt else ""))
     example = isbn in naru._hold.get("_examples", []) and (LOCAL_SOURCE != "naru" or naru.LAST_META.get("example"))
     if route == "check":                              # 조회한 자료가 없으므로 날짜를 찍지 않는다
         pass
@@ -530,6 +546,7 @@ def track_request(user: str, request_no: str):
         if k in r: out[k] = r[k]
     if r["status"] == "arrived":
         out["hold_days"] = CFG.get("hold_days", 3)
+    out["basis"] = "알파스 커넥터(모의)"                 # [11/3] 모의 결과임을 밝힌다(코드 점검)
     return out
 
 def cancel_request(user: str, request_no: str):
@@ -540,12 +557,13 @@ def cancel_request(user: str, request_no: str):
         raise PermissionError("본인 신청만 취소할 수 있습니다")
     out = alpas.cancel_ill(request_no, "이용자 취소", by="user")
     _persist()                                            # [v0.3.1]
-    return {"no": request_no, **out}
+    return {"no": request_no, **out, "basis": "알파스 커넥터(모의)"}
 
 def _sim(request_no: str, event: str):
     """데모·적합성시험 전용 상태 전이 훅 — tools/list에 노출되지 않으며 운영에는 없다.
     (운영에서 상태를 바꾸는 주체는 알파스뿐이다)"""
-    out = alpas.simulate(request_no, event, CFG.get("hold_days", 3))
+    hd = CFG.get("hold_days", 3) - (1 if CFG.get("hold_includes_arrival_day") else 0)   # [11/3] 「도착한 날을 포함해 3일」(코드 점검)
+    out = alpas.simulate(request_no, event, hd)
     _persist()                                            # [v0.3.1] 상태 전이도 저장(운영: 알파스 DB가 원본)
     return out
 
@@ -560,4 +578,4 @@ def notify_user(user: str, event: str, message: str):
     member_id = vault.resolve(user)
     pref = alpas.member_status(member_id).get("notify_pref", "sms")
     ch = pref if pref in CFG["notify_channels"] else CFG["notify_channels"][0]
-    return alpas.send_notice(member_id, ch, message)
+    return {**alpas.send_notice(member_id, ch, message), "basis": "알파스 커넥터(모의) · 실제로 보내지 않음"}

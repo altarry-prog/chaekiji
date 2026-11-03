@@ -7,9 +7,12 @@ conformance:
   before_script:
     - pip install pyyaml
   script:
+    - cd server
     - python3 tests/run_scenarios.py
     - python3 lab/check_store.py
+    - python3 tests/run_relay.py
+    - python3 tests/run_host.py
     - python3 lab/measure.py --demo
   artifacts:
-    paths: [lab/out/]
+    paths: [server/lab/out/]
     expire_in: 1 week

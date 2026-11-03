@@ -17,7 +17,7 @@ export const SNAPSHOT_URL = "https://altarry-prog.github.io/chaekiji/data/holdin
 const FIX_ASOF = "2026-08-18";
 const SNAPSHOT_MAX_DAYS = 2;
 // [10/19] 심사 기간 고정 자료 — 동결 뒤 새벽 갱신이 멈추므로 동결일 이후 자료는 11. 26.까지 신선한 것으로 본다(naru.snapshot_ok와 같은 규칙). 결선 뒤 지움
-// [10/27] 동결을 10. 30. 18시로 앞당김(담당자 결정) → 10. 30. 이후 자료
+// [10/27] 고정 자료의 시작일 10. 30.(그날 이후 자료). 동결·제출은 11. 9.
 const FROZEN_FROM = "2026-10-30", FROZEN_UNTIL = "2026-11-26";
 const SNAP_CACHE_MS = 10 * 60 * 1000;
 const ROUTE_LABEL = { visit: "바로 이용(받을 도서관에 대출 가능)", ill: "관내 상호대차", reserve: "예약 권장(시립도서관에 있는 책이 모두 대출 중)",
@@ -249,9 +249,14 @@ function scoreDoc(doc, qFull, qBase, vol, dropped) {           // naru._score_do
   }
   return s;
 }
-export function maskPrivate(s) {                             // tools._mask — [11/3] 접수 메모에 옮기는 이용자의 말에서 전화번호·긴 숫자(ISBN은 남김)를 가린다
-  s = String(s).replace(/(?<!\d)0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)/g, "(번호 가림)");
+export function maskPrivate(s) {                             // tools._mask — [11/3] 전화번호(국가번호 꼴 포함)·회원번호·긴 숫자(ISBN-13은 남김)를 가린다
+  s = String(s).replace(/(?<!\d)\+?82[-.\s]?\(?0?\)?1\d[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)/g, "(번호 가림)");
+  s = s.replace(/(?<!\d)0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)/g, "(번호 가림)");
+  s = s.replace(/((?:회원|회원증|대출증|카드)\s*번호\s*[:：]?\s*)[0-9A-Za-z-]{2,}/g, "$1(번호 가림)");
   return s.replace(/\d{8,}/g, m => (/^97[89]\d{10}$/.test(m) ? m : "(번호 가림)"));
+}
+function queryText(s) {                                       // tools._query — 검색에 넘길 말(가린 자리는 지움)
+  return maskPrivate(s).split("(번호 가림)").join(" ").replace(/\s+/g, " ").trim();
 }
 function volLabel(v) {                                       // naru._vol_label — 「2」·「제2권」 → 「2권」
   const dg = String(v ?? "").replace(/\D/g, "").replace(/^0+/, "");
@@ -260,6 +265,7 @@ function volLabel(v) {                                       // naru._vol_label 
 const bookOf = d => ({ isbn13: d.isbn13, title: nn(d.title), author: nn(d.author), publisher: nn(d.publisher), year: nn(d.year),   // naru._book_of — [10/19 밤] 권차가 있으면 함께
                        ...(d.vol ? { vol: String(d.vol) } : {}) });
 async function searchItem(utterance, deps, ctx) {
+  utterance = queryText(utterance);                            // [11/3] 번호는 검색어로 내보내지 않는다(tools.search_item과 같게)
   const title = cleanTitle(utterance);
   const [base, vol, explicit] = splitVolume(title);
   let fx = null, weak = null;
@@ -380,9 +386,11 @@ async function holdingsLocal(isbn13, deps, ctx) {
     return { out, meta: { basis, asof: FIX_ASOF, holding_count: countHeld(out), calls: 0, cached: false, example: ex } };
   }
 }
-function fixtureNation(isbn13) {
+function fixtureNation(isbn13) {                              // naru.availability_nation demo — [11/3] 픽스처·예시 값에 「하루 전 기준 · 정보나루」를 붙이지 않는다
   const n = (HOLD.nation || {})[isbn13];
-  return { basis: `전일(${kstDay(-1)}) 기준 · 정보나루`, found_count: (n || {}).count || 0, note: (n || {}).note || "전국 조회(모의)" };
+  const ex = (HOLD._examples || []).includes(isbn13);
+  return { basis: ex ? "예시 데이터(꾸민 값, 정보나루 조회 아님)" : "전국 소장 조회 안 함(모의)", found_count: (n || {}).count || 0,
+           note: (n || {}).note || "전국 조회(모의)", example: ex };
 }
 async function nationRemote(isbn13, deps, ctx) {              // naru.availability_nation relay 모드
   const snap = await snapshot(ctx);
@@ -426,7 +434,7 @@ function policyCheck(rules, member, onShelf, pickup, item, isbn13) {
   const checks = [];
   const rule = (name, passed, detail) => checks.push({ rule: name, pass: !!passed, detail });
   if (rules.block_if_pickup_on_shelf ?? true)
-    rule("수령관 동일도서 비치 시 신청 불가", !onShelf, onShelf ? "받을 도서관 서가에 있음" : "받을 도서관 서가에 없음(대출 중이거나 소장하지 않음)");
+    rule("받을 도서관 같은 책 비치 시 신청 불가", !onShelf, onShelf ? "받을 도서관 서가에 있음" : "받을 도서관 서가에 없음(대출 중이거나 소장하지 않음)");
   rule(`상호대차 1인 ${rules.ill_limit}권`, member.ill_count < rules.ill_limit, `현재 ${member.ill_count}/${rules.ill_limit}권`);
   rule(`통합 대출 ${rules.total_limit}권`, member.total_loans < rules.total_limit, `현재 ${member.total_loans}/${rules.total_limit}권`);
   const at = (member.loans_at || {})[pickup] || 0;
@@ -519,9 +527,9 @@ function officialLink(title, isbn13, byTitle = false) {         // tools._offici
 // ── 상담 묶음(tools.consult_request, 회원 토큰 없이) ───────────────────────
 class ToolError extends Error { constructor(kind, msg) { super(msg); this.kind = kind; } }
 export async function consultRequest(args, deps, ctx) {
-  const utterance = args.utterance;
-  if (typeof utterance !== "string" || !utterance.trim()) throw new ToolError("TypeError", "utterance(이용자의 말 또는 책 제목)가 필요합니다");
-  if (args.user) throw new ToolError("ValueError", "원격 상담 비서는 회원 토큰을 받지 않습니다(개인정보 보호). 회원 규정은 안내데스크에서 확인합니다");
+  if (typeof args.utterance !== "string" || !args.utterance.trim()) throw new ToolError("TypeError", "utterance(이용자의 말 또는 책 제목)가 필요합니다");
+  const utterance = maskPrivate(args.utterance);               // [11/3] 응답·메모에는 가린 말만(tools.consult_request와 같게)
+  if (args.user) throw new ToolError("ValueError", "인터넷 판은 회원 토큰을 받지 않습니다(개인정보 보호). 회원 규정은 안내데스크에서 확인합니다");
   const mem = memberConditions(args.member);                   // [11/1] 사서가 준 회원 조건(권수·예/아니요)만
   const pickup = pickupName(args.pickup || CFG.home_library);
   const lang = args.lang || "ko";
@@ -616,7 +624,7 @@ export async function consultRequest(args, deps, ctx) {
   } else {
     const cnt = (nation || {}).found_count;
     notice = `${t_} ${CFG.city}시립도서관 ${Object.keys(LIBS).length}곳에 소장되어 있지 않습니다. 전국 상호대차(책바다)로 신청하실 수 있으며 ` +
-             `왕복 택배비가 듭니다.` + (cnt ? ` 정보나루 기준 다른 지역 ${cnt}곳 소장입니다.` : "");
+             `왕복 택배비가 듭니다.` + (cnt ? ((nation || {}).example ? ` 다른 지역 도서관 ${cnt}곳에 있습니다.` : ` 정보나루 기준 경기도 도서관 ${cnt}곳에 있습니다.`) : "");
   }
   const example = (HOLD._examples || []).includes(isbn) && !!meta.example;
   if (route !== "check")                                      // 조회한 자료가 없으면 날짜를 찍지 않는다
@@ -724,7 +732,7 @@ async function handleOne(m, deps) {
     case "initialize": {
       const v = PROTOCOLS.includes(p.protocolVersion) ? p.protocolVersion : PROTOCOLS[0];
       return rpcResult(m.id, { protocolVersion: v, capabilities: { tools: { listChanged: false }, prompts: { listChanged: false } },
-        serverInfo: { name: "chaekiji-consult", title: "책이지(원격 판)", version: SERVER_VERSION + "-remote" }, instructions: INSTRUCTIONS });
+        serverInfo: { name: "chaekiji-consult", title: "책이지(인터넷 판)", version: SERVER_VERSION + "-remote" }, instructions: INSTRUCTIONS });
     }
     case "ping": return rpcResult(m.id, {});
     case "tools/list": return rpcResult(m.id, { tools: TOOL_LIST });

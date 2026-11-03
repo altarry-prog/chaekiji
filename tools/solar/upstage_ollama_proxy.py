@@ -33,7 +33,7 @@ def _args(v):
 
 
 def to_openai(messages):
-    """Ollama 모양 대화를 오픈AI 모양으로. 도구 결과에는 앞 호출의 id를 차례로 붙인다(tools/model2/gpt_host.py와 같은 규칙)."""
+    """Ollama 모양 대화를 오픈AI 모양으로. 도구 결과에는 앞 호출의 id를 차례로 붙인다(오픈AI 대화 규칙)."""
     out, pending = [], []
     for m in messages:
         role = m.get("role")

@@ -44,7 +44,7 @@ FIX_ASOF = "2026-08-18"                               # 픽스처 실측일
 SNAPSHOT_PATH = Path(os.environ.get("CHAEKIJI_SNAPSHOT") or (FIX / "holdings-today.json"))
 SNAPSHOT_MAX_DAYS = 2
 # [10/19] 심사 기간 고정 자료 — 동결 뒤 새벽 갱신이 멈추므로, 동결일 이후 날짜의 새벽 자료는 11. 26.까지 신선한 것으로 본다.
-#   [10/27] 동결을 2026. 10. 30. 18시로 앞당김(담당자 결정) → 10. 30. 이후 자료. 평소 규칙(2일)은 그대로이고, 안내문에는 조회일(「2026. 10. 30. 조회」)을 밝힌다.
+#   [10/27] 고정 자료의 시작일을 2026. 10. 30.로 둠(그날 이후 자료). 동결·제출은 11. 9.(그날 자료). 평소 규칙(2일)은 그대로이고, 안내문에는 조회일을 밝힌다.
 #   결선(11. 25.) 뒤 지운다. relay/mcp.js·index.html·health_check.py와 같은 값.
 FROZEN_FROM = datetime.date(2026, 10, 30)
 FROZEN_UNTIL = datetime.date(2026, 11, 26)
@@ -308,9 +308,10 @@ def availability_nation(isbn13: str, mode="demo"):
         except Exception:
             out = availability_nation(isbn13, mode="demo"); out["note"] += " · 중계 응답 없음 → 픽스처로 복귀"
             return out
-    n = _hold.get("nation", {}).get(isbn13)
-    return {"basis": f"전일({yday}) 기준 · 정보나루", "found_count": (n or {}).get("count", 0),
-            "note": (n or {}).get("note", "전국 조회(모의)")}
+    n = _hold.get("nation", {}).get(isbn13)            # [11/3] 픽스처·예시 값에 「하루 전 기준 · 정보나루」를 붙이지 않는다(코드 점검)
+    ex = isbn13 in _hold.get("_examples", [])
+    return {"basis": "예시 데이터(꾸민 값, 정보나루 조회 아님)" if ex else "전국 소장 조회 안 함(모의)",
+            "found_count": (n or {}).get("count", 0), "note": (n or {}).get("note", "전국 조회(모의)"), "example": ex}
 
 def _unknown(libraries: dict, why: str) -> dict:
     """[v0.3.5] 소장·대출 상태를 알 수 없을 때 — 모든 관을 unknown으로 돌려주고 LAST_META에 unavailable을 남긴다.

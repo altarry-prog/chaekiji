@@ -85,7 +85,8 @@ const cW = await call(worker, env, "consult_request", { utterance: "소년을 �
 const cM = await call(worker, env, "consult_request", { utterance: "010-1234-5678 흐르는 강물처럼", pickup: "상동" });
 ok(!c.isError && c.out.found === false && c.out.route === "check" && c.out.notice.includes("연결되지 않아") &&
    c.out.desk_memo.startsWith("[조회 불가]") && c.out.verdict === "소장 확인 불가(안내데스크에서 조회)" &&
-   cW.out.found === false && cW.out.route === "check" && !cM.out.desk_memo.includes("010-1234-5678") && cM.out.desk_memo.includes("(번호 가림)"),
+   cW.out.found === false && cW.out.route === "check" && !cM.out.desk_memo.includes("010-1234-5678") && cM.out.desk_memo.includes("(번호 가림)") &&
+   !JSON.stringify(cM.out).includes("1234-5678") && cM.out.utterance.includes("(번호 가림)"),
    "서지 검색부터 연결 끊김 — 「저자·출판사를 알려 달라」고 되묻지 않고 「조회 불가 → 안내데스크 조회」 · [11/3] 짧은 낱말만 겹친 문의(「소년을 위로해줘」)도 확인이 끊기면 시연 도서로 단정하지 않음 · 접수 메모 전화번호 가림");
 c = await call(worker, env, "consult_request", { utterance: "나미야", user: "tok_demo" });
 ok(c.isError && c.text.includes("회원 토큰을 받지 않습니다"), "회원 토큰을 넘기면 거절(개인정보를 받지 않음)");
@@ -199,4 +200,4 @@ ok(s1.route === "sea" && s1.book.isbn13 === "9791187268512" && (s1.other_edition
    s1.notice.startsWith("『문헌정보학개론』은") && s1.desk_memo.startsWith("도서: 문헌정보학개론 ("),
    "[10/19 밤] 판본 보정 — 고른 판(2021)이 관내에 없으면 같은 작품의 다른 판(2024)을 확인해 알림·갈래(책바다)는 그대로 · 관내에 있는 책은 다른 판을 보지 않음 · 정보나루 서명 끝 빈칸은 안내문·메모에서 뗌(「은(는)」 방지)");
 
-console.log(`\n원격 상담 비서 점검 ${n}건 통과`);
+console.log(`\n인터넷 판 점검 ${n}건 통과`);

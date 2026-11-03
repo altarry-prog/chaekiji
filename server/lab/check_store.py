@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """[3주차] 실험실 점검 시험 — 영속 저장·감사 기록·관내 출처 전환. 네트워크·인증키 불필요(demo 모드).
-적합성 시험 33건(tests/run_scenarios.py)과 별도로 센다 — 원고의 「33건」 숫자를 건드리지 않기 위해.
+적합성 시험(tests/run_scenarios.py, 53건)과 따로 센다.
 실행: python3 lab/check_store.py
 검증하는 것:
   ① 서버를 껐다 켜도 신청·위임·한도 현황이 남는다(CHAEKIJI_STORE)

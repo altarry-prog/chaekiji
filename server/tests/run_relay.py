@@ -90,7 +90,7 @@ time.sleep(0.3)
 RELAY = f"http://127.0.0.1:{PORT}"
 
 print("── auto 모드 · 중계 살아 있음 ──")
-c = Client(CHAEKIJI_MODE="auto", CHAEKIJI_RELAY=RELAY)
+c = Client(CHAEKIJI_MODE="auto", CHAEKIJI_RELAY=RELAY, NARU_KEY=FAKE_KEY)   # [11/3] 서버가 키를 갖고 있어도 응답에 새지 않는지(⑤)
 r = c.call("consult_request", utterance="나미야 잡화점의 기적 빌리고 싶어요", pickup="상동")
 ok(r["mode"] == "relay", "① auto → relay 선택(중계 health 응답)")
 ok(r["route"] == "visit" and r["availability"]["asof"] == TODAY,
@@ -128,8 +128,8 @@ ok(r12["policy"]["pending"] == ["상호대차 제외 자료 아님"] and sum(1 f
    and "남은 규정(상호대차 제외 자료 아님)은 안내데스크에서 확인해 드립니다." in r12["notice"] and "회원 조건: 사서 입력(" in r12["desk_memo"],
    "④⁗ [11/1] 회원 조건 5칸을 준 정보나루 서지 도서 — 규정 6종 판정, 자료 유형·신착(정보나루에 없음) 1종만 안내데스크 확인")
 allj = json.dumps([r, r2, r3, r10, r11, r12], ensure_ascii=False)
-ok(FAKE_KEY not in allj and "authKey" not in allj, "⑤ 응답에 인증키 흔적 없음")
 banner = c.banner()
+ok(FAKE_KEY not in allj and "authKey" not in allj and FAKE_KEY not in banner, "⑤ 응답·기동 배너에 인증키 흔적 없음(서버 환경에 키를 넣고 봄)")
 ok("relay 모드" in banner and "관내 출처 naru" in banner, "   기동 배너 — relay 모드 · 관내 출처 naru")
 
 print("── 중계가 죽은 뒤 ──")
@@ -247,4 +247,4 @@ finally:
 ok(p7["found"] is False and p7.get("unavailable") is True and _naru.pick_search("아무도 모르는 제목", _fake, _E)["candidates"] == []
    and w7["found"] is False and w7.get("unavailable") is True,
    "   ⑦⁗ 첫 검색이 끊기면 「없음」이 아니라 unavailable(v0.3.5 그대로) · 결과가 없으면 후보 없이 못 찾음 · [11/3] 짧은 낱말만 겹친 문의도 확인이 끊기면 시연 도서로 단정하지 않음")
-print(f"\n중계 시험 {PASS}건 통과 — 키 없이 오늘 데이터, 중계가 멈춰도 멈추지 않는다.")
+print(f"\n중계 시험 {PASS}건 통과 — 키 없이 그 자리 조회(하루 전 기준), 중계가 멈춰도 멈추지 않는다.")

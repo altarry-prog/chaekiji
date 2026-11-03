@@ -18,7 +18,7 @@ def main():
         import getpass
         os.environ["NARU_KEY"] = getpass.getpass("정보나루 인증키(화면에 안 보임): ").strip()
     k = os.environ["NARU_KEY"]
-    print(f"키 길이 {len(k)}자 · 앞 2자 {k[:2]}… (원문은 출력하지 않음)")
+    print(f"키 길이 {len(k)}자 (키 글자는 출력하지 않음)")
 
     # 1) exactMatch 값 비교 — 매뉴얼은 true/false, 8월 실측 코드는 Y
     print(f"\n[1] srchBooks title=「{TITLE}」 — exactMatch 값별 결과")

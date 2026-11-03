@@ -81,6 +81,7 @@
 
 - [run_scripts_record_actions_2026-10-31_2126.md](run_scripts_record_actions_2026-10-31_2126.md): 깃허브 액션의 새 가상 PC에서 `run.bat`(윈도우 서버 2025)과 `run.sh`(맥)를 고치지 않고 실행했습니다. 파이썬 3.9·3.13 네 경우 모두 시험 104건 통과, PyYAML 설치를 포함해 윈도우 16~20초, 맥 6~8초입니다. 행정망 PC는 프록시·설치 제한이 달라 따로 확인해야 합니다.
 - [run_scripts_record_actions_2026-11-01_1401.md](run_scripts_record_actions_2026-11-01_1401.md): 같은 방법으로 11. 1.에 다시 돌려 네 경우 모두 시험 110건 통과. 그 뒤 11. 2.에 시험이 112건으로 늘었습니다(112건 판의 윈도우·맥 기록은 아래에 더함).
+- [run_scripts_record_actions_2026-11-03_0858.md](run_scripts_record_actions_2026-11-03_0858.md): 112건 판(main 38cb4d8)을 11. 3.에 같은 방법으로 돌려 네 경우 모두 통과(윈도우 17~22초, 맥 7~8초, PyYAML 설치 포함). 실행 도구와 처음 기록은 가지 `tools/model2`에 있고 내용 그대로 옮겼습니다.
 
 ## 그 밖
 

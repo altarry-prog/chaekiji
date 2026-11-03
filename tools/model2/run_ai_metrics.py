@@ -24,6 +24,12 @@ RUN_ID = os.environ.get("RUN_ID", datetime.datetime.now(KST).strftime("%m%d%H%M"
 OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
 MIN_GAP = float(os.environ.get("AI_MIN_GAP", "0"))     # 문의 사이 최소 간격(초). snapshot 모드는 정보나루·중계를 부르지 않아 기본 0
 SMODE = os.environ.get("AI_SERVER_MODE", "snapshot")    # snapshot: 정보나루 호출 0(시연 도서 5종만) · auto: 중계로 그날 조회(하루 한도 주의)
+#   [11. 3. 준비] replay: tools/model2/replay_relay.py를 중계 자리에 둔다 — 받아 둔 자료(AI_REPLAY_CACHE)에 없을 때만 진짜 중계를 한 번 부르고
+#   적어 두므로, 모델·회차가 늘어도 정보나루는 책마다 한 번만 불린다(AI_LIVE_MAX로 상한). 서버는 relay 모드로 돈다.
+SERVER_MODE = "relay" if SMODE == "replay" else SMODE
+CASESET = os.environ.get("AI_CASESET", "fixed24")       # fixed24: 시연 도서 문의 24건(11. 1.~2.) · outside20: 시연 도서 밖 15권 문의 20건(11. 5.)
+REF_ONLY = os.environ.get("AI_REF_ONLY") == "1"         # 기준(모델 없이 정확한 제목으로 도구 한 번)만 돌려 자료를 받아 두는 작업
+TOOLS_DIR = pathlib.Path(__file__).resolve().parent
 SLUG = re.sub(r"[^a-z0-9]+", "-", MODEL.lower()).strip("-")
 
 # (번호, 갈래, 이용자의 말, 받을 도서관, 이용자 언어, 기대한 책 제목 또는 None(되묻기 기대), 보는 것)
@@ -56,6 +62,36 @@ CASES = [
     (23, "모호", "Tôi muốn mượn sách của Han Kang.", "상동", "vi", None, "베트남어로 저자 이름만: 되물어야 함"),
     (24, "모호", "요즘 많이 읽는 소설 하나 빌려 주세요", "상동", "ko", None, "책을 정하지 않음: 되물어야 함"),
 ]
+
+# [11. 3. 준비, 11. 5. 실측] 시연 도서 밖 15권 · 문의 20건. 11. 2. 독립 심사 지적(책을 찾은 대부분이 시연 도서 찾기 낱말 덕)에 따라
+#   시연 도서 5종과 그 찾기 낱말(소년·편의점·잡화점·나미야·온실·설민석 등), 직원 측정(기록지 B)의 책을 모두 뺐다.
+#   실측 전에 이 목록을 커밋해 두고 바꾸지 않는다(결과를 보고 문의를 고르지 않게). 기대한 책은 판본·권과 상관없이 본서명으로 본다.
+CASES_OUTSIDE = [
+    (1, "묘사", "조남주 작가 소설인데 1982년에 태어난 여성의 삶을 그린 책이요, 역곡에서 받을게요", "역곡", "ko", "82년생 김지영", "저자와 내용으로"),
+    (2, "묘사", "잠들면 꿈을 사러 가는 백화점 이야기 소설 있죠? 상동에서 받고 싶어요", "상동", "ko", "달러구트 꿈 백화점", "줄거리만으로"),
+    (3, "묘사", "김훈 작가가 안중근 의사 이야기를 쓴 소설 빌리고 싶어요", "원미", "ko", "하얼빈", "저자와 내용으로"),
+    (4, "묘사", "정지아 작가 소설인데 빨치산이었던 아버지 장례식 사흘 이야기요", "상동", "ko", "아버지의 해방일지", "저자와 줄거리로"),
+    (5, "묘사", "양계장을 나온 암탉 잎싹 이야기 동화책 있어요? 아이랑 보려고요", "송내", "ko", "마당을 나온 암탉", "줄거리·등장인물로"),
+    (6, "묘사", "재레드 다이아몬드가 쓴, 왜 어떤 대륙이 먼저 발전했는지 다룬 책 있나요?", "상동", "ko", "총 균 쇠", "저자와 내용으로"),
+    (7, "오타", "메리골드 마음세탁소 잇나요? 원미에서 받을게요", "원미", "ko", "메리골드 마음 세탁소", "띄어쓰기·맞춤법"),
+    (8, "오타", "최진영 구의 증멍 있어요?", "상동", "ko", "구의 증명", "제목 끝 글자 틀림"),
+    (9, "오타", "세이노 가르침 빌릴수있나요 역곡에서요", "역곡", "ko", "세이노의 가르침", "조사 빠짐"),
+    (10, "오타", "프로젝트 헤일매리 송내에서 받고 싶어요", "송내", "ko", "프로젝트 헤일메리", "외래어 표기 틀림"),
+    (11, "외국어", "Do you have The Midnight Library by Matt Haig? I'd like to pick it up at Sangdong library.", "상동", "en",
+     "미드나잇 라이브러리", "영어 원제"),
+    (12, "외국어", "I want to borrow Demian by Hermann Hesse. Can I get it at Kkumbit library?", "꿈빛", "en", "데미안", "영어로 원제·저자"),
+    (13, "외국어", "Tôi muốn mượn cuốn \"Sapiens\" của Yuval Noah Harari. Tôi nhận ở thư viện Wonmi được không?", "원미", "vi",
+     "사피엔스", "베트남어로 원제·저자"),
+    (14, "외국어", "Tôi muốn mượn cuốn \"Người đua diều\" của Khaled Hosseini.", "상동", "vi", "연을 쫓는 아이", "베트남어 번역 제목"),
+    (15, "외국어", "我想借太宰治的《人间失格》，可以在上东图书馆取书吗？", "상동", "zh", "인간 실격", "중국어 제목"),
+    (16, "외국어", "『82年生まれ、キム・ジヨン』を借りたいです。上洞図書館で受け取れますか。", "상동", "ja", "82년생 김지영", "일본어 번역 제목"),
+    (17, "대조", "총 균 쇠 상동에서 받을 수 있어요?", "상동", "ko", "총 균 쇠", "정확한 제목(대조)"),
+    (18, "대조", "아버지의 해방일지 역곡에서 받고 싶어요", "역곡", "ko", "아버지의 해방일지", "정확한 제목(대조)"),
+    (19, "모호", "김훈 작가 책 빌리고 싶어요", "상동", "ko", None, "저자 이름만: 어느 책인지 되물어야 함"),
+    (20, "모호", "요즘 많이 읽는 에세이 하나 빌려 주세요", "상동", "ko", None, "책을 정하지 않음: 되물어야 함"),
+]
+if CASESET == "outside20":
+    CASES = CASES_OUTSIDE
 
 # 지시문 고친 안(title): 1·2항만 바꾼다. 예시는 문의 24건에 없는 책으로 골랐다(문제에 맞춘 예시가 되지 않게).
 P1_OLD = "1. 사실은 도구로만 확인합니다. 책 제목, 어느 도서관에 있는지, 대출 가능 여부, 상호대차 규정은 추측하지 않습니다."
@@ -133,14 +169,43 @@ if INSTRUMENTED:
     ADD = ('                    row["metrics"] = {"isbn13": (o.get("book") or {}).get("isbn13"), "title": (o.get("book") or {}).get("title"), '
            '"official_link": o.get("official_link"), "from_lib": o.get("from_lib"), "pickup": o.get("pickup"), '
            '"available_at": (o.get("availability") or {}).get("available_at"), "loaned_at": (o.get("availability") or {}).get("loaned_at"), '
-           '"notice": o.get("notice")}\n')
+           '"notice": o.get("notice"), "verdict": o.get("verdict")}\n')
     HOST.write_text(hsrc.replace(ANCHOR, ANCHOR + ADD, 1), encoding="utf-8")
 
 def _sh(cmd):
     return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
-OLLAMA_VER = json.load(urllib.request.urlopen(OLLAMA + "/api/version"))["version"]
+try:
+    OLLAMA_VER = json.load(urllib.request.urlopen(OLLAMA + "/api/version", timeout=10))["version"]
+except Exception:                                       # 기준만 받는 작업(AI_REF_ONLY)에는 모델 서버가 없다
+    if not REF_ONLY:
+        raise
+    OLLAMA_VER = None
 ENVINFO = {"cpu": os.cpu_count(), "mem": " ".join(_sh("free -h | sed -n 2p").split()[1:3]), "ollama": OLLAMA_VER,
-           "models": [l for l in _sh("ollama list").splitlines()[1:] if l.strip()]}
+           "models": [l for l in _sh("ollama list").splitlines()[1:] if l.strip()] if OLLAMA_VER else []}
+
+# [11. 3. 준비] replay: 받아 두고 다시 쓰는 중계를 띄우고, 서버(도구 직접 부르기·호스트 모두)가 그곳을 중계로 쓰게 한다
+REPLAY_PROC, REPLAY_URL = None, None
+if SMODE == "replay":
+    _cache = os.environ.get("AI_REPLAY_CACHE") or str(TOOLS_DIR / "replay_cache.json")
+    _port = int(os.environ.get("AI_REPLAY_PORT", "8765"))
+    REPLAY_PROC = subprocess.Popen([sys.executable, str(TOOLS_DIR / "replay_relay.py"), "--cache", _cache, "--port", str(_port),
+                                    "--log", str(OUT_DIR / f"ai_metrics_replay_{TAG}.ndjson")])
+    REPLAY_URL = f"http://127.0.0.1:{_port}"
+    for _ in range(50):
+        try:
+            urllib.request.urlopen(REPLAY_URL + "/health", timeout=2); break
+        except Exception:
+            time.sleep(0.2)
+    os.environ["CHAEKIJI_RELAY"] = REPLAY_URL
+    print("replay 중계", REPLAY_URL, "· 받아 둔 자료", _cache, flush=True)
+
+def replay_stats():
+    if not REPLAY_URL:
+        return None
+    try:
+        return json.load(urllib.request.urlopen(REPLAY_URL + "/stats", timeout=5))
+    except Exception as e:
+        return {"error": type(e).__name__}
 
 sys.path.insert(0, "hosts")
 import ollama_host as oh  # noqa: E402
@@ -149,7 +214,7 @@ def tool(args):
     key = json.dumps(args, ensure_ascii=False, sort_keys=True)
     if key in _CACHE:
         return _CACHE[key]
-    mcp = oh.MCP("server.py", dict(os.environ, CHAEKIJI_MODE=SMODE, PYTHONUTF8="1"))
+    mcp = oh.MCP("server.py", dict(os.environ, CHAEKIJI_MODE=SERVER_MODE, PYTHONUTF8="1"))
     try:
         text, err = mcp.call("consult_request", args)
     finally:
@@ -166,7 +231,8 @@ def brief(o):
     return {"found": o.get("found"), "route": o.get("route"), "route_label": o.get("route_label"), "mode": o.get("mode"),
             "isbn13": (o.get("book") or {}).get("isbn13"), "title": (o.get("book") or {}).get("title"),
             "official_link": o.get("official_link"), "from_lib": o.get("from_lib"), "pickup": o.get("pickup"),
-            "available_at": av.get("available_at"), "loaned_at": av.get("loaned_at"), "asof": av.get("asof"), "notice": o.get("notice")}
+            "available_at": av.get("available_at"), "loaned_at": av.get("loaned_at"), "asof": av.get("asof"), "notice": o.get("notice"),
+            "verdict": o.get("verdict")}
 
 # ① 기준: 기대한 책의 정확한 제목으로 도구를 직접 부른다(모델 없이, 같은 받을 도서관·언어)
 REF = {}
@@ -178,14 +244,23 @@ for no, cat, ask, pickup, lang, title, _ in CASES:
     print(f"기준 {no}: 「{title}」 → {REF[no]['route_label']} · {REF[no]['isbn13']} · {REF[no]['asof']}", flush=True)
     time.sleep(3)
 
-# ② 모델 실행: 문의 24건, 이 작업의 회차 하나
+if REF_ONLY:                                            # 기준만: 받아 둔 자료와 기준 판정을 남기고 끝낸다(모델 없음)
+    OUT = OUT_DIR / f"ai_metrics_ref_{RUN_ID}_{CASESET}.json"
+    OUT.write_text(json.dumps({"caseset": CASESET, "run_id": RUN_ID, "commit": COMMIT, "server_mode": SMODE, "ref": REF,
+                               "replay": replay_stats(), "finished": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M")},
+                              ensure_ascii=False, indent=1), encoding="utf-8")
+    print("기준만 받음:", OUT, json.dumps(replay_stats(), ensure_ascii=False), flush=True)
+    if REPLAY_PROC: REPLAY_PROC.terminate()
+    sys.exit(0)
+
+# ② 모델 실행: 이 작업의 회차 하나
 CALLS = OUT_DIR / f"ai_metrics_calls_{TAG}.ndjson"
 ANS = OUT_DIR / f"ai_metrics_answers_{TAG}.ndjson"
 RUNLOG = {}
 for no, cat, ask, pickup, lang, title, _ in CASES:
     t0 = time.time()
     try:
-        r = subprocess.run([sys.executable, "hosts/ollama_host.py", "--model", MODEL, "--ollama", OLLAMA, "--mode", SMODE,
+        r = subprocess.run([sys.executable, "hosts/ollama_host.py", "--model", MODEL, "--ollama", OLLAMA, "--mode", SERVER_MODE,
                             "--pickup", pickup, "--lang", lang, "--ask", ask, "--log", str(CALLS), "--answers", str(ANS),
                             "--tools", "consult", "--timeout", "900", "--num-ctx", "8192"], capture_output=True, text=True,
                            encoding="utf-8", timeout=1500, env=dict(os.environ))
@@ -313,6 +388,10 @@ for no, cat, ask, pickup, lang, title, what in CASES:
         row.update({"book_ok": None, "wrong_book": None, "not_found": None, "infra": bool(res and res.get("route") == "check"),
                     "route_ok": None, "asked": (not found) and bool(ASKBACK.search(text)), "answered_some_book": found,
                     "asked_before_tool": (not cs) and bool(ASKBACK.search(text)), "title_arg_ok": None})
+    # [11. 3. 준비] 판정 한 줄: 도구가 준 verdict(11. 4.~)를 답에 글자 그대로 옮겼나. 확인 불가·미확정은 갈래 이름 그대로라 따로 보지 않는다
+    row["tool_verdict"] = (res or {}).get("verdict")
+    row["verdict_ok"] = ((res.get("verdict") in text) if (found and res.get("verdict") and res.get("route") not in ("check", "unknown"))
+                         else None)
     if found and text.strip():
         row["facts"] = facts(res, text)
         row["facts_tr"] = facts(res, foreign_part(text)) if lang != "ko" else None
@@ -323,6 +402,7 @@ for no, cat, ask, pickup, lang, title, what in CASES:
 
 OUT = OUT_DIR / f"ai_metrics_{TAG}.json"
 OUT.write_text(json.dumps({"model": MODEL, "variant": VARIANT, "rep": REP, "run_id": RUN_ID, "commit": COMMIT, "server_mode": SMODE,
+                           "caseset": CASESET, "replay": replay_stats(),
                            "finished": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M"), "env": ENVINFO, "ollama_ps": PS,
                            "instrumented": INSTRUMENTED, "prompt_items": PROMPT_ITEMS, "prompt_sha": PROMPT_SHA, "ref": REF, "rows": S,
                            "runlog_tail": {str(k): v[-800:] for k, v in RUNLOG.items() if not any(r["no"] == k and r["answer"].strip() for r in S)}},

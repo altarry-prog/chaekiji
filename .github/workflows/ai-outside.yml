@@ -1,0 +1,205 @@
+# AI가 맡는 몫 다시 재기(11. 5. 예정): 시연 도서 밖 15권 · 문의 20건을 GPT-OSS 20B · 엑사원 3.5 2.4B · Solar Pro 4로 3회씩.
+# 11. 2. 독립 심사 지적: 책을 찾은 대부분이 시연 도서 찾기 낱말 덕이었고, 「판정 일치」는 모델의 답이 아니라 도구 결과끼리 견준 값이었다.
+# 그래서 ① 시연 도서·찾기 낱말·직원 측정 책을 뺀 문의(실측 전에 커밋, tools/model2/run_ai_metrics.py CASES_OUTSIDE)로
+# ② 정보나루 자료를 책마다 한 번만 받아 두고(replay_relay.py) 모든 모델·회차가 같은 자료로 판정하게 해서
+# ③ 모델이 한 일(말을 책으로, 판정 한 줄·사실을 답에)과 도구가 한 일(판정)을 나눠 적는다(report_outside.py).
+# 저장소 main은 건드리지 않는다. 기록은 이 가지(tools/model2)의 server/lab/out/에 커밋한다. 수동 실행만.
+# 정보나루 하루 한도(키마다 500): 기준 받기 약 300회 + 모델 작업마다 받아 둔 자료에 없는 것만(작업마다 상한). 직원 측정 날(11. 3.~4.)에는 돌리지 않는다.
+name: ai-outside
+on:
+  workflow_dispatch:
+    inputs:
+      ref_budget:
+        description: '기준 받기의 정보나루 호출 상한'
+        required: false
+        default: '340'
+      job_budget:
+        description: '모델 작업 하나의 정보나루 호출 상한(받아 둔 자료에 없는 검색어·판본만)'
+        required: false
+        default: '17'
+      cpu_models:
+        description: 'CPU 모델(JSON 목록)'
+        required: false
+        default: '["gpt-oss:20b","exaone3.5:2.4b"]'
+      reps:
+        description: '회차(JSON 목록)'
+        required: false
+        default: '[1,2,3]'
+  push:                          # 이 파일을 올릴 때 한 번 등록만 된다(모든 작업이 건너뜀). 실측은 손으로 실행할 때만
+    branches: [tools/model2]
+    paths: [".github/workflows/ai-outside.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: ai-outside
+  cancel-in-progress: false
+env:
+  CACHE_REL: server/lab/out/replay_cache_outside20.json
+jobs:
+  ref:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHONUNBUFFERED: "1"
+      RUN_ID: ${{ github.run_id }}
+      AI_REF_ONLY: "1"
+      AI_SERVER_MODE: replay
+      AI_CASESET: outside20
+      AI_LIVE_MAX: ${{ github.event.inputs.ref_budget || '340' }}
+      WORK_DIR: /content
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tools/model2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 작업 폴더
+        run: sudo mkdir -p /content && sudo chown "$USER" /content
+      - name: 기준 받기(모델 없이 정확한 제목으로 도구 한 번, 정보나루 자료를 받아 둠)
+        run: AI_REPLAY_CACHE="$GITHUB_WORKSPACE/$CACHE_REL" python3 tools/model2/run_ai_metrics.py
+      - name: 받아 둔 자료·기준을 이 가지에 커밋
+        run: |
+          cp /content/chaekiji/server/lab/out/ai_metrics_ref_* server/lab/out/ 2>/dev/null || true
+          cp /content/chaekiji/server/lab/out/ai_metrics_replay_* server/lab/out/ 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out
+          git commit -m "AI 몫 다시 재기: 시연 도서 밖 15권 정보나루 자료 받아 둠(깃허브 액션 ${{ github.run_id }})" || { echo "커밋할 것 없음"; exit 0; }
+          for i in 1 2 3 4 5; do git pull --rebase -q origin tools/model2 && git push origin HEAD:tools/model2 && break; sleep 5; done
+  cpu:
+    needs: ref
+    strategy:
+      fail-fast: false
+      matrix:
+        model: ${{ fromJSON(github.event.inputs.cpu_models || '["gpt-oss:20b","exaone3.5:2.4b"]') }}
+        rep: ${{ fromJSON(github.event.inputs.reps || '[1,2,3]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      PYTHONUNBUFFERED: "1"
+      RUN_ID: ${{ github.run_id }}
+      AI_MODEL: ${{ matrix.model }}
+      AI_VARIANT: main
+      AI_REP: ${{ matrix.rep }}
+      AI_SERVER_MODE: replay
+      AI_CASESET: outside20
+      AI_LIVE_MAX: ${{ github.event.inputs.job_budget || '17' }}
+      WORK_DIR: /content
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tools/model2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 디스크 비우기 · 작업 폴더
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost || true
+          sudo mkdir -p /content && sudo chown "$USER" /content
+          cp "$GITHUB_WORKSPACE/$CACHE_REL" /content/replay_cache.json
+      - name: Ollama 설치·시작, 모델 받기
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          if ! curl -s http://127.0.0.1:11434/api/version > /dev/null; then (ollama serve > /content/ollama_serve.log 2>&1 &); fi
+          for i in $(seq 1 90); do curl -s http://127.0.0.1:11434/api/version && break; sleep 1; done
+          echo; time ollama pull "$AI_MODEL" > /dev/null 2>&1
+      - name: 문의 20건(이 작업의 모델·회차)
+        run: AI_REPLAY_CACHE=/content/replay_cache.json python3 tools/model2/run_ai_metrics.py
+      - name: 결과 올리기
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-cpu-${{ strategy.job-index }}
+          path: /content/chaekiji/server/lab/out/ai_metrics_*
+          if-no-files-found: warn
+          retention-days: 30
+  solar:
+    needs: ref
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        rep: ${{ fromJSON(github.event.inputs.reps || '[1,2,3]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      PYTHONUNBUFFERED: "1"
+      RUN_ID: ${{ github.run_id }}
+      AI_MODEL: solar-pro4
+      AI_VARIANT: main
+      AI_REP: ${{ matrix.rep }}
+      AI_MIN_GAP: "2"
+      AI_SERVER_MODE: replay
+      AI_CASESET: outside20
+      AI_LIVE_MAX: ${{ github.event.inputs.job_budget || '17' }}
+      OLLAMA_URL: http://127.0.0.1:11434
+      WORK_DIR: /content
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tools/model2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 작업 폴더
+        run: |
+          sudo mkdir -p /content && sudo chown "$USER" /content
+          cp "$GITHUB_WORKSPACE/$CACHE_REL" /content/replay_cache.json
+      - name: 업스테이지 중계 시작(키는 이 단계에만)
+        env:
+          UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
+          SOLAR_USAGE_FILE: /content/solar_usage_outside_r${{ matrix.rep }}.json
+        run: |
+          if [ -z "$UPSTAGE_API_KEY" ]; then echo "UPSTAGE_API_KEY가 없습니다"; exit 1; fi
+          nohup python3 tools/solar/upstage_ollama_proxy.py > /content/proxy.log 2>&1 &
+          for i in $(seq 1 30); do curl -s http://127.0.0.1:11434/api/version && break; sleep 1; done
+      - name: 문의 20건(Solar · 이 회차)
+        run: AI_REPLAY_CACHE=/content/replay_cache.json python3 tools/model2/run_ai_metrics.py
+      - name: 중계 기록(요청 수·토큰 수, 키 없음)
+        if: always()
+        run: |
+          tail -n 20 /content/proxy.log || true
+          mkdir -p /content/chaekiji/server/lab/out
+          cp /content/solar_usage_*.json /content/chaekiji/server/lab/out/ai_metrics_solar_usage_outside_r${{ matrix.rep }}.json 2>/dev/null || true
+      - name: 결과 올리기
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-sol-${{ strategy.job-index }}
+          path: /content/chaekiji/server/lab/out/ai_metrics_*
+          if-no-files-found: warn
+          retention-days: 30
+  report:
+    needs: [ref, cpu, solar]
+    if: always() && needs.ref.result == 'success'
+    runs-on: ubuntu-latest
+    env:
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tools/model2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: out-*
+          path: outs
+          merge-multiple: true
+      - name: 기록표 만들기
+        run: |
+          ls outs | head -80
+          mkdir -p server/lab/out
+          cp outs/ai_metrics_* server/lab/out/ 2>/dev/null || true
+          cp server/lab/out/ai_metrics_ref_*_outside20.json outs/ 2>/dev/null || true
+          python3 tools/model2/report_outside.py outs server/lab/out "$RUN_URL"
+      - name: 기록을 이 가지에 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add server/lab/out
+          git commit -m "AI 몫 다시 재기 기록: 시연 도서 밖 15권 · 문의 20건 · 모델 3종 × 3회(깃허브 액션 ${RUN_URL##*/})" || { echo "커밋할 것 없음"; exit 0; }
+          for i in 1 2 3 4 5; do git pull --rebase -q origin tools/model2 && git push origin HEAD:tools/model2 && break; sleep 5; done

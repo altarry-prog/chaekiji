@@ -1,5 +1,5 @@
 // 시험용 모의 정보나루 — 시나리오(JSON)로 srchBooks·libSrchByBook·bookExist와 매일 갱신 파일에 답한다.
-// relay/test_mcp.mjs(원격 상담 비서 점검)와 relay/test_mcp_parity.mjs(파이썬 판과 대조)가 함께 쓴다. 네트워크·키 불필요.
+// relay/test_mcp.mjs(인터넷 판 점검)와 relay/test_mcp_parity.mjs(파이썬 판과 대조)가 함께 쓴다. 네트워크·키 불필요.
 //   scenario.books   {검색어: [{isbn13,title,author,publisher,year}]}  — srchBooks(title=검색어)
 //   scenario.libs    {ISBN: {도서관코드: "ok"|"busy"}}                  — 소장관 목록과 대출 가능 여부(없으면 미소장)
 //   scenario.nation  {ISBN: 경기 광역 소장관 수}

@@ -64,7 +64,8 @@ def write_status(result):
     Path(a.status_out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.status_out).write_text(json.dumps(status, ensure_ascii=False, indent=1), encoding="utf-8")
 isbns = load_list()
-out = {"asof": today, "source": "정보나루 bookExist(관내) · libSrchByBook(전국) · 대출 상태는 조회일 전일 기준",
+out = {"asof": today, "source": ("연습(--demo): 2026. 8. 18. 픽스처를 오늘 날짜로 베낀 값, 정보나루 조회 아님" if a.demo else
+                                  "정보나루 bookExist(관내) · libSrchByBook(전국) · 대출 상태는 조회일 하루 전 기준"),
        "generated": datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M"), "holdings": {}, "nation": {}, "calls": 0, "partial": False}
 naru.calls_reset()
 def fetch_one(i, isbn):

@@ -90,9 +90,6 @@ jobs:
               d = pathlib.Path("ask_out"); d.mkdir(exist_ok=True)
               (d / f"ask_check_{now:%Y-%m-%d_%H%M}.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
               out = d / f"ask_check_{now:%Y-%m-%d_%H%M}.md"
-              # 보관 파일을 내려받지 못하는 곳에서도 읽도록 같은 내용을 압축해 로그 한 줄로(개인정보 없음, 키 없음)
-              import base64, gzip
-              print("ASK_JSON_GZ_B64:" + base64.b64encode(gzip.compress(json.dumps(rows, ensure_ascii=False).encode())).decode())
           else:
               out = pathlib.Path(f"server/lab/out/ask_check_{now:%Y-%m-%d_%H%M}.md")
           out.write_text("\n".join(L) + "\n", encoding="utf-8")

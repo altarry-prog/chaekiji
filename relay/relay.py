@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """책이지 정보나루 중계 — 파이썬 표준 라이브러리 판 (도서관 PC·실험실 VM에서 바로 실행, 의존성 0).
-worker.js와 같은 경로·같은 응답 모양. 인증키는 환경변수 NARU_KEY로만 받는다.
+2026. 10. 16. 판의 worker.js와 같은 경로(그 뒤의 보강은 worker.js에만: 서지 검색 10건·권차 칸 등). 인증키는 환경변수 NARU_KEY로만 받는다.
+이 PC에서만 열린다(127.0.0.1). 다른 PC에서 부르게 하려면 방화벽·접근 규칙을 먼저 정한다.
 
 실행:  set NARU_KEY=...   (윈도우)  /  export NARU_KEY=...  (리눅스)
        python relay.py            → http://127.0.0.1:8787
@@ -124,4 +125,4 @@ if __name__ == "__main__":
     if not os.environ.get("NARU_KEY"):
         sys.exit("NARU_KEY 환경변수(정보나루 인증키)가 없어 기동하지 않습니다 — 코드·파일에 키를 쓰지 마세요.")
     print(f"책이지 중계 가동: http://127.0.0.1:{PORT}  (/health · /holdings?isbn=…)")
-    ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
+    ThreadingHTTPServer(("127.0.0.1", PORT), H).serve_forever()   # [11/3] 이 PC에서만(코드 점검)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """GPT-OSS 구동 실측: 공개 모델 2종 노트북(server/lab/colab_model2.ipynb)과 같은 문의 5건을 오픈AI의 공개 모델 GPT-OSS(Ollama)로 돌리고 기록표를 만든다.
-(run_gpt.py의 틀을 그대로 쓰고, 모델 부르는 곳만 main의 server/hosts/ollama_host.py 그대로 — 깃허브 모델이 2026. 7. 30. 종료되어 GPT 계열은 공개 모델로 잰다)
+(모델 부르는 곳은 main의 server/hosts/ollama_host.py 그대로 — 깃허브 모델이 2026. 7. 30. 종료되어 GPT 계열은 공개 모델로 잰다)
 
 같은 것: 저장소 main의 서버(server.py)·지시문(프롬프트 consult)·문의 5건·받을 도서관·언어, 모델에 보이는 도구는 consult_request 하나,
          호스트 코드(ollama_host.py의 대화·고정·멈춤 규칙)와 기록 형식.

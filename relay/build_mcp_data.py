@@ -23,7 +23,7 @@ CFG_KEYS = ("city", "region_code", "home_library", "libraries", "rules", "ill_et
             "ill_eta_text", "hold_includes_arrival_day", "no_pickup_block_days", "reserve_converts_to_ill",
             "official_search_url_title", "pickup_points")   # [10/18] 누리집 규정 대조
 REMOTE_NOTE = {
-    "consult_request": " [인터넷 판] 회원 토큰을 받지 않는다(개인정보를 받지 않음). 한도·연체·중복은 사서가 준 회원 조건(member: 권수·예/아니요)이 있을 때만 판정하고, 없으면 창구 확인으로 보류.",
+    "consult_request": " [인터넷 판] 회원 토큰을 받지 않는다(개인정보를 받지 않음). 한도·연체·중복은 사서가 준 회원 조건(member: 권수·예/아니요)이 있을 때만 판정하고, 없으면 안내데스크 확인으로 보류.",
     "search_item": " [인터넷 판] 시연 도서 5종은 실측 서지, 그 밖의 책은 정보나루 전국 서지 검색(제목 부분일치).",
     "check_availability": " [인터넷 판] 오늘 새벽 매일 갱신 자료에 있으면 그 자료, 없으면 정보나루를 그 자리에서 조회(하루 전 기준).",
 }
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         now = OUT.read_text(encoding="utf-8") if OUT.exists() else ""
         if now != text:
             sys.exit("relay/mcp_data.js가 server/의 원본과 다릅니다 — python3 relay/build_mcp_data.py 로 다시 만드세요")
-        print("원격 상담 비서 자료 파일 — server/ 원본과 같음")
+        print("인터넷 판 자료 파일 — server/ 원본과 같음")
     else:
         OUT.write_text(text, encoding="utf-8")
         print(f"썼음: {OUT.relative_to(ROOT)} ({len(text):,}자)")

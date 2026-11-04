@@ -129,7 +129,7 @@ out8 = run("fake-member", "나미야 잡화점의 기적 빌리고 싶어요", s
 rows5 = [json.loads(l) for l in open(log4, encoding="utf-8")]
 ok("관내 상호대차" in out8 and "member" not in rows5[-1]["arguments"] and not rows5[-1]["error"]
    and any("사서가 주지 않음" in x for x in rows5[-1].get("forced", [])),
-   "⑨ [11/1] 사서가 주지 않은 회원 조건(모델이 지어낸 member)은 빼고 부름 — 회원 규정은 창구 확인 그대로")
+   "⑨ [11/1] 사서가 주지 않은 회원 조건(모델이 지어낸 member)은 빼고 부름 — 회원 규정은 안내데스크 확인 그대로")
 out9 = run("fake-member", "나미야 잡화점의 기적 빌리고 싶어요", str(log4), extra=("--pickup", "상동", "--member", "상호대차=2,연체=아니요"))
 rows6 = [json.loads(l) for l in open(log4, encoding="utf-8")]
 ok(rows6[-1]["arguments"].get("member") == {"ill_count": "2", "overdue": "아니요"} and not rows6[-1]["error"]

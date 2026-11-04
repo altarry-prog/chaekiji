@@ -18,6 +18,21 @@ from urllib.parse import unquote
 HERE = Path(__file__).resolve().parent.parent           # server/
 
 
+def _pickup_in(utterance):
+    """문의에서 받을 도서관 이름을 찾는다 — 설정의 도서관·작은도서관 이름 뒤에 「(도서관)에서·으로·로」가 오면 그곳(긴 이름 먼저)."""
+    try:
+        import yaml
+        cfg_path = os.environ.get("CHAEKIJI_CONFIG") or str(HERE / "config" / "bucheon.yaml")
+        cfg = yaml.safe_load(open(cfg_path, encoding="utf-8"))
+        names = list(cfg.get("libraries") or {}) + list(cfg.get("pickup_points") or [])
+    except Exception:
+        return None
+    for n in sorted(names, key=len, reverse=True):
+        if re.search(re.escape(n) + r"\s*(?:도서관)?\s*(?:에서|으로|로)(?![가-힣])|" + re.escape(n) + r"\s*(?:도서관)?\s*(?:에서|으로|로)\s*(?:받|찾|가)", utterance):
+            return n
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser(description="상담 비서(consult_request) 한 번 부르기")
     ap.add_argument("utterance", help="이용자의 말(가능하면 책 제목)")
@@ -32,6 +47,13 @@ def main():
     args = {"utterance": a.utterance, "lang": a.lang}
     if a.pickup:
         args["pickup"] = a.pickup
+    else:                                                 # [11/3] 받을 도서관을 따로 주지 않으면 문의 속 「역곡에서」·「꿈빛도서관으로」를 읽는다(자체 점검)
+        picked = _pickup_in(a.utterance)
+        if picked:
+            args["pickup"] = picked
+            print(f"▶ 받을 도서관: 문의에서 「{picked}」을(를) 읽음")
+        else:
+            print("▶ 받을 도서관: 문의에 없어 설정의 기본 도서관으로 봄(다른 곳이면 두 번째 값으로 주세요)")
     if a.member.strip():                                  # 값은 글자 그대로 넘기고 고르는 일(권수·예/아니요 확인)은 도구가 한다
         alias = {"상호대차": "ill_count", "대출": "total_loans", "수령관": "loans_at_pickup", "연체": "overdue", "중복": "same_book_pending"}
         args["member"] = json.loads(a.member) if a.member.strip().startswith("{") else {

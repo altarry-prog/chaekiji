@@ -28,7 +28,7 @@ HELD = ("ok", "busy")
 def snapshots(until=None):
     """날짜(asof)마다 그날의 마지막 자료 하나. 앞뒤가 잘린 자료(partial)는 뺀다."""
     out = subprocess.run(["git", "-C", ROOT, "log", "--format=%H %cI", "--", DATA],
-                         capture_output=True, text=True)
+                         capture_output=True, text=True, encoding="utf-8")
     if out.returncode != 0 or not out.stdout.strip():
         sys.exit("깃 이력을 읽지 못했습니다 — git clone 한 사본에서 실행하세요.")
     seen = {}
@@ -37,7 +37,7 @@ def snapshots(until=None):
             continue
         commit, when = line.split(" ", 1)
         raw = subprocess.run(["git", "-C", ROOT, "show", commit + ":" + DATA],
-                             capture_output=True, text=True).stdout
+                             capture_output=True, text=True, encoding="utf-8").stdout
         try:
             doc = json.loads(raw)
         except ValueError:

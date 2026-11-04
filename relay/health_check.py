@@ -21,7 +21,7 @@ import urllib.request
 WEB = os.environ.get("CHAEKIJI_WEB", "https://altarry-prog.github.io/chaekiji").rstrip("/")
 RELAY = os.environ.get("CHAEKIJI_RELAY_URL", "https://chaekiji-relay.altarry2.workers.dev").rstrip("/")
 MAX_DAYS = int(os.environ.get("CHAEKIJI_HEALTH_MAX_DAYS", "1"))
-FROZEN_FROM, FROZEN_UNTIL = datetime.date(2026, 10, 30), datetime.date(2026, 11, 26)   # [10/19] 심사 기간 고정 자료(naru.snapshot_ok와 같은 값) — 결선 뒤 지움 · [10/27] 동결 10. 30.로 앞당김
+FROZEN_FROM, FROZEN_UNTIL = datetime.date(2026, 10, 30), datetime.date(2026, 11, 26)   # [10/19] 심사 기간 고정 자료(naru.snapshot_ok와 같은 값) — 결선 뒤 지움 · [10/27] 고정 자료 시작일 10. 30.(동결·제출은 11. 9.)
 UA = "chaekiji-health/1.0 (+https://github.com/altarry-prog/chaekiji)"   # 파이썬 기본 이름은 Cloudflare가 403(1010)으로 막는다
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 KST = datetime.timezone(datetime.timedelta(hours=9))                     # 깃허브 서버는 UTC — 날짜는 한국 날짜로

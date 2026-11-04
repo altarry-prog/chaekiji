@@ -44,7 +44,7 @@ FIX_ASOF = "2026-08-18"                               # 픽스처 실측일
 SNAPSHOT_PATH = Path(os.environ.get("CHAEKIJI_SNAPSHOT") or (FIX / "holdings-today.json"))
 SNAPSHOT_MAX_DAYS = 2
 # [10/19] 심사 기간 고정 자료 — 동결 뒤 새벽 갱신이 멈추므로, 동결일 이후 날짜의 새벽 자료는 11. 26.까지 신선한 것으로 본다.
-#   [10/27] 동결을 2026. 10. 30. 18시로 앞당김(담당자 결정) → 10. 30. 이후 자료. 평소 규칙(2일)은 그대로이고, 안내문에는 조회일(「2026. 10. 30. 조회」)을 밝힌다.
+#   [10/27] 고정 자료의 시작일을 2026. 10. 30.로 둠(그날 이후 자료). 동결·제출은 11. 9.(그날 자료). 평소 규칙(2일)은 그대로이고, 안내문에는 조회일을 밝힌다.
 #   결선(11. 25.) 뒤 지운다. relay/mcp.js·index.html·health_check.py와 같은 값.
 FROZEN_FROM = datetime.date(2026, 10, 30)
 FROZEN_UNTIL = datetime.date(2026, 11, 26)
@@ -217,7 +217,7 @@ def search(utterance: str, mode="demo"):
     if mode == "relay":
         title = clean_title(utterance)
         if not split_volume(title)[1]:                # [10/19] 권차를 말하면 시연 도서(1권) 픽스처로 바로 가지 않는다
-            fx = search(utterance, mode="demo")       # 실측 서지 5종은 픽스처가 먼저(시연 도서는 늘 같은 답)
+            fx = _fixture_search(utterance)            # 실측 서지 5종은 픽스처가 먼저(시연 도서는 늘 같은 답)
             if fx.get("found"):
                 fx["evidence"] = "정보나루 srchBooks(실측 서지 픽스처) · 소장·대출 상태는 근거(basis)에 적힌 자료·조회일 기준"
                 weak = weak_fixture(utterance, title)
@@ -228,19 +228,31 @@ def search(utterance: str, mode="demo"):
                 try:
                     alt = pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
                                       first_only=True, min_score=70)
-                except Exception:
-                    return fx
-                if not alt.get("found") or _core_title(alt.get("title"), alt.get("author")) == _core_title(fx.get("title"), fx.get("author")):
+                except Exception:                         # [11/3] 확인이 끊기면 시연 도서로 단정하지 않는다(자체 점검: 「편의점 인간」→ 불편한 편의점)
+                    return {"found": False, "reason": f"중계 응답 없음: 시연 도서 찾기 낱말 「{weak}」만 겹쳐 확인하지 못함(검색어 「{title}」)",
+                            "candidates": [], "unavailable": True}
+                if not alt.get("found"):                  # [11/3] 맞는 책을 못 고르면 시연 도서가 아니라 되묻기
+                    return alt
+                if _core_title(alt.get("title"), alt.get("author")) == _core_title(fx.get("title"), fx.get("author")):
                     return fx
                 alt["evidence"] += f" · 시연 도서 찾기 낱말 「{weak}」만 겹쳐 서지 검색으로 다른 책을 고름"
                 return alt
         return pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
                            unavailable_reason=f"중계 응답 없음: 픽스처 5종에도 없는 도서(검색어 「{title}」)")
+    fx = _fixture_search(utterance)
+    weak = weak_fixture(utterance, clean_title(utterance)) if fx.get("found") else None
+    if weak:                                          # [11/3] 중계 없이 돌 때도 짧은 낱말만 겹치면 단정하지 않는다(「설민석의 조선왕조실록」 등)
+        return {"found": False, "candidates": [],
+                "reason": f"시연 도서 찾기 낱말 「{weak}」만 겹침: 모의 모드는 시연 도서 5종만 찾아 다른 책일 수 있음. 제목·저자를 더 알려 주세요"}
+    return fx
+
+def _fixture_search(utterance):
+    """시연 도서 5종(실측 서지 픽스처)에서 찾기 — 권차가 다르면 찾지 않음."""
     best = _fixture_match(utterance)
     if not best:
         return {"found": False, "reason": "픽스처에 없는 도서(모의 모드 한계). live 모드에서는 전국 서지 검색"}
     vol = split_volume(clean_title(utterance))[1]
-    if vol and vol != str(best[1].get("vol") or "1"):   # [11/3] 「불편한 편의점 2」를 시연 도서(1권)로 답하던 것(중계 없는 설치형, 11. 2. 독립 심사)
+    if vol and vol != str(best[1].get("vol") or "1"):   # [11/3] 「불편한 편의점 2」를 시연 도서(1권)로 답하던 것(중계 없는 설치형, 11. 2. 자체 점검)
         return {"found": False, "reason": f"시연 도서와 다른 권({vol}권)을 물음 — 모의 모드는 시연 도서 5종만 찾음. live 모드에서는 전국 서지 검색"}
     b = best[1]
     return {"found": True, "isbn13": b["isbn13"], "title": b["title"], "author": b["author"],
@@ -296,14 +308,15 @@ def availability_nation(isbn13: str, mode="demo"):
         except Exception:
             out = availability_nation(isbn13, mode="demo"); out["note"] += " · 중계 응답 없음 → 픽스처로 복귀"
             return out
-    n = _hold.get("nation", {}).get(isbn13)
-    return {"basis": f"전일({yday}) 기준 · 정보나루", "found_count": (n or {}).get("count", 0),
-            "note": (n or {}).get("note", "전국 조회(모의)")}
+    n = _hold.get("nation", {}).get(isbn13)            # [11/3] 픽스처·예시 값에 「하루 전 기준 · 정보나루」를 붙이지 않는다(코드 점검)
+    ex = isbn13 in _hold.get("_examples", [])
+    return {"basis": "예시 데이터(꾸민 값, 정보나루 조회 아님)" if ex else "전국 소장 조회 안 함(모의)",
+            "found_count": (n or {}).get("count", 0), "note": (n or {}).get("note", "전국 조회(모의)"), "example": ex}
 
 def _unknown(libraries: dict, why: str) -> dict:
     """[v0.3.5] 소장·대출 상태를 알 수 없을 때 — 모든 관을 unknown으로 돌려주고 LAST_META에 unavailable을 남긴다.
     정보나루가 안 되는데 그 책이 픽스처에도 없으면, 예전처럼 「미소장」(none)으로 채우면 「16곳에 없음 → 책바다」라는
-    틀린 안내가 나간다(2026. 10. 16. 독립 검토에서 발견). 모르면 모른다고 하고 창구 조회로 넘긴다."""
+    틀린 안내가 나간다(2026. 10. 16. 독립 검토에서 발견). 모르면 모른다고 하고 안내데스크 조회로 넘긴다."""
     global LAST_META
     LAST_META = {"basis": f"관내: {why}, 소장·대출 상태 확인 불가", "asof": _today(),
                  "holding_count": None, "calls": 0, "cached": False, "unavailable": True}

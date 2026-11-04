@@ -1,6 +1,6 @@
 {
  "title": "Solar 상담 창(docs/ask/) · 클로드 계정 없이",
- "tag": "실제 화면 녹화 · 2026. 11. 3. · 깃허브 액션",
+ "tag": "실제 화면 녹화 · 2026. 11. 4. · 깃허브 액션",
  "caps": [
   [
    0,
@@ -19,15 +19,15 @@
   ]
  ],
  "source": {
-  "run": "https://github.com/altarry-prog/chaekiji/actions/runs/41581070883",
-  "recorded_kst": "2026-11-03 13:58",
+  "run": "https://github.com/altarry-prog/chaekiji/actions/runs/41746792958",
+  "recorded_kst": "2026-11-04 09:27",
   "say": "한강 소년이 온다 빌리고 싶어요, 역곡도서관에서 받을게요",
   "cut": [
-   1.87,
-   4.87,
-   11.14,
-   17.65
+   1.8999999999999995,
+   4.8999999999999995,
+   10.82,
+   17.34
   ],
-  "speed": 3.14
+  "speed": 2.96
  }
 }

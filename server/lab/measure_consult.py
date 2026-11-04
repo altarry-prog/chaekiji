@@ -5,7 +5,7 @@
 무엇을 재나: 상담 묶음 도구(consult_request) 한 번이 답을 돌려줄 때까지의 시간(벽시계, 네트워크 포함).
   사람이 문의를 듣고 도서관리시스템에서 확인하는 시간은 재지 않는다(그건 사람의 시험으로만 잴 수 있다).
 어디서 재나: 깃허브 액션(measure-consult.yml) — 미국 쪽 서버. 한국에서 부르면 더 빠를 것으로 추정.
-기록: lab/out/consult_timing_YYYY-MM-DD.json(원자료) · .md(요약). 키·개인정보 없음(문의는 책 제목뿐).
+기록: lab/out/consult_timing_YYYY-MM-DD_HHMM.json(원자료) · .md(요약, 11. 4.부터 이름에 시각). 키·개인정보 없음(문의는 책 제목뿐).
 정보나루 호출: 매일 갱신 자료에 있는 책은 0회, 없는 책은 1회(서지) + 1 + 소장관 수 — 하루 한도(500건)를 생각해 15건으로 묶는다.
 실행: python3 lab/measure_consult.py [--url https://…/mcp] [--out lab/out]"""
 import argparse, datetime, json, statistics, time, urllib.error, urllib.request
@@ -78,7 +78,7 @@ def main():
                "by_source": {k: {"n": len(v), "median_ms": round(statistics.median(v))} for k, v in by.items()},
                "routes": {k: sum(1 for r in ok if r.get("route_label") == k) for k in sorted({r.get("route_label") for r in ok if r.get("route_label")})}}
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
-    day = now.strftime("%Y-%m-%d")
+    day = now.strftime("%Y-%m-%d_%H%M")   # [11/4] 같은 날 두 번 재도 앞 기록을 덮어쓰지 않게 시각을 붙인다
     (out / f"consult_timing_{day}.json").write_text(json.dumps({"summary": summary, "rows": rows}, ensure_ascii=False, indent=1), encoding="utf-8")
     sec = lambda v: "—" if v is None else f"{v / 1000:.1f}초"
     L = [f"# 인터넷 판 상담 도구 처리 시간 실측 — {summary['time']}", "",

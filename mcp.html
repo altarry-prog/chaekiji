@@ -103,6 +103,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
 </head>
 <body>
 <div class="wrap">
+<div class="note" style="margin:12px 0"><b>이 설명 화면은 2026. 9. 기준으로 만든 것입니다.</b> 지금의 판과 숫자(서버 v0.3.5, 자동 시험 253건)와 낱말(안내데스크, 확인·결과, 받을 도서관)은 <a href="https://github.com/altarry-prog/chaekiji#readme">저장소 README</a>를 보세요. 그림과 「실제 동작」 이야기는 완성된 모습을 그린 설계이고, 지금 되는 것은 README의 「지금 써 볼 수 있는 것」입니다.</div>
 <header class="hero">
   <span class="kicker">Chaekiji · MCP Expansion Blueprint</span>
   <h1>책이지 MCP 설계도</h1>
@@ -136,7 +137,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
 벽 뒤의 발전소가 화력이든 태양광이든, 플러그 규격만 맞으면 드라이어는 돌아갑니다.
 이 문서는 그 "벽 뒤"를 전부 열어 보입니다.</p>
 
-<h2 id="c1"><span class="no">01</span>김순자 씨의 3분: 완성된 책이지의 실제 동작</h2>
+<h2 id="c1"><span class="no">01</span>김순자 씨의 3분: 완성되면 이렇게 돕니다(설계)</h2>
 
 <p>김순자 씨(75)는 상동도서관 근처에 삽니다. 스마트폰에 책이지가 깔려 있고,
 지난달 시 통합회원 아이디로 한 번 로그인해 둔 상태입니다. 손녀가 말한 책이 생각나
@@ -266,7 +267,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
 <rect x="350" y="14" width="180" height="42" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
 <text x="440" y="34">전화 한 통 모드</text><text x="440" y="49" font-weight="400" font-size="11" opacity=".65">대표번호 ARS 없이 대화</text>
 <rect x="580" y="14" width="180" height="42" rx="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
-<text x="670" y="34">창구·키오스크</text><text x="670" y="49" font-weight="400" font-size="11" opacity=".65">사서 보조 화면</text>
+<text x="670" y="34">안내데스크·키오스크</text><text x="670" y="49" font-weight="400" font-size="11" opacity=".65">사서 보조 화면</text>
 </g>
 <g stroke="currentColor" stroke-width="1.6">
 <line x1="210" y1="56" x2="400" y2="106" marker-end="url(#ar2)"/>
@@ -345,7 +346,7 @@ td code,p code,li code{font:600 12.5px "IBM Plex Mono",monospace;background:var(
 
 <div class="tblwrap"><table>
 <tr><th>층</th><th>실체</th><th>물리적으로 어디에</th><th>누가 만드나</th></tr>
-<tr><td><b>L1 입구</b></td><td>앱(PWA)·전화·창구 화면</td><td>이용자 손 안 / 도서관 데스크</td><td>부천 (시제품 확장)</td></tr>
+<tr><td><b>L1 입구</b></td><td>앱(PWA)·전화·안내데스크 화면</td><td>이용자 손 안 / 도서관 데스크</td><td>부천 (시제품 확장)</td></tr>
 <tr><td><b>L2 에이전트</b></td><td>LLM 호출 + 대화 관리 프로그램</td><td>공공기관용 클라우드 1대</td><td>부천 (본사업)</td></tr>
 <tr><td><b>L3 MCP 서버</b></td><td>도구 10종을 정의한 프로그램 하나</td><td>같은 클라우드, 같은 서버 가능</td><td><b>부천이 만들고 → 전국이 공유</b></td></tr>
 <tr><td><b>L4 커넥터</b></td><td>시스템별 번역 모듈</td><td>정보나루용은 클라우드 / 알파스용은 도서관 내부망 접점</td><td>부천 → <b>같은 시스템 쓰는 곳은 재사용</b></td></tr>
@@ -486,33 +487,33 @@ MCP 서버는 그중 한 프로그램의 이름일 뿐입니다.</div>
 
 <div class="tblwrap"><table>
 <tr><th>원칙</th><th>내용</th><th>상태</th></tr>
-<tr><td>AI는 안내만, 실행은 규정 엔진이</td><td>언어모델은 신청을 직접 실행하지 못한다. 규정을 통과한 요청만 도구 계층이 실행한다</td><td><span class="chip done">구현</span></td></tr>
-<tr><td>AI는 회원 식별자를 모른다</td><td>언어모델에는 토큰만 전달되고, 회원번호와의 대응표는 금고 한 곳에만 둔다</td><td><span class="chip done">구현</span></td></tr>
-<tr><td>발화는 입구에서만</td><td>발화는 ISBN으로 정규화된 뒤 안쪽으로 들어가므로 문장이 명령이 될 수 없다</td><td><span class="chip done">구현</span></td></tr>
-<tr><td>목소리는 서비스 서버에 남지 않는다</td><td>브라우저 내장 음성 인식을 쓰며, 서비스 서버로는 음성을 보내거나 저장하지 않는다 (지원 기기에서는 기기 내 처리)</td><td><span class="chip done">구현</span></td></tr>
-<tr><td>규정 한도가 곧 안전장치</td><td>1인 5권 한도가 대량 신청을 구조적으로 막는다</td><td><span class="chip done">구현</span></td></tr>
-<tr><td>취소할 수 있는 일만 대신한다</td><td>상호대차 신청은 취소 가능하다. 결제·회원정보 변경은 에이전트의 범위 밖이다</td><td><span class="chip part">설계</span></td></tr>
-<tr><td>위험한 일일수록 문을 세게 잠근다</td><td>행위의 위험도에 따라 인증 강도를 달리한다 (아래 표). 시연 웹 v1.5에 「등록된 기기」(패스키) 흐름 구현: 첫 신청 때 기기 등록, 무료 신청은 바로, 위임 생성은 생체인증 한 번 더</td><td><span class="chip part">일부 구현(시연)</span></td></tr>
-<tr><td>모르는 실행은 없다</td><td>모든 대행 실행은 통지·즉시 취소·기록을 동반한다</td><td><span class="chip part">일부 구현</span></td></tr>
-<tr><td>필요한 숫자 두 개만 본다</td><td>대출 이력이 아니라 현재 권수와 연체 여부만 조회한다</td><td><span class="chip part">설계</span></td></tr>
+<tr><td>말은 AI가, 결정은 규정 프로그램이</td><td>언어모델이 스스로 신청을 넣을 수는 없다. 도구 쪽이 규정 검사를 마친 요청만 처리한다</td><td><span class="chip done">구현</span></td></tr>
+<tr><td>회원번호는 AI에게 보이지 않는다</td><td>모델은 임시 토큰만 받고, 토큰과 회원번호를 잇는 표는 금고(vault) 한 곳에서만 푼다</td><td><span class="chip done">구현</span></td></tr>
+<tr><td>말은 입구에서 책 번호로 바뀐다</td><td>이용자의 문장은 ISBN으로 바뀐 다음에야 안으로 들어가므로, 문장 속 지시가 실행 명령으로 쓰이지 않는다</td><td><span class="chip done">구현</span></td></tr>
+<tr><td>목소리를 모으지 않는다</td><td>음성 인식은 브라우저 기능을 쓰고, 책이지 서버는 음성을 받지도 저장하지도 않는다(지원 기기는 기기 안에서 처리, 그 밖은 브라우저 회사 서버가 처리할 수 있음)</td><td><span class="chip done">구현</span></td></tr>
+<tr><td>권수 한도가 남용을 막는다</td><td>한 사람 5권까지라는 규정 자체가 많은 양의 신청을 막아 준다</td><td><span class="chip done">구현</span></td></tr>
+<tr><td>되돌릴 수 있는 일만 맡는다</td><td>상호대차 신청은 책이 옮겨지기 전까지 취소할 수 있다. 결제와 회원정보 변경은 맡지 않는다</td><td><span class="chip part">설계</span></td></tr>
+<tr><td>위험한 일일수록 확인을 엄격하게</td><td>일의 위험도에 따라 본인 확인 단계를 달리한다(아래 표). 시연 웹 v1.5에 「등록된 기기」(패스키) 흐름 구현: 첫 신청 때 기기 등록, 무료 신청은 바로, 위임 생성은 생체인증 한 번 더</td><td><span class="chip part">일부 구현(시연)</span></td></tr>
+<tr><td>알리지 않고 하는 일은 없다</td><td>대신 한 일은 모두 알림을 보내고, 바로 취소할 수 있게 하고, 기록을 남긴다</td><td><span class="chip part">일부 구현</span></td></tr>
+<tr><td>필요한 두 가지만 본다</td><td>대출 이력은 보지 않고 지금 빌린 권수와 연체 여부만 확인한다</td><td><span class="chip part">설계</span></td></tr>
 </table></div>
 
 <p>인증은 새로 만들지 않고 기존 회원 인증 위에 <b>「등록된 기기」</b>를 얹습니다. 비밀번호 대신 기기의 생체인증으로
-본인을 확인하는 패스키(passkey) 방식은 서버에 비밀번호가 남지 않아 유출될 것이 없고, 기기에 묶여 공용 PC에서는
-동작하지 않습니다. 등록된 기기라도 자동으로 열리는 것은 조회와 무료 신청까지이며, 위임 생성처럼 범위가 넓은 행위와 앞으로 대행 범위에 넣을 실비 신청은
+본인을 확인하는 패스키(passkey)는 서버가 비밀번호를 갖고 있지 않으니 새어 나갈 것이 없고, 그 기기에서만 쓰이므로 여럿이 쓰는 PC에서는
+쓸 수 없습니다. 기기를 등록해도 바로 되는 일은 조회와 무료 신청뿐이고, 범위가 넓은 위임 만들기나 나중에 맡길 수도 있는 유료 신청은
 생체인증을 한 번 더 거칩니다. 전화는 등록된 번호 발신 확인 위에서 저위험 행위만 다룹니다.</p>
 
 <div class="tblwrap"><table>
-<tr><th>행위</th><th>전화</th><th>등록된 기기(앱)</th><th>창구</th></tr>
+<tr><th>행위</th><th>전화</th><th>등록된 기기(앱)</th><th>안내데스크</th></tr>
 <tr><td>소장·대출 가능 조회</td><td>가능</td><td>가능</td><td>가능</td></tr>
 <tr><td>관내 상호대차 신청(무료·취소 가능)</td><td>등록 번호 발신 시 가능</td><td>가능</td><td>가능</td></tr>
-<tr><td>책바다 신청(실비 · 현 단계는 안내, 대행 시 기준)</td><td>불가 → 앱·창구 안내</td><td>재인증 후 가능</td><td>가능</td></tr>
+<tr><td>책바다 신청(실비 · 현 단계는 안내, 대행 시 기준)</td><td>불가(앱·안내데스크로 안내)</td><td>재인증 후 가능</td><td>가능</td></tr>
 <tr><td>책이지 패스(사전 위임) 등록</td><td>불가</td><td>재인증 후 가능</td><td>가능</td></tr>
 <tr><td>책이지 패스 해지</td><td>가능</td><td>가능</td><td>가능</td></tr>
 <tr><td>회원정보 변경·결제</td><td>불가</td><td>불가(범위 밖)</td><td>사람이 처리</td></tr>
 </table></div>
 
-<p>※ 책바다 신청은 현 단계에서 안내에 그치며, 표의 인증 강도는 대행 범위에 넣을 때의 기준입니다.</p>
+<p>※ 지금 책바다는 안내만 하고, 표에 적은 확인 단계는 나중에 책바다 신청까지 맡을 경우의 기준입니다.</p>
 <p>해지만 전화로 열어 둔 이유: <b>안전 쪽으로 가는 문은 항상 가장 쉽게</b>. 사고가 나더라도 피해는
 「책 한 권이 잘못 신청됨」에 그치고, 그마저 통지와 취소로 되돌릴 수 있게 하는 것이 이 원칙들의 목적입니다.
 그리고 사실(소장·규정)은 전부 도구가 답하므로 <b>LLM이 지어낼 자리가 구조적으로 없습니다</b>(LLM의 일은 해석과 문장뿐입니다).</p>
@@ -538,7 +539,7 @@ A시가 실제로 해야 하는 일은 무엇인가? 답: <b>설정 파일 하�
 <tr><td>3</td><td>자기 시 SSO 연동 정보 입력</td><td>설정+협의</td><td>시 정보부서 협의</td></tr>
 <tr><td>4</td><td>도서관리시스템 커넥터 연결: <b>알파스면 부천 것 재사용</b></td><td>재사용</td><td>0 (이미 있음)</td></tr>
 <tr><td>5</td><td>다른 시스템이라면 → 그 시스템용 커넥터 1회 개발</td><td><b>개발 (유일)</b></td><td>시스템당 1회, 전국이 공유</td></tr>
-<tr><td>6</td><td>적합성 시험 킷(33건) 통과 확인: 통과가 곧 호환 보증</td><td>검증</td><td>자동, 수 분</td></tr>
+<tr><td>6</td><td>적합성 시험 킷 통과 확인: 통과하면 같은 규격으로 동작함을 확인</td><td>검증</td><td>자동, 수 분</td></tr>
 </table></div>
 
 <p>1~2번이 어떤 일인지는 설정 파일을 나란히 놓으면 바로 보입니다.
@@ -574,7 +575,7 @@ notify: [<span class="s">sms</span>, <span class="s">voice_call</span>]         
 <tr><th>단계</th><th>내용</th><th>핵심 산출물</th><th>주체</th></tr>
 <tr><td><b>0 · 지금</b><br><span class="chip done">완료</span></td>
 <td>무예산 시제품으로 조회 계층 실증: 음성→판정→흐름, 실측 64건, 10개 언어, PWA, 책큐 일괄 처리·책이지 패스 시연, 전화 모드 통화 흐름 시연, 표준 도구 10종 참조 구현, 운영 규정 조사(5개 지자체) 반영</td>
-<td>공개 시제품 · <b>MCP 참조 서버 v0.3(도구 10종 구현, 적합성 시험 33건 통과)</b> · 공공 GitLab 등록</td><td>부천 (사서 자체)</td></tr>
+<td>공개 시제품 · <b>MCP 참조 서버(2026. 9. v0.3 도구 10종·시험 33건, 지금 v0.3.5 도구 11종·시험 253건)</b> · 공공 GitLab 초안 등록(제출본은 11. 9.)</td><td>부천 (사서 자체)</td></tr>
 <tr><td><b>1 · 부천 완성</b><br>본사업 1차년</td>
 <td>실행 계층 구축: 알파스 커넥터 v1, 시 SSO·등록된 기기(패스키) 인증, 정식 앱, 전화망 연결(통신 사업자 연동), 대체자료·책나래 분기, 규정 8종(v0.4)</td>
 <td>알파스 커넥터 · 규정 YAML 체계 · 운영 대시보드</td><td>부천 + 시 정보부서 + 알파스 벤더</td></tr>
@@ -638,9 +639,9 @@ notify: [<span class="s">sms</span>, <span class="s">voice_call</span>]         
 <dd>최악의 경우가 「책 한 권이 잘못 신청됨」이 되도록 설계했습니다. 실행 전 확인 한 번, 실행 후 통지, 이송 전 즉시 취소(<code>cancel_request</code>)와
 한도 복원, 그리고 모든 호출의 기록. 결제·회원정보 변경처럼 되돌리기 어려운 일은 처음부터 에이전트의 범위 밖입니다(5장 아홉 원칙).</dd>
 <dt>Q. 전화로도 되나?</dt>
-<dd>설계상 세 입구(앱·전화·창구) 중 하나이고, 시연 웹의 📞 단추에서 통화 흐름을 그대로 체험할 수 있습니다. 실제 전화망 연결은
+<dd>설계상 세 입구(앱·전화·안내데스크) 중 하나이고, 시연 웹의 📞 단추에서 통화 흐름을 그대로 체험할 수 있습니다. 실제 전화망 연결은
 통신 사업자 연동이 필요한 본사업 과제입니다(5장). 전화는 등록된 번호 발신 확인 위에서 조회·무료 신청·예약·위임 해지만 다루고,
-실비가 드는 책바다 신청은 대행하지 않고 앱이나 창구로 안내합니다.</dd>
+실비가 드는 책바다 신청은 대행하지 않고 앱이나 안내데스크로 안내합니다.</dd>
 <dt>Q. 정보나루 데이터가 전일 기준이라던데?</dt>
 <dd>완성형에서는 관내 실시간을 알파스 커넥터가 맡고, 정보나루는 광역 조회와 폴백만
 담당합니다(4장). 시제품 단계의 한계가 완성형의 역할 분담으로 바뀝니다.</dd>

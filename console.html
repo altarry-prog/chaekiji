@@ -50,7 +50,7 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
 .socket.lit text{fill:#fff}
 .socket text{transition:fill .25s}
 .grid{display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:start}
-@media (max-width:860px){.grid{grid-template-columns:1fr}}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}.grid>*{min-width:0}pre,.say{white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}}
 .panel{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px}
 .panel h2{font-size:14px;margin:0 0 10px;letter-spacing:.02em}
 .panel h2 small{font:600 10.5px "IBM Plex Mono",monospace;color:var(--ink3);margin-left:6px}
@@ -99,6 +99,7 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
 </head>
 <body>
 <div class="wrap">
+<p style="margin:10px 0;padding:8px 12px;border-left:3px solid currentColor;font-size:13px;opacity:.85"><b>이 콘솔은 2026. 8. 30.(서버 v0.3) 때 만든 화면입니다.</b> 지금 서버는 v0.3.5이고 자동 시험은 253건입니다(<a href="https://github.com/altarry-prog/chaekiji#readme">저장소 README</a>). 화면의 판정은 지금 낱말로 「확인·결과」, 수령관은 「받을 도서관」입니다.</p>
 <header>
   <span class="kicker">Chaekiji MCP Demo Console</span>
   <h1>책이지 MCP 콘솔</h1>
@@ -132,7 +133,7 @@ h1{font-size:26px;margin:8px 0 6px;letter-spacing:-.4px}
   <button class="btn play" id="autoBtn">▶ 김순자 씨 시나리오 자동 재생 <b>①→⑥</b></button>
   <button class="btn" data-step="1">① 발화 해석 <b>search_item</b><br><span style="color:var(--ink3);font-size:12px">"그 왜, 나미야 잡화점인가 하는 책…"</span></button>
   <button class="btn" data-step="2">② 어디서 빌리지 <b>check_availability</b></button>
-  <button class="btn" data-step="3">③ 규정 판정 <b>check_policy</b></button>
+  <button class="btn" data-step="3">③ 규정 확인 <b>check_policy</b></button>
   <button class="btn" data-step="4">④ 신청 실행 <b>request_service</b><br><span style="color:var(--ink3);font-size:12px">확인 없이 → 거부 · 확인 후 → 접수</span></button>
   <button class="btn" data-step="5">⑤ 도착 알림 <b>notify_user</b></button>
   <button class="btn" data-step="8">⑥ 어디까지 왔나 <b>track_request</b><br><span style="color:var(--ink3);font-size:12px">접수 → 자료 확보 → 이송 중 (시간 경과 시뮬레이션)</span></button>
@@ -255,7 +256,7 @@ const TOOLS={
  cancel_request(a){
    const r=REQ[a.receipt]; if(!r) throw "접수번호를 찾을 수 없습니다";
    if(r.userKey!==VAULT[a.user]) throw "본인 신청만 취소할 수 있습니다";
-   if(r.status!=="접수") return {cancelled:false, status:r.status, why:`${r.status} 단계라 이용자 취소가 되지 않습니다(수령관 데스크로 문의)`, rule:"cancel_allowed_states: [접수]"};
+   if(r.status!=="접수") return {cancelled:false, status:r.status, why:`${r.status} 단계라 이용자 취소가 되지 않습니다(받을 도서관 안내데스크로 문의)`, rule:"cancel_allowed_states: [접수]"};
    r.status="취소"; r.history.push({status:"취소",at:"D+0",by:"이용자"});
    const m=MEMBER[r.userKey]; m.ill=Math.max(0,m.ill-1);
    return {cancelled:true, receipt:r.receipt, restored:{ill_count:m.ill, limit:CFG[cfgKey].rules.ill}, note:"한도 즉시 복원: 같은 책을 다시 신청할 수 있습니다"};
@@ -339,7 +340,7 @@ function callTool(name,args,sayFn){
     if(name==="check_policy"){
       extra=`<div class="verdict">${out.checks.map(c=>
         `<span class="chip ${c.pass?"ok":"no"}">${c.pass?"✓":"✗"} ${esc(c.rule)} · ${esc(c.detail)}</span>`).join("")}
-        <span class="chip ${out.allowed?"ok":"no"}" style="font-size:12px">${out.allowed?"판정: 신청 가능":"판정: 신청 불가"}</span></div>`;
+        <span class="chip ${out.allowed?"ok":"no"}" style="font-size:12px">${out.allowed?"결과: 신청 가능":"결과: 신청 불가"}</span></div>`;
     }
     if(sayFn) extra+=`<div class="say">🗣 <b>책이지</b> ${sayFn(out)}</div>`;
     card("res","커넥터→MCP","cn",`결과 (id ${RPCID}) · ${cfgKey==="bucheon"?"bucheon.yaml":"example-city.yaml"}`,pretty(out),extra);
@@ -372,7 +373,7 @@ const STEPS = {
  5(){ callTool("notify_user",{user:"tok_kimsj",event:"arrival",message:"신청하신 책이 상동도서관에 도착했습니다"},
       o=>`(3일 뒤) ${o.channel==="voice_call"?"자동 음성전화":"문자"}로 알려드려요: "${o.message}"`); },
  6(){ callTool("find_alternative",{isbn13:BOOK.sonyeon.isbn13,user:"tok_kimsj"},
-      o=>o.audiobook?`이 책은 오디오북으로도 있어요. 책나래 우편 수령으로 받아보실 수 있어요.`:`대체자료는 아직 없네요.`); },
+      o=>o.audiobook?`이 책은 오디오북으로도 있어요. 책나래 우편으로 받아 보실 수 있어요.`:`대체자료는 아직 없네요.`); },
  7(){ const keep=lastISBN; lastISBN=BOOK.onsil.isbn13;
       callTool("check_availability",{isbn13:BOOK.onsil.isbn13},
       o=>`(예시 장면) 부천 관내에 없다고 가정하면 전국 ${o.nation.found_count}곳에 있어요(${o.nation.basis}). 책바다는 별도 가입과 사서 승인이 필요해서, 신청 대신 안내를 드릴게요.`);
@@ -386,7 +387,7 @@ const STEPS = {
       if(trackOnly===true || ["취소","실패","대출 완료"].includes(st)) return;
       setTimeout(()=>{ advance(r,2);
         callTool("track_request",{user:"tok_kimsj",receipt:r},
-          o=>`(이틀 뒤 · 시간 경과 시뮬레이션) 지금 「${o.status}」: 상동도서관으로 오는 중이에요. 이제 취소는 수령관 데스크 문의로만 돼요.`); },1600); },
+          o=>`(이틀 뒤 · 시간 경과 시뮬레이션) 지금 「${o.status}」: 상동도서관으로 오는 중이에요. 이제 취소는 받을 도서관 안내데스크에 문의해야 해요.`); },1600); },
  9(){ const r=lastReceipt();
       if(!r){ card("err","MCP 서버","mcp","취소할 신청이 없습니다",esc("먼저 ④에서 신청을 접수해 주세요")); return; }
       callTool("cancel_request",{user:"tok_kimsj",receipt:r},

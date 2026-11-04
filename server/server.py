@@ -132,6 +132,9 @@ def handle(req):
             reply(id_, error={"code": -32602, "message": f"unknown prompt: {p.get('name')}"})
     elif m == "tools/call":
         name, args = p.get("name"), p.get("arguments") or {}
+        if name not in IMPL:                                # [11/4] 없는 도구는 프로토콜 오류로(인터넷 판과 같게, MCP 점검 도구로 확인)
+            reply(id_, error={"code": -32602, "message": f"unknown tool: {name}"})
+            return
         if name == "request_service" and "from" in args:   # 편의: from → from_lib
             args["from_lib"] = args.pop("from")
         props = next((t["inputSchema"].get("properties", {}) for t in TOOLS if t["name"] == name), None)

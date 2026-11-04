@@ -182,7 +182,7 @@ fd = [x for x in vd["checks"] if not x["pass"]]
 ok((not vd["allowed"]) and any("제외" in x["rule"] for x in fd),
    "㉓ 비도서(DVD) 제외 — 설정(excluded_types)으로 차단")
 ct.close()
-print("── v0.3.4 · 상담 묶음(consult_request) — 안내데스크·전화에서 지금 쓰는 판정 ──")
+print("── v0.3.4 · 상담 묶음(consult_request) — 안내데스크·전화 상담용 확인(시연·검증) ──")
 k1 = c.call("consult_request", utterance="나미야 잡화점의 기적 빌리고 싶어요", pickup="상동")
 ok(k1["found"] and k1["route"] == "ill" and k1["from_lib"] in k1["availability"]["available_at"] and k1["from_lib"] != "상동",
    f"㉔ 말 한마디 → 찾기·소장·규정 한 번에 — 갈래 「{k1['route_label']}」 · 소장관 {k1['from_lib']}")

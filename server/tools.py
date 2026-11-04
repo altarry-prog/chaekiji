@@ -146,13 +146,13 @@ def request_service(user: str, isbn13: str, from_lib: str, pickup: str,
             "eta_days": CFG["ill_eta_days"], "executed_via": "알파스 커넥터(모의)",
             "authorized_by": ("사전 위임 " + mandate_id) if mandate_id else "이용자 즉시 확인"}
 
-# ── [v0.3.4] 상담 묶음 — 안내데스크·전화에서 사서가 지금 쓰는 판정 도구 ─────────────────────
+# ── [v0.3.4] 상담 묶음 — 안내데스크·전화 상담용 확인 도구(시연·검증용) ─────────────────────
 _ROUTE_LABEL = {"visit": "바로 이용(받을 도서관에 대출 가능)", "ill": "관내 상호대차", "reserve": "예약 권장(시립도서관에 있는 책이 모두 대출 중)",
                 "sea": "책바다(전국 상호대차) 안내", "unknown": "도서 미확정", "check": "소장 확인 불가(안내데스크에서 조회)"}
 _MEMBER_RULE_KEYS = ("권", "연체", "중복")              # 회원 정보가 있어야 판정되는 규정(한도 3종·연체·중복)
 
 def _verdict(route, pol, bad):
-    """[11/3] 판정 한 줄(verdict) — 갈래 이름만 두면 회원 조건을 받지 않은 「관내 상호대차」가 신청 가능으로 읽힌다(11. 2. 독립 심사).
+    """[11/3] 판정 한 줄(verdict) — 갈래 이름만 두면 회원 조건을 받지 않은 「관내 상호대차」가 신청 가능으로 읽힌다(11. 2. 자체 점검).
     관내 상호대차일 때만 걸리는 규정, 안내데스크에서 확인할 것(회원 조건·자료 유형·서가 비치)을 덧붙인다. relay/mcp.js verdictOf와 같은 글."""
     label = _ROUTE_LABEL[route]
     if route != "ill":

@@ -6,8 +6,9 @@
 |---|---|---|
 | `model2/` | 코랩 노트북을 깃허브 액션에서 그대로 실행(엑사원·라마, `run_notebook.py`), GPT-OSS 구동(`run_gptoss.py`), AI가 맡는 일 반복(`run_ai_role.py`), AI가 맡는 일 지표(문의 24건 × 지시문 2종 × 3회, `run_ai_metrics.py`·`report_ai_metrics.py`) | `model2_record_actions_*`, `model_gptoss_record_actions_*`, `ai_role_record_actions_*`, `ai_metrics_record_actions_*` |
 | `solar/` | Solar Pro 4(업스테이지 API)로 같은 지표. 공개 모델 호스트(`server/hosts/ollama_host.py`)에 업스테이지 API를 잇는 작은 연결 프로그램(`upstage_ollama_proxy.py`) | `ai_metrics_solar_record_actions_*` |
-| `city/` | 코드는 그대로 두고 설정 파일만 바꿔 시흥·광명 도서관 기준으로 신청이 되는지 확인(`run_city.py`) | `city_record_actions_*`, `city_<도시>_config_*.yaml` |
-| `workflows/` | 위 도구를 돌린 깃허브 액션 워크플로의 사본(여기서는 돌지 않음) | - |
+| `city/` | 코드는 그대로 두고 설정 파일만 바꿔 시흥·광명 도서관 기준으로 신청이 되는지 확인(`run_city.py`, 워크플로 `city-measure.yml`) | `city_record_actions_*`, `city_<도시>_config_*.yaml` |
+| `workflows/run-scripts.yml` | PC 설치판 실행 스크립트: 깃허브 액션의 새 가상 PC에서 main의 `server/run.bat`(윈도우)·`server/run.sh`(맥)를 고치지 않고 실행하고 기록표를 만듦(따로 도구 파일 없이 워크플로만) | `run_scripts_record_actions_*` |
+| `workflows/` | 위 도구를 돌린 깃허브 액션 워크플로의 사본(`model2.yml`·`model-gptoss.yml`·`ai-role.yml`·`ai-metrics.yml`·`model-solar.yml`·`city-measure.yml`·`run-scripts.yml`, 여기서는 돌지 않음) | - |
 
 - **다시 돌리기**: `workflows/`의 파일을 `.github/workflows/`로 옮기거나 가지 `tools/model2`에서 수동 실행합니다. 이 사본들은 결과를 커밋·푸시하고 일부는 푸시할 때 저절로 도는 설정이라, main의 `.github/workflows/`에는 두지 않았습니다.
 - **키**: 정보나루 인증키(`NARU_KEY`)와 업스테이지 키(`UPSTAGE_API_KEY`)는 저장소 비밀값으로만 받고 기록·로그에 남기지 않습니다. AI가 맡는 일 지표는 서버를 snapshot 모드로 돌려 정보나루를 부르지 않습니다.

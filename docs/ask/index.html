@@ -140,10 +140,10 @@ input[type=password]{font:inherit;color:var(--fg);background:var(--bg);border:1p
   <ul>
     <li>부천시립도서관의 공식 서비스가 아니라, 담당 사서가 직접 만들어 검증하는 시험 화면입니다. 실제 접수로 이어지지 않습니다.</li>
     <li>대출 가능 여부는 도서관 정보나루 조회일의 하루 전 기준입니다. 신청은 공식 누리집에서 이용자가 로그인해 직접 합니다.</li>
-    <li>같은 설정으로 잰 결과(2026. 11. 2., 같은 문의 24건을 3번씩): 이용자의 말로 책을 찾은 것은 60번 가운데 37번이었고, 찾은 37번은 결과가 모두 도구와 같았습니다. 제목 없이 말하거나 외국어 제목으로 물으면 못 찾을 때가 있고, 그때는 되묻거나 「도서 미확정」으로 답합니다(<a href="https://github.com/altarry-prog/chaekiji/blob/main/server/lab/out/ai_metrics_solar_record_actions_2026-11-02_0945.md">실측 기록</a>).</li>
+    <li>같은 설정으로 잰 결과(2026. 11. 2., 같은 문의 24건을 3번씩. 책이 분명한 20건의 60번 기준): 이용자의 말로 책을 찾은 것은 60번 가운데 37번이었고, 찾은 37번은 결과가 모두 도구와 같았습니다. 제목 없이 말하거나 외국어 제목으로 물으면 못 찾을 때가 있고, 그때는 되묻거나 「도서 미확정」으로 답합니다(<a href="https://github.com/altarry-prog/chaekiji/blob/main/server/lab/out/ai_metrics_solar_record_actions_2026-11-02_0945.md">실측 기록</a>).</li>
     <li>답의 문장은 AI가 쓰므로 틀릴 수 있습니다. 그래서 도구가 낸 결과(빌리는 방법, 책, 조회일, 누리집 주소)를 「책이지 도구가 낸 결과」 상자에 따로 보여 줍니다.</li>
     <li>적은 글은 답을 만들려고 업스테이지 API로 보내집니다. 책이지 연결 서버는 모든 이용을 글 없이 건수(날짜·빌리는 방법·언어·걸린 시간)로만 세고, 담당자 기록 모드에서 물은 것만 문장과 답까지 비공개 저장 공간에 90일 기록합니다.</li>
-    <li>사서용 상담 비서라 답 끝에 접수 메모가 붙습니다. 시험용이라 한 사람이 10분에 6번까지 물을 수 있습니다.</li>
+    <li>사서용 상담 비서라 답 끝에 접수 메모가 붙습니다. 시험용이라 한 접속(IP)에서 10분에 6번, 하루 전체 300번까지 물을 수 있습니다. 같은 망에서 여럿이 쓰면 함께 막힐 수 있습니다.</li>
   </ul>
 </section>
 
@@ -168,7 +168,7 @@ input[type=password]{font:inherit;color:var(--fg);background:var(--bg);border:1p
 </details>
 
 <footer>
-  <a href="../../">시연 웹(시민 음성 화면)</a> · <a href="https://altarry-prog.github.io/chaekiji-pilot/">시험 이용 화면(AI 없이 확인만)</a> · <a href="https://github.com/altarry-prog/chaekiji">저장소</a>
+  <a href="../../">시연 웹(시민 음성 화면)</a> · <a href="https://github.com/altarry-prog/chaekiji">저장소</a>
 </footer>
 </main>
 <script src="app.js"></script>

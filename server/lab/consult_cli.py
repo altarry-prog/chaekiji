@@ -47,7 +47,7 @@ def main():
     args = {"utterance": a.utterance, "lang": a.lang}
     if a.pickup:
         args["pickup"] = a.pickup
-    else:                                                 # [11/3] 받을 도서관을 따로 주지 않으면 문의 속 「역곡에서」·「꿈빛도서관으로」를 읽는다(구동 심사)
+    else:                                                 # [11/3] 받을 도서관을 따로 주지 않으면 문의 속 「역곡에서」·「꿈빛도서관으로」를 읽는다(자체 점검)
         picked = _pickup_in(a.utterance)
         if picked:
             args["pickup"] = picked

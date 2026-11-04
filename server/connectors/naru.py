@@ -228,7 +228,7 @@ def search(utterance: str, mode="demo"):
                 try:
                     alt = pick_search(title, lambda q: _relay_search(utterance=q), "정보나루 srchBooks(중계 · 전국 서지 · 제목 부분일치)",
                                       first_only=True, min_score=70)
-                except Exception:                         # [11/3] 확인이 끊기면 시연 도서로 단정하지 않는다(구동 심사: 「편의점 인간」→ 불편한 편의점)
+                except Exception:                         # [11/3] 확인이 끊기면 시연 도서로 단정하지 않는다(자체 점검: 「편의점 인간」→ 불편한 편의점)
                     return {"found": False, "reason": f"중계 응답 없음: 시연 도서 찾기 낱말 「{weak}」만 겹쳐 확인하지 못함(검색어 「{title}」)",
                             "candidates": [], "unavailable": True}
                 if not alt.get("found"):                  # [11/3] 맞는 책을 못 고르면 시연 도서가 아니라 되묻기
@@ -252,7 +252,7 @@ def _fixture_search(utterance):
     if not best:
         return {"found": False, "reason": "픽스처에 없는 도서(모의 모드 한계). live 모드에서는 전국 서지 검색"}
     vol = split_volume(clean_title(utterance))[1]
-    if vol and vol != str(best[1].get("vol") or "1"):   # [11/3] 「불편한 편의점 2」를 시연 도서(1권)로 답하던 것(중계 없는 설치형, 11. 2. 독립 심사)
+    if vol and vol != str(best[1].get("vol") or "1"):   # [11/3] 「불편한 편의점 2」를 시연 도서(1권)로 답하던 것(중계 없는 설치형, 11. 2. 자체 점검)
         return {"found": False, "reason": f"시연 도서와 다른 권({vol}권)을 물음 — 모의 모드는 시연 도서 5종만 찾음. live 모드에서는 전국 서지 검색"}
     b = best[1]
     return {"found": True, "isbn13": b["isbn13"], "title": b["title"], "author": b["author"],

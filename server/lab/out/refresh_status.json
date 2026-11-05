@@ -1,5 +1,5 @@
 {
- "asof": "2026-11-04",
+ "asof": "2026-11-05",
  "mode": "live",
  "books": [
   {
@@ -34,7 +34,7 @@
   }
  ],
  "calls": 81,
- "via": "http",
+ "via": "https",
  "result": "성공",
- "generated": "2026-11-04 09:46 KST"
+ "generated": "2026-11-05 10:01 KST"
 }

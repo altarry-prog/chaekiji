@@ -27,7 +27,8 @@ HELD = ("ok", "busy")
 
 def snapshots(until=None):
     """날짜(asof)마다 그날의 마지막 자료 하나. 앞뒤가 잘린 자료(partial)는 뺀다."""
-    out = subprocess.run(["git", "-C", ROOT, "log", "--format=%H %cI", "--", DATA],
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+    out = subprocess.run(["git", "-C", ROOT, "log", "--format=%H %cI", "--", DATA],  # nosemgrep
                          capture_output=True, text=True, encoding="utf-8")
     if out.returncode != 0 or not out.stdout.strip():
         sys.exit("깃 이력을 읽지 못했습니다 — git clone 한 사본에서 실행하세요.")
@@ -36,7 +37,8 @@ def snapshots(until=None):
         if not line.strip():
             continue
         commit, when = line.split(" ", 1)
-        raw = subprocess.run(["git", "-C", ROOT, "show", commit + ":" + DATA],
+        # 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+        raw = subprocess.run(["git", "-C", ROOT, "show", commit + ":" + DATA],  # nosemgrep
                              capture_output=True, text=True, encoding="utf-8").stdout
         try:
             doc = json.loads(raw)

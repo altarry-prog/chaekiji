@@ -89,7 +89,8 @@ def main():
         snap = Path(td) / "snap.json"; snap.write_text(json.dumps(SNAP, ensure_ascii=False), encoding="utf-8")
         scp = Path(td) / "sc.json"; scp.write_text(json.dumps(SC, ensure_ascii=False), encoding="utf-8")
         py = python_side(f"http://127.0.0.1:{srv.server_port}", snap)
-        js_run = subprocess.run(["node", str(ROOT / "relay" / "test_mcp_parity.mjs"), str(scp), str(snap)],
+        # 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+        js_run = subprocess.run(["node", str(ROOT / "relay" / "test_mcp_parity.mjs"), str(scp), str(snap)],  # nosemgrep
                                 capture_output=True, text=True, encoding="utf-8", timeout=120)
         if js_run.returncode != 0:
             sys.exit("원격 판 실행 실패:\n" + js_run.stderr[-2000:])

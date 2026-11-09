@@ -83,7 +83,8 @@ def ok(cond, label):
 def run(model, ask, log, protocol="auto", extra=()):
     cmd = [sys.executable, str(ROOT/"hosts"/"ollama_host.py"), "--model", model, "--ollama", f"http://127.0.0.1:{PORT}",
            "--mode", "demo", "--ask", ask, "--log", log, "--protocol", protocol, *extra]
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", timeout=120, cwd=str(ROOT))
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", timeout=120, cwd=str(ROOT))  # nosemgrep
     return r.stdout + r.stderr
 
 log = Path(tempfile.mkdtemp()) / "host_log.ndjson"

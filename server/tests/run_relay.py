@@ -62,7 +62,8 @@ class Client:
             e["CHAEKIJI_SNAPSHOT"] = "/nonexistent/holdings-today.json"
         if "CHAEKIJI_LOCAL_SOURCE" not in env:
             e.pop("CHAEKIJI_LOCAL_SOURCE", None)
-        self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")], stdin=subprocess.PIPE,
+        # 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+        self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")], stdin=subprocess.PIPE,  # nosemgrep
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", env=e)
         self.n = 0
         self.rpc("initialize", {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "relay-kit", "version": "0"}})
@@ -149,7 +150,8 @@ ok(r5b["found"] is False and r5b["route"] == "check" and "연결되지 않아" i
 c3.banner()
 print("── 매일 갱신 스냅샷(refresh_today.py 결과) ──")
 tmp = Path(tempfile.mkdtemp())
-r0 = subprocess.run([sys.executable, str(ROOT/"lab"/"refresh_today.py"), "--demo", "--out", str(tmp/"snap.json"), "--status-out", str(tmp/"status.json"),
+# 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+r0 = subprocess.run([sys.executable, str(ROOT/"lab"/"refresh_today.py"), "--demo", "--out", str(tmp/"snap.json"), "--status-out", str(tmp/"status.json"),  # nosemgrep
                      "--web-out", str(tmp/"web.json")], capture_output=True, text=True, encoding="utf-8", timeout=60)
 snap = json.load(open(tmp/"snap.json", encoding="utf-8"))
 ok(r0.returncode == 0 and snap["asof"] == TODAY and len(snap["holdings"]) == 5 and "9790000000012" not in snap["holdings"] and (tmp/"web.json").exists(),

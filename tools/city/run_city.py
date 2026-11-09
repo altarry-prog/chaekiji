@@ -32,13 +32,15 @@ if not os.environ.get("NARU_KEY"):
 WORK.mkdir(parents=True, exist_ok=True)
 os.chdir(WORK)
 if not (WORK / "chaekiji").exists():
-    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/altarry-prog/chaekiji.git"], check=True)
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/altarry-prog/chaekiji.git"], check=True)  # nosemgrep
 SRV = WORK / "chaekiji" / "server"
 os.chdir(SRV)
 # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
 subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=True)  # nosemgrep
 import yaml  # noqa: E402
-COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+# 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()  # nosemgrep
 OUT = SRV / "lab" / "out"; OUT.mkdir(parents=True, exist_ok=True)
 print("저장소 main", COMMIT, flush=True)
 

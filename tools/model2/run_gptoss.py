@@ -19,11 +19,13 @@ MODELS = [m.strip() for m in os.environ.get("OSS_MODELS", "gpt-oss:20b").split("
 WORK.mkdir(parents=True, exist_ok=True)
 os.chdir(WORK)
 if not (WORK / "chaekiji").exists():
-    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/altarry-prog/chaekiji.git"], check=True)
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/altarry-prog/chaekiji.git"], check=True)  # nosemgrep
 os.chdir(WORK / "chaekiji" / "server")
 # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
 subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=True)  # nosemgrep
-COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+# 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()  # nosemgrep
 print("저장소 준비 완료 · 커밋", COMMIT, "· 모델", MODELS, flush=True)
 
 # ② 같은 문의 5건(노트북 ④ 칸의 ASKS 그대로)

@@ -10,7 +10,8 @@ ROOT = Path(__file__).resolve().parent.parent
 class Client:
     def __init__(self, config):
         env = dict(os.environ, CHAEKIJI_CONFIG=str(ROOT/"config"/config), CHAEKIJI_MODE="demo")
-        self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")],
+        # 보안 검토(2026-11-09): 저장소 안의 고정된 스크립트·명령(git·node·python)을 인자 목록으로 실행하며 셸을 거치지 않음
+        self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")],  # nosemgrep
                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                   text=True, encoding="utf-8", env=env)
         self.n = 0

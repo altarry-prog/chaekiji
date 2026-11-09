@@ -88,10 +88,13 @@ P7_NEW = ("7. 이용자 언어가 한국어가 아니면(`translate_to`) 판정 
 WORK.mkdir(parents=True, exist_ok=True)
 os.chdir(WORK)
 if not (WORK / "chaekiji").exists():
-    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/altarry-prog/chaekiji.git"], check=True)
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트·명령을 인자 목록으로 실행하며 셸을 거치지 않음
+    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/altarry-prog/chaekiji.git"], check=True)  # nosemgrep
 os.chdir(WORK / "chaekiji" / "server")
-subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=True)
-COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+# 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트·명령을 인자 목록으로 실행하며 셸을 거치지 않음
+subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=True)  # nosemgrep
+# 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트·명령을 인자 목록으로 실행하며 셸을 거치지 않음
+COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()  # nosemgrep
 OUT_DIR = pathlib.Path("lab/out"); OUT_DIR.mkdir(parents=True, exist_ok=True)
 TAG = f"run{RUN_ID}_{SLUG}_{VARIANT}_r{REP}"
 print("저장소 main", COMMIT, "· 모델", MODEL, "· 지시문", VARIANT, "· 회차", REP, "· 서버 모드", SMODE, flush=True)
@@ -137,8 +140,10 @@ if INSTRUMENTED:
     HOST.write_text(hsrc.replace(ANCHOR, ANCHOR + ADD, 1), encoding="utf-8")
 
 def _sh(cmd):
-    return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
-OLLAMA_VER = json.load(urllib.request.urlopen(OLLAMA + "/api/version"))["version"]
+    # 보안 검토(2026-11-09): 측정 기록용으로 코드에 적힌 고정 명령(ollama·nproc 등)만 실행하며 이용자 입력은 들어가지 않음
+    return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()  # nosemgrep
+# 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 로컬 Ollama 주소이며 이용자 입력으로 바뀌지 않음
+OLLAMA_VER = json.load(urllib.request.urlopen(OLLAMA + "/api/version"))["version"]  # nosemgrep
 ENVINFO = {"cpu": os.cpu_count(), "mem": " ".join(_sh("free -h | sed -n 2p").split()[1:3]), "ollama": OLLAMA_VER,
            "models": [l for l in _sh("ollama list").splitlines()[1:] if l.strip()]}
 
@@ -185,7 +190,8 @@ RUNLOG = {}
 for no, cat, ask, pickup, lang, title, _ in CASES:
     t0 = time.time()
     try:
-        r = subprocess.run([sys.executable, "hosts/ollama_host.py", "--model", MODEL, "--ollama", OLLAMA, "--mode", SMODE,
+        # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트·명령을 인자 목록으로 실행하며 셸을 거치지 않음
+        r = subprocess.run([sys.executable, "hosts/ollama_host.py", "--model", MODEL, "--ollama", OLLAMA, "--mode", SMODE,  # nosemgrep
                             "--pickup", pickup, "--lang", lang, "--ask", ask, "--log", str(CALLS), "--answers", str(ANS),
                             "--tools", "consult", "--timeout", "900", "--num-ctx", "8192"], capture_output=True, text=True,
                            encoding="utf-8", timeout=1500, env=dict(os.environ))

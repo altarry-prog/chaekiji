@@ -33,7 +33,8 @@ except Exception:
 # ── MCP 클라이언트(stdio JSON-RPC) — 클로드 데스크톱이 하는 일을 그대로 ───────────────────
 class MCP:
     def __init__(self, server, env):
-        self.p = subprocess.Popen([sys.executable, str(server)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+        self.p = subprocess.Popen([sys.executable, str(server)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,  # nosemgrep
                                   stderr=subprocess.PIPE, text=True, encoding="utf-8", env=env)
         self.n = 0
         self.rpc("initialize", {"protocolVersion": "2024-11-05", "capabilities": {},
@@ -71,7 +72,8 @@ def ollama_chat(base, model, messages, tools=None, num_ctx=4096, timeout=600):
                                  headers={"Content-Type": "application/json"}, method="POST")
     t0 = time.perf_counter()
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        # 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 정보나루·연결 서버·로컬 Ollama 주소(http/https)이며 이용자 입력으로 바뀌지 않음
+        with urllib.request.urlopen(req, timeout=timeout) as r:  # nosemgrep
             out = json.load(r)
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")

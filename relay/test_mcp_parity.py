@@ -57,7 +57,8 @@ def python_side(relay_url, snap_path):
     for i, c in enumerate(SC["cases"], 1):
         lines.append(json.dumps({"jsonrpc": "2.0", "id": i, "method": "tools/call",
                                  "params": {"name": c["tool"], "arguments": c["args"]}}, ensure_ascii=False))
-    p = subprocess.run([sys.executable, str(ROOT / "server" / "server.py")], input="\n".join(lines) + "\n",
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+    p = subprocess.run([sys.executable, str(ROOT / "server" / "server.py")], input="\n".join(lines) + "\n",  # nosemgrep
                        capture_output=True, text=True, encoding="utf-8", env=env, cwd=str(ROOT / "server"), timeout=120)
     replies = {json.loads(l)["id"]: json.loads(l) for l in p.stdout.splitlines() if l.strip()}
     out = []

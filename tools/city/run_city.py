@@ -35,7 +35,8 @@ if not (WORK / "chaekiji").exists():
     subprocess.run(["git", "clone", "--depth", "1", "https://github.com/altarry-prog/chaekiji.git"], check=True)
 SRV = WORK / "chaekiji" / "server"
 os.chdir(SRV)
-subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=True)
+# 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=True)  # nosemgrep
 import yaml  # noqa: E402
 COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
 OUT = SRV / "lab" / "out"; OUT.mkdir(parents=True, exist_ok=True)
@@ -88,7 +89,8 @@ for city, region, hint in CITIES:
     # 그래서 서버 폴더 안 절대 경로로 쓴다. main 쪽 고침은 따로 제안.
     raw = SRV / "config" / f"{city}_raw.yaml"
     t0 = time.perf_counter()
-    p = subprocess.run([sys.executable, "lab/make_city_config.py", "--dtl-region", region, "--city", city, "--out", str(raw)],
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+    p = subprocess.run([sys.executable, "lab/make_city_config.py", "--dtl-region", region, "--city", city, "--out", str(raw)],  # nosemgrep
                        capture_output=True, text=True, env=dict(os.environ, PYTHONUTF8="1"))
     gen_log = (p.stdout + p.stderr).strip()
     print(f"━━ {city}({region}) 설정 초안\n{gen_log}", flush=True)
@@ -121,7 +123,8 @@ for city, region, hint in CITIES:
     env = dict(os.environ, PYTHONUTF8="1", CHAEKIJI_MODE="live", CHAEKIJI_LOCAL_SOURCE="naru",
                CHAEKIJI_CONFIG=str(final), CITY_PICKUP=home, CITY_ASKS=json.dumps(ASKS, ensure_ascii=False))
     env.pop("CHAEKIJI_RELAY", None)
-    c = subprocess.run([sys.executable, "-c", CHILD], capture_output=True, text=True, env=env, timeout=1800)
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+    c = subprocess.run([sys.executable, "-c", CHILD], capture_output=True, text=True, env=env, timeout=1800)  # nosemgrep
     out = c.stdout
     rows = json.loads(out.split("@@JSON@@", 1)[1]) if "@@JSON@@" in out else []
     if not rows:

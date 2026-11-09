@@ -62,7 +62,8 @@ def main():
                          "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "consult-cli", "version": "1"}}}),
              json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/call",
                          "params": {"name": "consult_request", "arguments": args}}, ensure_ascii=False)]
-    p = subprocess.run([sys.executable, str(HERE / "server.py")], input="\n".join(lines) + "\n", capture_output=True,
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+    p = subprocess.run([sys.executable, str(HERE / "server.py")], input="\n".join(lines) + "\n", capture_output=True,  # nosemgrep
                        text=True, encoding="utf-8", env=env, cwd=str(HERE), timeout=120)
     replies = {json.loads(l)["id"]: json.loads(l) for l in p.stdout.splitlines() if l.strip()}
     if 2 not in replies:

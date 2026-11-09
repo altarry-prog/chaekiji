@@ -18,7 +18,8 @@ import audit
 class Client:
     def __init__(self, **env):
         e = dict(os.environ, CHAEKIJI_CONFIG=str(ROOT/"config"/"bucheon.yaml"), CHAEKIJI_MODE="demo", **env)
-        self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")], stdin=subprocess.PIPE,
+        # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+        self.p = subprocess.Popen([sys.executable, str(ROOT/"server.py")], stdin=subprocess.PIPE,  # nosemgrep
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", env=e)
         self.n = 0
         self.rpc("initialize", {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "lab", "version": "0"}})

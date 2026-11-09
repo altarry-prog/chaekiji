@@ -31,4 +31,5 @@ compiled = compile(code, nb_path, "exec")
 if check_only:
     print("확인만 함: 바꿀 문장 모두 찾음, 문법 이상 없음")
     sys.exit(0)
-exec(compiled, {"__name__": "__main__"})
+# 보안 검토(2026-11-09): 저장소 안의 측정 기록표 코드를 그대로 실행하는 측정 도구이며 외부 입력은 실행하지 않음
+exec(compiled, {"__name__": "__main__"})  # nosemgrep

@@ -37,7 +37,8 @@ def naru(api, key, **p):
         for i, base in enumerate(NARU_BASES):
             tag = "https" if base.startswith("https") else "http"
             try:
-                with urllib.request.urlopen(base + api + "?" + q, timeout=8 if i == 0 else 20) as r:
+                # 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 정보나루·연결 서버·로컬 Ollama 주소(http/https)이며 이용자 입력으로 바뀌지 않음
+                with urllib.request.urlopen(base + api + "?" + q, timeout=8 if i == 0 else 20) as r:  # nosemgrep
                     d = json.load(r)
             except urllib.error.HTTPError as e:   # HTTP 오류
                 fails.append(f"{tag}:{e.code}"); continue

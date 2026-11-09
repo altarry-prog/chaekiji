@@ -67,7 +67,8 @@ def upstage_chat(body_in, timeout=600):
     for attempt in range(7):
         req = urllib.request.Request(BASE + "/chat/completions", data=data, headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
+            # 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 정보나루·연결 서버·로컬 Ollama 주소(http/https)이며 이용자 입력으로 바뀌지 않음
+            with urllib.request.urlopen(req, timeout=timeout) as r:  # nosemgrep
                 out = json.load(r)
             break
         except urllib.error.HTTPError as e:

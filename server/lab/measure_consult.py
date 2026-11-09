@@ -28,7 +28,8 @@ def rpc(url, body, timeout=120):
                                  headers={"User-Agent": UA, "Content-Type": "application/json",
                                           "Accept": "application/json, text/event-stream"})
     t0 = time.perf_counter()
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    # 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 정보나루·연결 서버·로컬 Ollama 주소(http/https)이며 이용자 입력으로 바뀌지 않음
+    with urllib.request.urlopen(req, timeout=timeout) as r:  # nosemgrep
         raw = r.read()
     return (json.loads(raw) if raw else None), round((time.perf_counter() - t0) * 1000)
 

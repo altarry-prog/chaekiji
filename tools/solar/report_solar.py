@@ -29,4 +29,5 @@ if missing:
 for a, b in REPL:
     code = code.replace(a, b, 1)
 sys.argv[0] = str(SRC)
-exec(compile(code, str(SRC), "exec"), {"__name__": "__main__", "__file__": str(SRC)})
+# 보안 검토(2026-11-09): 저장소 안의 측정 기록표 코드를 그대로 실행하는 측정 도구이며 외부 입력은 실행하지 않음
+exec(compile(code, str(SRC), "exec"), {"__name__": "__main__", "__file__": str(SRC)})  # nosemgrep

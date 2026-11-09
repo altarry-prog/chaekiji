@@ -143,7 +143,8 @@ def relay_ok(timeout=3):
     """중계가 살아 있고 키를 갖고 있는지만 본다(키 값은 오가지 않는다)."""
     if not RELAY: return False
     try:
-        with urllib.request.urlopen(urllib.request.Request(RELAY.rstrip("/") + "/health", headers=RELAY_UA), timeout=timeout) as r:
+        # 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 정보나루·연결 서버·로컬 Ollama 주소(http/https)이며 이용자 입력으로 바뀌지 않음
+        with urllib.request.urlopen(urllib.request.Request(RELAY.rstrip("/") + "/health", headers=RELAY_UA), timeout=timeout) as r:  # nosemgrep
             return json.load(r).get("ok") is True
     except Exception:
         return False
@@ -152,7 +153,8 @@ def _relay(path, **params):
     url = RELAY.rstrip("/") + path + ("?" + urllib.parse.urlencode(params) if params else "")
     t0 = time.perf_counter()
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers=RELAY_UA), timeout=RELAY_TIMEOUT) as r:
+        # 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 정보나루·연결 서버·로컬 Ollama 주소(http/https)이며 이용자 입력으로 바뀌지 않음
+        with urllib.request.urlopen(urllib.request.Request(url, headers=RELAY_UA), timeout=RELAY_TIMEOUT) as r:  # nosemgrep
             data = json.load(r)
     except urllib.error.HTTPError as e:                  # 중계가 준 실패 종류(detail)를 그대로 올린다 — 키·주소는 원래 없다
         try: data = json.loads(e.read()[:2000].decode("utf-8", "replace"))
@@ -423,7 +425,8 @@ def _get(api, **params):
                     time.sleep(gap)
             t0 = time.perf_counter()
             try:
-                with urllib.request.urlopen(base + api + "?" + q, timeout=20 if i == len(bases) - 1 else 8) as r:
+                # 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 정보나루·연결 서버·로컬 Ollama 주소(http/https)이며 이용자 입력으로 바뀌지 않음
+                with urllib.request.urlopen(base + api + "?" + q, timeout=20 if i == len(bases) - 1 else 8) as r:  # nosemgrep
                     data = json.load(r)
             except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError) as e:
                 _LAST_AT[0] = time.perf_counter()

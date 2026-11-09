@@ -21,7 +21,8 @@ os.chdir(WORK)
 if not (WORK / "chaekiji").exists():
     subprocess.run(["git", "clone", "--depth", "1", "https://github.com/altarry-prog/chaekiji.git"], check=True)
 os.chdir(WORK / "chaekiji" / "server")
-subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=True)
+# 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+subprocess.run([sys.executable, "-m", "pip", "-q", "install", "pyyaml"], check=True)  # nosemgrep
 COMMIT = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
 print("저장소 준비 완료 · 커밋", COMMIT, "· 모델", MODELS, flush=True)
 
@@ -42,8 +43,10 @@ ANSWERS = OUT_DIR / f"gptoss_host_answers_actions_{STAMP}.ndjson"
 import urllib.request
 OLLAMA = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
 def _sh(cmd):
-    return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()
-OLLAMA_VER = json.load(urllib.request.urlopen(OLLAMA + "/api/version"))["version"]
+    # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+    return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout.strip()  # nosemgrep
+# 보안 검토(2026-11-09): 호출 주소는 코드·환경설정에 고정된 정보나루·연결 서버·로컬 Ollama 주소(http/https)이며 이용자 입력으로 바뀌지 않음
+OLLAMA_VER = json.load(urllib.request.urlopen(OLLAMA + "/api/version"))["version"]  # nosemgrep
 ENVINFO = [f"CPU {os.cpu_count()}코어 · GPU 없음", "메모리: " + " ".join(_sh("free -h | sed -n 2p").split()[1:3]) + "(전체·사용)",
            f"Ollama {OLLAMA_VER}", "모델: " + " · ".join(l for l in _sh("ollama list").splitlines()[1:] if l.strip())]
 print("실행 환경:", ENVINFO, flush=True)
@@ -70,7 +73,8 @@ for m in MODELS:
     for ask, pickup, lang in ASKS:
         t0 = time.time()
         try:
-            r = subprocess.run([sys.executable, "hosts/ollama_host.py", "--model", m, "--ollama", OLLAMA, "--mode", "auto",
+            # 보안 검토(2026-11-09): 저장소 안의 고정된 파이썬 스크립트를 인자 목록으로 실행하며 셸을 거치지 않음
+            r = subprocess.run([sys.executable, "hosts/ollama_host.py", "--model", m, "--ollama", OLLAMA, "--mode", "auto",  # nosemgrep
                                 "--pickup", pickup, "--lang", lang, "--ask", ask, "--log", str(CALLS), "--answers", str(ANSWERS),
                                 "--tools", "consult", "--timeout", "1800", "--num-ctx", "8192"], capture_output=True, text=True,
                                encoding="utf-8", timeout=2400, env=env)

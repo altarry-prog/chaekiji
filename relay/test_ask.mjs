@@ -204,7 +204,7 @@ function mockKV() {
       return { keys: page.map(name => ({ name, metadata: m.get(name).meta })), list_complete: end >= keys.length, cursor: end >= keys.length ? undefined : String(end) };
     } };
 }
-const TOKEN = "test-record-passphrase-123";
+const TOKEN = "test-record-passphrase-123";  // gitleaks:allow — 시험용 가짜 값(실제 키 아님)
 const kv = mockKV();
 const envR = { ...env, ASK_RECORDS: kv, ASK_RECORD_TOKEN: TOKEN };
 const Q = "나미야 잡화점의 기적 기록 시험";
